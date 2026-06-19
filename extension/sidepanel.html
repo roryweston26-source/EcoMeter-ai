@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>EcoMeter AI</title>
+  <!-- Fonts are self-hosted to avoid sending the user's IP to fonts.googleapis.com -->
+  <style>
+    @font-face {
+      font-family: 'DM Mono';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/dm-mono-latin-400-normal.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'DM Mono';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url('fonts/dm-mono-latin-500-normal.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'Syne';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url('fonts/syne-latin-600-normal.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'Syne';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url('fonts/syne-latin-700-normal.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'Syne';
+      font-style: normal;
+      font-weight: 800;
+      font-display: swap;
+      src: url('fonts/syne-latin-800-normal.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+  </style>
+  <style>
+    :root {
+      --bg:       #0a0f0d;
+      --surface:  #111812;
+      --surface2: #192217;
+      --border:   #243028;
+      --accent:   #4caf82;
+      --accent2:  #38c9a0;
+      --text:     #e2ede8;
+      --muted:    #637a6b;
+      --green:    #4caf82;
+      --red:      #e05c5c;
+      --blue:     #5b9cf6;
+      --gold:     #d4a843;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 12px 16px 10px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .status-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: glow 2s ease-in-out infinite; }
+    .status-dot.error { background: var(--red); }
+    @keyframes glow { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ── Setup screen ── */
+    #setup-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    .setup-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .setup-sub { font-size: 10px; color: var(--muted); line-height: 1.6; }
+    .setup-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 9px; font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .step-text { font-size: 11px; color: var(--text); line-height: 1.5; }
+    .step-text a { color: var(--accent); text-decoration: none; }
+    label { display: block; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; margin-top: 10px; }
+    input[type=password], input[type=text], select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--muted); }
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0a0f0d;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 12px;
+      padding: 10px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:active { transform: scale(0.98); }
+    .error-msg { font-size: 10px; color: var(--red); margin-top: 6px; min-height: 14px; }
+
+    /* ── Main tracker screen ── */
+    #tracker-screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Hero stats ── */
+    .hero {
+      padding: 16px 16px 12px;
+      background: linear-gradient(160deg, #111812 0%, #0f1a14 100%);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Platform row */
+    .platform-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .platform-badge {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(76,175,130,0.1);
+      border: 1px solid rgba(76,175,130,0.3);
+      transition: all 0.3s;
+    }
+    .platform-divider {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .logout-link {
+      font-size: 9px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: color 0.15s;
+    }
+    .logout-link:hover { color: var(--red); }
+
+    /* Big stat cards */
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .stat-card-label {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat-card-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stat-card-value.accent { color: var(--accent); }
+    .stat-card-sub {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .stat-card-sub .water-inline {
+      color: var(--green);
+    }
+
+    /* ── Controls ── */
+    .controls {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .model-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .model-row select {
+      flex: 1;
+      font-size: 10px;
+      padding: 6px 9px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      outline: none;
+    }
+    .model-row select:focus { border-color: var(--accent); }
+
+    .btn-row {
+      display: flex;
+      gap: 5px;
+    }
+    .ctrl-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      padding: 5px 9px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .ctrl-btn:hover { color: var(--text); border-color: var(--accent); }
+    .ctrl-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(76,175,130,0.1); }
+    .ctrl-btn.danger:hover { color: var(--red); border-color: var(--red); }
+    .ctrl-btn-spacer { flex: 1; }
+
+    /* ── Water disclaimer ── */
+    .water-disclaimer {
+      margin: 0 14px 0;
+      padding: 6px 10px;
+      background: rgba(76,175,130,0.07);
+      border: 1px solid rgba(76,175,130,0.18);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      font-size: 9px;
+      color: var(--muted);
+      line-height: 1.5;
+      display: none;
+    }
+    .water-disclaimer summary {
+      color: var(--green);
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .water-disclaimer summary::after {
+      content: '▸ what we can and cannot see';
+      font-size: 8px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .water-disclaimer[open] summary::after { content: '▾ less'; }
+    .water-disclaimer .detail-text {
+      margin-top: 6px;
+      font-size: 8.5px;
+      line-height: 1.6;
+    }
+    .water-disclaimer a { color: var(--green); }
+
+    /* ── Message list ── */
+    .msg-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .msg-list::-webkit-scrollbar { width: 3px; }
+    .msg-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+
+    .older-badge {
+      text-align: center; font-size: 9px; color: var(--muted);
+      padding: 8px; border: 1px dashed var(--border);
+      border-radius: 6px; margin-top: 2px;
+    }
+
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; color: var(--muted);
+      text-align: center; padding: 30px;
+    }
+    .empty-icon { font-size: 28px; opacity: 0.4; }
+    .empty-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); opacity: 0.5; }
+    .empty-sub { font-size: 10px; line-height: 1.6; }
+
+    /* ── Message cards (class-based so side-panel doesn't strip them) ── */
+    .c-card    { display:flex; flex-direction:column; flex-shrink:0; background:#111812; border:1px solid #243028; border-radius:8px; overflow:hidden; }
+    .c-hdr     { display:flex; align-items:center; padding:8px 10px; background:#192217; border-bottom:1px solid #243028; gap:6px; }
+    .c-role    { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; flex-shrink:0; color:#7a9488; }
+    .c-role-u  { color:#4caf82; }
+    .c-role-a  { color:#5b9cf6; }
+    .c-meta    { margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex-shrink:0; }
+    .c-tok     { font-size:9px; color:#7a9488; white-space:nowrap; }
+    .c-cost    { font-size:9px; color:#4caf82; padding:1px 5px; background:rgba(76,175,130,0.1); border-radius:3px; white-space:nowrap; }
+    .c-counting{ font-size:9px; color:#4caf82; }
+    .c-bar     { height:3px; margin:0 10px 6px; border-radius:2px; overflow:hidden; background:#243028; }
+    .c-bar-fill{ height:100%; }
+    .c-preview { padding:6px 10px; font-size:10px; color:#7a9488; line-height:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 7px 14px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; background: var(--surface);
+    }
+    .footer-status { font-size: 9px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-title">EcoMeter AI</div>
+  <div class="header-right">
+    <div class="status-dot" id="status-dot"></div>
+  </div>
+</div>
+
+<!-- Setup screen -->
+<div id="setup-screen">
+  <div>
+    <div class="setup-title">Welcome to EcoMeter AI 🌿</div>
+    <div class="setup-sub">Track token usage, cost, and environmental impact across your AI conversations — automatically, by Legerly.</div>
+  </div>
+
+  <div class="setup-step">
+    <div class="step-num">Option 1 — Start instantly</div>
+    <div class="step-text">Uses local estimation for all platforms. Accurate to within 10–15% for normal conversations.</div>
+    <button class="btn-primary" id="skip-btn" style="margin-top:10px;">Skip — Use Estimates Only</button>
+  </div>
+
+  <div class="setup-step">
+    <div class="step-num">Option 2 — Anthropic API Key</div>
+    <div class="step-text">
+      Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> for exact token counts on Claude. Leave blank and hit Start if you just want estimates.
+    </div>
+    <label>Anthropic API Key</label>
+    <input type="password" id="api-key-input" placeholder="sk-ant-api03-…" />
+    <div class="error-msg" id="error-msg"></div>
+    <button class="btn-primary" id="save-btn" style="margin-top:10px;background:linear-gradient(135deg,#4caf82,#38c9a0);">Connect Key &amp; Start</button>
+  </div>
+</div>
+
+<!-- Main tracker screen -->
+<div id="tracker-screen">
+
+  <!-- Hero stats -->
+  <div class="hero">
+
+    <!-- Platform row -->
+    <div class="platform-row">
+      <div class="platform-badge" id="platform-badge">—</div>
+      <div class="platform-divider"></div>
+      <div class="logout-link" id="logout-btn">remove key</div>
+    </div>
+
+    <!-- Two big stats -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-card-label">Total Tokens</div>
+        <div class="stat-card-value" id="total-tokens">0</div>
+        <div class="stat-card-sub" id="total-msgs">0 messages</div>
+        <div class="stat-card-sub" id="io-ratio" style="margin-top:2px;color:var(--muted);">0 in · 0 out</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">True Est. Cost</div>
+        <div class="stat-card-value accent" id="total-cost">—</div>
+        <div class="stat-card-sub">
+          <span id="model-label" style="color:var(--muted)">select model ↓</span>
+          <span class="water-inline" id="water-inline" style="display:none;margin-left:6px;"></span>
+        </div>
+        <div class="stat-card-sub" id="replay-cost-label" style="color:var(--muted);margin-top:2px;font-size:8px;line-height:1.4;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="model-row">
+      <select id="model-select-main">
+        <option value="" selected disabled>— pick a model for cost estimates —</option>
+        <optgroup label="Claude">
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+          <option value="claude-opus-4-8">Claude Opus 4.8</option>
+        </optgroup>
+        <optgroup label="Gemini 3.x">
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+          <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Preview)</option>
+          <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
+        </optgroup>
+        <optgroup label="Gemini 2.5">
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+        </optgroup>
+        <optgroup label="OpenAI">
+          <option value="gpt-5.5">GPT-5.5</option>
+          <option value="gpt-5.4">GPT-5.4</option>
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-4.1">GPT-4.1</option>
+          <option value="gpt-4.1-mini">GPT-4.1 mini</option>
+          <option value="o4-mini">o4-mini</option>
+          <option value="o3">o3</option>
+        </optgroup>
+        <optgroup label="DeepSeek">
+          <option value="deepseek-v3">DeepSeek V3</option>
+          <option value="deepseek-r1">DeepSeek R1</option>
+        </optgroup>
+        <optgroup label="xAI">
+          <option value="grok-4.3">Grok 4.3</option>
+          <option value="grok-4.20">Grok 4.20</option>
+          <option value="grok-4">Grok 4</option>
+          <option value="grok-3">Grok 3</option>
+          <option value="grok-3-mini">Grok 3 Mini</option>
+        </optgroup>
+        <optgroup label="Mistral">
+          <option value="mistral-large-3">Mistral Large 3</option>
+          <option value="mistral-medium-3">Mistral Medium 3</option>
+          <option value="mistral-small-3">Mistral Small 3.1</option>
+          <option value="codestral">Codestral</option>
+        </optgroup>
+        <optgroup label="Perplexity">
+          <option value="sonar-pro">Sonar Pro</option>
+          <option value="sonar">Sonar</option>
+          <option value="sonar-reasoning-pro">Sonar Reasoning Pro</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="ctrl-btn" id="refresh-btn">↻ Refresh</button>
+      <button class="ctrl-btn" id="latest-btn">Latest</button>
+      <button class="ctrl-btn" id="water-scope-btn">💧 Conservative</button>
+      <div class="ctrl-btn-spacer"></div>
+      <button class="ctrl-btn" id="clear-btn">Clear</button>
+    </div>
+  </div>
+
+  <!-- Disclaimer — collapsible -->
+  <details class="water-disclaimer" id="water-disclaimer">
+    <summary>⚠️ These are estimates, not billing receipts</summary>
+    <div class="detail-text">
+      <strong style="color:var(--text)">What's accurate:</strong> token counts (±10–15% English prose), per-token pricing from official sources.<br><br>
+      <strong style="color:var(--text)">What's estimated:</strong> context replay cost (assumes full history resent each turn), system prompt overhead (2–8k tokens per platform), reasoning tokens for o1/o3/R1 (highly variable), image tokens (average per platform).<br><br>
+      <strong style="color:var(--text)">What's missing:</strong> caching discounts (may overestimate), file/PDF attachments, tool use tokens.<br><br>
+      <strong style="color:var(--text)">💧 Water:</strong> Conservative = company-reported on-site cooling (Google: 0.26ml/query). Full-scope = includes electricity generation water (Li et al. 2023, UC Riverside) — ~40× higher. Varies 10–25× by location.
+      <a href="https://arxiv.org/abs/2304.03271" target="_blank" style="color:var(--green)">Source ↗</a>
+    </div>
+  </details>
+
+  <!-- Message list -->
+  <div class="msg-list" id="msg-list">
+    <div class="empty-state">
+      <div class="empty-icon">💬</div>
+      <div class="empty-title">Waiting for conversation</div>
+      <div class="empty-sub">Open any supported AI chat and messages will appear here with token counts.</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-status" id="footer-status">Open a supported AI site to start</div>
+    <div class="footer-status" id="version-footer" style="color:var(--muted)">EcoMeter AI by Legerly</div>
+  </div>
+
+</div>
+
+<script src="sidepanel.js"></script>
+</body>
+</html>

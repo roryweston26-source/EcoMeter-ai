@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoMeter AI — Privacy Policy</title>
+  <style>
+    :root {
+      --text:    #1a1a1a;
+      --muted:   #555;
+      --border:  #e0e0e0;
+      --accent:  #1a73e8;
+      --bg:      #ffffff;
+      --surface: #f8f9fa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Georgia, serif;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 28px 80px;
+      color: var(--text);
+      line-height: 1.75;
+      background: var(--bg);
+    }
+    .header { border-bottom: 2px solid var(--border); padding-bottom: 24px; margin-bottom: 36px; }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .meta { font-size: 13px; color: var(--muted); }
+    h2 {
+      font-size: 15px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-top: 44px; margin-bottom: 12px;
+      padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    }
+    p  { font-size: 15px; color: #333; margin-bottom: 14px; }
+    ul { margin: 0 0 14px 0; padding-left: 22px; }
+    li { font-size: 15px; color: #333; margin-bottom: 7px; }
+    .callout {
+      background: var(--surface);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px; margin: 20px 0;
+      font-size: 15px; color: #333;
+    }
+    .callout strong { color: var(--text); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0 24px; }
+    th {
+      text-align: left; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--muted);
+      padding: 8px 12px; background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 12px; border: 1px solid var(--border);
+      vertical-align: top; color: #333;
+    }
+    td:first-child { font-family: monospace; font-size: 13px; white-space: nowrap; color: var(--text); }
+    a   { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .no  { color: #c00; font-weight: 600; }
+    .yes { color: #1a7340; font-weight: 600; }
+    code { font-family: monospace; font-size: 13px; background: var(--surface); padding: 1px 5px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>EcoMeter AI — Privacy Policy</h1>
+  <div class="meta">Effective date: May 31, 2026</div>
+</div>
+
+<h2>Single Purpose</h2>
+<p>
+  EcoMeter AI has a single purpose: to read AI chat conversations already
+  displayed in your browser and estimate the number of tokens, monetary cost, and
+  water consumption associated with those conversations. All analysis is performed
+  locally on your device. The extension has no secondary purpose.
+</p>
+
+<h2>Summary</h2>
+<div class="callout">
+  <strong>Your conversation text never leaves your device.</strong> The extension
+  reads text that is already visible to you on screen and uses it locally to count
+  tokens. The extension makes no network requests by default. If you optionally
+  provide an Anthropic API key, only the text of <em>your own messages</em> (never
+  AI responses) is sent to Anthropic's token-counting API — nothing else.
+</div>
+<ul>
+  <li><span class="no">Does not</span> transmit conversation text to any external server.</li>
+  <li><span class="no">Does not</span> sell, rent, or share any user data with third parties.</li>
+  <li><span class="no">Does not</span> track users across websites or sessions.</li>
+  <li><span class="no">Does not</span> collect analytics, telemetry, or usage statistics.</li>
+  <li><span class="no">Does not</span> use your data for advertising or profiling.</li>
+  <li><span class="no">Does not</span> store conversation content between browser sessions.</li>
+  <li><span class="no">Does not</span> load any resources from external servers at runtime.
+      All fonts, scripts, and data files are bundled inside the extension package.</li>
+  <li><span class="no">Does not</span> make any network requests unless you optionally provide
+      an Anthropic API key. When a key is provided, only the text of your own messages
+      (not AI responses) is sent to Anthropic's token-counting API
+      (<code>api.anthropic.com/v1/messages/count_tokens</code>). No other external
+      connections are made under any circumstances.</li>
+  <li><span class="yes">Does</span> store your optional API key in <code>chrome.storage.session</code>
+      (cleared automatically when the browser closes) and your model preference in
+      <code>chrome.storage.local</code> (persisted on your device only).</li>
+</ul>
+
+<h2>Data the Extension Accesses</h2>
+
+<p><strong>Conversation text (read-only, stays on device).</strong>
+The extension uses a content script running inside your browser tab to read the
+visible text of AI chat pages you are already viewing — the same text you can
+see on screen. This text is used only to count tokens locally and is never
+transmitted anywhere. It is not written to disk and is discarded when the page
+is navigated away from or the browser is closed.</p>
+
+<p><strong>Anthropic API key (optional, session-only).</strong>
+If you choose to enter an Anthropic API key, it is stored using
+<code>chrome.storage.session</code>. Session storage is ephemeral: it is held
+in memory only for the duration of the current browser session and is
+automatically cleared when the browser closes. The key is never written to
+persistent storage and never synced to any remote server. It is used solely to
+call Anthropic's official token-counting endpoint
+(<code>api.anthropic.com/v1/messages/count_tokens</code>) on your behalf,
+using the message text already present in your browser — no conversation data
+is stored by this call. You can remove the key at any time using the
+"remove key" button in the panel.</p>
+
+<p><strong>Model preference (local device only).</strong>
+Your selected AI model is stored in <code>chrome.storage.local</code>, which
+keeps data on your device only and never syncs it to Google's servers or any
+other remote server. This preference is never transmitted anywhere.</p>
+
+<p><strong>Active tab identity (not stored, not transmitted).</strong>
+When the user clicks the extension icon, the browser grants temporary access to
+the active tab's numeric ID. This ID is stored in session memory solely to
+route messages between the side panel and the content script on that tab.
+The tab URL is not read, stored, or transmitted by the extension.</p>
+
+<h2>Network Requests</h2>
+<p>
+  When no API key is provided the extension makes <strong>zero network
+  requests</strong>. All fonts, scripts, and pricing data are bundled inside
+  the extension package; no content is loaded from external servers at runtime.
+</p>
+<p>
+  When an API key is provided, the only external connection the extension makes
+  is to <strong>Anthropic's token-counting API</strong>
+  (<code>api.anthropic.com/v1/messages/count_tokens</code>), using your own key.
+  Only the text of <strong>your own messages</strong> is sent — AI responses are
+  counted locally and never transmitted. This request is governed by
+  <a href="https://www.anthropic.com/legal/privacy" target="_blank">Anthropic's
+  Privacy Policy</a>. No other external connections are made under any
+  circumstances.
+</p>
+
+<h2>Permission Justifications</h2>
+<p>
+  The following table explains exactly why each permission is required. No
+  permission is requested beyond what is necessary for the single stated purpose.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Permission</th><th>Why it is required</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>storage</td>
+      <td>Stores your model preference in <code>chrome.storage.local</code>
+          and your optional API key in <code>chrome.storage.session</code>,
+          both on your device only. No data is synced remotely.</td>
+    </tr>
+    <tr>
+      <td>sidePanel</td>
+      <td>Required to open and render the side panel UI in which token counts
+          and cost estimates are displayed.</td>
+    </tr>
+    <tr>
+      <td>activeTab</td>
+      <td>Grants temporary access to the currently-focused tab when the user
+          clicks the extension icon. Used solely to open the side panel for
+          that tab. The tab's URL is not read by the extension.
+          Unlike the broader <code>tabs</code> permission, <code>activeTab</code>
+          does not expose other open tabs.</td>
+    </tr>
+    <tr>
+      <td>scripting</td>
+      <td>Required to programmatically inject the content script into
+          x.com tabs that are navigated to the Grok chat path
+          (<code>x.com/grok</code> or <code>x.com/i/grok</code>).
+          Injection is path-gated: the script is never injected on any
+          other x.com page. This avoids declaring a broad
+          <code>x.com/*</code> host permission for the whole domain.</td>
+    </tr>
+    <tr>
+      <td>Host: api.anthropic.com</td>
+      <td>Required only when the user provides an Anthropic API key. Used
+          solely to call Anthropic's official token-counting API on the
+          user's behalf. No request is made without an explicit API key.</td>
+    </tr>
+    <tr>
+      <td>Host: claude.ai, chatgpt.com, chat.openai.com, gemini.google.com,
+          grok.com, chat.mistral.ai, perplexity.ai,
+          copilot.microsoft.com, poe.com, chat.deepseek.com</td>
+      <td>Required to inject the content script that reads visible
+          conversation text on each supported AI platform. Access is limited
+          to these specific domains only. x.com is handled via the
+          <code>scripting</code> permission above (path-gated injection)
+          rather than a blanket host permission. No other websites are
+          accessed.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Data Retention</h2>
+<p>
+  Conversation text is held in memory only for the duration of the active browser
+  session and is never written to disk. It is discarded when the panel is closed
+  or the page is navigated away from.
+</p>
+<p>
+  Your Anthropic API key is stored in <code>chrome.storage.session</code> and is
+  automatically cleared when the browser closes. It does not persist between
+  browser sessions.
+</p>
+<p>
+  Your model preference is stored in <code>chrome.storage.local</code> until you
+  click "remove key" in the panel, which clears all locally stored data including
+  your model preference, setup state, and internal version marker.
+</p>
+
+<h2>Children's Privacy</h2>
+<p>
+  This extension does not knowingly collect any information from children under 13.
+  It does not collect personal information from any user of any age.
+</p>
+
+<h2>Changes to This Policy</h2>
+<p>
+  If this privacy policy is updated, the new version will be published at this URL
+  and the effective date above will be updated. Continued use of the extension after
+  a policy change constitutes acceptance of the updated policy.
+</p>
+
+<h2>Contact</h2>
+<p>
+  For questions or concerns about this privacy policy, please open an issue on the
+  extension's <a href="https://github.com/roryweston26-source/github.com-roryweston26-ai-token-tracker/issues" style="color:var(--green)">GitHub repository</a>.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+name: Update Prices
+
+on:
+  schedule:
+    # Every Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    # Also runnable manually from the Actions tab
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run price updater
+        id: update
+        run: |
+          node scripts/update-prices.js
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        # Exit code 0 = no change, 2 = prices changed, 1 = error
+        continue-on-error: true
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet extension/prices.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: auto/price-update-${{ github.run_number }}
+          commit-message: "chore: update model prices (${{ github.run_number }})"
+          title: "⚡ Price update — ${{ steps.date.outputs.date }}"
+          body: |
+            ## Automated price update
+
+            `prices.json` has been updated with the latest pricing from official provider pages.
+
+            **Changes detected in:**
+            ```
+            ${{ steps.diff.outputs.diff_summary }}
+            ```
+
+            **Sources:**
+            - Google: https://ai.google.dev/gemini-api/docs/pricing
+            - Anthropic: https://www.anthropic.com/pricing
+            - OpenAI: https://openai.com/api/pricing
+
+            Please review and merge if the numbers look correct.
+            > ⚠️ Always verify changes against official pricing pages before merging.
+          labels: |
+            automated
+            pricing
+          delete-branch: true
+
+      - name: No changes
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "✓ All prices are current — no PR needed."

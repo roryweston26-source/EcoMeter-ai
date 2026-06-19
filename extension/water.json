@@ -1,0 +1,94 @@
+{
+  "_comment": "Water estimates in milliliters per token. Two scopes: conservative (company-reported, on-site cooling only) and academic (full lifecycle including electricity generation water). Update as new research emerges.",
+  "_last_updated": "2026-06-05",
+  "_sources": [
+    "Li et al. 2023 - Making AI Less Thirsty (UC Riverside / UT Arlington) - arxiv.org/abs/2304.03271",
+    "Google official disclosure - Measuring the environmental impact of AI inference - cloud.google.com/blog - Aug 2025",
+    "Sam Altman public statement - ChatGPT uses 0.32ml per query - June 2025",
+    "Jegham et al. May 2025 - How Hungry is AI? arxiv.org/abs/2505.09598",
+    "de Vries-Gao 2025 - AI water footprint in Patterns journal - Dec 2025",
+    "IEEE Spectrum - The Real Story on AI Water Usage at Data Centers - Sep 2025",
+    "moduledge.com AI Water Usage Per-Query Cost analysis - Apr 2026"
+  ],
+  "_methodology": "Conservative scope = on-site cooling water only (as reported by companies). Anchor: Google disclosed 0.26ml per median Gemini text prompt (scope 1+2 on-site, Aug 2025); Sam Altman confirmed 0.32ml per ChatGPT query (scope 1, June 2025). Academic scope = full lifecycle including water consumed for electricity generation. Anchor: UC Riverside/IEEE estimates 16.9ml per 150-300 word output in average US data center. Per-token values derived from per-query estimates divided by ~500 tokens (median query size). Model tiers scaled by compute intensity: large=100%, medium=65%, small=40%, tiny=25%.",
+
+  "_tiers": {
+    "large":  { "conservative_ml_per_token": 0.00052, "academic_ml_per_token": 0.020 },
+    "medium": { "conservative_ml_per_token": 0.00034, "academic_ml_per_token": 0.013 },
+    "small":  { "conservative_ml_per_token": 0.00021, "academic_ml_per_token": 0.008 },
+    "tiny":   { "conservative_ml_per_token": 0.00013, "academic_ml_per_token": 0.005 }
+  },
+
+  "_notes": {
+    "gemini_official":  "Google officially disclosed 0.26ml per median Gemini text prompt (Aug 2025, scope 1+2 on-site). Used as anchor for conservative large-tier estimate.",
+    "chatgpt_official": "Sam Altman confirmed 0.32ml per ChatGPT query (June 2025, scope 1 only). Consistent with Google anchor.",
+    "claude_official":  "Anthropic has not disclosed per-query water figures as of May 2026. Estimates use comparable frontier model data.",
+    "academic_range":   "UC Riverside/IEEE research estimates 16.9ml per 150-300 word output in average US data center (full lifecycle). Li et al. 2023 found ~500ml per 20-50 queries = ~10-25ml per query (scope 1+2).",
+    "uncertainty":      "Water usage varies 10-25x based on datacenter location, cooling method, season, and local climate. Liquid-cooled (closed-loop) facilities reduce direct water use by 70-90%. These are order-of-magnitude estimates only.",
+    "efficiency_trend": "Models are 10-33x more water-efficient per output token than 2023 estimates due to hardware and software improvements, but total data center consumption continues rising with scale."
+  },
+
+  "anthropic": {
+    "claude-opus-4-8":           { "tier": "large"  },
+    "claude-opus-4-7":           { "tier": "large"  },
+    "claude-opus-4-6":           { "tier": "large"  },
+    "claude-opus":               { "tier": "large"  },
+    "claude-sonnet-4-6":         { "tier": "medium" },
+    "claude-sonnet":             { "tier": "medium" },
+    "claude-haiku-4-5-20251001": { "tier": "small"  },
+    "claude-haiku":              { "tier": "small"  }
+  },
+
+  "openai": {
+    "gpt-5.5":       { "tier": "large"  },
+    "gpt-5.4":       { "tier": "large"  },
+    "gpt-5.4-mini":  { "tier": "medium" },
+    "o3":            { "tier": "large"  },
+    "o3-mini":       { "tier": "small"  },
+    "o1":            { "tier": "large"  },
+    "gpt-4-turbo":   { "tier": "large"  },
+    "gpt-4":         { "tier": "large"  },
+    "gpt-4.1":       { "tier": "medium" },
+    "gpt-4.1-mini":  { "tier": "small"  },
+    "gpt-4.1-nano":  { "tier": "tiny"   },
+    "gpt-4o":        { "tier": "medium" },
+    "o4-mini":       { "tier": "small"  },
+    "gpt-4o-mini":   { "tier": "small"  }
+  },
+
+  "google": {
+    "gemini-3.5-flash":      { "tier": "medium" },
+    "gemini-2.5-pro":        { "tier": "large"  },
+    "gemini-2.5-flash":      { "tier": "medium" },
+    "gemini-2.5-flash-lite": { "tier": "tiny"   },
+    "gemini-2.0-flash":      { "tier": "small"  }
+  },
+
+  "xai": {
+    "grok-4":      { "tier": "large"  },
+    "grok-4.3":    { "tier": "large"  },
+    "grok-4.20":   { "tier": "large"  },
+    "grok-3":      { "tier": "large"  },
+    "grok-3-mini": { "tier": "small"  }
+  },
+
+  "mistral": {
+    "mistral-large":   { "tier": "large"  },
+    "mistral-large-3": { "tier": "large"  },
+    "mistral-medium-3":{ "tier": "medium" },
+    "mistral-small":   { "tier": "small"  },
+    "mistral-small-3": { "tier": "small"  },
+    "codestral":       { "tier": "small"  }
+  },
+
+  "perplexity": {
+    "sonar-pro":           { "tier": "medium" },
+    "sonar":               { "tier": "small"  },
+    "sonar-reasoning-pro": { "tier": "medium" }
+  },
+
+  "deepseek": {
+    "deepseek-r1": { "tier": "large"  },
+    "deepseek-v3": { "tier": "medium" }
+  }
+}

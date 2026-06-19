@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version from manifest
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./extension/manifest.json').version)")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build zip
+        run: |
+          cd extension
+          zip -r ../ecometer-ai-v${{ steps.version.outputs.version }}.zip . \
+            --exclude "*.DS_Store" \
+            --exclude "*/.gitkeep"
+          echo "Built ecometer-ai-v${{ steps.version.outputs.version }}.zip"
+          ls -lh ../ecometer-ai-v${{ steps.version.outputs.version }}.zip
+
+      - name: Check if tag already exists
+        id: tag_check
+        run: |
+          if git ls-remote --tags origin "${{ steps.version.outputs.tag }}" | grep -q "${{ steps.version.outputs.tag }}"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: EcoMeter AI ${{ steps.version.outputs.tag }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: ecometer-ai-v${{ steps.version.outputs.version }}.zip
+          body: |
+            ## EcoMeter AI ${{ steps.version.outputs.tag }}
+
+            ### Install
+            1. Download `ecometer-ai-v${{ steps.version.outputs.version }}.zip` below
+            2. Unzip it
+            3. Go to `chrome://extensions`, enable Developer mode
+            4. Click **Load unpacked** and select the unzipped folder
+
+            ---
+            *Built automatically from [`main`](https://github.com/${{ github.repository }}/tree/main)*
+
+      - name: Upload zip as artifact (always)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecometer-ai-v${{ steps.version.outputs.version }}
+          path: ecometer-ai-v${{ steps.version.outputs.version }}.zip
+          retention-days: 30
