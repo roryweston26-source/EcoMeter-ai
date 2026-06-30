@@ -125,6 +125,7 @@ jobs:
             -T "$ZIP")
 
           STATUS=$(echo "$RESPONSE" | node -e "let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>console.log(JSON.parse(d).uploadState || JSON.parse(d).error?.message || 'unknown'))")
+          ERROR_CODE=$(echo "$RESPONSE" | node -e "let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{ try { const r=JSON.parse(d); console.log((r.itemError&&r.itemError[0]&&r.itemError[0].error_code)||''); } catch(e){console.log('');} })")
 
           echo "Upload status: $STATUS"
 
@@ -136,6 +137,12 @@ jobs:
             echo "https://chrome.google.com/webstore/devconsole"
           elif [ "$STATUS" = "IN_PROGRESS" ]; then
             echo "✓ Upload in progress — check the Developer Dashboard."
+           elif [ "$ERROR_CODE" = "ITEM_NOT_UPDATABLE" ]; then
+            echo ""
+            echo "⚠ Upload skipped: this version is currently in review, ready to publish,"
+            echo "  or otherwise locked by the Chrome Web Store."
+            echo "  No action needed — wait for the review to complete."
+            echo ""
           else
             echo "✗ Upload failed: $STATUS"
             echo "Full response: $RESPONSE"
