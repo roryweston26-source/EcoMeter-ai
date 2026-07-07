@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "EcoMeter AI \u2014 Resource Tracker",
-  "version": "6.7",
+  "version": "6.8",
   "description": "Track token usage, cost & environmental impact across Claude, ChatGPT, Gemini, and more \u2014 by Legerly.",
   "permissions": [
     "storage",
