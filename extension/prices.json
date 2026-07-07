@@ -9,12 +9,15 @@
     "anthropic": {
       "claude-haiku-4-5-20251001": { "input": 1e-06, "output": 5e-06 },
       "claude-haiku": { "input": 1e-06, "output": 5e-06 },
+      "claude-sonnet-5": { "input": 2e-06, "output": 1e-05 },
       "claude-sonnet-4-6": { "input": 3e-06, "output": 1.5e-05 },
       "claude-sonnet": { "input": 3e-06, "output": 1.5e-05 },
       "claude-opus-4-6": { "input": 5e-06, "output": 2.5e-05 },
       "claude-opus-4-7": { "input": 5e-06, "output": 2.5e-05 },
       "claude-opus-4-8": { "input": 5e-06, "output": 2.5e-05 },
-      "claude-opus": { "input": 5e-06, "output": 2.5e-05 }
+      "claude-opus": { "input": 5e-06, "output": 2.5e-05 },
+      "claude-fable-5": { "input": 1e-05, "output": 5e-05 },
+      "claude-mythos-5": { "input": 1e-05, "output": 5e-05 }
     },
     "openai": {
       "gpt-4o-mini": { "input": 1.5e-07, "output": 6e-07 },
@@ -109,9 +112,10 @@
   "free_tiers": {
     "anthropic": {
       "label": "Claude",
-      "note": "Free plan: Sonnet 4.6 default, limited Haiku 4.5. No Opus.",
+      "note": "Free plan: Sonnet 5 default (Sonnet 4.6 still selectable), limited Haiku 4.5. No Opus, Fable, or Mythos.",
       "models": [
-        { "key": "claude-sonnet-4-6", "name": "Claude Sonnet 4.6", "note": "default" },
+        { "key": "claude-sonnet-5", "name": "Claude Sonnet 5", "note": "default" },
+        { "key": "claude-sonnet-4-6", "name": "Claude Sonnet 4.6" },
         { "key": "claude-haiku-4-5-20251001", "name": "Claude Haiku 4.5", "note": "limited" }
       ]
     },
