@@ -323,6 +323,11 @@
     .tool-card:hover { border-color: rgba(76,175,130,0.3); transform: translateY(-4px); }
     .tool-card:hover::before { transform: scaleX(1); }
 
+    /* "Coming soon" tiles are not links — keep them visibly non-interactive. */
+    .tool-card--soon { cursor: default; }
+    .tool-card--soon:hover { border-color: var(--border); transform: none; }
+    .tool-card--soon:hover::before { transform: scaleX(0); }
+
     .tool-icon {
       width: 44px; height: 44px;
       border-radius: 10px;
@@ -510,7 +515,7 @@
     <ul class="nav-links">
       <li><a href="#tools">Tools</a></li>
       <li><a href="#why">Why</a></li>
-      <li><a href="https://chromewebstore.google.com" target="_blank" class="nav-cta">Get EcoMeter AI →</a></li>
+      <li><a href="https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj" target="_blank" class="nav-cta">Get EcoMeter AI →</a></li>
     </ul>
   </nav>
 
@@ -521,7 +526,7 @@
     <p class="hero-sub">AI companies know exactly what your conversations cost. You don't. We're fixing that — one tool at a time.</p>
     <div class="hero-actions">
       <a href="#tools" class="btn btn-primary">See our tools →</a>
-      <a href="https://chromewebstore.google.com" target="_blank" class="btn btn-ghost">Get EcoMeter AI</a>
+      <a href="https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj" target="_blank" class="btn btn-ghost">Get EcoMeter AI</a>
     </div>
   </div>
 
@@ -552,7 +557,7 @@
 
     <div class="tools-grid">
 
-      <a href="https://chromewebstore.google.com" target="_blank" class="tool-card">
+      <a href="https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj" target="_blank" class="tool-card">
         <div class="tool-icon">🌿</div>
         <h3>EcoMeter AI</h3>
         <p>Tracks token usage, cost, and water consumption across Claude, ChatGPT, Gemini, Grok, and more — in real time, right in your browser.</p>
@@ -573,26 +578,26 @@
         <span class="tool-badge badge-live">● Live</span>
       </a>
 
-      <a href="./context" class="tool-card">
+      <div class="tool-card tool-card--soon">
         <div class="tool-icon">📐</div>
         <h3>Context Window Calculator</h3>
         <p>Paste your text, pick your model, and see exactly how much context window you're using. No more mystery limits mid-conversation.</p>
         <span class="tool-badge badge-soon">Coming soon</span>
-      </a>
+      </div>
 
-      <a href="./audit" class="tool-card">
+      <div class="tool-card tool-card--soon">
         <div class="tool-icon">🔍</div>
         <h3>Subscription Auditor</h3>
         <p>Answer 10 questions about how you use AI and get a clear recommendation on which plan, tier, or provider actually makes sense for you.</p>
         <span class="tool-badge badge-soon">Coming soon</span>
-      </a>
+      </div>
 
-      <a href="./index-page" class="tool-card">
+      <div class="tool-card tool-card--soon">
         <div class="tool-icon">⚡</div>
         <h3>AI Pricing Index</h3>
         <p>A neutral, ranked comparison of AI models by price-to-performance. No ads, no affiliate links. Just the data you need to pick the right model.</p>
         <span class="tool-badge badge-soon">Coming soon</span>
-      </a>
+      </div>
 
     </div>
   </section>
@@ -644,7 +649,7 @@
     <ul class="footer-links">
       <li><a href="https://roryweston26-source.github.io/EcoMeter-ai/extension/privacy-policy.html" target="_blank">Privacy Policy</a></li>
       <li><a href="https://github.com/roryweston26-source/ecometer-ai" target="_blank">GitHub</a></li>
-      <li><a href="https://chromewebstore.google.com" target="_blank">Chrome Store</a></li>
+      <li><a href="https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj" target="_blank">Chrome Store</a></li>
     </ul>
   </footer>
 
