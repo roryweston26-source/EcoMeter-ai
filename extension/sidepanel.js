@@ -30,6 +30,7 @@ const footerStatus  = document.getElementById('footer-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
 let FLAT_PRICES = {};
+let FREE_TIERS  = {};   // { provider: { label, models:[{key,name,note}] } } — drives the model picker
 
 function parsePrices(json) {
   const temp = {};
@@ -47,32 +48,79 @@ function parsePrices(json) {
   for (const k of sorted) FLAT_PRICES[k] = temp[k];
 }
 
+// Minimal fallback so the picker/prices still work if prices.json can't load
+// (it's bundled, so this is defensive only). Mirrors the free-tier shape.
+const FALLBACK_API = {
+  anthropic: {
+    'claude-sonnet-4-6':         { input: 3.00/1e6, output: 15.00/1e6 },
+    'claude-haiku-4-5-20251001': { input: 1.00/1e6, output:  5.00/1e6 },
+  },
+  openai: {
+    'gpt-5.5':      { input: 5.00/1e6, output: 30.00/1e6 },
+    'gpt-5.4-mini': { input: 0.75/1e6, output:  4.50/1e6 },
+  },
+  google: {
+    'gemini-3.5-flash': { input: 0.50/1e6, output: 3.00/1e6 },
+  },
+};
+const FALLBACK_FREE_TIERS = {
+  anthropic: { label: 'Claude', models: [
+    { key: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', note: 'default' },
+    { key: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', note: 'limited' },
+  ]},
+  openai: { label: 'ChatGPT', models: [
+    { key: 'gpt-5.5', name: 'GPT-5.5', note: 'default' },
+    { key: 'gpt-5.4-mini', name: 'GPT-5.4 mini', note: 'Thinking' },
+  ]},
+  google: { label: 'Gemini', models: [
+    { key: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', note: 'default' },
+  ]},
+};
+
 async function loadPrices() {
   try {
     const res  = await fetch(chrome.runtime.getURL('prices.json'));
     const json = await res.json();
-    parsePrices(json);
+    parsePrices(json.api || json);
+    FREE_TIERS = json.free_tiers || FALLBACK_FREE_TIERS;
   } catch(e) {
     console.warn('[TokenTracker] prices.json failed, using hardcoded fallback');
-    parsePrices({
-      OpenAI: {
-        'gpt-4o':      { input: 2.50/1e6, output: 10.00/1e6 },
-        'gpt-4o-mini': { input: 0.15/1e6, output:  0.60/1e6 },
-      },
-      Anthropic: {
-        'claude-haiku-4-5-20251001': { input: 1.00/1e6, output:  5.00/1e6 },
-        'claude-sonnet-4-6':         { input: 3.00/1e6, output: 15.00/1e6 },
-        'claude-opus-4-6':           { input: 5.00/1e6, output: 25.00/1e6 },
-      },
-      Google: {
-        'gemini-2.5-pro':       { input: 1.25/1e6, output: 10.00/1e6 },
-        'gemini-2.5-flash':     { input: 0.30/1e6, output:  2.50/1e6 },
-        'gemini-2.5-flash-lite':{ input: 0.10/1e6, output:  0.40/1e6 },
-        'gemini-3.5-flash':     { input: 1.50/1e6, output:  9.00/1e6 },
-        'gemini-2.0-flash':     { input: 0.10/1e6, output:  0.40/1e6 },
-      },
-    });
+    parsePrices(FALLBACK_API);
+    FREE_TIERS = FALLBACK_FREE_TIERS;
   }
+  buildModelDropdown();
+}
+
+// Rebuild the model picker from FREE_TIERS so it only lists models a FREE
+// user of each platform can actually reach (e.g. no Claude Opus).
+function buildModelDropdown() {
+  if (!modelMain) return;
+  const prev = userSelectedModel || modelMain.value;
+  modelMain.innerHTML = '';
+
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.disabled = true;
+  ph.selected = true;
+  ph.textContent = '— pick a model for cost estimates —';
+  modelMain.appendChild(ph);
+
+  for (const prov in FREE_TIERS) {
+    const grp = FREE_TIERS[prov];
+    if (!grp || !Array.isArray(grp.models) || !grp.models.length) continue;
+    const og = document.createElement('optgroup');
+    og.label = grp.label || prov;
+    grp.models.forEach(mo => {
+      const opt = document.createElement('option');
+      opt.value = mo.key;
+      opt.textContent = mo.note ? `${mo.name} · ${mo.note}` : mo.name;
+      og.appendChild(opt);
+    });
+    modelMain.appendChild(og);
+  }
+
+  // Re-select the user's stored model if it's still a listed (free) option.
+  if (prev) modelMain.value = prev;
 }
 
 function getPrice(modelKey) {

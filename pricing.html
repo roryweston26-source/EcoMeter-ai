@@ -284,6 +284,7 @@
     <div class="toggle" role="group" aria-label="Pricing view">
       <button id="view-token" aria-pressed="true">Per-token (API)</button>
       <button id="view-sub" aria-pressed="false">Subscriptions</button>
+      <button id="view-free" aria-pressed="false">Free tier</button>
     </div>
     <label class="search">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5e7268" stroke-width="2" aria-hidden="true">
@@ -304,6 +305,7 @@
 
   <footer>
     <p class="note-line" id="foot-token">API rates shown per 1,000,000 tokens · pulled live from prices.json</p>
+    <p class="note-line" id="foot-free" style="display:none">Models each platform's free plan exposes · API list rates shown for reference · pulled live from prices.json</p>
     <p class="note-line">Subscription prices verified from official provider pages · June 2026 · USD/month</p>
     <p class="note-line">Prices change. We refresh weekly — spotted something stale? <a href="https://github.com/roryweston26-source/ecometer-ai" target="_blank" rel="noopener">Open an issue.</a></p>
     <p class="manifesto">Markets work best when both sides have the same information. AI isn't there yet. We're here to bring that to you.</p>
@@ -447,6 +449,26 @@
   // Starts from the fallback snapshot; replaced by live data once prices.json loads.
   var perTokenData = buildPerToken(FALLBACK_PRICES);
 
+  // ---- Free-tier rows: the models each platform's free plan exposes ----
+  // Built from prices.json free_tiers + api once live data loads.
+  var FREE_TIERS = {};
+  var freeData   = [];
+  function buildFree(apiObj, freeTiers) {
+    if (!apiObj || !freeTiers) return [];
+    var flat = {};
+    for (var prov in apiObj) { for (var k in apiObj[prov]) { flat[k] = apiObj[prov][k]; } }
+    var rows = [];
+    for (var p in freeTiers) {
+      var models = (freeTiers[p] && freeTiers[p].models) || [];
+      models.forEach(function (mo) {
+        var rec = flat[mo.key];
+        if (!rec || typeof rec.input !== "number") return;
+        rows.push({ p: p, m: mo.name, note: mo.note, in: rec.input * 1e6, out: rec.output * 1e6 });
+      });
+    }
+    return rows;
+  }
+
   // ---- Subscription data (USD per month, consumer plans) ----
   var SUBSCRIPTIONS = [
     { p:"openai",     m:"ChatGPT Free",         price:0 },
@@ -494,7 +516,11 @@
   function provColor(p) { return (PROVIDERS[p] || {}).color || "#8aa096"; }
   function money(n) { return "$" + n.toFixed(2); }
 
-  function activeData() { return state.view === "token" ? perTokenData : SUBSCRIPTIONS; }
+  function activeData() {
+    if (state.view === "sub")  return SUBSCRIPTIONS;
+    if (state.view === "free") return freeData;
+    return perTokenData;
+  }
 
   // ---- Ticker ----
   function fillTicker() {
@@ -535,18 +561,18 @@
   function buildHead() {
     var thead = $("thead");
     var cols;
-    if (state.view === "token") {
-      cols = [
-        { key: "p",   label: "Provider", cls: "" },
-        { key: "m",   label: "Model",    cls: "" },
-        { key: "in",  label: "Input /1M", cls: "num" },
-        { key: "out", label: "Output /1M", cls: "num" }
-      ];
-    } else {
+    if (state.view === "sub") {
       cols = [
         { key: "p",     label: "Provider", cls: "" },
         { key: "m",     label: "Plan",     cls: "" },
         { key: "price", label: "Per month", cls: "num" }
+      ];
+    } else {
+      cols = [
+        { key: "p",   label: "Provider", cls: "" },
+        { key: "m",   label: state.view === "free" ? "Free model" : "Model", cls: "" },
+        { key: "in",  label: "Input /1M", cls: "num" },
+        { key: "out", label: "Output /1M", cls: "num" }
       ];
     }
     var tr = "<tr>";
@@ -595,7 +621,7 @@
 
     var tbody = $("tbody");
     if (!data.length) {
-      var span = state.view === "token" ? 4 : 3;
+      var span = state.view === "sub" ? 3 : 4;
       tbody.innerHTML = '<tr><td class="empty" colspan="' + span + '">No matches. Try a different search.</td></tr>';
       return;
     }
@@ -605,7 +631,7 @@
                  '<span class="name">' + provName(r.p) + '</span></span>';
       var model = '<span class="model">' + r.m + '</span>' + (r.note ? '<span class="note">' + r.note + '</span>' : '');
 
-      if (state.view === "token") {
+      if (state.view !== "sub") {
         return '<tr><td>' + prov + '</td><td>' + model + '</td>' +
                '<td class="num">' + money(r.in) + '</td>' +
                '<td class="num">' + money(r.out) + '</td></tr>';
@@ -628,7 +654,9 @@
     state.provider = "all";
     $("view-token").setAttribute("aria-pressed", view === "token");
     $("view-sub").setAttribute("aria-pressed", view === "sub");
+    $("view-free").setAttribute("aria-pressed", view === "free");
     $("foot-token").style.display = view === "token" ? "" : "none";
+    $("foot-free").style.display  = view === "free"  ? "" : "none";
     buildChips();
     render();
   }
@@ -636,6 +664,7 @@
   // ---- Wire up ----
   $("view-token").addEventListener("click", function () { setView("token"); });
   $("view-sub").addEventListener("click", function () { setView("sub"); });
+  $("view-free").addEventListener("click", function () { setView("free"); });
   $("search").addEventListener("input", function (e) { state.search = e.target.value; render(); });
 
   // ---- Pull live prices from prices.json (the file the Monday Action updates) ----
@@ -645,12 +674,16 @@
       .then(function (res) { if (!res.ok) { throw new Error("HTTP " + res.status); } return res.text(); })
       .then(function (text) {
         var data = JSON.parse(text);
-        var rows = buildPerToken(data);
-        if (!rows.length) { return; }            // keep fallback if nothing usable came back
-        perTokenData = rows;
-        if (data._last_updated) { UPDATED = data._last_updated; }
+        var api  = data.api || data;             // new shape nests prices under "api"
+        var rows = buildPerToken(api);
+        if (rows.length) { perTokenData = rows; }
+        if (Array.isArray(data.subscriptions)) { SUBSCRIPTIONS = data.subscriptions; }
+        if (data.free_tiers) { FREE_TIERS = data.free_tiers; freeData = buildFree(api, FREE_TIERS); }
+        var stamp = (data._meta && data._meta.last_updated) || data._last_updated;
+        if (stamp) { UPDATED = stamp; }
         fillTicker();
-        if (state.view === "token") { render(); }
+        buildChips();
+        render();
       })
       .catch(function () { /* network/parse failed — keep the fallback snapshot */ });
   }
