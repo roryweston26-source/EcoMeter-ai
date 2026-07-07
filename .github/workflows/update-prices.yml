@@ -1,11 +1,12 @@
 name: Update Prices
 
 on:
-  schedule:
-    # Every Monday at 09:00 UTC
-    - cron: '0 9 * * 1'
+  # Weekly price refresh + publish now lives in publish.yml, which updates
+  # prices inline and commits directly. Running this on the same Monday
+  # schedule would race it over prices.json, so the cron is disabled.
+  # Kept for manual, PR-based price updates when you want a review step.
   workflow_dispatch:
-    # Also runnable manually from the Actions tab
+    # Runnable manually from the Actions tab
 
 jobs:
   update-prices:
