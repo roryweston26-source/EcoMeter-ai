@@ -50,7 +50,7 @@ async function fetchGoogle() {
     // [ model key,           input $/1M,   output $/1M ]
     // These are hardcoded from the live page as a reliable fallback;
     // the regex below will override them if it can parse the live page.
-    ['gemini-3.5-flash',        1.50,   9.00],
+    ['gemini-3.5-flash',        0.50,   3.00],
     ['gemini-3.1-pro-preview',  2.00,  12.00],
     ['gemini-3.1-flash-lite',   0.25,   1.50],
     ['gemini-2.5-pro',          1.25,  10.00],
@@ -136,8 +136,10 @@ async function main() {
   console.log('\nEcoMeter AI — Price Updater');
   console.log('============================');
 
-  // Load existing prices
+  // Load existing prices. Per-token rates live under the shared "api" section
+  // (alongside "subscriptions" and "free_tiers", which this job leaves alone).
   const existing = JSON.parse(fs.readFileSync(PRICES_PATH, 'utf8'));
+  if (!existing.api) existing.api = {};
 
   // Fetch all providers
   const results = await Promise.allSettled([
@@ -156,10 +158,10 @@ async function main() {
 
     const fetched = result.value;
     for (const [provider, models] of Object.entries(fetched)) {
-      if (!existing[provider]) existing[provider] = {};
+      if (!existing.api[provider]) existing.api[provider] = {};
 
       for (const [model, prices] of Object.entries(models)) {
-        const prev = existing[provider][model];
+        const prev = existing.api[provider][model];
         const inputChanged  = !prev || Math.abs(prev.input  - prices.input)  > 1e-12;
         const outputChanged = !prev || Math.abs(prev.output - prices.output) > 1e-12;
 
@@ -169,7 +171,7 @@ async function main() {
           } else {
             console.log(`  + ${provider}/${model}: $${(prices.input*1e6).toFixed(2)}/$${(prices.output*1e6).toFixed(2)} per 1M (new)`);
           }
-          existing[provider][model] = prices;
+          existing.api[provider][model] = prices;
           changed = true;
         }
       }
@@ -182,7 +184,8 @@ async function main() {
   }
 
   // Update metadata
-  existing['_last_updated'] = new Date().toISOString().split('T')[0];
+  existing._meta = existing._meta || {};
+  existing._meta.last_updated = new Date().toISOString().split('T')[0];
 
   // Write back
   fs.writeFileSync(PRICES_PATH, JSON.stringify(existing, null, 2) + '\n');
