@@ -333,9 +333,12 @@
   // PRICES are read live from prices.json (the file the Monday Action updates).
   // This list only controls naming, order, and which models appear.
   var MODEL_REGISTRY = [
-    { p:"anthropic", key:"claude-haiku-4-5-20251001", m:"Claude Haiku 4.5" },
+    { p:"anthropic", key:"claude-sonnet-5",           m:"Claude Sonnet 5", note:"free default" },
     { p:"anthropic", key:"claude-sonnet-4-6",         m:"Claude Sonnet 4.6" },
+    { p:"anthropic", key:"claude-haiku-4-5-20251001", m:"Claude Haiku 4.5" },
     { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.6 / 4.7 priced the same" },
+    { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
+    { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
     { p:"openai", key:"gpt-5.5",      m:"GPT-5.5" },
     { p:"openai", key:"gpt-5.4",      m:"GPT-5.4" },
@@ -385,8 +388,11 @@
     "_last_updated": "2026-06-18",
     "anthropic": {
       "claude-haiku-4-5-20251001": { input: 1e-6,    output: 5e-6 },
+      "claude-sonnet-5":           { input: 2e-6,    output: 1e-5 },
       "claude-sonnet-4-6":         { input: 3e-6,    output: 1.5e-5 },
-      "claude-opus-4-8":           { input: 5e-6,    output: 2.5e-5 }
+      "claude-opus-4-8":           { input: 5e-6,    output: 2.5e-5 },
+      "claude-fable-5":            { input: 1e-5,    output: 5e-5 },
+      "claude-mythos-5":           { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
       "gpt-5.5":      { input: 5e-6,    output: 3e-5 },

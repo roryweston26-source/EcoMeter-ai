@@ -52,6 +52,7 @@ function parsePrices(json) {
 // (it's bundled, so this is defensive only). Mirrors the free-tier shape.
 const FALLBACK_API = {
   anthropic: {
+    'claude-sonnet-5':           { input: 2.00/1e6, output: 10.00/1e6 },
     'claude-sonnet-4-6':         { input: 3.00/1e6, output: 15.00/1e6 },
     'claude-haiku-4-5-20251001': { input: 1.00/1e6, output:  5.00/1e6 },
   },
@@ -65,7 +66,8 @@ const FALLBACK_API = {
 };
 const FALLBACK_FREE_TIERS = {
   anthropic: { label: 'Claude', models: [
-    { key: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', note: 'default' },
+    { key: 'claude-sonnet-5', name: 'Claude Sonnet 5', note: 'default' },
+    { key: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6' },
     { key: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', note: 'limited' },
   ]},
   openai: { label: 'ChatGPT', models: [
