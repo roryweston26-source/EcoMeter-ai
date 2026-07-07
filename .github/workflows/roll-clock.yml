@@ -1,0 +1,85 @@
+name: Roll AI Clock anchor
+
+# Quarterly: advance clock.json's anchor to today, roll the scenario levels
+# forward along their curves, and open a PR so a human can re-anchor against
+# fresh disclosures before it goes live.
+
+on:
+  schedule:
+    - cron: '0 9 1 1,4,7,10 *'   # 09:00 UTC on the 1st of Jan / Apr / Jul / Oct
+  workflow_dispatch:
+
+jobs:
+  roll:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Roll the anchor forward
+        run: |
+          set +e
+          node scripts/roll-clock.js
+          code=$?
+          set -e
+          echo "Roller exited with code $code"   # 0 = nothing to roll, 2 = rolled
+          if [ "$code" = "1" ]; then
+            echo "✗ Roller errored."
+            exit 1
+          fi
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet clock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: auto/clock-reanchor-${{ github.run_number }}
+          commit-message: "chore: roll AI Clock anchor forward"
+          title: "🕒 Re-anchor the AI Clock"
+          body: |
+            ## Quarterly AI Clock re-anchor
+
+            The anchor in `clock.json` was advanced to today and every scenario level
+            was rolled forward along its own growth curve. **This is mechanical — it
+            keeps the stored levels current but does not add any new real-world data.**
+
+            **Before merging, re-anchor against fresh disclosures** and correct the
+            `scenarios` levels and `rates` wherever reality has diverged:
+
+            - [ ] Tokens — latest Google / Microsoft / OpenAI disclosures
+            - [ ] Prompts — ChatGPT WAU × messages; any new worldwide estimate
+            - [ ] Electricity — latest IEA figure (AI-specific TWh)
+            - [ ] Capex — latest hyperscaler guidance
+            - [ ] Installed compute — latest Epoch AI H100e estimate
+            - [ ] Frontier training run — latest Epoch record (FLOP)
+            - [ ] Users — ChatGPT WAU / Gemini MAU
+            - [ ] Growth rates — trim any multiplier reality has undershot
+
+            The live clock reads these numbers, so nothing changes on the site until
+            this merges.
+          labels: |
+            automated
+            ai-clock
+          delete-branch: true
+
+      - name: No changes
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "✓ Anchor already current — no PR needed."

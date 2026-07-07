@@ -245,8 +245,10 @@
    RATES — annual trajectories (multipliers per year). Shared across scenarios.
    ========================================================================= */
 /* Anchor LEVELS as of Jan 1, 2026. Flows are annual amounts; stocks/record are
-   levels. conservative / moderate / high bracket the published range. */
-const SCENARIOS = {
+   levels. conservative / moderate / high bracket the published range.
+   These are the FALLBACK — clock.json (kept fresh by the roll-clock workflow)
+   overrides them on load. */
+let SCENARIOS = {
   //             prompts/day  tokens/yr   AI TWh/yr  AI water B-L/yr  inference $/yr  AI CO2 Mt/yr  capex $/yr  users now  H100e now  frontier FLOP
   conservative: { promptsPerDay:5.0e9, tokensPerYear:24e15, twhPerYear:130, waterBLPerYear:312, spendPerYear:100e9, co2MtPerYear:33, capexPerYear:690e9, usersNow:0.8e9, gpusNow:13e6, frontierNow:4e26 },
   moderate:     { promptsPerDay:6.5e9, tokensPerYear:30e15, twhPerYear:155, waterBLPerYear:500, spendPerYear:113e9, co2MtPerYear:50, capexPerYear:725e9, usersNow:1.0e9, gpusNow:15e6, frontierNow:5e26 },
@@ -256,7 +258,7 @@ const SCENARIOS = {
 /* Net annual growth multipliers (>1 grows). Central values from the research,
    shared across scenarios; each counter is sourced independently. Re-anchor
    quarterly — these multipliers are themselves moving. */
-const RATES = {
+let RATES = {
   prompts:  2.75,  // ~2.5-3x/yr    worldwide prompt volume
   tokens:   5.0,   // ~5x/yr        worldwide tokens (Google ~7x, decelerating)
   energy:   1.40,  // +40%/yr       AI-specific electricity (~+50% now, easing)
@@ -269,21 +271,26 @@ const RATES = {
   frontier: 4.50   // ~4-5x/yr      largest training run (doubling every ~5 months)
 };
 
-const ANCHOR_MS  = Date.UTC(2026, 0, 1, 0, 0, 0);  // everything is "as of" Jan 1, 2026
-const FLOW_EPOCH = ANCHOR_MS;                       // flows accumulate from the anchor
-const YEAR_MS    = 365.25 * 86400 * 1000;
-const SPY        = 365.25 * 86400;                  // seconds per year
+const YEAR_MS = 365.25 * 86400 * 1000;
+const SPY     = 365.25 * 86400;                    // seconds per year
+
+/* ANCHOR = "as of" date for the levels (the roll-clock workflow advances it).
+   FLOW_EPOCH = Jan 1 of the anchor's year, so "accumulated in <year>" stays
+   correct even after the anchor rolls forward. Both are overridden by clock.json
+   on load; the values here (with SCENARIOS/RATES above) are the fallback. */
+const flowEpochFor = ms => Date.UTC(new Date(ms).getUTCFullYear(), 0, 1);
+let ANCHOR_MS  = Date.UTC(2026, 0, 1, 0, 0, 0);
+let FLOW_EPOCH = flowEpochFor(ANCHOR_MS);
 
 /* net annual growth per flow (id -> multiplier), sourced directly (no composition) */
-const G = {
-  prompts: RATES.prompts,
-  tokens:  RATES.tokens,
-  energy:  RATES.energy,
-  water:   RATES.water,
-  cost:    RATES.spend,
-  co2:     RATES.co2,
-  capex:   RATES.capex
-};
+let G = {};
+function recomputeG(){
+  G = {
+    prompts: RATES.prompts, tokens: RATES.tokens, energy: RATES.energy,
+    water: RATES.water, cost: RATES.spend, co2: RATES.co2, capex: RATES.capex
+  };
+}
+recomputeG();
 
 /* per-second base rate (as of ANCHOR) for each flow, from its annual anchor */
 function baseRates(s){
@@ -449,10 +456,33 @@ function update(){
   set('frontier', stockLevel(s.frontierNow, RATES.frontier, now));
 }
 
+/* Pull anchor levels + rates from clock.json (kept fresh by the roll-clock
+   workflow); silently keeps the inline fallback if it can't load. */
+function applyClock(data){
+  if (!data) return;
+  if (data.scenarios) SCENARIOS = data.scenarios;
+  if (data.rates)     RATES = data.rates;
+  if (data._meta && data._meta.anchor){
+    const a = Date.parse(data._meta.anchor + 'T00:00:00Z');
+    if (!isNaN(a)){ ANCHOR_MS = a; FLOW_EPOCH = flowEpochFor(a); }
+  }
+  recomputeG();
+  B = baseRates(SCENARIOS[activeKey]);
+  renderLabels(); update(); fitAll();
+}
+function loadClock(){
+  if (typeof fetch !== 'function') return;
+  fetch('clock.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(applyClock)
+    .catch(() => { /* keep the inline fallback */ });
+}
+
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 renderLabels();
 update();
 fitAll();
+loadClock();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
 let _rz;
 window.addEventListener('resize', () => { clearTimeout(_rz); _rz = setTimeout(fitAll, 120); });

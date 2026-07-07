@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "anchor": "2026-01-01",
+    "last_rolled": "2026-01-01",
+    "note": "Anchor levels + growth rates for the AI Clock (ai-clock.html reads this). 'anchor' is the 'as of' date for the scenario levels. The roll-clock workflow advances the anchor and rolls the levels along their growth curves quarterly, opening a PR; a human then re-anchors against fresh disclosures. Growth rates are human-judged, not scraped."
+  },
+  "scenarios": {
+    "conservative": { "promptsPerDay": 5000000000, "tokensPerYear": 2.4e16, "twhPerYear": 130, "waterBLPerYear": 312, "spendPerYear": 1.0e11, "co2MtPerYear": 33, "capexPerYear": 6.9e11, "usersNow": 8.0e8, "gpusNow": 1.3e7, "frontierNow": 4e26 },
+    "moderate":     { "promptsPerDay": 6500000000, "tokensPerYear": 3.0e16, "twhPerYear": 155, "waterBLPerYear": 500, "spendPerYear": 1.13e11, "co2MtPerYear": 50, "capexPerYear": 7.25e11, "usersNow": 1.0e9, "gpusNow": 1.5e7, "frontierNow": 5e26 },
+    "high":         { "promptsPerDay": 8000000000, "tokensPerYear": 3.6e16, "twhPerYear": 180, "waterBLPerYear": 765, "spendPerYear": 1.22e11, "co2MtPerYear": 80, "capexPerYear": 7.65e11, "usersNow": 1.4e9, "gpusNow": 1.8e7, "frontierNow": 6e26 }
+  },
+  "rates": {
+    "prompts": 2.75,
+    "tokens": 5.0,
+    "energy": 1.40,
+    "water": 1.30,
+    "spend": 1.35,
+    "co2": 1.20,
+    "capex": 1.77,
+    "users": 1.80,
+    "compute": 3.30,
+    "frontier": 4.50
+  }
+}
