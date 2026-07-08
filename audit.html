@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription Auditor — Legerly</title>
+<meta name="description" content="Answer a few questions about how you use AI and get a clear, unbiased recommendation on which plan, tier, or provider actually makes sense for you. Runs entirely in your browser.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!--
+  Subscription Auditor. Self-contained, client-side only. Nothing you answer —
+  and nothing from a connected EcoMeter export — ever leaves the browser; the
+  only network call is a same-origin fetch of prices.json to keep plan prices
+  and per-token API rates current (no user data is sent).
+
+  Plan capability metadata (caps / models / features) lives inline below because
+  it's auditor-specific and approximate; prices + API rates come from prices.json.
+-->
+
+<style>
+  :root{
+    --bg:#0a0f0d; --panel:#0e1613; --panel-2:#111a16; --line:rgba(76,175,130,.16);
+    --ink:#eaf2ee; --muted:#7d938a; --muted-dim:#5c6f68;
+    --green:#4caf82; --green-2:#38c9a0; --gold:#d4a843;
+    --display:'Syne', ui-sans-serif, system-ui, sans-serif;
+    --body:'Inter', ui-sans-serif, system-ui, sans-serif;
+    --mono:'DM Mono', ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55;
+    background-image:radial-gradient(120% 80% at 50% -10%, rgba(56,201,160,.07), transparent 60%);background-attachment:fixed;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:clamp(24px,5vw,64px) clamp(18px,4vw,32px) 80px}
+
+  .topnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(28px,5vw,48px)}
+  .topnav .brand{font-family:var(--display);font-weight:800;font-size:20px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
+  .topnav .brand span{color:var(--green)}
+  .topnav .back{font-family:var(--body);font-size:.9rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+  .topnav .back:hover{color:var(--green-2)}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--green-2);outline-offset:2px;border-radius:4px}
+
+  header{margin-bottom:24px}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin:0 0 16px;display:flex;align-items:center;gap:.7em}
+  .eyebrow::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(212,168,67,.5),transparent)}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+  h1 .accent{color:var(--green-2)}
+  .lede{font-size:clamp(1rem,2.1vw,1.15rem);color:var(--muted);max-width:52ch;margin:0 0 18px}
+
+  .privacy{display:inline-flex;align-items:center;gap:.55em;font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:7px 13px;margin-bottom:26px}
+  .privacy .lock{color:var(--green-2)}
+
+  /* EcoMeter connect */
+  .eco{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(56,201,160,.06),rgba(14,22,19,.3));padding:18px 20px;margin-bottom:26px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .eco .eco-ico{width:38px;height:38px;border-radius:10px;background:rgba(56,201,160,.12);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+  .eco .eco-txt{flex:1;min-width:200px}
+  .eco .eco-txt b{font-family:var(--display);font-weight:700}
+  .eco .eco-txt p{margin:3px 0 0;font-size:.86rem;color:var(--muted)}
+  .eco .eco-btn{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--green-2);background:rgba(56,201,160,.1);
+    border:1px solid var(--line);border-radius:9px;padding:10px 16px;cursor:pointer;transition:background .18s,color .18s}
+  .eco .eco-btn:hover{background:rgba(56,201,160,.18);color:var(--ink)}
+  .eco .eco-note{width:100%;font-size:.78rem;color:var(--muted-dim);margin-top:2px}
+
+  /* Quiz */
+  .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(14,22,19,.9),rgba(14,22,19,.5));padding:clamp(22px,4vw,32px)}
+  .progress{height:4px;border-radius:4px;background:var(--panel-2);overflow:hidden;margin-bottom:22px}
+  .progress .bar{height:100%;background:linear-gradient(90deg,var(--green),var(--green-2));width:0;transition:width .3s ease}
+  .step-count{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-dim);margin-bottom:10px}
+  .q{font-family:var(--display);font-weight:700;font-size:clamp(1.25rem,3.4vw,1.6rem);letter-spacing:-.01em;margin:0 0 6px}
+  .q-help{font-size:.88rem;color:var(--muted);margin:0 0 20px}
+  .options{display:grid;gap:10px}
+  .opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;font-family:var(--body);font-size:1rem;color:var(--ink);
+    background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px 17px;cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+  .opt:hover{border-color:rgba(56,201,160,.45);background:var(--panel-2)}
+  .opt.sel{border-color:var(--green-2);background:rgba(56,201,160,.1)}
+  .opt .tick{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted-dim);flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--bg)}
+  .opt.sel .tick{background:var(--green-2);border-color:var(--green-2)}
+  .opt.radio .tick{border-radius:50%}
+  .nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px}
+  .btn{font-family:var(--mono);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:11px 20px;border-radius:9px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--muted);transition:all .15s}
+  .btn:hover:not(:disabled){color:var(--ink);border-color:var(--muted-dim)}
+  .btn:disabled{opacity:.35;cursor:default}
+  .btn-primary{background:var(--green);border-color:var(--green);color:var(--bg);font-weight:500}
+  .btn-primary:hover:not(:disabled){opacity:.9;color:var(--bg)}
+
+  /* Results */
+  .result-head{text-align:center;margin-bottom:26px}
+  .level-badge{display:inline-block;font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:16px}
+  .level-name{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,5vw,2.6rem);letter-spacing:-.02em;margin:0 0 10px}
+  .level-name .accent{color:var(--green-2)}
+  .level-blurb{color:var(--muted);max-width:46ch;margin:0 auto}
+  .rec{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:20px 22px;margin-bottom:14px}
+  .rec .rec-prov{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-dim);margin-bottom:8px}
+  .rec .rec-head{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:0 0 12px;color:var(--green-2)}
+  .rec ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+  .rec li{position:relative;padding-left:18px;font-size:.92rem;color:var(--muted)}
+  .rec li::before{content:"·";position:absolute;left:4px;color:var(--green);font-weight:700}
+  .rec li.save{color:var(--ink)}
+  .rec li.save b{color:var(--green-2)}
+  .disclaimer{font-size:.8rem;color:var(--muted-dim);margin-top:22px;line-height:1.6}
+  .center{text-align:center;margin-top:24px}
+
+  footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--muted-dim)}
+  footer a{color:var(--green);text-decoration:none}
+  footer a:hover{color:var(--green-2)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topnav">
+    <a href="/" class="brand">Legerly<span>.</span></a>
+    <a href="/#tools" class="back">← All tools</a>
+  </nav>
+
+  <header>
+    <p class="eyebrow">Clarity for the AI market</p>
+    <h1>Subscription <span class="accent">Auditor</span></h1>
+    <p class="lede">Providers price AI to be confusing. Answer a few questions and get a straight answer: the plan, tier, or free option that actually fits how you use AI.</p>
+    <span class="privacy"><span class="lock">🔒</span> Runs entirely in your browser — nothing you enter ever leaves your device.</span>
+  </header>
+
+  <!-- EcoMeter connect (client-side file read only) -->
+  <div class="eco" id="eco">
+    <div class="eco-ico">🌿</div>
+    <div class="eco-txt">
+      <b>Use EcoMeter AI?</b>
+      <p>Connect your usage export for an exact read — we'll skip the volume guesswork.</p>
+    </div>
+    <button class="eco-btn" id="ecoBtn" type="button">Connect usage</button>
+    <input type="file" id="ecoFile" accept="application/json,.json" class="hidden">
+    <p class="eco-note" id="ecoNote">Your file is read locally and never uploaded. Export is coming to EcoMeter soon — for now, answer below.</p>
+  </div>
+
+  <div class="card" id="quiz"></div>
+
+  <div class="card hidden" id="results"></div>
+
+  <footer>
+    <span>Legerly — bringing clarity to the AI market</span>
+    <span>Estimates · <a href="/">legerlyai.com</a></span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- plan metadata (capabilities inline; prices synced from prices.json) ----------
+   caps are APPROX daily message ceilings and need a source pass. */
+let PLANS = {
+  openai: [
+    { m:'ChatGPT Free', price:0,   cap:40,  models:['gpt-5.5','gpt-5.4-mini'], features:[], seats:1 },
+    { m:'ChatGPT Go',   price:8,   cap:150, models:['gpt-5.5','gpt-5.4-mini'], features:['image-gen'], seats:1 },
+    { m:'ChatGPT Plus', price:20,  cap:300, models:['gpt-5.5','gpt-5.4','gpt-5.4-mini','o3','o4-mini'], features:['image-gen','voice','projects'], seats:1 },
+    { m:'ChatGPT Pro',  price:100, cap:null,models:['gpt-5.5','gpt-5.4','o3','o4-mini','gpt-4.1'], features:['image-gen','voice','projects','research'], seats:1 },
+  ],
+  anthropic: [
+    { m:'Claude Free',   price:0,   cap:30,   models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
+    { m:'Claude Pro',    price:20,  cap:225,  models:['claude-sonnet-5','claude-sonnet-4-6','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking'], seats:1 },
+    { m:'Claude Max 5×', price:100, cap:1125, models:['claude-sonnet-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
+    { m:'Claude Max 20×',price:200, cap:null, models:['claude-sonnet-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
+  ],
+  google: [
+    { m:'Gemini (Free)',  price:0,    cap:60,  models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:[], seats:1 },
+    { m:'Google AI Plus', price:7.99, cap:150, models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:['more-pro'], seats:1 },
+    { m:'Google AI Pro',  price:19.99,cap:500, models:['gemini-3.5-flash','gemini-3.1-pro-preview','gemini-2.5-pro'], features:['deep-research','image-gen','video-gen'], seats:1 },
+    { m:'Google AI Ultra',price:99.99,cap:null,models:['gemini-3.5-flash','gemini-3.1-pro-preview','gemini-2.5-pro'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
+  ],
+  microsoft: [
+    { m:'Copilot (Free)', price:0,    cap:60,  models:['gpt-5.5'], features:[], seats:1 },
+    { m:'Microsoft 365 Premium', price:19.99, cap:300, models:['gpt-5.5'], features:['office','image-gen'], seats:1 },
+  ],
+};
+let API = {
+  'gpt-5.5':{in:5e-6,out:30e-6}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
+  'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
+  'gemini-3.5-flash':{in:5e-7,out:3e-6}, 'gemini-2.5-pro':{in:1.25e-6,out:1e-5},
+};
+const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot' };
+const MODELS = {
+  openai:{free:'gpt-5.5',top:'gpt-5.5'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-4-8'},
+  google:{free:'gemini-3.5-flash',top:'gemini-2.5-pro'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
+};
+const money = n => n===0 ? '$0' : '$'+(Math.round(n*100)/100);
+
+/* keep prices + API rates fresh from the maintained file (no user data sent) */
+fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+  if(!d) return;
+  if(d.api){ const flat={}; for(const p in d.api) for(const k in d.api[p]) flat[k]=d.api[p][k];
+    for(const m in API){ if(flat[m]) API[m]={in:flat[m].input,out:flat[m].output}; } }
+  if(Array.isArray(d.subscriptions)){
+    for(const prov in PLANS) for(const t of PLANS[prov]){
+      const row=d.subscriptions.find(s=>s.p===prov && s.m===t.m);
+      if(row && typeof row.price==='number') t.price=row.price;
+    }
+  }
+}).catch(()=>{});
+
+/* ---------- five usage levels ---------- */
+const LEVELS = [
+  { n:1, label:'Dabbler',    blurb:'A few messages here and there. The free tier has you covered — always.' },
+  { n:2, label:'Casual',     blurb:'Daily light use of the default models. Free usually covers you.' },
+  { n:3, label:'Regular',    blurb:'Steady use, brushing against limits. A modest plan — often cheaper than the one you’re on.' },
+  { n:4, label:'Heavy',      blurb:'High volume, and you want the better models. A paid plan clearly earns its keep.' },
+  { n:5, label:'Power user', blurb:'All-day, multi-tool, coding and agentic work on frontier models. Top tier, team, or API territory.' },
+];
+
+/* ---------- questions ---------- */
+const TOOLS = [
+  {v:'openai',label:'ChatGPT'},{v:'anthropic',label:'Claude'},
+  {v:'google',label:'Gemini'},{v:'microsoft',label:'Copilot'},{v:'other',label:'Something else'}
+];
+const QUESTIONS = [
+  {id:'tools',type:'multi',q:'Which AI tools do you use regularly?',help:'Pick all that apply.',options:TOOLS},
+  {id:'frequency',type:'single',q:'How often do you use AI?',options:[
+    {v:'rarely',label:'Rarely'},{v:'fewWeek',label:'A few times a week'},{v:'mostDays',label:'Most days'},{v:'manyDay',label:'Many times a day'},{v:'constant',label:'Constantly, all day'}]},
+  {id:'messages',type:'single',q:'On a busy day, how many messages do you send?',options:[
+    {v:'lt5',label:'Under 5'},{v:'5to20',label:'5–20'},{v:'20to50',label:'20–50'},{v:'50to150',label:'50–150'},{v:'150plus',label:'150+'}]},
+  {id:'purpose',type:'single',q:'What do you mostly use it for?',options:[
+    {v:'quick',label:'Quick questions'},{v:'writing',label:'Writing & everyday tasks'},{v:'research',label:'Research & analysis'},{v:'coding',label:'Coding & building'},{v:'agentic',label:'Agents & automation'}]},
+  {id:'limits',type:'single',q:'Do you hit usage limits or “try again later” walls?',options:[
+    {v:'never',label:'Never'},{v:'rarely',label:'Rarely'},{v:'sometimes',label:'Sometimes'},{v:'often',label:'Often'},{v:'constant',label:'Constantly'}]},
+  {id:'frontier',type:'single',q:'Do you need the smartest models (Claude Opus, GPT-5.5, Gemini Pro), or is the fast default fine?',options:[
+    {v:'default',label:'The default is fine'},{v:'sometimes',label:'Sometimes I want the best'},{v:'always',label:'I always want the best'}]},
+  {id:'media',type:'single',q:'Do you generate images or video, or use voice / advanced features?',options:[
+    {v:'no',label:'No'},{v:'occ',label:'Occasionally'},{v:'regular',label:'Regularly'}]},
+  {id:'pays',type:'multi',q:'Which of these do you pay for today?',help:'Pick all that apply — or “Nothing”.',options:[
+    {v:'none',label:'Nothing',exclusive:true},
+    {v:'openai::ChatGPT Plus',label:'ChatGPT Plus'},
+    {v:'openai::ChatGPT Pro',label:'ChatGPT Pro'},
+    {v:'anthropic::Claude Pro',label:'Claude Pro'},
+    {v:'anthropic::Claude Max 5×',label:'Claude Max'},
+    {v:'google::Google AI Pro',label:'Gemini AI Pro'},
+    {v:'microsoft::Microsoft 365 Premium',label:'Copilot Premium'},
+    {v:'api',label:'API / pay-as-you-go'}]},
+  {id:'team',type:'single',q:'Is it just you, or a team?',options:[
+    {v:'solo',label:'Just me'},{v:'team',label:'A team'}]},
+  {id:'priority',type:'single',q:'What matters most to you?',options:[
+    {v:'cost',label:'Lowest cost'},{v:'capability',label:'Best capability'},{v:'privacy',label:'Privacy'},{v:'feature',label:'A specific feature'}]},
+];
+
+/* ---------- scoring / classification ---------- */
+const SCORE = {
+  messages:{lt5:0,'5to20':1,'20to50':2,'50to150':3,'150plus':4},
+  frequency:{rarely:0,fewWeek:.5,mostDays:1,manyDay:1.5,constant:2},
+  purpose:{quick:0,writing:1,research:1.5,coding:2,agentic:2.5},
+  limits:{never:0,rarely:.5,sometimes:1,often:1.5,constant:2},
+  frontier:{default:0,sometimes:1,always:2},
+  media:{no:0,occ:.5,regular:1},
+};
+const MSG_MID={lt5:3,'5to20':12,'20to50':35,'50to150':100,'150plus':200};
+const PURPOSE_TOK={quick:400,writing:1500,research:3000,coding:6000,agentic:10000};
+
+function toolsCount(a){ return (a.tools||[]).filter(t=>t!=='other').length || 1; }
+function classify(a){
+  let s=0;
+  for(const k of Object.keys(SCORE)) s += (SCORE[k][a[k]]||0);
+  const c=toolsCount(a); s += c>=3?1 : c===2?0.5 : 0;
+  const n = s<2?1 : s<5?2 : s<8?3 : s<11?4 : 5;
+  return { score:+s.toFixed(1), level:LEVELS[n-1] };
+}
+
+/* ---------- engine ---------- */
+const limitsFactor = l => ({never:1,rarely:1,sometimes:1.2,often:1.5,constant:2}[l]||1);
+function apiCostPerMonth(pf){
+  const m=(pf.models_used||[]).find(x=>API[x]); if(!m) return null;
+  const p=API[m]; return (pf.input_tokens_per_day*p.in + pf.output_tokens_per_day*p.out)*30;
+}
+function meetsNeeds(t,pf,sig){
+  const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
+  if(t.cap!=null && eff>t.cap) return false;
+  if(!(pf.models_used||[]).every(m=>t.models.includes(m))) return false;
+  if(sig.team && t.seats<2) return false;
+  return true;
+}
+function profileFor(prov,a,sig){
+  const pm=MODELS[prov], msgs=MSG_MID[a.messages], avg=PURPOSE_TOK[a.purpose];
+  return { provider:prov, messages_per_day:msgs,
+    input_tokens_per_day:Math.round(msgs*avg*0.4), output_tokens_per_day:Math.round(msgs*avg*0.6),
+    models_used: a.frontier==='default'?[pm.free]:[pm.top], signals:sig };
+}
+function recommend(pf,sig){
+  const tiers=PLANS[pf.provider].slice().sort((x,y)=>x.price-y.price);
+  const fit=tiers.find(t=>meetsNeeds(t,pf,sig));
+  const api=apiCostPerMonth(pf);
+  const cur=(sig.current_plans||[]).find(c=>c.provider===pf.provider);
+  const why=[]; let head, cost;
+  if(!fit){ return { head:`Your ${NAME[pf.provider]} usage points to a Team plan.`, why:['Your volume or seats exceed the consumer tiers — look at '+NAME[pf.provider]+' Team.'] }; }
+  if(fit.price===0){ head=`Stay on the free ${NAME[pf.provider]} tier.`; cost=0;
+    why.push(`Free covers you — about ${fit.cap} messages/day, and it includes the models you use.`);
+  } else {
+    cost=fit.price;
+    const missing=(pf.models_used||[]).filter(m=>!tiers[0].models.includes(m));
+    why.push(missing.length ? `Cheapest tier that unlocks the model you need.` : `Cheapest tier above the free tier’s ~${tiers[0].cap}/day cap for your volume.`);
+    head=`${fit.m} — ${money(fit.price)}/mo.`;
+  }
+  if(cur && cur.price>cost) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — switching saves <b>${money(cur.price-cost)}/mo</b> (${money((cur.price-cost)*12)}/yr).`});
+  else if(cur && cur.price<cost) why.push(`You’re on ${cur.plan} (${money(cur.price)}) — below what your usage needs.`);
+  if(sig.media_generation && !(fit.features.includes('image-gen')||fit.features.includes('video-gen')))
+    why.push(`For the images/video you make, add a ChatGPT or Gemini plan — ${NAME[pf.provider]} doesn’t generate them.`);
+  if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo` + (fit.price>0 && api<fit.price ? ` — cheaper, if you’re fine without the app.` : `.`));
+  return { head, why };
+}
+
+function currentPlans(a){
+  const out=[];
+  (a.pays||[]).forEach(v=>{
+    if(v==='none'||v==='api') return;
+    const [prov,name]=v.split('::'); const tier=(PLANS[prov]||[]).find(t=>t.m===name);
+    if(tier) out.push({provider:prov, plan:name, price:tier.price});
+  });
+  return out;
+}
+
+/* ---------- quiz flow ---------- */
+const quizEl=document.getElementById('quiz'), resultsEl=document.getElementById('results');
+const state={ i:0, answers:{} };
+
+function render(){
+  const total=QUESTIONS.length, q=QUESTIONS[state.i];
+  const sel=state.answers[q.id];
+  const opts=q.options.map(o=>{
+    const on = q.type==='multi' ? Array.isArray(sel)&&sel.includes(o.v) : sel===o.v;
+    return `<button class="opt ${q.type==='single'?'radio':''} ${on?'sel':''}" data-v="${o.v}">
+      <span class="tick">${on?(q.type==='multi'?'✓':'●'):''}</span><span>${o.label}</span></button>`;
+  }).join('');
+  const answered = q.type==='multi' ? Array.isArray(sel)&&sel.length>0 : sel!=null;
+  quizEl.innerHTML=`
+    <div class="progress"><div class="bar" style="width:${(state.i/total)*100}%"></div></div>
+    <div class="step-count">Question ${state.i+1} of ${total}</div>
+    <h2 class="q">${q.q}</h2>
+    ${q.help?`<p class="q-help">${q.help}</p>`:''}
+    <div class="options">${opts}</div>
+    <div class="nav-row">
+      <button class="btn" id="back" ${state.i===0?'disabled':''}>← Back</button>
+      <button class="btn btn-primary" id="next" ${answered?'':'disabled'}>${state.i===total-1?'See my result':'Next →'}</button>
+    </div>`;
+
+  quizEl.querySelectorAll('.opt').forEach(btn=>btn.addEventListener('click',()=>{
+    const v=btn.dataset.v;
+    if(q.type==='multi'){
+      let cur=Array.isArray(state.answers[q.id])?state.answers[q.id].slice():[];
+      const ex=q.options.find(o=>o.v===v&&o.exclusive);
+      if(ex){ cur=cur.includes(v)?[]:[v]; }
+      else { cur=cur.filter(x=>!(q.options.find(o=>o.v===x)||{}).exclusive);
+             cur = cur.includes(v)?cur.filter(x=>x!==v):cur.concat(v); }
+      state.answers[q.id]=cur; render();
+    } else {
+      state.answers[q.id]=v;
+      if(state.i<total-1){ state.i++; render(); } else render();
+    }
+  }));
+  const nb=quizEl.querySelector('#next'), bb=quizEl.querySelector('#back');
+  if(bb) bb.addEventListener('click',()=>{ if(state.i>0){state.i--;render();} });
+  if(nb) nb.addEventListener('click',()=>{ if(!answered) return; if(state.i<total-1){state.i++;render();} else finish(); });
+}
+
+function finish(){
+  const a=state.answers, {level}=classify(a);
+  const sig={ hits_limits:a.limits, media_generation:a.media!=='no', team:a.team==='team',
+    current_plans:currentPlans(a), priority:a.priority };
+  const provs=(a.tools||[]).filter(t=>t!=='other' && PLANS[t]);
+  const cards=provs.map(prov=>{
+    const r=recommend(profileFor(prov,a,sig),sig);
+    const items=r.why.map(w=> typeof w==='string'?`<li>${w}</li>`:`<li class="save">${w.html}</li>`).join('');
+    return `<div class="rec"><div class="rec-prov">${NAME[prov]}</div><div class="rec-head">${r.head}</div><ul>${items}</ul></div>`;
+  }).join('');
+  const other=(a.tools||[]).includes('other') ? `<p class="disclaimer">We currently audit ChatGPT, Claude, Gemini and Copilot — more tools coming.</p>` : '';
+  quizEl.classList.add('hidden');
+  resultsEl.classList.remove('hidden');
+  resultsEl.innerHTML=`
+    <div class="result-head">
+      <span class="level-badge">Level ${level.n} of 5</span>
+      <h2 class="level-name">You’re a <span class="accent">${level.label}</span></h2>
+      <p class="level-blurb">${level.blurb}</p>
+    </div>
+    ${cards || '<p class="level-blurb">Pick at least one tool to get a recommendation.</p>'}
+    ${other}
+    <p class="disclaimer">These are estimates from list prices and approximate plan limits, applied to each tool you use — if you split time across tools, your per-tool need is lower. Always confirm current limits on the provider’s site. Nothing you entered left your browser.</p>
+    <div class="center"><button class="btn" id="restart">Start over</button></div>`;
+  resultsEl.querySelector('#restart').addEventListener('click',()=>{
+    state.i=0; state.answers={}; resultsEl.classList.add('hidden'); resultsEl.innerHTML='';
+    quizEl.classList.remove('hidden'); render(); window.scrollTo({top:0,behavior:'smooth'});
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- EcoMeter connect (local file only) ---------- */
+const ecoBtn=document.getElementById('ecoBtn'), ecoFile=document.getElementById('ecoFile'), ecoNote=document.getElementById('ecoNote');
+ecoBtn.addEventListener('click',()=>ecoFile.click());
+ecoFile.addEventListener('change',()=>{
+  const f=ecoFile.files&&ecoFile.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const log=JSON.parse(reader.result);
+      applyEcometer(log);
+      ecoNote.textContent='✓ Connected — we filled in your usage from EcoMeter. Just answer the rest.';
+    }catch(e){ ecoNote.textContent='That file didn’t look like an EcoMeter export. You can still answer below.'; }
+  };
+  reader.readAsText(f);   // read locally; never uploaded
+});
+function bandFor(mpd){ return mpd<5?'lt5':mpd<20?'5to20':mpd<50?'20to50':mpd<150?'50to150':'150plus'; }
+function applyEcometer(log){
+  const pf=Array.isArray(log.platforms)?log.platforms:[];
+  if(!pf.length) return;
+  const provs=[...new Set(pf.map(p=>p.provider).filter(p=>PLANS[p]))];
+  if(provs.length) state.answers.tools=provs;
+  const totalMsgs=pf.reduce((s,p)=>s+(p.messages_per_day||0),0);
+  if(totalMsgs) state.answers.messages=bandFor(totalMsgs);
+  const usesTop=pf.some(p=>(p.models_used||[]).some(m=>['claude-opus-4-8','gemini-2.5-pro'].includes(m)));
+  state.answers.frontier=usesTop?'always':'default';
+  state.i=1;               // tools + volume prefilled; continue at frequency
+  render();
+  window.scrollTo({top:document.getElementById('quiz').offsetTop-20,behavior:'smooth'});
+}
+
+render();
+</script>
+</body>
+</html>
