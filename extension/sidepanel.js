@@ -31,7 +31,6 @@ const footerStatus  = document.getElementById('footer-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
 let FLAT_PRICES = {};
-let FREE_TIERS  = {};   // { provider: { label, models:[{key,name,note}] } } — drives the model picker
 
 function parsePrices(json) {
   const temp = {};
@@ -65,37 +64,77 @@ const FALLBACK_API = {
     'gemini-3.5-flash': { input: 0.50/1e6, output: 3.00/1e6 },
   },
 };
-const FALLBACK_FREE_TIERS = {
-  anthropic: { label: 'Claude', models: [
-    { key: 'claude-sonnet-5', name: 'Claude Sonnet 5', note: 'default' },
-    { key: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6' },
-    { key: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', note: 'limited' },
+// Full model catalog for the picker — every model EcoMeter can cost, including
+// paid/advanced ones. Paid users must be able to attribute advanced-model chats
+// (Opus, o3, Gemini Pro…) so the usage export reflects real frontier use.
+// Keys match prices.json `api`; getPrice() resolves the rate.
+const MODEL_CATALOG = [
+  { label:'Claude', models:[
+    { key:'claude-sonnet-5', name:'Claude Sonnet 5' },
+    { key:'claude-sonnet-4-6', name:'Claude Sonnet 4.6' },
+    { key:'claude-opus-4-8', name:'Claude Opus 4.8' },
+    { key:'claude-haiku-4-5-20251001', name:'Claude Haiku 4.5' },
+    { key:'claude-fable-5', name:'Claude Fable 5' },
+    { key:'claude-mythos-5', name:'Claude Mythos 5' },
   ]},
-  openai: { label: 'ChatGPT', models: [
-    { key: 'gpt-5.5', name: 'GPT-5.5', note: 'default' },
-    { key: 'gpt-5.4-mini', name: 'GPT-5.4 mini', note: 'Thinking' },
+  { label:'ChatGPT', models:[
+    { key:'gpt-5.5', name:'GPT-5.5' },
+    { key:'gpt-5.4', name:'GPT-5.4' },
+    { key:'gpt-5.4-mini', name:'GPT-5.4 mini' },
+    { key:'gpt-4o', name:'GPT-4o' },
+    { key:'gpt-4.1', name:'GPT-4.1' },
+    { key:'gpt-4.1-mini', name:'GPT-4.1 mini' },
+    { key:'o3', name:'o3' },
+    { key:'o4-mini', name:'o4-mini' },
   ]},
-  google: { label: 'Gemini', models: [
-    { key: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', note: 'default' },
+  { label:'Gemini', models:[
+    { key:'gemini-3.5-flash', name:'Gemini 3.5 Flash' },
+    { key:'gemini-3.1-pro-preview', name:'Gemini 3.1 Pro' },
+    { key:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash-Lite' },
+    { key:'gemini-2.5-pro', name:'Gemini 2.5 Pro' },
+    { key:'gemini-2.5-flash', name:'Gemini 2.5 Flash' },
+    { key:'gemini-2.5-flash-lite', name:'Gemini 2.5 Flash-Lite' },
   ]},
-};
+  { label:'Grok', models:[
+    { key:'grok-4.3', name:'Grok 4.3' },
+    { key:'grok-4.20', name:'Grok 4.20' },
+    { key:'grok-4', name:'Grok 4' },
+    { key:'grok-3', name:'Grok 3' },
+    { key:'grok-3-mini', name:'Grok 3 Mini' },
+  ]},
+  { label:'Mistral', models:[
+    { key:'mistral-large-3', name:'Mistral Large 3' },
+    { key:'mistral-medium-3.5', name:'Mistral Medium 3.5' },
+    { key:'mistral-medium-3', name:'Mistral Medium 3' },
+    { key:'mistral-small-4', name:'Mistral Small 4' },
+    { key:'codestral', name:'Codestral' },
+  ]},
+  { label:'Perplexity', models:[
+    { key:'sonar-pro', name:'Sonar Pro' },
+    { key:'sonar', name:'Sonar' },
+    { key:'sonar-reasoning-pro', name:'Sonar Reasoning Pro' },
+  ]},
+  { label:'DeepSeek', models:[
+    { key:'deepseek-v4-pro', name:'DeepSeek V4 Pro' },
+    { key:'deepseek-v4-flash', name:'DeepSeek V4 Flash' },
+    { key:'deepseek-v3', name:'DeepSeek V3' },
+    { key:'deepseek-r1', name:'DeepSeek R1' },
+  ]},
+];
 
 async function loadPrices() {
   try {
     const res  = await fetch(chrome.runtime.getURL('prices.json'));
     const json = await res.json();
     parsePrices(json.api || json);
-    FREE_TIERS = json.free_tiers || FALLBACK_FREE_TIERS;
   } catch(e) {
     console.warn('[TokenTracker] prices.json failed, using hardcoded fallback');
     parsePrices(FALLBACK_API);
-    FREE_TIERS = FALLBACK_FREE_TIERS;
   }
   buildModelDropdown();
 }
 
-// Rebuild the model picker from FREE_TIERS so it only lists models a FREE
-// user of each platform can actually reach (e.g. no Claude Opus).
+// Build the model picker from the full catalog (all models, incl. advanced/paid).
 function buildModelDropdown() {
   if (!modelMain) return;
   const prev = userSelectedModel || modelMain.value;
@@ -108,22 +147,19 @@ function buildModelDropdown() {
   ph.textContent = '— pick a model for cost estimates —';
   modelMain.appendChild(ph);
 
-  for (const prov in FREE_TIERS) {
-    const grp = FREE_TIERS[prov];
-    if (!grp || !Array.isArray(grp.models) || !grp.models.length) continue;
+  for (const grp of MODEL_CATALOG) {
     const og = document.createElement('optgroup');
-    og.label = grp.label || prov;
+    og.label = grp.label;
     grp.models.forEach(mo => {
       const opt = document.createElement('option');
       opt.value = mo.key;
-      opt.textContent = mo.note ? `${mo.name} · ${mo.note}` : mo.name;
+      opt.textContent = mo.name;
       og.appendChild(opt);
     });
     modelMain.appendChild(og);
   }
 
-  // Re-select the user's stored model if it's still a listed (free) option.
-  if (prev) modelMain.value = prev;
+  if (prev) modelMain.value = prev;   // restore the user's stored model
 }
 
 function getPrice(modelKey) {

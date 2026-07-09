@@ -183,9 +183,15 @@ let API = {
 };
 const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot' };
 const MODELS = {
-  openai:{free:'gpt-5.5',top:'gpt-5.5'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-4-8'},
+  openai:{free:'gpt-5.5',top:'o3'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-4-8'},
   google:{free:'gemini-3.5-flash',top:'gemini-2.5-pro'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
 };
+// models that generally require a PAID tier — used to set the "frontier" signal from a log
+const ADVANCED = new Set(['claude-opus-4-8','claude-fable-5','claude-mythos-5','gpt-5.4','o3','o4-mini','gemini-2.5-pro','sonar-reasoning-pro','deepseek-v4-pro']);
+const LABELS = { 'claude-opus-4-8':'Claude Opus', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
+  'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gemini-2.5-pro':'Gemini 2.5 Pro',
+  'sonar-reasoning-pro':'Sonar Reasoning Pro', 'deepseek-v4-pro':'DeepSeek V4 Pro' };
+const labelModel = k => LABELS[k] || k;
 const money = n => n===0 ? '$0' : '$'+(Math.round(n*100)/100);
 
 /* keep prices + API rates fresh from the maintained file (no user data sent) */
@@ -285,29 +291,62 @@ function apiCostPerMonth(pf){
 function meetsNeeds(t,pf,sig){
   const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
   if(t.cap!=null && eff>t.cap) return false;
-  if(!(pf.models_used||[]).every(m=>t.models.includes(m))) return false;
+  // Only gate on models KNOWN to this provider's tiers; unknown/legacy models
+  // (e.g. gpt-4o) are assumed broadly available and don't force an upgrade.
+  const known=new Set(); PLANS[pf.provider].forEach(x=>x.models.forEach(m=>known.add(m)));
+  const gating=(pf.models_used||[]).filter(m=>known.has(m));
+  if(!gating.every(m=>t.models.includes(m))) return false;
   if(sig.team && t.seats<2) return false;
   return true;
 }
 function profileFor(prov,a,sig){
-  const pm=MODELS[prov], msgs=MSG_MID[a.messages], avg=PURPOSE_TOK[a.purpose];
+  const pm=MODELS[prov], avg=PURPOSE_TOK[a.purpose];
+  const eco=a._eco && a._eco[prov];   // measured usage from an EcoMeter export
+  if(eco){
+    const msgs = eco.messages!=null ? eco.messages : MSG_MID[a.messages];
+    return { provider:prov, messages_per_day:msgs,
+      input_tokens_per_day:  eco.inTok!=null ? eco.inTok  : Math.round(msgs*avg*0.4),
+      output_tokens_per_day: eco.outTok!=null ? eco.outTok : Math.round(msgs*avg*0.6),
+      models_used: (eco.models && eco.models.length) ? eco.models : (a.frontier==='default'?[pm.free]:[pm.top]),
+      signals:sig };
+  }
+  const msgs=MSG_MID[a.messages];
   return { provider:prov, messages_per_day:msgs,
     input_tokens_per_day:Math.round(msgs*avg*0.4), output_tokens_per_day:Math.round(msgs*avg*0.6),
     models_used: a.frontier==='default'?[pm.free]:[pm.top], signals:sig };
 }
 function recommend(pf,sig){
   const tiers=PLANS[pf.provider].slice().sort((x,y)=>x.price-y.price);
+  const free=tiers[0];
   const fit=tiers.find(t=>meetsNeeds(t,pf,sig));
   const api=apiCostPerMonth(pf);
   const cur=(sig.current_plans||[]).find(c=>c.provider===pf.provider);
-  const why=[]; let head, cost;
+  const why=[];
   if(!fit){ return { head:`Your ${NAME[pf.provider]} usage points to a Team plan.`, why:['Your volume or seats exceed the consumer tiers — look at '+NAME[pf.provider]+' Team.'] }; }
+
+  const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
+  const volumeFitsFree=(free.cap==null || eff<=free.cap);
+  const known=new Set(); tiers.forEach(t=>t.models.forEach(m=>known.add(m)));
+  const gating=(pf.models_used||[]).filter(m=>known.has(m));
+  const missingFromFree=gating.filter(m=>!free.models.includes(m));
+
+  // Low volume + only-occasional advanced model → free tier + pay-as-you-go beats a
+  // subscription. (e.g. Opus a couple times a semester — don't pay $20/mo for it.)
+  if(fit.price>0 && volumeFitsFree && missingFromFree.length && api!=null && api<fit.price){
+    why.push(`Your everyday volume fits the free tier — you only reach for ${missingFromFree.map(labelModel).join(', ')} occasionally.`);
+    why.push(`Pay per-use via the API for those (~${money(api)}/mo) instead of ${fit.m} (${money(fit.price)}/mo) — you'd pay only for what you actually run.`);
+    if(cur && cur.price>api) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-api)}/mo</b> (${money((cur.price-api)*12)}/yr).`});
+    else if(cur && cur.price>0) why.push({save:true, html:`Cheaper than your ${cur.plan} (${money(cur.price)}/mo).`});
+    return { head:`Drop to free ${NAME[pf.provider]} + pay-as-you-go.`, why };
+  }
+
+  let head, cost;
   if(fit.price===0){ head=`Stay on the free ${NAME[pf.provider]} tier.`; cost=0;
     why.push(`Free covers you — about ${fit.cap} messages/day, and it includes the models you use.`);
   } else {
     cost=fit.price;
-    const missing=(pf.models_used||[]).filter(m=>!tiers[0].models.includes(m));
-    why.push(missing.length ? `Cheapest tier that unlocks the model you need.` : `Cheapest tier above the free tier’s ~${tiers[0].cap}/day cap for your volume.`);
+    why.push(missingFromFree.length ? `Cheapest tier that unlocks ${missingFromFree.map(labelModel).join(', ')} at your volume.`
+                                    : `Cheapest tier above the free tier’s ~${free.cap}/day cap for your volume.`);
     head=`${fit.m} — ${money(fit.price)}/mo.`;
   }
   if(cur && cur.price>cost) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — switching saves <b>${money(cur.price-cost)}/mo</b> (${money((cur.price-cost)*12)}/yr).`});
@@ -424,8 +463,13 @@ function applyEcometer(log){
   if(provs.length) state.answers.tools=provs;
   const totalMsgs=pf.reduce((s,p)=>s+(p.messages_per_day||0),0);
   if(totalMsgs) state.answers.messages=bandFor(totalMsgs);
-  const usesTop=pf.some(p=>(p.models_used||[]).some(m=>['claude-opus-4-8','gemini-2.5-pro'].includes(m)));
-  state.answers.frontier=usesTop?'always':'default';
+  // carry real per-provider usage so the engine uses MEASURED models/volume, not guesses
+  state.answers._eco={};
+  pf.forEach(p=>{ if(PLANS[p.provider]) state.answers._eco[p.provider]={
+    models:(p.models_used||[]).filter(Boolean),
+    messages:p.messages_per_day, inTok:p.input_tokens_per_day, outTok:p.output_tokens_per_day }; });
+  const usesAdvanced=pf.some(p=>(p.models_used||[]).some(m=>ADVANCED.has(m)));
+  state.answers.frontier=usesAdvanced?'always':'default';
   state.i=1;               // tools + volume prefilled; continue at frequency
   render();
   window.scrollTo({top:document.getElementById('quiz').offsetTop-20,behavior:'smooth'});
