@@ -4,9 +4,11 @@
  * Increments the LAST component of extension/manifest.json's version
  * (e.g. 6.7 → 6.8 → 6.9 → 6.10) and prints the new version to stdout.
  *
- * The Chrome Web Store rejects any upload whose version is not strictly
- * higher than the currently published one (PKG_INVALID_VERSION_NUMBER),
- * so the weekly publish workflow calls this before building the zip.
+ * The Chrome Web Store rejects any upload whose version is not strictly higher
+ * than the currently published one (PKG_INVALID_VERSION_NUMBER). The publish
+ * workflow calls this REACTIVELY — only when an upload is rejected as a duplicate
+ * — then rebuilds and retries. It is not called proactively, so a manually set
+ * version is uploaded as-is and manual/automatic bumps never collide.
  *
  * Uses a surgical string replace so the rest of manifest.json stays
  * byte-for-byte identical (preserving its \u escapes and formatting).
