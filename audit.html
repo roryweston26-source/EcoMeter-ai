@@ -132,7 +132,7 @@
     </div>
     <button class="eco-btn" id="ecoBtn" type="button">Connect usage</button>
     <input type="file" id="ecoFile" accept="application/json,.json" class="hidden">
-    <p class="eco-note" id="ecoNote">Your file is read locally and never uploaded. Export is coming to EcoMeter soon — for now, answer below.</p>
+    <p class="eco-note" id="ecoNote">In EcoMeter AI, click “⤓ Usage” in the panel to export, then drop the file here. It’s read locally and never uploaded.</p>
   </div>
 
   <div class="card" id="quiz"></div>
@@ -195,6 +195,17 @@ fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).t
     for(const prov in PLANS) for(const t of PLANS[prov]){
       const row=d.subscriptions.find(s=>s.p===prov && s.m===t.m);
       if(row && typeof row.price==='number') t.price=row.price;
+    }
+  }
+  // free-tier model access is authoritative in prices.json → keep it in sync
+  if(d.free_tiers){
+    for(const prov in PLANS){
+      const ft=d.free_tiers[prov];
+      if(ft && Array.isArray(ft.models)){
+        const keys=ft.models.map(m=> (m && m.key) ? m.key : m).filter(Boolean);
+        const free=PLANS[prov][0];
+        if(free && free.price===0 && keys.length) free.models=keys;
+      }
     }
   }
 }).catch(()=>{});

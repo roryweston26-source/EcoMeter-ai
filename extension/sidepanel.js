@@ -26,6 +26,7 @@ const refreshBtn    = document.getElementById('refresh-btn');
 const clearBtn      = document.getElementById('clear-btn');
 const logoutBtn     = document.getElementById('logout-btn');
 const latestBtn     = document.getElementById('latest-btn');
+const exportBtn     = document.getElementById('export-btn');
 const footerStatus  = document.getElementById('footer-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
@@ -179,6 +180,127 @@ function fmtWater(ml) {
   if (ml >= 1)     return ml.toFixed(2) + ' ml';
   if (ml >= 0.001) return (ml * 1000).toFixed(2) + ' µl';
   return ml.toFixed(6) + ' ml';
+}
+
+// ── Usage log — local only, for the Subscription Auditor ──────────────────────
+// Accumulates day-by-day message/token totals per platform so the user can EXPORT
+// a usage summary and upload it to the Auditor. Everything stays in
+// chrome.storage.local — nothing is ever sent anywhere.
+//
+// We track each conversation's RUNNING TOTAL and add only the positive delta to
+// the daily aggregate. That's streaming-safe (a growing reply's tokens are added
+// once, not re-added each poll) and dedup-safe (reopening a conversation adds 0).
+let USAGE     = { days: {} };   // { 'YYYY-MM-DD': { provider: { msgs, inTok, outTok, byModel:{} } } }
+let convState = {};             // convKey -> { msgs, inTok, outTok } running totals
+let convOrder = [];             // FIFO of conv keys (bounded)
+let _usageSaveTimer = null;
+
+const PROVIDER_OF = {
+  ChatGPT:'openai', Claude:'anthropic', Gemini:'google', Copilot:'microsoft',
+  Grok:'xai', Mistral:'mistral', Perplexity:'perplexity', Poe:'poe', DeepSeek:'deepseek',
+};
+
+function usageTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function usageHash(role, text) {
+  let h = 5381; const s = role + ':' + text;
+  for (let i = 0; i < s.length; i++) { h = ((h << 5) + h) ^ s.charCodeAt(i); h >>>= 0; }
+  return h.toString(36);
+}
+
+async function loadUsage() {
+  try {
+    const { usage } = await chrome.storage.local.get('usage');
+    if (usage) {
+      if (usage.days) USAGE = { days: usage.days };
+      if (usage.conv) { convState = usage.conv.state || {}; convOrder = usage.conv.order || []; }
+    }
+  } catch(e) { /* start a fresh log */ }
+}
+
+function scheduleUsageSave() {
+  clearTimeout(_usageSaveTimer);
+  _usageSaveTimer = setTimeout(() => {
+    const cutoff = Date.now() - 45 * 86400000;   // keep ~45 days
+    for (const d in USAGE.days) { if (Date.parse(d + 'T00:00:00') < cutoff) delete USAGE.days[d]; }
+    chrome.storage.local.set({ usage: { days: USAGE.days, conv: { state: convState, order: convOrder } } }).catch(() => {});
+  }, 2000);
+}
+
+function accumulateUsage(msgs, platformName, model) {
+  const counted = (msgs || []).filter(m => m.counted && m.tokens);
+  if (!counted.length) return;
+
+  // conversation key = hash of the first message (stable for the life of a chat)
+  const first = counted[0];
+  const key = usageHash(first.role, first.text.slice(0, 200));
+
+  let cm = 0, ci = 0, co = 0;
+  for (const m of counted) { cm++; if (m.role === 'user') ci += m.tokens; else co += m.tokens; }
+
+  const prev = convState[key] || { msgs:0, inTok:0, outTok:0 };
+  const dM = Math.max(0, cm - prev.msgs), dI = Math.max(0, ci - prev.inTok), dO = Math.max(0, co - prev.outTok);
+  if (dM === 0 && dI === 0 && dO === 0) return;   // nothing new (re-poll of same state)
+
+  convState[key] = { msgs:cm, inTok:ci, outTok:co };
+  if (convOrder[convOrder.length - 1] !== key) { convOrder = convOrder.filter(k => k !== key); convOrder.push(key); }
+  while (convOrder.length > 500) { delete convState[convOrder.shift()]; }   // bound history
+
+  const prov = PROVIDER_OF[platformName] || (platformName || 'other').toLowerCase();
+  const mdl  = model || '(unspecified)';
+  const date = usageTodayStr();
+  const day  = USAGE.days[date] || (USAGE.days[date] = {});
+  const p    = day[prov]        || (day[prov] = { msgs:0, inTok:0, outTok:0, byModel:{} });
+  const bm   = p.byModel[mdl]   || (p.byModel[mdl] = { msgs:0, inTok:0, outTok:0 });
+  p.msgs += dM;  p.inTok += dI;  p.outTok += dO;
+  bm.msgs += dM; bm.inTok += dI; bm.outTok += dO;
+  scheduleUsageSave();
+}
+
+// Average per ACTIVE day (days you actually used that tool) → matches "on a day you use it".
+function buildUsageExport(windowDays) {
+  windowDays = windowDays || 30;
+  const cutoff = Date.now() - windowDays * 86400000;
+  const agg = {};
+  for (const date in USAGE.days) {
+    if (Date.parse(date + 'T00:00:00') < cutoff) continue;
+    const day = USAGE.days[date];
+    for (const prov in day) {
+      const a = agg[prov] || (agg[prov] = { days:new Set(), msgs:0, inTok:0, outTok:0, models:new Set() });
+      a.days.add(date);
+      a.msgs += day[prov].msgs; a.inTok += day[prov].inTok; a.outTok += day[prov].outTok;
+      for (const mdl in day[prov].byModel) { if (mdl !== '(unspecified)') a.models.add(mdl); }
+    }
+  }
+  const platforms = Object.keys(agg).map(prov => {
+    const a = agg[prov], activeDays = Math.max(1, a.days.size);
+    return {
+      provider: prov,
+      messages_per_day:      Math.round(a.msgs   / activeDays),
+      input_tokens_per_day:  Math.round(a.inTok  / activeDays),
+      output_tokens_per_day: Math.round(a.outTok / activeDays),
+      models_used: [...a.models],
+    };
+  });
+  return { app:'EcoMeter AI', kind:'usage-export', version:1,
+    generated: new Date().toISOString().split('T')[0], window_days: windowDays, platforms };
+}
+
+function exportUsage() {
+  const data = buildUsageExport(30);
+  if (!data.platforms.length) {
+    if (footerStatus) footerStatus.textContent = 'No usage tracked yet — chat on a supported site first.';
+    return;
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'ecometer-usage.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  if (footerStatus) footerStatus.textContent = 'Exported → upload it to the Subscription Auditor at legerlyai.com.';
 }
 
 // ── Tokenizer loading ─────────────────────────────────────
@@ -793,6 +915,8 @@ async function processMessages(rawMsgs, platformName, platformColor, images) {
 
     if (msgData !== snapshot) return;
 
+    accumulateUsage(msgData, currentPlatformName, activeModelKey);
+
     renderMessages();
     renderSummary();
 
@@ -905,6 +1029,7 @@ function startPolling() {
 (async () => {
   await loadPrices();
   await loadWater();
+  await loadUsage();
 
   const stored        = await chrome.storage.local.get(['userModel', 'setupDone', 'storageVersion']);
   const storedSession = await chrome.storage.session.get(['apiKey']);
@@ -930,6 +1055,8 @@ function startPolling() {
 // ── Skip button ───────────────────────────────────────────
 const skipBtn = document.getElementById('skip-btn');
 if (skipBtn) skipBtn.addEventListener('click', () => showTracker());
+
+if (exportBtn) exportBtn.addEventListener('click', exportUsage);
 
 // ── Model selection ───────────────────────────────────────
 modelMain.addEventListener('change', async () => {
