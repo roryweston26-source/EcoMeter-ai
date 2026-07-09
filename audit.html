@@ -149,29 +149,31 @@
 "use strict";
 
 /* ---------- plan metadata (capabilities inline; prices synced from prices.json) ----------
-   caps are APPROX daily message ceilings and need a source pass. */
+   `cap` = approximate messages/day, derived from providers' published rolling-window
+   limits (researched Jul 2026; providers change these often & some are compute-based,
+   so treat as estimates). null = effectively unlimited for normal use. */
 let PLANS = {
   openai: [
-    { m:'ChatGPT Free', price:0,   cap:40,  models:['gpt-5.5','gpt-5.4-mini'], features:[], seats:1 },
-    { m:'ChatGPT Go',   price:8,   cap:150, models:['gpt-5.5','gpt-5.4-mini'], features:['image-gen'], seats:1 },
-    { m:'ChatGPT Plus', price:20,  cap:300, models:['gpt-5.5','gpt-5.4','gpt-5.4-mini','o3','o4-mini'], features:['image-gen','voice','projects'], seats:1 },
+    { m:'ChatGPT Free', price:0,   cap:45,  models:['gpt-5.5','gpt-5.4-mini'], features:[], seats:1 },
+    { m:'ChatGPT Go',   price:8,   cap:600, models:['gpt-5.5','gpt-5.4-mini'], features:['image-gen'], seats:1 },
+    { m:'ChatGPT Plus', price:20,  cap:900, models:['gpt-5.5','gpt-5.4','gpt-5.4-mini','o3','o4-mini'], features:['image-gen','voice','projects'], seats:1 },
     { m:'ChatGPT Pro',  price:100, cap:null,models:['gpt-5.5','gpt-5.4','o3','o4-mini','gpt-4.1'], features:['image-gen','voice','projects','research'], seats:1 },
   ],
   anthropic: [
-    { m:'Claude Free',   price:0,   cap:30,   models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
+    { m:'Claude Free',   price:0,   cap:40,   models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
     { m:'Claude Pro',    price:20,  cap:225,  models:['claude-sonnet-5','claude-sonnet-4-6','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking'], seats:1 },
     { m:'Claude Max 5×', price:100, cap:1125, models:['claude-sonnet-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
     { m:'Claude Max 20×',price:200, cap:null, models:['claude-sonnet-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
     { m:'Gemini (Free)',  price:0,    cap:60,  models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:[], seats:1 },
-    { m:'Google AI Plus', price:7.99, cap:150, models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:['more-pro'], seats:1 },
-    { m:'Google AI Pro',  price:19.99,cap:500, models:['gemini-3.5-flash','gemini-3.1-pro-preview','gemini-2.5-pro'], features:['deep-research','image-gen','video-gen'], seats:1 },
+    { m:'Google AI Plus', price:7.99, cap:120, models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:['more-pro'], seats:1 },
+    { m:'Google AI Pro',  price:19.99,cap:240, models:['gemini-3.5-flash','gemini-3.1-pro-preview','gemini-2.5-pro'], features:['deep-research','image-gen','video-gen'], seats:1 },
     { m:'Google AI Ultra',price:99.99,cap:null,models:['gemini-3.5-flash','gemini-3.1-pro-preview','gemini-2.5-pro'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
   ],
   microsoft: [
-    { m:'Copilot (Free)', price:0,    cap:60,  models:['gpt-5.5'], features:[], seats:1 },
-    { m:'Microsoft 365 Premium', price:19.99, cap:300, models:['gpt-5.5'], features:['office','image-gen'], seats:1 },
+    { m:'Copilot (Free)', price:0,    cap:200, models:['gpt-5.5'], features:[], seats:1 },
+    { m:'Microsoft 365 Premium', price:19.99, cap:null, models:['gpt-5.5'], features:['office','image-gen'], seats:1 },
   ],
 };
 let API = {
