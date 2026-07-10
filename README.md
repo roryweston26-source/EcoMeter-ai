@@ -2,7 +2,9 @@
 
 **Track token usage, cost, and environmental impact across your AI conversations — automatically.**
 
-A Chrome extension by [Legerly](https://github.com/roryweston26-source) that sits in your browser's side panel and monitors Claude, ChatGPT, Gemini, Grok, and more in real time. No account required.
+EcoMeter AI is a Manifest V3 Chrome extension with a side-panel UI that tracks token usage, cost, and water impact in real time across Claude, ChatGPT, Gemini, Grok, Mistral, Perplexity, Copilot, Poe, and DeepSeek. No account required — everything runs locally in your browser.
+
+It also feeds Legerly's **Subscription Auditor**. With opt-in, local, lifetime usage tracking enabled, the extension accumulates message counts and token volume per platform/model (no message content). The **⤓ Export for Auditor** button downloads this as `ecometer-usage.json`. The Auditor ([`audit.html`](https://legerlyai.com/audit.html)) reads that file client-side via FileReader — never uploaded anywhere — and pre-fills its quiz with measured usage instead of self-reported estimates, so its recommendation engine works off real volume data.
 
 ---
 
