@@ -344,6 +344,40 @@
     }
     .water-disclaimer a { color: var(--green); }
 
+    /* ── Usage tracking opt-in (for the Subscription Auditor) ── */
+    .usage-panel {
+      margin: 8px 14px 0;
+      padding: 7px 10px;
+      background: rgba(76,175,130,0.07);
+      border: 1px solid rgba(76,175,130,0.18);
+      border-radius: 6px;
+      font-size: 9px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .usage-panel summary {
+      color: var(--green);
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .usage-panel summary::after {
+      content: '▸ for the Subscription Auditor';
+      font-size: 8px; color: var(--muted); font-weight: 400;
+    }
+    .usage-panel[open] summary::after { content: '▾ less'; }
+    .usage-panel a { color: var(--green); }
+    .usage-toggle {
+      display: flex; align-items: center; gap: 7px;
+      margin-top: 8px; cursor: pointer; color: var(--text); font-size: 10px;
+    }
+    .usage-toggle input { accent-color: var(--green); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+    .usage-note { margin-top: 6px; font-size: 8.5px; line-height: 1.6; }
+    .usage-actions { display: flex; gap: 6px; margin-top: 8px; }
+
     /* ── Message list ── */
     .msg-list {
       flex: 1;
@@ -478,11 +512,29 @@
       <button class="ctrl-btn" id="refresh-btn">↻ Refresh</button>
       <button class="ctrl-btn" id="latest-btn">Latest</button>
       <button class="ctrl-btn" id="water-scope-btn">💧 Conservative</button>
-      <button class="ctrl-btn" id="export-btn" title="Export your usage for the Subscription Auditor">⤓ Usage</button>
       <div class="ctrl-btn-spacer"></div>
       <button class="ctrl-btn" id="clear-btn">Clear</button>
     </div>
   </div>
+
+  <!-- Usage tracking opt-in (feeds the Subscription Auditor) -->
+  <details class="usage-panel" id="usage-panel">
+    <summary>📊 Usage tracking</summary>
+    <label class="usage-toggle">
+      <input type="checkbox" id="usage-optin">
+      <span>Track my usage on this device</span>
+    </label>
+    <p class="usage-note">
+      Keeps a running tally of how much you use each model — <strong>on your device only,
+      never uploaded</strong> — so you can export it for a personalized plan pick from the
+      <a href="https://legerlyai.com/audit.html" target="_blank" rel="noopener">Subscription Auditor ↗</a>.
+      Counts only; no message text is stored.
+    </p>
+    <div class="usage-actions" id="usage-actions" style="display:none">
+      <button class="ctrl-btn" id="export-btn">⤓ Export for Auditor</button>
+      <button class="ctrl-btn danger" id="clear-usage-btn">🗑 Clear history</button>
+    </div>
+  </details>
 
   <!-- Disclaimer — collapsible -->
   <details class="water-disclaimer" id="water-disclaimer">

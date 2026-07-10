@@ -27,6 +27,9 @@ const clearBtn      = document.getElementById('clear-btn');
 const logoutBtn     = document.getElementById('logout-btn');
 const latestBtn     = document.getElementById('latest-btn');
 const exportBtn     = document.getElementById('export-btn');
+const usageOptin    = document.getElementById('usage-optin');
+const usageActions  = document.getElementById('usage-actions');
+const clearUsageBtn = document.getElementById('clear-usage-btn');
 const footerStatus  = document.getElementById('footer-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
@@ -230,6 +233,7 @@ let USAGE     = { days: {} };   // { 'YYYY-MM-DD': { provider: { msgs, inTok, ou
 let convState = {};             // convKey -> { msgs, inTok, outTok } running totals
 let convOrder = [];             // FIFO of conv keys (bounded)
 let _usageSaveTimer = null;
+let usageTrackingEnabled = false;   // OPT-IN — off by default; nothing is recorded unless enabled
 
 const PROVIDER_OF = {
   ChatGPT:'openai', Claude:'anthropic', Gemini:'google', Copilot:'microsoft',
@@ -248,7 +252,8 @@ function usageHash(role, text) {
 
 async function loadUsage() {
   try {
-    const { usage } = await chrome.storage.local.get('usage');
+    const { usage, usageTracking } = await chrome.storage.local.get(['usage', 'usageTracking']);
+    usageTrackingEnabled = usageTracking === true;   // default OFF
     if (usage) {
       if (usage.days) USAGE = { days: usage.days };
       if (usage.conv) { convState = usage.conv.state || {}; convOrder = usage.conv.order || []; }
@@ -259,13 +264,17 @@ async function loadUsage() {
 function scheduleUsageSave() {
   clearTimeout(_usageSaveTimer);
   _usageSaveTimer = setTimeout(() => {
-    const cutoff = Date.now() - 45 * 86400000;   // keep ~45 days
-    for (const d in USAGE.days) { if (Date.parse(d + 'T00:00:00') < cutoff) delete USAGE.days[d]; }
+    // Keep the FULL history so the export reflects LIFETIME usage — bounded only
+    // by a generous backstop (~3 years of daily entries) so storage can't grow
+    // without limit. Each day is tiny, so this stays well within the quota.
+    const dates = Object.keys(USAGE.days).sort();
+    while (dates.length > 1200) { delete USAGE.days[dates.shift()]; }
     chrome.storage.local.set({ usage: { days: USAGE.days, conv: { state: convState, order: convOrder } } }).catch(() => {});
   }, 2000);
 }
 
 function accumulateUsage(msgs, platformName, model) {
+  if (!usageTrackingEnabled) return;   // opt-in: record nothing unless the user turned it on
   const counted = (msgs || []).filter(m => m.counted && m.tokens);
   if (!counted.length) return;
 
@@ -295,13 +304,13 @@ function accumulateUsage(msgs, platformName, model) {
   scheduleUsageSave();
 }
 
-// Average per ACTIVE day (days you actually used that tool) → matches "on a day you use it".
-function buildUsageExport(windowDays) {
-  windowDays = windowDays || 30;
-  const cutoff = Date.now() - windowDays * 86400000;
+// LIFETIME export: aggregate ALL tracked history. Volume is averaged per ACTIVE
+// day (days you actually used that tool) → "on a day you use it, how much".
+// Lifetime rather than a recent window so infrequent-but-real usage — e.g. an
+// advanced model you reach for a few times a term — still shows up for the Auditor.
+function buildUsageExport() {
   const agg = {};
   for (const date in USAGE.days) {
-    if (Date.parse(date + 'T00:00:00') < cutoff) continue;
     const day = USAGE.days[date];
     for (const prov in day) {
       const a = agg[prov] || (agg[prov] = { days:new Set(), msgs:0, inTok:0, outTok:0, models:new Set() });
@@ -317,15 +326,17 @@ function buildUsageExport(windowDays) {
       messages_per_day:      Math.round(a.msgs   / activeDays),
       input_tokens_per_day:  Math.round(a.inTok  / activeDays),
       output_tokens_per_day: Math.round(a.outTok / activeDays),
+      total_messages: a.msgs,
+      active_days: a.days.size,
       models_used: [...a.models],
     };
   });
-  return { app:'EcoMeter AI', kind:'usage-export', version:1,
-    generated: new Date().toISOString().split('T')[0], window_days: windowDays, platforms };
+  return { app:'EcoMeter AI', kind:'usage-export', version:1, scope:'lifetime',
+    generated: new Date().toISOString().split('T')[0], days_tracked: Object.keys(USAGE.days).length, platforms };
 }
 
 function exportUsage() {
-  const data = buildUsageExport(30);
+  const data = buildUsageExport();
   if (!data.platforms.length) {
     if (footerStatus) footerStatus.textContent = 'No usage tracked yet — chat on a supported site first.';
     return;
@@ -337,6 +348,22 @@ function exportUsage() {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   if (footerStatus) footerStatus.textContent = 'Exported → upload it to the Subscription Auditor at legerlyai.com.';
+}
+
+function setUsageTracking(on) {
+  usageTrackingEnabled = !!on;
+  chrome.storage.local.set({ usageTracking: usageTrackingEnabled }).catch(() => {});
+  if (usageActions) usageActions.style.display = usageTrackingEnabled ? 'flex' : 'none';
+  if (footerStatus) footerStatus.textContent = usageTrackingEnabled
+    ? 'Usage tracking on — local only. Export it to the Auditor anytime.'
+    : 'Usage tracking off.';
+}
+
+async function clearUsageHistory() {
+  USAGE = { days: {} }; convState = {}; convOrder = [];
+  clearTimeout(_usageSaveTimer);
+  try { await chrome.storage.local.set({ usage: { days: {}, conv: { state: {}, order: [] } } }); } catch(e) {}
+  if (footerStatus) footerStatus.textContent = 'Usage history cleared.';
 }
 
 // ── Tokenizer loading ─────────────────────────────────────
@@ -1067,6 +1094,12 @@ function startPolling() {
   await loadWater();
   await loadUsage();
 
+  // Reflect the saved opt-in state in the toggle + actions
+  if (usageOptin) {
+    usageOptin.checked = usageTrackingEnabled;
+    if (usageActions) usageActions.style.display = usageTrackingEnabled ? 'flex' : 'none';
+  }
+
   const stored        = await chrome.storage.local.get(['userModel', 'setupDone', 'storageVersion']);
   const storedSession = await chrome.storage.session.get(['apiKey']);
 
@@ -1092,7 +1125,9 @@ function startPolling() {
 const skipBtn = document.getElementById('skip-btn');
 if (skipBtn) skipBtn.addEventListener('click', () => showTracker());
 
-if (exportBtn) exportBtn.addEventListener('click', exportUsage);
+if (exportBtn)     exportBtn.addEventListener('click', exportUsage);
+if (usageOptin)    usageOptin.addEventListener('change', () => setUsageTracking(usageOptin.checked));
+if (clearUsageBtn) clearUsageBtn.addEventListener('click', clearUsageHistory);
 
 // ── Model selection ───────────────────────────────────────
 modelMain.addEventListener('change', async () => {
@@ -1160,8 +1195,12 @@ clearBtn.addEventListener('click', () => {
 });
 
 logoutBtn.addEventListener('click', async () => {
-  await chrome.storage.local.remove(['userModel', 'setupDone', 'storageVersion']);
+  await chrome.storage.local.remove(['userModel', 'setupDone', 'storageVersion', 'usage', 'usageTracking']);
   await chrome.storage.session.clear();
+  // Wipe the local usage log too — logout means "forget me"
+  USAGE = { days: {} }; convState = {}; convOrder = []; usageTrackingEnabled = false;
+  if (usageOptin)   usageOptin.checked = false;
+  if (usageActions) usageActions.style.display = 'none';
   apiKey            = null;
   userSelectedModel = null;
   msgData           = [];
