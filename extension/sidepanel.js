@@ -27,6 +27,9 @@ const clearBtn      = document.getElementById('clear-btn');
 const logoutBtn     = document.getElementById('logout-btn');
 const latestBtn     = document.getElementById('latest-btn');
 const exportBtn     = document.getElementById('export-btn');
+const usageOptin    = document.getElementById('usage-optin');
+const usageActions  = document.getElementById('usage-actions');
+const clearUsageBtn = document.getElementById('clear-usage-btn');
 const footerStatus  = document.getElementById('footer-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
@@ -230,6 +233,7 @@ let USAGE     = { days: {} };   // { 'YYYY-MM-DD': { provider: { msgs, inTok, ou
 let convState = {};             // convKey -> { msgs, inTok, outTok } running totals
 let convOrder = [];             // FIFO of conv keys (bounded)
 let _usageSaveTimer = null;
+let usageTrackingEnabled = false;   // OPT-IN — off by default; nothing is recorded unless enabled
 
 const PROVIDER_OF = {
   ChatGPT:'openai', Claude:'anthropic', Gemini:'google', Copilot:'microsoft',
@@ -248,7 +252,8 @@ function usageHash(role, text) {
 
 async function loadUsage() {
   try {
-    const { usage } = await chrome.storage.local.get('usage');
+    const { usage, usageTracking } = await chrome.storage.local.get(['usage', 'usageTracking']);
+    usageTrackingEnabled = usageTracking === true;   // default OFF
     if (usage) {
       if (usage.days) USAGE = { days: usage.days };
       if (usage.conv) { convState = usage.conv.state || {}; convOrder = usage.conv.order || []; }
@@ -269,6 +274,7 @@ function scheduleUsageSave() {
 }
 
 function accumulateUsage(msgs, platformName, model) {
+  if (!usageTrackingEnabled) return;   // opt-in: record nothing unless the user turned it on
   const counted = (msgs || []).filter(m => m.counted && m.tokens);
   if (!counted.length) return;
 
@@ -342,6 +348,22 @@ function exportUsage() {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   if (footerStatus) footerStatus.textContent = 'Exported → upload it to the Subscription Auditor at legerlyai.com.';
+}
+
+function setUsageTracking(on) {
+  usageTrackingEnabled = !!on;
+  chrome.storage.local.set({ usageTracking: usageTrackingEnabled }).catch(() => {});
+  if (usageActions) usageActions.style.display = usageTrackingEnabled ? 'flex' : 'none';
+  if (footerStatus) footerStatus.textContent = usageTrackingEnabled
+    ? 'Usage tracking on — local only. Export it to the Auditor anytime.'
+    : 'Usage tracking off.';
+}
+
+async function clearUsageHistory() {
+  USAGE = { days: {} }; convState = {}; convOrder = [];
+  clearTimeout(_usageSaveTimer);
+  try { await chrome.storage.local.set({ usage: { days: {}, conv: { state: {}, order: [] } } }); } catch(e) {}
+  if (footerStatus) footerStatus.textContent = 'Usage history cleared.';
 }
 
 // ── Tokenizer loading ─────────────────────────────────────
@@ -1072,6 +1094,12 @@ function startPolling() {
   await loadWater();
   await loadUsage();
 
+  // Reflect the saved opt-in state in the toggle + actions
+  if (usageOptin) {
+    usageOptin.checked = usageTrackingEnabled;
+    if (usageActions) usageActions.style.display = usageTrackingEnabled ? 'flex' : 'none';
+  }
+
   const stored        = await chrome.storage.local.get(['userModel', 'setupDone', 'storageVersion']);
   const storedSession = await chrome.storage.session.get(['apiKey']);
 
@@ -1097,7 +1125,9 @@ function startPolling() {
 const skipBtn = document.getElementById('skip-btn');
 if (skipBtn) skipBtn.addEventListener('click', () => showTracker());
 
-if (exportBtn) exportBtn.addEventListener('click', exportUsage);
+if (exportBtn)     exportBtn.addEventListener('click', exportUsage);
+if (usageOptin)    usageOptin.addEventListener('change', () => setUsageTracking(usageOptin.checked));
+if (clearUsageBtn) clearUsageBtn.addEventListener('click', clearUsageHistory);
 
 // ── Model selection ───────────────────────────────────────
 modelMain.addEventListener('change', async () => {
@@ -1165,8 +1195,12 @@ clearBtn.addEventListener('click', () => {
 });
 
 logoutBtn.addEventListener('click', async () => {
-  await chrome.storage.local.remove(['userModel', 'setupDone', 'storageVersion']);
+  await chrome.storage.local.remove(['userModel', 'setupDone', 'storageVersion', 'usage', 'usageTracking']);
   await chrome.storage.session.clear();
+  // Wipe the local usage log too — logout means "forget me"
+  USAGE = { days: {} }; convState = {}; convOrder = []; usageTrackingEnabled = false;
+  if (usageOptin)   usageOptin.checked = false;
+  if (usageActions) usageActions.style.display = 'none';
   apiKey            = null;
   userSelectedModel = null;
   msgData           = [];

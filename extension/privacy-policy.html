@@ -89,8 +89,10 @@
 <ul>
   <li><span class="no">Does not</span> transmit conversation text to any external server.</li>
   <li><span class="no">Does not</span> sell, rent, or share any user data with third parties.</li>
-  <li><span class="no">Does not</span> track users across websites or sessions.</li>
-  <li><span class="no">Does not</span> collect analytics, telemetry, or usage statistics.</li>
+  <li><span class="no">Does not</span> track users across websites, or send any usage data off your device.</li>
+  <li><span class="no">Does not</span> collect analytics or telemetry. Local usage statistics are recorded
+      only if you switch on the optional Usage Tracking control (off by default), and even then the
+      data stays on your device — see below.</li>
   <li><span class="no">Does not</span> use your data for advertising or profiling.</li>
   <li><span class="no">Does not</span> store conversation content between browser sessions.</li>
   <li><span class="no">Does not</span> load any resources from external servers at runtime.
@@ -130,6 +132,18 @@ is stored by this call. You can remove the key at any time using the
 Your selected AI model is stored in <code>chrome.storage.local</code>, which
 keeps data on your device only and never syncs it to Google's servers or any
 other remote server. This preference is never transmitted anywhere.</p>
+
+<p><strong>Usage tracking (optional, off by default, local only).</strong>
+The Subscription Auditor at legerlyai.com can suggest the plan that fits your real
+usage. To support that, the panel has an <em>opt-in</em> "Usage tracking" switch that
+is <strong>off by default</strong>. When you turn it on, the extension keeps a running
+tally — on your device only, in <code>chrome.storage.local</code> — of how many
+messages and tokens you use per platform and per model. It stores
+<strong>counts only; no message content is kept</strong> (text is used transiently to
+count tokens, then discarded). This data is never transmitted. You export it yourself
+as a file to upload to the Auditor, and you can erase it at any time with "Clear
+history", by turning the switch off, or via "remove key" (logout). Leave the switch
+off and none of this is recorded.</p>
 
 <p><strong>Active tab identity (not stored, not transmitted).</strong>
 When the user clicks the extension icon, the browser grants temporary access to
