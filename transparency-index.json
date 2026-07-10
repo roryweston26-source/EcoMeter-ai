@@ -1,79 +1,88 @@
 {
   "_meta": {
     "title": "AI Transparency Index",
-    "lede": "How openly the major AI providers disclose what you're paying for, what happens to your data, and what it costs the planet. Independently graded by Legerly.",
+    "lede": "How much each major AI company discloses about the water and energy footprint of its AI data centers — not the actual footprint, but the transparency of it. Independently graded by Legerly. 'Not disclosed' is a finding, not a gap to paper over.",
     "last_verified": "2026-07-10",
-    "status": "placeholder",
-    "status_note": "SCAFFOLDING — every grade below is a placeholder (⚪). Replace with verified data in transparency-index.json; the page re-renders automatically.",
-    "methodology": "Each provider is graded on each dimension from its publicly available documentation: 🟢 transparent (clear, complete, easy to find), 🟡 partial (some disclosure, gaps or friction), 🔴 opaque (little or no public disclosure). Grades reflect what was verifiable as of the source date shown on each cell. Providers were not consulted; this is Legerly's independent read of public materials.",
+    "status": "ok",
+    "status_note": "",
+    "methodology": "Grades: 🟢 good disclosure, 🟡 partial, 🔴 none or poor. We grade how much each company DISCLOSES about the environmental footprint of the AI compute it controls — not the footprint itself. Rented-vs-owned rule: each company is graded only on what IT publishes, regardless of who owns the building — so a renter that stays silent (OpenAI, Anthropic, xAI) has disclosed nothing, while one that publishes facility detail gets credit. Cross-board: no company separates AI-specific from general data-center footprint, none discloses indirect (power-generation) water — LBNL estimates indirect ≈ 12× direct — and there is no U.S. federal water-disclosure mandate as of mid-2026.",
     "grade_legend": [
-      { "grade": "green",   "symbol": "🟢", "label": "Transparent" },
-      { "grade": "yellow",  "symbol": "🟡", "label": "Partial" },
-      { "grade": "red",     "symbol": "🔴", "label": "Opaque" },
-      { "grade": "pending", "symbol": "⚪", "label": "Not yet verified" }
+      { "grade": "green",  "symbol": "🟢", "label": "Good disclosure" },
+      { "grade": "yellow", "symbol": "🟡", "label": "Partial" },
+      { "grade": "red",    "symbol": "🔴", "label": "None or poor" }
     ],
     "caveats": [
-      "Grades reflect publicly available documentation only — internal practices may differ and aren't audited.",
-      "The AI market moves fast. Each cell shows the date its source was checked; see the 'last verified' stamp for the overall pass.",
-      "This is Legerly's independent assessment, not an official or endorsed rating. Providers were not contacted."
+      "We grade DISCLOSURE quality, not true environmental performance. A low grade means opacity, not necessarily high impact — a genuine closed-loop site (e.g. Abilene) may use little water yet still score 🔴 for not publishing numbers.",
+      "Withdrawal ≠ consumption, and direct ≠ indirect. No company discloses indirect (power-generation) water, which LBNL estimates at ~12× direct — so every 'water positive' claim understates the true system footprint.",
+      "Some gradings are genuinely ambiguous and are flagged, not silently resolved: Meta's site-level cell sits between 🟡/🔴; Microsoft's 'water positive' claim is aggressive relative to its thin data-center-specific disclosure.",
+      "Conflicting figures are shown as ranges, not picks — e.g. Google Council Bluffs 2024 ≈ 1.0B gal consumed / 1.3B potable / 1.4B withdrawn depending on source and metric.",
+      "The xAI/OpenAI/Anthropic non-disclosure finding rests partly on independent trackers (Stanford Foundation Model Transparency Index, Dec 2025; Earth911, 2026), but the underlying fact — no company environmental report exists — is directly verifiable from the absence of any such document."
     ]
   },
   "columns": [
-    { "key": "pricing",       "label": "Pricing clarity" },
-    { "key": "model_docs",    "label": "Model docs" },
-    { "key": "data_privacy",  "label": "Data & privacy" },
-    { "key": "environmental", "label": "Environmental" },
-    { "key": "usage_limits",  "label": "Usage limits" }
+    { "key": "site_level",    "label": "Site-level disclosure" },
+    { "key": "ai_split",      "label": "AI-vs-total split" },
+    { "key": "comparability", "label": "Comparability / no cherry-picking" },
+    { "key": "replenishment", "label": "Replenishment honesty" },
+    { "key": "energy_source", "label": "Energy-source transparency" },
+    { "key": "verification",  "label": "Independent verification" }
   ],
   "rows": [
-    { "provider": "OpenAI",     "cells": {
-      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    { "provider": "Google", "cells": {
+      "site_level":    { "grade": "green",  "note": "Reports water for 24 individual data centers across the US/Canada (e.g. Council Bluffs, Pflugerville) — the only major operator to do so.", "source": "Google 2024 Environmental Report; MOST Policy Initiative", "source_url": "", "source_date": "2025" },
+      "ai_split":      { "grade": "yellow", "note": "Published median per-Gemini-prompt figures (0.24 Wh, 0.26 mL water, 0.03 gCO₂e) but facility reports don't split AI training from general load.", "source": "Google Cloud blog", "source_url": "", "source_date": "Aug 21 2025" },
+      "comparability": { "grade": "yellow", "note": "No fleet WUE reported; per-prompt figures use market-based carbon and exclude indirect water — UC-Riverside's Shaolei Ren said Google is 'just hiding the critical information.'", "source": "The Verge / DCD", "source_url": "", "source_date": "Aug 21 2025" },
+      "replenishment": { "grade": "yellow", "note": "Reports replenishment by watershed and runs watershed-health assessments, but returned water often sits in different watersheds than those drained.", "source": "Google water stewardship blog", "source_url": "", "source_date": "2026" },
+      "energy_source": { "grade": "yellow", "note": "Reports 64% carbon-free energy by grid region, but market-based; total emissions up ~51% since 2019.", "source": "Google 2024 Environmental Report", "source_url": "", "source_date": "2025" },
+      "verification":  { "grade": "yellow", "note": "Figures largely self-reported with limited third-party assurance on selected metrics.", "source": "Google 2024 Environmental Report", "source_url": "", "source_date": "2025" }
     } },
-    { "provider": "Anthropic",  "cells": {
-      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    { "provider": "Amazon (AWS)", "cells": {
+      "site_level":    { "grade": "red", "note": "Only a single global total (2.5B gal withdrawn, 2025); no site-level and no historical tables, making trend analysis impossible.", "source": "AWS blog / Trellis / DCD", "source_url": "", "source_date": "Jun 10 2026" },
+      "ai_split":      { "grade": "red", "note": "Lumps all data centers together; no AI-workload breakout.", "source": "DCD", "source_url": "", "source_date": "Jun 2026" },
+      "comparability": { "grade": "red", "note": "Claims WUE 0.12 L/kWh is 'over 7× better' than the 0.84 industry avg, but the per-kWh chart compares its whole fleet against Google's power-intensive AI-specific facilities.", "source": "AWS post; DCD", "source_url": "", "source_date": "Jul 2025 / Jun 2026" },
+      "replenishment": { "grade": "red", "note": "'Returned two-thirds' via infrastructure/offset projects in different communities; a leaked internal plan showed intent to keep data-center water use secret.", "source": "SourceMaterial; DCD", "source_url": "", "source_date": "Jun 2026" },
+      "energy_source": { "grade": "red", "note": "Renewable-matching claims with little disclosed grid-mix detail for AI facilities; PUE 1.15 (2024).", "source": "Amazon 2024 Sustainability Report", "source_url": "", "source_date": "Jul 2025" },
+      "verification":  { "grade": "yellow", "note": "Independent assurance over selected sustainability metrics.", "source": "Amazon 2024 Sustainability Report", "source_url": "", "source_date": "Jul 2025" }
     } },
-    { "provider": "Google",     "cells": {
-      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    { "provider": "Microsoft", "cells": {
+      "site_level":    { "grade": "red", "note": "Reports company-wide water only; no data-center or site-level consumption, though gives some regional recycled-water percentages (Quincy 74%, Singapore 99%).", "source": "DCD", "source_url": "", "source_date": "Jun 2026" },
+      "ai_split":      { "grade": "red", "note": "No AI-vs-total split; global operational aggregate.", "source": "Microsoft FY25 disclosure", "source_url": "", "source_date": "Jun 2026" },
+      "comparability": { "grade": "yellow", "note": "Reports WUE consistently (0.27 L/kWh, 2025; down from 2.3 historically) but declares 'water positive' without publishing full data-center consumption.", "source": "Trellis / Microsoft blog", "source_url": "", "source_date": "Jun 24 2026" },
+      "replenishment": { "grade": "red", "note": "Claims fleet-wide 'water positive' in FY25 via replenishment offsets, many in different watersheds than those consumed.", "source": "Microsoft blog", "source_url": "", "source_date": "Jun 24 2026" },
+      "energy_source": { "grade": "yellow", "note": "Renewable matching and hydrogen-backup pilots disclosed, but actual grid mix at AI sites opaque.", "source": "Microsoft 2025 Sustainability Report", "source_url": "", "source_date": "2026" },
+      "verification":  { "grade": "yellow", "note": "Assurance over selected metrics; WUE methodology published.", "source": "Microsoft datacenters sustainability page", "source_url": "", "source_date": "2026" }
     } },
-    { "provider": "xAI",        "cells": {
-      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    { "provider": "Meta", "cells": {
+      "site_level":    { "grade": "yellow", "note": "Discloses company-wide plus a data-center water aggregate and watershed-level restoration, but not per-site consumption.", "source": "Meta 2024 Sustainability Report", "source_url": "", "source_date": "2025" },
+      "ai_split":      { "grade": "red", "note": "No AI-workload split; aggregate only.", "source": "Meta 2024 Sustainability Report", "source_url": "", "source_date": "2025" },
+      "comparability": { "grade": "yellow", "note": "Reports PUE (1.08) and restoration volumes consistently but is selective on absolute data-center water.", "source": "Meta 2024 Sustainability Report", "source_url": "", "source_date": "2025" },
+      "replenishment": { "grade": "yellow", "note": "Restoration targeted to high/medium water-stress regions and reported by watershed (1.59B gal returned in 2024).", "source": "Meta newsroom", "source_url": "", "source_date": "Dec 2025" },
+      "energy_source": { "grade": "yellow", "note": "11,700+ MW renewables contracted, but the Louisiana Hyperion campus relies on ~10 new gas plants.", "source": "Data Center Frontier", "source_url": "", "source_date": "2025" },
+      "verification":  { "grade": "yellow", "note": "Water-restoration volumes verified by LimnoTech; selected assurance.", "source": "Meta / LimnoTech 2024 report", "source_url": "", "source_date": "Aug 2025" }
     } },
-    { "provider": "Mistral",    "cells": {
-      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    { "provider": "xAI", "cells": {
+      "site_level":    { "grade": "red", "note": "No corporate environmental disclosure; all figures (water ~3–5M gal/day) come from utility MLGW and third parties, not xAI.", "source": "Wikipedia / SELC", "source_url": "", "source_date": "2026" },
+      "ai_split":      { "grade": "red", "note": "Nothing disclosed.", "source": "Stanford FMTI", "source_url": "", "source_date": "Dec 2025" },
+      "comparability": { "grade": "red", "note": "No figures published to compare.", "source": "Earth911", "source_url": "", "source_date": "2026" },
+      "replenishment": { "grade": "red", "note": "No water-replenishment claim or data.", "source": "", "source_url": "", "source_date": "" },
+      "energy_source": { "grade": "red", "note": "Ran unpermitted on-site methane gas turbines; EPA ruled permits required (Jan 15 2026); no self-disclosed energy mix.", "source": "SELC; CNBC", "source_url": "", "source_date": "Jan 16 2026" },
+      "verification":  { "grade": "red", "note": "No third-party-verified environmental data; no CDP.", "source": "Stanford FMTI", "source_url": "", "source_date": "Dec 2025" }
     } },
-    { "provider": "Perplexity", "cells": {
-      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    { "provider": "OpenAI", "cells": {
+      "site_level":    { "grade": "red", "note": "No numeric site data; only qualitative Abilene 'closed-loop / initial fill ≈ two Olympic pools' language.", "source": "OpenAI blog", "source_url": "", "source_date": "2026" },
+      "ai_split":      { "grade": "red", "note": "No AI-vs-total footprint disclosure.", "source": "Earth911", "source_url": "", "source_date": "Mar 2026" },
+      "comparability": { "grade": "red", "note": "No comparable published figures.", "source": "", "source_url": "", "source_date": "" },
+      "replenishment": { "grade": "red", "note": "No replenishment claim; Abilene closed-loop framed qualitatively.", "source": "OpenAI blog", "source_url": "", "source_date": "2026" },
+      "energy_source": { "grade": "red", "note": "Abilene runs on gas + grid; OpenAI publishes no energy-mix or Scope data.", "source": "Epoch AI", "source_url": "", "source_date": "2026" },
+      "verification":  { "grade": "red", "note": "No sustainability report, no CDP, no assurance.", "source": "Stanford FMTI", "source_url": "", "source_date": "Dec 2025" }
     } },
-    { "provider": "DeepSeek",   "cells": {
-      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
-      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    { "provider": "Anthropic", "cells": {
+      "site_level":    { "grade": "red", "note": "No environmental report; the Transparency Hub covers AI safety only.", "source": "Heatmap News", "source_url": "", "source_date": "2026" },
+      "ai_split":      { "grade": "red", "note": "Nothing disclosed; FMTI notes water use is called 'proprietary.'", "source": "Stanford FMTI", "source_url": "", "source_date": "Dec 2025" },
+      "comparability": { "grade": "red", "note": "No figures published.", "source": "", "source_url": "", "source_date": "" },
+      "replenishment": { "grade": "red", "note": "No water claim or data.", "source": "", "source_url": "", "source_date": "" },
+      "energy_source": { "grade": "red", "note": "No clean-power PPA to date; data-center carbon intensity among the highest of peers; only an electricity-cost commitment (Feb 11 2026).", "source": "Anthropic news; Heatmap", "source_url": "", "source_date": "Feb 11 2026" },
+      "verification":  { "grade": "red", "note": "No third-party-verified data, no CDP.", "source": "Earth911", "source_url": "", "source_date": "Mar 2026" }
     } }
   ]
 }

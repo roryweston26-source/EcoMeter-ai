@@ -83,6 +83,7 @@
   .cell-src{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:.68rem;color:var(--green);text-decoration:none}
   .cell-src:hover{color:var(--green-2);text-decoration:underline}
   .cell-date{font-family:var(--mono);font-size:.66rem;color:var(--muted-dim);margin-left:6px}
+  .cell-cite{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
   .cell-nosrc{font-family:var(--mono);font-size:.68rem;color:var(--muted-dim)}
 
   /* caveats */
@@ -201,10 +202,16 @@ function render(data){
     const cells = cols.map(col => {
       const c = (row.cells || {})[col.key] || {};
       const g = GRADE[c.grade] || GRADE.pending;
-      const src = c.source_url
-        ? `<a class="cell-src" href="${esc(c.source_url)}" target="_blank" rel="noopener">source ↗</a>` +
-          (c.source_date ? `<span class="cell-date">${esc(c.source_date)}</span>` : "")
-        : `<span class="cell-nosrc">no source yet</span>`;
+      const srcName = c.source || "";
+      let src;
+      if (c.source_url) {
+        src = `<a class="cell-src" href="${esc(c.source_url)}" target="_blank" rel="noopener">${esc(srcName || "source")} ↗</a>`;
+      } else if (srcName) {
+        src = `<span class="cell-cite">${esc(srcName)}</span>`;
+      } else {
+        src = `<span class="cell-nosrc">not disclosed</span>`;
+      }
+      src += c.source_date ? `<span class="cell-date">${esc(c.source_date)}</span>` : "";
       return `<td class="g-${g.cls}" data-label="${esc(col.label)}">` +
                `<span class="grade grade-${g.cls}">${g.sym}</span>` +
                (c.note ? `<span class="cell-note">${esc(c.note)}</span>` : "") +
