@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "title": "AI Transparency Index",
+    "lede": "How openly the major AI providers disclose what you're paying for, what happens to your data, and what it costs the planet. Independently graded by Legerly.",
+    "last_verified": "2026-07-10",
+    "status": "placeholder",
+    "status_note": "SCAFFOLDING — every grade below is a placeholder (⚪). Replace with verified data in transparency-index.json; the page re-renders automatically.",
+    "methodology": "Each provider is graded on each dimension from its publicly available documentation: 🟢 transparent (clear, complete, easy to find), 🟡 partial (some disclosure, gaps or friction), 🔴 opaque (little or no public disclosure). Grades reflect what was verifiable as of the source date shown on each cell. Providers were not consulted; this is Legerly's independent read of public materials.",
+    "grade_legend": [
+      { "grade": "green",   "symbol": "🟢", "label": "Transparent" },
+      { "grade": "yellow",  "symbol": "🟡", "label": "Partial" },
+      { "grade": "red",     "symbol": "🔴", "label": "Opaque" },
+      { "grade": "pending", "symbol": "⚪", "label": "Not yet verified" }
+    ],
+    "caveats": [
+      "Grades reflect publicly available documentation only — internal practices may differ and aren't audited.",
+      "The AI market moves fast. Each cell shows the date its source was checked; see the 'last verified' stamp for the overall pass.",
+      "This is Legerly's independent assessment, not an official or endorsed rating. Providers were not contacted."
+    ]
+  },
+  "columns": [
+    { "key": "pricing",       "label": "Pricing clarity" },
+    { "key": "model_docs",    "label": "Model docs" },
+    { "key": "data_privacy",  "label": "Data & privacy" },
+    { "key": "environmental", "label": "Environmental" },
+    { "key": "usage_limits",  "label": "Usage limits" }
+  ],
+  "rows": [
+    { "provider": "OpenAI",     "cells": {
+      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    } },
+    { "provider": "Anthropic",  "cells": {
+      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    } },
+    { "provider": "Google",     "cells": {
+      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    } },
+    { "provider": "xAI",        "cells": {
+      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    } },
+    { "provider": "Mistral",    "cells": {
+      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    } },
+    { "provider": "Perplexity", "cells": {
+      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    } },
+    { "provider": "DeepSeek",   "cells": {
+      "pricing":       { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "model_docs":    { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "data_privacy":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "environmental": { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" },
+      "usage_limits":  { "grade": "pending", "note": "Pending verification", "source_url": "", "source_date": "" }
+    } }
+  ]
+}
