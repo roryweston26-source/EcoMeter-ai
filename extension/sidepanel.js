@@ -259,8 +259,11 @@ async function loadUsage() {
 function scheduleUsageSave() {
   clearTimeout(_usageSaveTimer);
   _usageSaveTimer = setTimeout(() => {
-    const cutoff = Date.now() - 45 * 86400000;   // keep ~45 days
-    for (const d in USAGE.days) { if (Date.parse(d + 'T00:00:00') < cutoff) delete USAGE.days[d]; }
+    // Keep the FULL history so the export reflects LIFETIME usage — bounded only
+    // by a generous backstop (~3 years of daily entries) so storage can't grow
+    // without limit. Each day is tiny, so this stays well within the quota.
+    const dates = Object.keys(USAGE.days).sort();
+    while (dates.length > 1200) { delete USAGE.days[dates.shift()]; }
     chrome.storage.local.set({ usage: { days: USAGE.days, conv: { state: convState, order: convOrder } } }).catch(() => {});
   }, 2000);
 }
@@ -295,13 +298,13 @@ function accumulateUsage(msgs, platformName, model) {
   scheduleUsageSave();
 }
 
-// Average per ACTIVE day (days you actually used that tool) → matches "on a day you use it".
-function buildUsageExport(windowDays) {
-  windowDays = windowDays || 30;
-  const cutoff = Date.now() - windowDays * 86400000;
+// LIFETIME export: aggregate ALL tracked history. Volume is averaged per ACTIVE
+// day (days you actually used that tool) → "on a day you use it, how much".
+// Lifetime rather than a recent window so infrequent-but-real usage — e.g. an
+// advanced model you reach for a few times a term — still shows up for the Auditor.
+function buildUsageExport() {
   const agg = {};
   for (const date in USAGE.days) {
-    if (Date.parse(date + 'T00:00:00') < cutoff) continue;
     const day = USAGE.days[date];
     for (const prov in day) {
       const a = agg[prov] || (agg[prov] = { days:new Set(), msgs:0, inTok:0, outTok:0, models:new Set() });
@@ -317,15 +320,17 @@ function buildUsageExport(windowDays) {
       messages_per_day:      Math.round(a.msgs   / activeDays),
       input_tokens_per_day:  Math.round(a.inTok  / activeDays),
       output_tokens_per_day: Math.round(a.outTok / activeDays),
+      total_messages: a.msgs,
+      active_days: a.days.size,
       models_used: [...a.models],
     };
   });
-  return { app:'EcoMeter AI', kind:'usage-export', version:1,
-    generated: new Date().toISOString().split('T')[0], window_days: windowDays, platforms };
+  return { app:'EcoMeter AI', kind:'usage-export', version:1, scope:'lifetime',
+    generated: new Date().toISOString().split('T')[0], days_tracked: Object.keys(USAGE.days).length, platforms };
 }
 
 function exportUsage() {
-  const data = buildUsageExport(30);
+  const data = buildUsageExport();
   if (!data.platforms.length) {
     if (footerStatus) footerStatus.textContent = 'No usage tracked yet — chat on a supported site first.';
     return;
