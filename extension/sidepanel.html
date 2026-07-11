@@ -376,6 +376,7 @@
     }
     .usage-toggle input { accent-color: var(--green); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
     .usage-note { margin-top: 6px; font-size: 8.5px; line-height: 1.6; }
+    .usage-tip { margin-top: 7px; font-size: 8.5px; line-height: 1.5; color: var(--gold); }
     .usage-actions { display: flex; gap: 6px; margin-top: 8px; }
 
     /* ── Message list ── */
@@ -530,6 +531,7 @@
       <a href="https://legerlyai.com/audit.html" target="_blank" rel="noopener">Subscription Auditor ↗</a>.
       Counts only; no message text is stored.
     </p>
+    <p class="usage-tip">⚠ Keep the model picker above set to the model you're actually chatting with — usage is attributed to whatever's selected.</p>
     <div class="usage-actions" id="usage-actions" style="display:none">
       <button class="ctrl-btn" id="export-btn">⤓ Export for Auditor</button>
       <button class="ctrl-btn danger" id="clear-usage-btn">🗑 Clear history</button>
