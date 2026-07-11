@@ -123,6 +123,9 @@ const MODEL_CATALOG = [
     { key:'deepseek-v3', name:'DeepSeek V3' },
     { key:'deepseek-r1', name:'DeepSeek R1' },
   ]},
+  { label:'Meta AI', models:[
+    { key:'muse-spark-1.1', name:'Muse Spark 1.1' },
+  ]},
 ];
 
 async function loadPrices() {
@@ -237,7 +240,7 @@ let usageTrackingEnabled = false;   // OPT-IN — off by default; nothing is rec
 
 const PROVIDER_OF = {
   ChatGPT:'openai', Claude:'anthropic', Gemini:'google', Copilot:'microsoft',
-  Grok:'xai', Mistral:'mistral', Perplexity:'perplexity', Poe:'poe', DeepSeek:'deepseek',
+  Grok:'xai', Mistral:'mistral', Perplexity:'perplexity', Poe:'poe', DeepSeek:'deepseek', Meta:'meta',
 };
 
 function usageTodayStr() {

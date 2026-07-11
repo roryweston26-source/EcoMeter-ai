@@ -175,16 +175,21 @@ let PLANS = {
     { m:'Copilot (Free)', price:0,    cap:200, models:['gpt-5.5'], features:[], seats:1 },
     { m:'Microsoft 365 Premium', price:19.99, cap:null, models:['gpt-5.5'], features:['office','image-gen'], seats:1 },
   ],
+  meta: [
+    { m:'Meta AI (Free)', price:0, cap:null, models:['muse-spark-1.1'], features:[], seats:1 },
+  ],
 };
 let API = {
   'gpt-5.5':{in:5e-6,out:30e-6}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
   'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
   'gemini-3.5-flash':{in:5e-7,out:3e-6}, 'gemini-2.5-pro':{in:1.25e-6,out:1e-5},
+  'muse-spark-1.1':{in:1.25e-6,out:4.25e-6},
 };
-const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot' };
+const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot', meta:'Meta AI' };
 const MODELS = {
   openai:{free:'gpt-5.5',top:'o3'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-4-8'},
   google:{free:'gemini-3.5-flash',top:'gemini-2.5-pro'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
+  meta:{free:'muse-spark-1.1',top:'muse-spark-1.1'},
 };
 // models that generally require a PAID tier — used to set the "frontier" signal from a log
 const ADVANCED = new Set(['claude-opus-4-8','claude-fable-5','claude-mythos-5','gpt-5.4','o3','o4-mini','gemini-2.5-pro','sonar-reasoning-pro','deepseek-v4-pro']);
@@ -230,7 +235,7 @@ const LEVELS = [
 /* ---------- questions ---------- */
 const TOOLS = [
   {v:'openai',label:'ChatGPT'},{v:'anthropic',label:'Claude'},
-  {v:'google',label:'Gemini'},{v:'microsoft',label:'Copilot'},{v:'other',label:'Something else'}
+  {v:'google',label:'Gemini'},{v:'microsoft',label:'Copilot'},{v:'meta',label:'Meta AI'},{v:'other',label:'Something else'}
 ];
 const QUESTIONS = [
   {id:'tools',type:'multi',q:'Which AI tools do you use regularly?',help:'Pick all that apply.',options:TOOLS},
@@ -342,7 +347,8 @@ function recommend(pf,sig){
 
   let head, cost;
   if(fit.price===0){ head=`Stay on the free ${NAME[pf.provider]} tier.`; cost=0;
-    why.push(`Free covers you — about ${fit.cap} messages/day, and it includes the models you use.`);
+    why.push(fit.cap!=null ? `Free covers you — about ${fit.cap} messages/day, and it includes the models you use.`
+                           : `Free covers you — no usage cap disclosed, and it includes the models you use.`);
   } else {
     cost=fit.price;
     why.push(missingFromFree.length ? `Cheapest tier that unlocks ${missingFromFree.map(labelModel).join(', ')} at your volume.`
@@ -420,7 +426,7 @@ function finish(){
     const items=r.why.map(w=> typeof w==='string'?`<li>${w}</li>`:`<li class="save">${w.html}</li>`).join('');
     return `<div class="rec"><div class="rec-prov">${NAME[prov]}</div><div class="rec-head">${r.head}</div><ul>${items}</ul></div>`;
   }).join('');
-  const other=(a.tools||[]).includes('other') ? `<p class="disclaimer">We currently audit ChatGPT, Claude, Gemini and Copilot — more tools coming.</p>` : '';
+  const other=(a.tools||[]).includes('other') ? `<p class="disclaimer">We currently audit ChatGPT, Claude, Gemini, Copilot and Meta AI — more tools coming.</p>` : '';
   quizEl.classList.add('hidden');
   resultsEl.classList.remove('hidden');
   resultsEl.innerHTML=`
