@@ -261,17 +261,19 @@ async function loadUsage() {
   } catch(e) { /* start a fresh log */ }
 }
 
-function scheduleUsageSave() {
-  clearTimeout(_usageSaveTimer);
-  _usageSaveTimer = setTimeout(() => {
-    // Keep the FULL history so the export reflects LIFETIME usage — bounded only
-    // by a generous backstop (~3 years of daily entries) so storage can't grow
-    // without limit. Each day is tiny, so this stays well within the quota.
-    const dates = Object.keys(USAGE.days).sort();
-    while (dates.length > 1200) { delete USAGE.days[dates.shift()]; }
-    chrome.storage.local.set({ usage: { days: USAGE.days, conv: { state: convState, order: convOrder } } }).catch(() => {});
-  }, 2000);
+// Persist days + conv-state TOGETHER (atomic snapshot) so on reload they're
+// consistent — the invariant that keeps close/refresh/reopen self-healing.
+// Keep the FULL history (bounded ~3 years) for the lifetime export.
+function _persistUsage() {
+  const dates = Object.keys(USAGE.days).sort();
+  while (dates.length > 1200) { delete USAGE.days[dates.shift()]; }
+  try { chrome.storage.local.set({ usage: { days: USAGE.days, conv: { state: convState, order: convOrder } } }).catch(() => {}); } catch(e) {}
 }
+function scheduleUsageSave() { clearTimeout(_usageSaveTimer); _usageSaveTimer = setTimeout(_persistUsage, 2000); }
+// Flush immediately when the panel is hidden/closed, so the 2s debounce can't
+// drop the last few seconds of usage on close.
+function flushUsageSave() { clearTimeout(_usageSaveTimer); _persistUsage(); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushUsageSave(); });
 
 function accumulateUsage(msgs, platformName, model) {
   if (!usageTrackingEnabled) return;   // opt-in: record nothing unless the user turned it on
@@ -289,9 +291,11 @@ function accumulateUsage(msgs, platformName, model) {
   const dM = Math.max(0, cm - prev.msgs), dI = Math.max(0, ci - prev.inTok), dO = Math.max(0, co - prev.outTok);
   if (dM === 0 && dI === 0 && dO === 0) return;   // nothing new (re-poll of same state)
 
-  convState[key] = { msgs:cm, inTok:ci, outTok:co };
+  // Track the per-field MAXIMUM, never the latest — so a transient scrape drop or
+  // a lower re-count can't later be re-added as a phantom delta (no double-count).
+  convState[key] = { msgs: Math.max(cm, prev.msgs), inTok: Math.max(ci, prev.inTok), outTok: Math.max(co, prev.outTok) };
   if (convOrder[convOrder.length - 1] !== key) { convOrder = convOrder.filter(k => k !== key); convOrder.push(key); }
-  while (convOrder.length > 500) { delete convState[convOrder.shift()]; }   // bound history
+  while (convOrder.length > 2000) { delete convState[convOrder.shift()]; }   // bound history (generous)
 
   const prov = PROVIDER_OF[platformName] || (platformName || 'other').toLowerCase();
   const mdl  = model || '(unspecified)';
