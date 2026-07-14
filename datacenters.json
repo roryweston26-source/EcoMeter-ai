@@ -1,0 +1,97 @@
+{
+  "_meta": {
+    "last_updated": "2026-07-12",
+    "methodology_note": "Environmental-impact grades are a capacity-weighted average across each provider's known AI data center sites. See 'How we grade this' for full methodology."
+  },
+  "sites": [
+    {
+      "id": "meta-prometheus",
+      "provider": "Meta",
+      "name": "Prometheus",
+      "location": "New Albany, OH, USA",
+      "power_mw": 631,
+      "power_mw_planned": 854,
+      "water_grade": "opaque",
+      "water_note": "No Meta-specific figure is public. The only known number is an aggregate across all New Albany business-park tenants (Meta, Google, others): ~8M gal/day peak draw as of Apr 2026, against 16M gal/day contracted capacity. Not attributable to Meta alone.",
+      "sources": [
+        {"name": "Measured AI — Meta Prometheus & Google Ohio primer",
+         "url": "https://measuredai.substack.com/p/meta-prometheus-google-ohio"},
+        {"name": "Epoch AI — Meta Prometheus facility page",
+         "url": "https://epoch.ai/data/ai-data-centers/directory/meta-prometheus"}
+      ],
+      "as_of": "2026-04"
+    },
+    {
+      "id": "xai-colossus-1",
+      "provider": "xAI",
+      "name": "Colossus 1",
+      "location": "Memphis, TN, USA",
+      "power_mw": 300,
+      "water_grade": "partial",
+      "water_note": "Real, trending daily figures exist, but only because a local watchdog group (Protect Our Aquifer) obtained MLGW utility billing data — not because xAI disclosed anything. Usage roughly doubled in nine months: 381,000 gal/day (Aug 2025) to 812,502 gal/day (May 2026). A promised water-recycling plant that would cut ~3M gal/day of drinking-water draw has paused construction as of April 2026.",
+      "sources": [
+        {"name": "Memphis Flyer — Protect Our Aquifer MLGW analysis",
+         "url": "https://www.memphisflyer.com/protect-our-aquifer-xai-bought-25m-gallons-of-water-from-mlgw-projects-increases/"},
+        {"name": "Daily Memphian — xAI/MLGW bill analysis",
+         "url": "https://dailymemphian.com/article/58474/analyzing-xai-mlgw-bills"},
+        {"name": "The Cooldown — water-recycling plan stalled",
+         "url": "https://www.thecooldown.com/green-tech/musk-ai-water-recycling-project-memphis/"}
+      ],
+      "as_of": "2026-05"
+    },
+    {
+      "id": "xai-colossus-2",
+      "provider": "xAI",
+      "name": "Colossus 2",
+      "location": "South Memphis, TN, USA",
+      "power_mw": null,
+      "water_grade": "partial",
+      "water_note": "MLGW (the public utility, not xAI) has stated the facility is expected to use up to 1,000,000 gal/day once fully operational. The company has not itself disclosed a figure.",
+      "sources": [
+        {"name": "Inside Climate News — Colossus 2 permitting coverage",
+         "url": "https://insideclimatenews.org/news/17072025/elon-musk-xai-data-center-gas-turbines-memphis/"}
+      ],
+      "as_of": "2025-07"
+    },
+    {
+      "id": "aws-anthropic-new-carlisle",
+      "provider": "Amazon / Anthropic (Project Rainier)",
+      "name": "New Carlisle Campus",
+      "location": "St. Joseph County, IN, USA",
+      "power_mw": 1100,
+      "power_mw_planned": 2250,
+      "water_grade": "partial",
+      "water_note": "More voluntary disclosure than most, but no confirmed absolute operational figure. AWS has publicly described its cooling methodology (outside-air cooling most of the year; water used only a few hours/day April–September, none Oct–March) and cited an industry LBNL water-efficiency benchmark. A company rep separately told local news the site draws from a capped regional pool (24M gal/day cap for all regional industrial users) and expects to use water only ~2% of operating hours. Separately — and not the same figure — the county approved a construction-phase dewatering discharge permit for up to 31M gal/day; that's a one-time construction impact, not ongoing operations. Local reporting has documented well and pond depletion attributed to the dewatering phase.",
+      "sources": [
+        {"name": "AWS — Project Rainier announcement",
+         "url": "https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster"},
+        {"name": "WSBT — Amazon rep Q&A on water",
+         "url": "https://wsbt.com/news/local/only-on-22-amazon-leader-answers-questions-surrounding-incoming-data-center-aws-amazon-web-services-water-electricity-aquifer-power-grid-new-carlisle-st-joseph-county-indiana"},
+        {"name": "WSBT — county dewatering discharge permit",
+         "url": "https://wsbt.com/news/local/amazon-data-center-dewatering-proposal-changed-altered-million-gallons-water-drain-ditch-niespondziany-community-concern-farmers-planting-season-impact-frustration-new-carlisle-st-joseph-county-indiana"},
+        {"name": "Sierra Club Indiana — Hoosier Data Center blog series",
+         "url": "https://www.sierraclub.org/indiana/blog/2025/12/wait-i-use-ai-every-day-i-didn-t-know-hoosier-data-center-industry-blog-0"}
+      ],
+      "as_of": "2026-05"
+    },
+    {
+      "id": "microsoft-fairwater-wi",
+      "provider": "Microsoft",
+      "name": "Fairwater (Mount Pleasant)",
+      "location": "Mount Pleasant, WI, USA",
+      "power_mw": 400,
+      "power_mw_planned": 900,
+      "water_grade": "partial",
+      "water_note": "Disclosure came only after a fight: Microsoft initially sought to have its Lake Michigan water-use records classified as trade secrets; environmental groups (Milwaukee Riverkeeper, Midwest Environmental Advocates) sued the City of Racine after a 210-day records-request delay. Microsoft then withdrew the trade-secret claim and a figure became public: up to 8.4M gallons/year, with 6M gallons returned after treatment. Separately, Microsoft's CEO has since claimed a newer closed-loop cooling design (used at this site) uses water 'equivalent to a single restaurant per year' — a company claim not yet independently audited. The New York Times also reported a gap between Microsoft's internal 2030 global water-use forecast (~28 billion liters) and the lower figure (~18 billion liters) the company gave the Times on the record.",
+      "sources": [
+        {"name": "Wisconsin Public Radio — records lawsuit & 8.4M gal figure",
+         "url": "https://www.wpr.org/news/microsoft-data-centers-8-million-gallons-water-each-year"},
+        {"name": "Progressive.org — trade-secret framing",
+         "url": "https://progressive.org/latest/tech-giants-are-trying-to-cover-up-the-environmental-impacts-of-their-data-centers-cooper-20251022/"},
+        {"name": "Tom's Hardware — Nadella 'restaurant' claim, unaudited",
+         "url": "https://www.tomshardware.com/tech-industry/big-tech/microsoft-ceo-says-new-ai-data-centers-use-as-little-water-annually-as-a-restaurant-closed-loop-cooling-system-aims-to-slash-consumption-from-millions-of-gallons-as-ai-infrastructure-faces-mounting-environmental-scrutiny"}
+      ],
+      "as_of": "2026-06"
+    }
+  ]
+}

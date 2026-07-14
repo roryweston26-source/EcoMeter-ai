@@ -10,13 +10,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <!--
-  AI Transparency Index. Self-contained page; data lives in transparency-index.json
-  (grades, justifications, source URLs + dates) so re-grading is a data edit, not an
-  HTML rewrite — same pattern as clock.json / prices.json. Only network call is a
-  same-origin fetch of that file.
+  AI Transparency Index. Self-contained page; data lives in two same-origin JSON files:
+    • datacenters.json        — per-site environmental data; the page computes each
+                                provider's capacity-weighted grade client-side (see
+                                renderEnv). This is the scored "environmental impact" axis.
+    • transparency-index.json — page-level copy (_meta: methodology, legend, caveats,
+                                axes) PLUS the nested "disclosure quality by dimension"
+                                matrix (columns/rows). Re-grading is a data edit.
 
-  The scorecard is wide (7 rows × 6 cols). Desktop: horizontal-scroll table. Phones:
-  each provider collapses into a stacked card (thead hidden; every cell labelled).
+  Only network calls are two same-origin fetches. The env summary is wide on desktop;
+  the nested matrix (7 rows × 6 cols) horizontal-scrolls on desktop and collapses to
+  stacked cards on phones.
 -->
 
 <style>
@@ -39,14 +43,14 @@
   .topnav .brand span{color:var(--green)}
   .topnav .back{font-family:var(--body);font-size:.9rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
   .topnav .back:hover{color:var(--green-2)}
-  a:focus-visible{outline:2px solid var(--green-2);outline-offset:2px;border-radius:3px}
+  a:focus-visible,summary:focus-visible{outline:2px solid var(--green-2);outline-offset:2px;border-radius:3px}
 
   header{margin-bottom:22px}
   .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin:0 0 16px;display:flex;align-items:center;gap:.7em}
   .eyebrow::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(212,168,67,.5),transparent)}
   h1{font-family:var(--display);font-weight:800;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
   h1 .accent{color:var(--green-2)}
-  .lede{font-size:clamp(1rem,2.1vw,1.15rem);color:var(--muted);max-width:60ch;margin:0 0 18px}
+  .lede{font-size:clamp(1rem,2.1vw,1.15rem);color:var(--muted);max-width:64ch;margin:0 0 18px}
 
   .stamp{display:inline-flex;align-items:center;gap:.5em;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--muted);
     border:1px solid var(--line);border-radius:999px;padding:6px 13px}
@@ -55,16 +59,64 @@
   .banner{margin-top:16px;border:1px solid rgba(212,168,67,.4);background:rgba(212,168,67,.08);color:var(--gold);
     border-radius:10px;padding:11px 15px;font-size:.85rem;line-height:1.5}
 
+  /* three-axis overview */
+  .axes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0 0}
+  .axis{border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:14px 16px}
+  .axis .axis-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .axis .axis-label{font-family:var(--display);font-weight:700;font-size:1rem;color:var(--ink)}
+  .axis .axis-state{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid var(--line);white-space:nowrap;color:var(--muted-dim)}
+  .axis.scored .axis-state{color:var(--green-2);border-color:rgba(56,201,160,.4);background:rgba(56,201,160,.08)}
+  .axis.pending{opacity:.7}
+  .axis .axis-note{font-size:.8rem;color:var(--muted);margin:9px 0 0;line-height:1.5}
+
   /* legend + methodology */
   .legend{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}
   .legend .chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.75rem;color:var(--muted);
     border:1px solid var(--line);border-radius:999px;padding:6px 12px}
-  .method{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(14,22,19,.9),rgba(14,22,19,.5));padding:16px 18px}
+  .method{margin-top:22px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(14,22,19,.9),rgba(14,22,19,.5));padding:16px 18px}
   .method h2{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--green);margin:0 0 10px}
   .method p{margin:0;font-size:.9rem;color:var(--muted);line-height:1.65}
 
-  /* table */
-  .tablewrap{margin-top:24px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+  /* section headings for the two graded blocks */
+  .section-h{font-family:var(--display);font-weight:700;font-size:clamp(1.15rem,2.6vw,1.4rem);letter-spacing:-.01em;color:var(--ink);margin:38px 0 6px}
+  .section-lede{font-size:.9rem;color:var(--muted);line-height:1.6;margin:0 0 16px;max-width:82ch}
+
+  /* environmental: per-provider capacity-weighted summary */
+  #env-summary{display:grid;gap:12px}
+  .prov-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+  .prov-card>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:15px 18px;flex-wrap:wrap;transition:background .15s}
+  .prov-card>summary::-webkit-details-marker{display:none}
+  .prov-card>summary:hover{background:var(--panel-2)}
+  .prov-badge{font-family:var(--mono);font-size:.73rem;display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+  .b-green{color:var(--green-2);border-color:rgba(56,201,160,.4);background:rgba(56,201,160,.07)}
+  .b-yellow{color:var(--gold);border-color:rgba(212,168,67,.4);background:rgba(212,168,67,.07)}
+  .b-red{color:var(--red);border-color:rgba(224,101,92,.4);background:rgba(224,101,92,.07)}
+  .b-pending{color:var(--muted-dim)}
+  .prov-name{font-family:var(--display);font-weight:700;font-size:1.04rem;color:var(--ink)}
+  .prov-meta{font-family:var(--mono);font-size:.68rem;color:var(--muted-dim);margin-left:auto}
+  .prov-hint{font-family:var(--mono);font-size:.66rem;color:var(--green);letter-spacing:.06em;white-space:nowrap}
+  .prov-hint .car{display:inline-block;transition:transform .18s}
+  .prov-card[open]>summary .prov-hint .car{transform:rotate(180deg)}
+  .prov-body{padding:2px 18px 18px;border-top:1px solid var(--line)}
+  .math{font-family:var(--mono);font-size:.75rem;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:14px 0}
+  .math .math-row{display:block;padding:2px 0;line-height:1.5}
+  .math .math-total{color:var(--ink);margin-top:6px;padding-top:8px;border-top:1px dashed var(--line)}
+  .math .math-ex{color:var(--gold)}
+  .sites{display:grid;gap:14px;margin-top:4px}
+  .site{border-left:2px solid var(--line);padding-left:14px}
+  .site-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .site-grade{font-size:.95rem;line-height:1}
+  .site-name{font-family:var(--display);font-weight:700;color:var(--ink)}
+  .site-loc{font-family:var(--mono);font-size:.68rem;color:var(--muted-dim)}
+  .site-power{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-top:3px}
+  .site-note{font-size:.84rem;color:var(--muted);line-height:1.55;margin:7px 0 6px}
+  .site-srcs{display:flex;flex-wrap:wrap;gap:4px 14px}
+  .site-src{font-family:var(--mono);font-size:.66rem;color:var(--green);text-decoration:none}
+  .site-src:hover{color:var(--green-2);text-decoration:underline}
+  .site-asof{font-family:var(--mono);font-size:.63rem;color:var(--muted-dim);margin-top:5px}
+
+  /* nested disclosure-quality matrix */
+  .tablewrap{margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
   .scroll{overflow-x:auto}
   table{width:100%;border-collapse:collapse;min-width:820px}
   thead th{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;
@@ -86,19 +138,22 @@
   .cell-cite{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
   .cell-nosrc{font-family:var(--mono);font-size:.68rem;color:var(--muted-dim)}
 
-  /* caveats */
+  /* caveats (page + nested) */
   .caveats{margin-top:26px}
   .caveats h2{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--green);margin:0 0 12px}
-  .caveats ul{margin:0;padding:0;list-style:none;display:grid;gap:9px;max-width:80ch}
-  .caveats li{position:relative;padding-left:18px;font-size:.86rem;color:var(--muted);line-height:1.55}
-  .caveats li::before{content:"·";position:absolute;left:5px;color:var(--gold);font-weight:700}
+  .caveats ul,.caveats-inline{margin:0;padding:0;list-style:none;display:grid;gap:9px;max-width:82ch}
+  .caveats li,.caveats-inline li{position:relative;padding-left:18px;font-size:.86rem;color:var(--muted);line-height:1.55}
+  .caveats li::before,.caveats-inline li::before{content:"·";position:absolute;left:5px;color:var(--gold);font-weight:700}
+  .caveats-inline{margin-top:16px}
 
   footer{margin-top:52px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--muted-dim)}
   footer a{color:var(--green);text-decoration:none}
   footer a:hover{color:var(--green-2)}
 
-  /* ── Phones: collapse each provider row into a stacked card ── */
+  /* ── Phones ── */
   @media (max-width:720px){
+    .axes{grid-template-columns:1fr}
+    .prov-meta{margin-left:0;width:100%;order:3}
     table{min-width:0}
     .scroll{overflow-x:visible}
     thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}   /* visually hide header */
@@ -110,6 +165,7 @@
     tbody td::before{content:attr(data-label);font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-dim);margin-bottom:2px}
     td.g-green,td.g-yellow,td.g-red{background:transparent}
   }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
 </head>
 <body>
@@ -126,6 +182,7 @@
     <p class="lede" id="h-lede"></p>
     <span class="stamp"><span class="dot" aria-hidden="true"></span> Last verified · <span id="h-verified">—</span></span>
     <div class="banner" id="h-banner" style="display:none"></div>
+    <div class="axes" id="axes"></div>
     <div class="legend" id="legend"></div>
   </header>
 
@@ -134,14 +191,28 @@
     <p id="method-text"></p>
   </section>
 
-  <div class="tablewrap">
-    <div class="scroll">
-      <table id="grid">
-        <thead id="grid-head"></thead>
-        <tbody id="grid-body"></tbody>
-      </table>
+  <!-- Environmental impact axis: per-provider capacity-weighted grade (computed) -->
+  <section class="env" aria-labelledby="env-h">
+    <h2 id="env-h" class="section-h">Environmental impact — by provider</h2>
+    <p class="section-lede" id="env-intro"></p>
+    <div id="env-summary"></div>
+  </section>
+
+  <!-- Nested: how complete each company's OWN reporting is, across six dimensions -->
+  <section class="detail" aria-labelledby="detail-h">
+    <h2 id="detail-h" class="section-h">Disclosure quality by dimension</h2>
+    <p class="section-lede" id="detail-note"></p>
+    <div class="legend" id="detail-legend"></div>
+    <div class="tablewrap">
+      <div class="scroll">
+        <table id="grid">
+          <thead id="grid-head"></thead>
+          <tbody id="grid-body"></tbody>
+        </table>
+      </div>
     </div>
-  </div>
+    <ul class="caveats-inline" id="detail-caveats"></ul>
+  </section>
 
   <section class="caveats" aria-labelledby="caveats-h">
     <h2 id="caveats-h">Caveats</h2>
@@ -157,19 +228,25 @@
 <script>
 "use strict";
 
-// Minimal fallback so the page still renders if the fetch ever fails.
+// Minimal fallback so the page still renders if the transparency-index fetch fails.
 const FALLBACK = {
   _meta: { title:"AI Transparency Index", lede:"", last_verified:"—", status:"error",
-    status_note:"Couldn't load transparency-index.json.", methodology:"",
-    grade_legend:[{grade:"green",symbol:"🟢",label:"Transparent"},{grade:"yellow",symbol:"🟡",label:"Partial"},{grade:"red",symbol:"🔴",label:"Opaque"}],
-    caveats:[] },
+    status_note:"Couldn't load transparency-index.json.", methodology:"", axes:[],
+    grade_legend:[{grade:"green",symbol:"🟢",label:"Transparent"},{grade:"yellow",symbol:"🟡",label:"Partial"},{grade:"red",symbol:"🔴",label:"Opaque"},{grade:"pending",symbol:"⚪",label:"Not yet assessed"}],
+    caveats:[], detail:{} },
   columns: [], rows: []
 };
 
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const GRADE = { green:{sym:"🟢",cls:"green"}, yellow:{sym:"🟡",cls:"yellow"}, red:{sym:"🔴",cls:"red"}, pending:{sym:"⚪",cls:"pending"} };
+// Environmental water_grade → numeric value + display grade key. Absent grade ⇒ not assessed (excluded).
+const WGRADE = { transparent:{v:3,key:"green"}, partial:{v:2,key:"yellow"}, opaque:{v:1,key:"red"} };
+const BADGE_LABEL = { green:"Transparent", yellow:"Partial", red:"Opaque", pending:"Not yet assessed" };
+const BUCKET_TXT = { green:"≥ 2.5", yellow:"1.5–2.49", red:"< 1.5", pending:"—" };
+const num = n => (typeof n === "number" ? n.toLocaleString("en-US") : n);
 
-function render(data){
+/* ---------- page-level meta + legend + methodology + caveats + nested matrix meta ---------- */
+function renderMeta(data){
   const m = data._meta || {};
   document.getElementById("h-title").innerHTML = m.title
     ? esc(m.title).replace(/Transparency/i, '<span class="accent">Transparency</span>') : 'AI <span class="accent">Transparency</span> Index';
@@ -183,21 +260,40 @@ function render(data){
     b.textContent = (m.status === "placeholder" ? "⚠ " : "") + (m.status_note || "");
   }
 
-  // legend
+  // three-axis overview
+  document.getElementById("axes").innerHTML = (m.axes || []).map(a => {
+    const scored = a.state === "scored";
+    return `<div class="axis ${scored ? "scored" : "pending"}">
+      <div class="axis-top"><span class="axis-label">${esc(a.label)}</span>` +
+      `<span class="axis-state">${scored ? "Scored" : "Not yet scored"}</span></div>` +
+      `<p class="axis-note">${esc(a.note || "")}</p></div>`;
+  }).join("");
+
+  // page-level 4-state legend
   document.getElementById("legend").innerHTML =
     (m.grade_legend || []).map(g => `<span class="chip">${g.symbol || ""} ${esc(g.label)}</span>`).join("");
 
-  // caveats
+  // page caveats
   document.getElementById("caveats").innerHTML =
     (m.caveats || []).map(c => `<li>${esc(c)}</li>`).join("");
 
-  // table head: Provider + each column
+  // nested matrix meta (its own, narrower disclosure-quality scale)
+  const d = m.detail || {};
+  if (d.title) document.getElementById("detail-h").textContent = d.title;
+  document.getElementById("detail-note").textContent = d.note || "";
+  document.getElementById("detail-legend").innerHTML =
+    (d.grade_legend || []).map(g => `<span class="chip">${g.symbol || ""} ${esc(g.label)}</span>`).join("");
+  document.getElementById("detail-caveats").innerHTML =
+    (d.caveats || []).map(c => `<li>${esc(c)}</li>`).join("");
+}
+
+/* ---------- nested disclosure-quality matrix (provider × dimension) ---------- */
+function renderMatrix(data){
   const cols = data.columns || [];
   document.getElementById("grid-head").innerHTML =
     `<tr><th class="provider-col" scope="col">Provider</th>` +
     cols.map(c => `<th scope="col">${esc(c.label)}</th>`).join("") + `</tr>`;
 
-  // table body
   document.getElementById("grid-body").innerHTML = (data.rows || []).map(row => {
     const cells = cols.map(col => {
       const c = (row.cells || {})[col.key] || {};
@@ -222,10 +318,122 @@ function render(data){
   }).join("");
 }
 
+/* ---------- environmental impact: capacity-weighted per-provider grade (computed) ----------
+   For each provider:
+     assessed  = sites with a known water_grade (transparent/partial/opaque). No grade ⇒ excluded.
+     weighted  = assessed sites that also have a numeric power_mw.
+     score     = Σ(grade_value × MW) / Σ(MW) over weighted sites.
+     badge     = ≥2.5 🟢  ·  1.5–2.49 🟡  ·  <1.5 🔴  ·  no assessed sites ⚪
+   Sites with a null power_mw still display (with their own grade) but don't move the average.  */
+function renderEnv(dc){
+  const summary = document.getElementById("env-summary");
+  const meta = (dc && dc._meta) || {};
+  document.getElementById("env-intro").textContent = meta.methodology_note || "";
+
+  const sites = (dc && Array.isArray(dc.sites)) ? dc.sites : [];
+  if (!sites.length) { summary.innerHTML = `<p class="section-lede">Site data unavailable.</p>`; return; }
+
+  // group by provider (first-seen order preserved before sorting)
+  const groups = new Map();
+  sites.forEach(s => { if (!groups.has(s.provider)) groups.set(s.provider, []); groups.get(s.provider).push(s); });
+
+  const provs = [];
+  groups.forEach((gsites, provider) => {
+    const assessed = gsites.filter(s => WGRADE[s.water_grade]);
+    const weighted = assessed.filter(s => typeof s.power_mw === "number");
+    let score = null, unweighted = false;
+    if (weighted.length) {
+      let numer = 0, den = 0;
+      weighted.forEach(s => { numer += WGRADE[s.water_grade].v * s.power_mw; den += s.power_mw; });
+      score = numer / den;
+    } else if (assessed.length) {
+      // assessed but no capacity figures anywhere — fall back to an unweighted mean, flagged
+      score = assessed.reduce((a, s) => a + WGRADE[s.water_grade].v, 0) / assessed.length;
+      unweighted = true;
+    }
+    let badge = "pending";
+    if (assessed.length) badge = score >= 2.5 ? "green" : (score >= 1.5 ? "yellow" : "red");
+    const cap = weighted.reduce((a, s) => a + s.power_mw, 0);
+    provs.push({ provider, gsites, assessed, weighted, score, unweighted, badge, cap });
+  });
+
+  // biggest (by weighted capacity) first, then by number of assessed sites
+  provs.sort((a, b) => (b.cap - a.cap) || (b.assessed.length - a.assessed.length));
+
+  summary.innerHTML = provs.map(p => {
+    const g = GRADE[p.badge];
+    const scoreTxt = p.score != null ? p.score.toFixed(2) : "—";
+    const n = p.assessed.length;
+    const summaryMeta = n
+      ? `${scoreTxt} weighted · ${n} assessed site${n > 1 ? "s" : ""}${p.unweighted ? " · unweighted" : ""}`
+      : "no assessed sites";
+
+    // "show the math"
+    let math = "";
+    if (p.weighted.length) {
+      const rows = p.weighted.map(s => {
+        const w = WGRADE[s.water_grade];
+        return `<span class="math-row">${esc(s.name)} — grade ${w.v} (${GRADE[w.key].sym}) × ${num(s.power_mw)} MW = ${num(w.v * s.power_mw)}</span>`;
+      }).join("");
+      const excluded = p.assessed.filter(s => typeof s.power_mw !== "number").map(s =>
+        `<span class="math-row math-ex">${esc(s.name)} — ${GRADE[WGRADE[s.water_grade].key].sym} graded, no MW figure → shown but not weighted</span>`
+      ).join("");
+      const numer = p.weighted.reduce((a, s) => a + WGRADE[s.water_grade].v * s.power_mw, 0);
+      const den = p.weighted.reduce((a, s) => a + s.power_mw, 0);
+      math = `<div class="math">${rows}${excluded}` +
+        `<span class="math-row math-total">weighted average = ${num(numer)} ÷ ${num(den)} = <b>${scoreTxt}</b> → ${g.sym} ${BADGE_LABEL[p.badge]} (${BUCKET_TXT[p.badge]})</span></div>`;
+    } else if (p.unweighted) {
+      const rows = p.assessed.map(s => `<span class="math-row">${esc(s.name)} — grade ${WGRADE[s.water_grade].v} (${GRADE[WGRADE[s.water_grade].key].sym})</span>`).join("");
+      math = `<div class="math">${rows}<span class="math-row math-total">no capacity figures — unweighted mean = <b>${scoreTxt}</b> → ${g.sym} ${BADGE_LABEL[p.badge]}</span></div>`;
+    }
+
+    // per-site cards
+    const siteCards = p.gsites.map(s => {
+      const w = WGRADE[s.water_grade];
+      const sym = w ? GRADE[w.key].sym : GRADE.pending.sym;
+      let power;
+      if (typeof s.power_mw === "number") {
+        power = `${num(s.power_mw)} MW` + (typeof s.power_mw_planned === "number" ? ` (→ ${num(s.power_mw_planned)} MW planned)` : "");
+      } else {
+        power = (typeof s.power_mw_planned === "number" ? `${num(s.power_mw_planned)} MW planned` : "capacity not disclosed") + " · not capacity-weighted";
+      }
+      const srcs = (s.sources || []).map(src =>
+        src.url ? `<a class="site-src" href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.name)} ↗</a>`
+                : `<span class="site-src" style="color:var(--muted)">${esc(src.name)}</span>`
+      ).join("");
+      return `<div class="site">
+        <div class="site-head"><span class="site-grade">${sym}</span><span class="site-name">${esc(s.name)}</span><span class="site-loc">${esc(s.location)}</span></div>
+        <div class="site-power">${power}</div>
+        <p class="site-note">${esc(s.water_note)}</p>
+        <div class="site-srcs">${srcs}</div>
+        ${s.as_of ? `<div class="site-asof">as of ${esc(s.as_of)}</div>` : ""}
+      </div>`;
+    }).join("");
+
+    return `<details class="prov-card">
+      <summary>
+        <span class="prov-badge b-${g.cls}">${g.sym} ${BADGE_LABEL[p.badge]}</span>
+        <span class="prov-name">${esc(p.provider)}</span>
+        <span class="prov-meta">${summaryMeta}</span>
+        <span class="prov-hint">Show the math <span class="car">▾</span></span>
+      </summary>
+      <div class="prov-body">${math}<div class="sites">${siteCards}</div></div>
+    </details>`;
+  }).join("");
+}
+
+// Page copy + nested matrix come from transparency-index.json …
 fetch("transparency-index.json", { cache: "no-store" })
   .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-  .then(render)
-  .catch(() => render(FALLBACK));
+  .then(data => { renderMeta(data); renderMatrix(data); })
+  .catch(() => { renderMeta(FALLBACK); renderMatrix(FALLBACK); });
+
+// … the scored environmental axis is computed from datacenters.json.
+fetch("datacenters.json", { cache: "no-store" })
+  .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+  .then(renderEnv)
+  .catch(() => { document.getElementById("env-summary").innerHTML =
+    `<p class="section-lede">Couldn't load datacenters.json — environmental scores are unavailable right now.</p>`; });
 </script>
 </body>
 </html>

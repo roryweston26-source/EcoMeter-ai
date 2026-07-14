@@ -1,23 +1,44 @@
 {
   "_meta": {
     "title": "AI Transparency Index",
-    "lede": "How much each major AI company discloses about the water and energy footprint of its AI data centers — not the actual footprint, but the transparency of it. Independently graded by Legerly. 'Not disclosed' is a finding, not a gap to paper over.",
-    "last_verified": "2026-07-10",
+    "lede": "How openly the major AI providers let the public see what their AI costs — in dollars, in data, and in water and energy. We grade transparency, not the underlying footprint: whether a real figure is findable at all, and who had to surface it. 'Not disclosed' is a finding, not a gap to paper over.",
+    "last_verified": "2026-07-12",
     "status": "ok",
     "status_note": "",
-    "methodology": "Grades: 🟢 good disclosure, 🟡 partial, 🔴 none or poor. We grade how much each company DISCLOSES about the environmental footprint of the AI compute it controls — not the footprint itself. Rented-vs-owned rule: each company is graded only on what IT publishes, regardless of who owns the building — so a renter that stays silent (OpenAI, Anthropic, xAI) has disclosed nothing, while one that publishes facility detail gets credit. Cross-board: no company separates AI-specific from general data-center footprint, none discloses indirect (power-generation) water — LBNL estimates indirect ≈ 12× direct — and there is no U.S. federal water-disclosure mandate as of mid-2026.",
+    "axes": [
+      { "key": "environmental", "label": "Environmental impact", "state": "scored",  "note": "Capacity-weighted water & energy disclosure across known AI data center sites. Scored below." },
+      { "key": "pricing",       "label": "Pricing",             "state": "pending", "note": "Criteria not yet defined — Not yet scored." },
+      { "key": "data",          "label": "Data practices",      "state": "pending", "note": "Criteria not yet defined — Not yet scored." }
+    ],
+    "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources. Pricing and data-practices criteria aren't defined yet, so those axes are marked 'Not yet scored.'",
     "grade_legend": [
-      { "grade": "green",  "symbol": "🟢", "label": "Good disclosure" },
-      { "grade": "yellow", "symbol": "🟡", "label": "Partial" },
-      { "grade": "red",    "symbol": "🔴", "label": "None or poor" }
+      { "grade": "green",   "symbol": "🟢", "label": "Transparent — company discloses itself" },
+      { "grade": "yellow",  "symbol": "🟡", "label": "Partial — public only via regulator, utility or watchdog" },
+      { "grade": "red",     "symbol": "🔴", "label": "Opaque — nothing public" },
+      { "grade": "pending", "symbol": "⚪", "label": "Not yet assessed" }
     ],
     "caveats": [
-      "We grade DISCLOSURE quality, not true environmental performance. A low grade means opacity, not necessarily high impact — a genuine closed-loop site (e.g. Abilene) may use little water yet still score 🔴 for not publishing numbers.",
-      "Withdrawal ≠ consumption, and direct ≠ indirect. No company discloses indirect (power-generation) water, which LBNL estimates at ~12× direct — so every 'water positive' claim understates the true system footprint.",
-      "Some gradings are genuinely ambiguous and are flagged, not silently resolved: Meta's site-level cell sits between 🟡/🔴; Microsoft's 'water positive' claim is aggressive relative to its thin data-center-specific disclosure.",
-      "Conflicting figures are shown as ranges, not picks — e.g. Google Council Bluffs 2024 ≈ 1.0B gal consumed / 1.3B potable / 1.4B withdrawn depending on source and metric.",
-      "The xAI/OpenAI/Anthropic non-disclosure finding rests partly on independent trackers (Stanford Foundation Model Transparency Index, Dec 2025; Earth911, 2026), but the underlying fact — no company environmental report exists — is directly verifiable from the absence of any such document."
-    ]
+      "Site coverage is currently small — 5 sites across 4 providers — and expanding over time. That reflects our research pace, not a judgment on any provider we haven't listed yet.",
+      "Most 🟡 grades today exist only because of local advocacy groups and utility-records work — not because any law requires the company to disclose. That gap is itself part of the story.",
+      "Grades are re-verified periodically, not continuously — a site can move between checks.",
+      "This is Legerly's independent read of public information, not a regulatory finding. Tell us if we got something wrong."
+    ],
+    "detail": {
+      "title": "Disclosure quality by dimension",
+      "note": "A closer look at how complete each company's own environmental reporting is, across six disclosure dimensions. This lens grades a company's self-reporting rather than the 'can the public find out at all' question the site scores above answer — so here 🟢 means good disclosure, 🟡 partial, 🔴 none or poor. We grade what each company DISCLOSES about the AI compute it controls, not the footprint itself. Rented-vs-owned rule: each company is graded only on what IT publishes, regardless of who owns the building — so a renter that stays silent (OpenAI, Anthropic, xAI) has disclosed nothing, while one that publishes facility detail gets credit. Cross-board: no company separates AI-specific from general data-center footprint, none discloses indirect (power-generation) water — LBNL estimates indirect ≈ 12× direct — and there is no U.S. federal water-disclosure mandate as of mid-2026.",
+      "grade_legend": [
+        { "grade": "green",  "symbol": "🟢", "label": "Good disclosure" },
+        { "grade": "yellow", "symbol": "🟡", "label": "Partial" },
+        { "grade": "red",    "symbol": "🔴", "label": "None or poor" }
+      ],
+      "caveats": [
+        "We grade DISCLOSURE quality, not true environmental performance. A low grade means opacity, not necessarily high impact — a genuine closed-loop site (e.g. Abilene) may use little water yet still score 🔴 for not publishing numbers.",
+        "Withdrawal ≠ consumption, and direct ≠ indirect. No company discloses indirect (power-generation) water, which LBNL estimates at ~12× direct — so every 'water positive' claim understates the true system footprint.",
+        "Some gradings are genuinely ambiguous and are flagged, not silently resolved: Meta's site-level cell sits between 🟡/🔴; Microsoft's 'water positive' claim is aggressive relative to its thin data-center-specific disclosure.",
+        "Conflicting figures are shown as ranges, not picks — e.g. Google Council Bluffs 2024 ≈ 1.0B gal consumed / 1.3B potable / 1.4B withdrawn depending on source and metric.",
+        "The xAI/OpenAI/Anthropic non-disclosure finding rests partly on independent trackers (Stanford Foundation Model Transparency Index, Dec 2025; Earth911, 2026), but the underlying fact — no company environmental report exists — is directly verifiable from the absence of any such document."
+      ]
+    }
   },
   "columns": [
     { "key": "site_level",    "label": "Site-level disclosure" },
