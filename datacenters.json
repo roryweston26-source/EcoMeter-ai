@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "last_updated": "2026-07-12",
+    "last_updated": "2026-07-13",
     "methodology_note": "Environmental-impact grades are a capacity-weighted average across each provider's known AI data center sites. See 'How we grade this' for full methodology."
   },
   "sites": [
@@ -92,6 +92,63 @@
          "url": "https://www.tomshardware.com/tech-industry/big-tech/microsoft-ceo-says-new-ai-data-centers-use-as-little-water-annually-as-a-restaurant-closed-loop-cooling-system-aims-to-slash-consumption-from-millions-of-gallons-as-ai-infrastructure-faces-mounting-environmental-scrutiny"}
       ],
       "as_of": "2026-06"
+    },
+    {
+      "id": "google-council-bluffs",
+      "provider": "Google",
+      "name": "Council Bluffs",
+      "location": "Council Bluffs, IA, USA",
+      "power_mw": 350,
+      "water_grade": "transparent",
+      "water_note": "Google is the only major operator to self-report water per data center — its 2024 Environmental Report breaks out ~24 US/Canada sites. Council Bluffs is its thirstiest: ~1.3B gallons of potable water in 2024 (roughly 2.8M gal/day consumed, 3.9M gal/day withdrawn), on evaporative cooling. Figures vary by source and metric (~1.0B consumed / 1.3B potable / 1.4B withdrawn). The disclosure comes from the company itself. (Site power ~350 MW is a third-party estimate — Google does not publish per-site MW.)",
+      "sources": [
+        {"name": "Google — Iowa data center location & stewardship",
+         "url": "https://datacenters.google/locations/iowa/"},
+        {"name": "MOST Policy Initiative — Data Center Water Use",
+         "url": "https://mostpolicyinitiative.org/science-note/data-center-water-use/"},
+        {"name": "DC Hub — Google Council Bluffs facility (power estimate)",
+         "url": "https://dchub.cloud/facilities/google-google-council-bluffs-data-center-e6a28ba0"}
+      ],
+      "as_of": "2025-06"
+    },
+    {
+      "id": "oracle-openai-abilene",
+      "provider": "Oracle / OpenAI (Stargate)",
+      "name": "Stargate — Abilene",
+      "location": "Abilene, TX, USA",
+      "power_mw": 300,
+      "power_mw_planned": 1200,
+      "water_grade": "partial",
+      "water_note": "One physical facility, listed once to avoid double-counting: Oracle operates it, Crusoe built it, and OpenAI is the AI tenant. Cooling is one-time-fill closed-loop (non-evaporative). Oracle and the City of Abilene put the initial fill at ~8M gallons of city water (against the city's ~22M gal/day total draw), with only periodic top-ups and maintenance drains after. Neither company has disclosed a precise ongoing operational figure — OpenAI's public framing stays qualitative ('initial fill about two Olympic pools; annual use like a medium office building'). Borderline partial/opaque: a real (initial-fill) number is public, but the figure that matters — steady-state consumption — is not. Powered by on-site natural gas plus grid (including some wind).",
+      "sources": [
+        {"name": "Oracle — Abilene data center",
+         "url": "https://www.oracle.com/data-centers/abilene/"},
+        {"name": "Epoch AI — OpenAI Stargate: where the US sites stand",
+         "url": "https://epoch.ai/publications/openai-stargate-where-the-us-sites-stand"},
+        {"name": "OpenAI — Building the compute infrastructure (closed-loop claim)",
+         "url": "https://openai.com/index/building-the-compute-infrastructure-for-the-intelligence-age/"},
+        {"name": "Texas Tribune — Data centers thirsty for Texas' water",
+         "url": "https://www.texastribune.org/2025/09/25/texas-data-center-water-use/"}
+      ],
+      "as_of": "2026-06"
+    },
+    {
+      "id": "coreweave-polaris-forge",
+      "provider": "CoreWeave",
+      "name": "Polaris Forge 1 (Ellendale)",
+      "location": "Ellendale, ND, USA",
+      "power_mw": null,
+      "water_grade": "opaque",
+      "water_note": "CoreWeave is an AI-specialist cloud that mostly leases capacity (~850 MW active across ~41 sites at end-2025) rather than owning it, so site-level attribution is murky. Its flagship campus — Polaris Forge 1 in Ellendale, ND — is built by Applied Digital and leased by CoreWeave (~400 MW across phases). CoreWeave publishes no water or WUE figures for it or any site, and no utility/watchdog figure has surfaced — nothing public. Capacity here is leased and not cleanly attributable, so the site is graded but excluded from the capacity-weighted average.",
+      "sources": [
+        {"name": "CoreWeave — AI Data Centers",
+         "url": "https://www.coreweave.com/ai-data-centers"},
+        {"name": "Applied Digital — additional 150 MW North Dakota lease to CoreWeave",
+         "url": "https://ir.applieddigital.com/news-events/press-releases/detail/128/applied-digital-finalizes-additional-150mw-lease-with"},
+        {"name": "CoreWeave 10-K (FY2025), SEC EDGAR",
+         "url": "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm"}
+      ],
+      "as_of": "2025-12"
     }
   ]
 }
