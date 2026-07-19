@@ -364,8 +364,9 @@ function renderEnv(dc){
     const g = GRADE[p.badge];
     const scoreTxt = p.score != null ? p.score.toFixed(2) : "—";
     const n = p.assessed.length;
+    const scoreWord = p.unweighted ? "unweighted mean" : "weighted";
     const summaryMeta = n
-      ? `${scoreTxt} weighted · ${n} assessed site${n > 1 ? "s" : ""}${p.unweighted ? " · unweighted" : ""}`
+      ? `${scoreTxt} ${scoreWord} · ${n} assessed site${n > 1 ? "s" : ""}`
       : "no assessed sites";
 
     // "show the math"

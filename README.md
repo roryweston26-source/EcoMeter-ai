@@ -21,13 +21,15 @@ It also feeds Legerly's **Subscription Auditor**. With opt-in, local, lifetime u
 
 | Provider | Models |
 |---|---|
-| Anthropic | Claude Haiku 4.5, Sonnet 4.6, Opus 4.6 / 4.7 / 4.8 |
+| Anthropic | Claude Opus 4.8 / 4.7 / 4.6, Sonnet 5, Sonnet 4.6, Haiku 4.5, plus Fable 5 & Mythos 5 |
 | Google | Gemini 3.5 Flash, 3.1 Pro, 3.1 Flash-Lite, 2.5 Pro / Flash / Flash-Lite |
-| OpenAI | GPT-5.5, GPT-5.4, GPT-4o, GPT-4.1, o3, o4-mini |
-| xAI | Grok 4, Grok 3, Grok 3 Mini |
-| Mistral | Large 3, Medium 3, Small 3, Codestral |
+| OpenAI | GPT-5.5, GPT-5.4 (+ mini), GPT-4o, GPT-4.1, o3, o4-mini |
+| xAI | Grok 4.3, Grok 4.20, Grok 4, Grok 3, Grok 3 Mini |
+| Mistral | Large 3, Medium 3.5, Small 4, Codestral |
 | Perplexity | Sonar Pro, Sonar, Sonar Reasoning Pro |
-| DeepSeek | V3, R1 |
+| DeepSeek | V4 Pro, V4 Flash, V3, R1 |
+
+The full catalog (including advanced/paid frontier models) lives in [`extension/prices.json`](extension/prices.json) — the single source of truth for pricing, shared by the extension and the Legerly website.
 
 ## Installation
 
@@ -41,40 +43,49 @@ It also feeds Legerly's **Subscription Auditor**. With opt-in, local, lifetime u
 
 ### From the Chrome Web Store
 
-*Coming soon.*
+Install the published extension directly: **[EcoMeter AI on the Chrome Web Store](https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj)**.
 
 ## Project Structure
 
 ```
 ecometer-ai/
 ├── extension/          # The Chrome extension (load this folder in Chrome)
-│   ├── manifest.json
+│   ├── manifest.json     # MV3, current version 6.10
 │   ├── sidepanel.html
-│   ├── sidepanel.js
+│   ├── sidepanel.js      # Side-panel UI + all logic
 │   ├── background.js
-│   ├── content.js
-│   ├── prices.json     # Auto-updated weekly via GitHub Actions
-│   ├── water.json
+│   ├── content.js        # Scrapes visible chat text per platform
+│   ├── prices.json       # SHARED source of truth: api / subscriptions / free_tiers
+│   ├── water.json        # Per-model water intensity tiers
+│   ├── privacy-policy.html
 │   ├── icons/
-│   ├── fonts/
+│   ├── fonts/            # Self-hosted (no IP leak to Google Fonts)
 │   ├── tokenizer_cl100k.js
 │   └── tokenizer_o200k.js
 ├── scripts/
-│   └── update-prices.js  # Price updater script (runs in CI)
+│   ├── update-prices.js  # Writes the prices.json api section
+│   ├── bump-version.js   # Increments manifest version (reactive, on store collision)
+│   └── roll-clock.js     # Rolls the AI Clock anchor forward
 └── .github/
     └── workflows/
-        ├── update-prices.yml   # Weekly price sync → opens PR
-        └── release.yml         # On push to main → builds zip release
+        ├── publish.yml         # Weekly: refresh prices → build → upload draft to Chrome Web Store
+        ├── update-prices.yml   # Manual: PR-based price refresh
+        ├── release.yml         # On push to main → builds zip + GitHub Release
+        └── roll-clock.yml      # Quarterly: re-anchor the AI Clock, open a PR
 ```
+
+This repo also hosts the **[Legerly website](https://legerlyai.com)** (`index.html`, `pricing.html`, `ai-clock.html`, `audit.html`, `transparency-index.html`) served by GitHub Pages from `main`.
 
 ## Pricing Updates
 
-`prices.json` is updated automatically every Monday via GitHub Actions. The workflow fetches current pricing from official provider pages and opens a pull request if anything has changed. You review and merge — nothing ships without your approval.
+The weekly `publish.yml` workflow (Monday) refreshes `prices.json` as part of building and uploading the extension draft to the Chrome Web Store. A separate `update-prices.yml` can be run manually to open a PR with just a price refresh. Either way you review and merge — nothing ships without your approval.
 
-To update prices manually:
+To update prices locally:
 ```bash
 node scripts/update-prices.js
 ```
+
+> **Note:** `update-prices.js` currently writes hardcoded values and only covers Anthropic, OpenAI, and Google. Other providers' prices in `prices.json` are maintained by hand.
 
 ## Contributing
 

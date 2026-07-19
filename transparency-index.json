@@ -2,7 +2,7 @@
   "_meta": {
     "title": "AI Transparency Index",
     "lede": "How openly the major AI providers let the public see what their AI costs — in dollars, in data, and in water and energy. We grade transparency, not the underlying footprint: whether a real figure is findable at all, and who had to surface it. 'Not disclosed' is a finding, not a gap to paper over.",
-    "last_verified": "2026-07-12",
+    "last_verified": "2026-07-13",
     "status": "ok",
     "status_note": "",
     "axes": [
@@ -18,7 +18,7 @@
       { "grade": "pending", "symbol": "⚪", "label": "Not yet assessed" }
     ],
     "caveats": [
-      "Site coverage is currently small — 5 sites across 4 providers — and expanding over time. That reflects our research pace, not a judgment on any provider we haven't listed yet.",
+      "Site coverage is currently small — 8 sites across 7 providers — and expanding over time. That reflects our research pace, not a judgment on any provider we haven't listed yet. Pure-play colocation landlords (e.g. Equinix, NTT, CyrusOne) aren't scored here yet — they publish fleet-wide efficiency rather than per-AI-site figures, and need their own treatment.",
       "Most 🟡 grades today exist only because of local advocacy groups and utility-records work — not because any law requires the company to disclose. That gap is itself part of the story.",
       "Grades are re-verified periodically, not continuously — a site can move between checks.",
       "This is Legerly's independent read of public information, not a regulatory finding. Tell us if we got something wrong."
