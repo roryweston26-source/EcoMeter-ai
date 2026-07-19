@@ -8,6 +8,12 @@ It also feeds Legerly's **Subscription Auditor**. With opt-in, local, lifetime u
 
 ---
 
+## Why Legerly
+
+AI runs on **asymmetric information**: providers know exactly what each conversation costs — in dollars, energy, and water — and structure things so you don't. That gap is a market failure, and it's helping AI concentrate wealth rather than spread it. [Legerly](https://legerlyai.com) builds privacy-first, ad-free tools that hand that information back to the people using AI, so the benefit flows to them. EcoMeter AI is one of those tools; the full set (AI Price Tracker, the AI Clock, Subscription Auditor, AI Transparency Index) lives at [legerlyai.com](https://legerlyai.com).
+
+---
+
 ## Features
 
 - **Token counting** — accurate to ±10–15% using local tokenizers (cl100k, o200k)
