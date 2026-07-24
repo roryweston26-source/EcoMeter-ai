@@ -12,12 +12,14 @@
       "power_mw": 631,
       "power_mw_planned": 854,
       "water_grade": "opaque",
-      "water_note": "No Meta-specific figure is public. The only known number is an aggregate across all New Albany business-park tenants (Meta, Google, others): ~8M gal/day peak draw as of Apr 2026, against 16M gal/day contracted capacity. Not attributable to Meta alone.",
+      "water_note": "Still no Meta-specific figure after a deeper look. Water is supplied wholesale by the City of Columbus and only a park-level aggregate is public — ~8M gal/day peak across all New Albany International Business Park tenants (Meta, Google, others) as of Apr 2026, against 16M gal/day contracted capacity. Per-operator contractual caps exist but aren't broken out, so Meta's own draw isn't attributable, and the closed-loop systems return effluent to monitored sewers. A local watchdog (Stop Ohio Data Centers) is pressing Ohio EPA on exactly this opacity.",
       "sources": [
         {"name": "Measured AI — Meta Prometheus & Google Ohio primer",
          "url": "https://measuredai.substack.com/p/meta-prometheus-google-ohio"},
         {"name": "Epoch AI — Meta Prometheus facility page",
-         "url": "https://epoch.ai/data/ai-data-centers/directory/meta-prometheus"}
+         "url": "https://epoch.ai/data/ai-data-centers/directory/meta-prometheus"},
+        {"name": "Stop Ohio Data Centers — data center water usage in Ohio",
+         "url": "https://stopohiodatacenters.org/data-center-water-usage-ohio"}
       ],
       "as_of": "2026-04"
     },
@@ -28,14 +30,16 @@
       "location": "Memphis, TN, USA",
       "power_mw": 300,
       "water_grade": "partial",
-      "water_note": "Real, trending daily figures exist, but only because a local watchdog group (Protect Our Aquifer) obtained MLGW utility billing data — not because xAI disclosed anything. Usage roughly doubled in nine months: 381,000 gal/day (Aug 2025) to 812,502 gal/day (May 2026). A promised water-recycling plant that would cut ~3M gal/day of drinking-water draw has paused construction as of April 2026.",
+      "water_note": "Real, trending figures exist — but only because a local watchdog (Protect Our Aquifer) pulled MLGW utility data, not because xAI disclosed anything. Municipal purchases roughly doubled in nine months, from 381,000 gal/day (Aug 2025) to 812,502 gal/day (May 2026); MLGW agreed to supply up to 1.3M gal/day of drinking water until a reuse plant is built. POA puts xAI's total peak demand higher still — municipal supply plus the on-site aquifer wells xAI drilled push it into the millions of gallons a day. The promised water-recycling plant that would offset much of the drinking-water draw has stalled (work sidelined as an xAI IPO looms; a 2027 restart is tentative).",
       "sources": [
         {"name": "Memphis Flyer — Protect Our Aquifer MLGW analysis",
          "url": "https://www.memphisflyer.com/protect-our-aquifer-xai-bought-25m-gallons-of-water-from-mlgw-projects-increases/"},
+        {"name": "Protect Our Aquifer — xAI supercomputer (watchdog primary)",
+         "url": "https://www.protectouraquifer.org/issues/xai-supercomputer"},
+        {"name": "E&E News / POLITICO — xAI sidelines water-reuse project",
+         "url": "https://www.eenews.net/articles/xai-sidelines-major-water-reuse-project-as-ipo-looms/"},
         {"name": "Daily Memphian — xAI/MLGW bill analysis",
-         "url": "https://dailymemphian.com/article/58474/analyzing-xai-mlgw-bills"},
-        {"name": "The Cooldown — water-recycling plan stalled",
-         "url": "https://www.thecooldown.com/green-tech/musk-ai-water-recycling-project-memphis/"}
+         "url": "https://dailymemphian.com/article/58474/analyzing-xai-mlgw-bills"}
       ],
       "as_of": "2026-05"
     },
@@ -119,16 +123,16 @@
       "power_mw": 300,
       "power_mw_planned": 1200,
       "water_grade": "partial",
-      "water_note": "One physical facility, listed once to avoid double-counting: Oracle operates it, Crusoe built it, and OpenAI is the AI tenant. Cooling is one-time-fill closed-loop (non-evaporative). Oracle and the City of Abilene put the initial fill at ~8M gallons of city water (against the city's ~22M gal/day total draw), with only periodic top-ups and maintenance drains after. Neither company has disclosed a precise ongoing operational figure — OpenAI's public framing stays qualitative ('initial fill about two Olympic pools; annual use like a medium office building'). Borderline partial/opaque: a real (initial-fill) number is public, but the figure that matters — steady-state consumption — is not. Powered by on-site natural gas plus grid (including some wind).",
+      "water_note": "One physical facility, listed once to avoid double-counting: Oracle operates it, Crusoe built it, and OpenAI is the AI tenant. Cooling is one-time-fill closed-loop (non-evaporative), and here there are real numbers — from the operator and the city, not the AI tenant: an ~8M-gallon initial fill, then roughly 12,000 gallons per year per building (eight buildings) as top-up, with the mayor putting annual use at about half of what Abilene draws in a single day. That's genuine water disclosure, and closed-loop keeps the actual draw low, so this is a solid partial. The sharper controversy at this site is energy, not water: its on-site gas turbines are permitted to emit ~1.6M tons/year of greenhouse gases, cleared through minor-permit loopholes with little public input (Public Citizen; Texas Tribune). Powered by on-site natural gas plus grid, including some wind.",
       "sources": [
         {"name": "Oracle — Abilene data center",
          "url": "https://www.oracle.com/data-centers/abilene/"},
         {"name": "Epoch AI — OpenAI Stargate: where the US sites stand",
          "url": "https://epoch.ai/publications/openai-stargate-where-the-us-sites-stand"},
-        {"name": "OpenAI — Building the compute infrastructure (closed-loop claim)",
-         "url": "https://openai.com/index/building-the-compute-infrastructure-for-the-intelligence-age/"},
         {"name": "Texas Tribune — Data centers thirsty for Texas' water",
-         "url": "https://www.texastribune.org/2025/09/25/texas-data-center-water-use/"}
+         "url": "https://www.texastribune.org/2025/09/25/texas-data-center-water-use/"},
+        {"name": "Texas Tribune — Planned Texas data centers' emissions (turbine permits)",
+         "url": "https://www.texastribune.org/2026/07/09/texas-data-centers-ai-power-plants-pollution-state-permits/"}
       ],
       "as_of": "2026-06"
     },
@@ -139,12 +143,14 @@
       "location": "Ellendale, ND, USA",
       "power_mw": null,
       "water_grade": "opaque",
-      "water_note": "CoreWeave is an AI-specialist cloud that mostly leases capacity (~850 MW active across ~41 sites at end-2025) rather than owning it, so site-level attribution is murky. Its flagship campus — Polaris Forge 1 in Ellendale, ND — is built by Applied Digital and leased by CoreWeave (~400 MW across phases). CoreWeave publishes no water or WUE figures for it or any site, and no utility/watchdog figure has surfaced — nothing public. Capacity here is leased and not cleanly attributable, so the site is graded but excluded from the capacity-weighted average.",
+      "water_note": "CoreWeave is an AI-specialist cloud that mostly leases capacity (~850 MW active across ~41 sites at end-2025) rather than owning it, so site-level attribution is murky. Its flagship campus — Polaris Forge 1 in Ellendale, ND — is built by Applied Digital and leased by CoreWeave (250 MW, plus a further 150 MW). The operator describes a closed-loop, waterless, direct-to-chip design — coolant trucked in, a WUE 'near zero' — but that's a design claim, not a measured figure; neither CoreWeave nor Applied Digital publishes actual water numbers, and no utility or watchdog has surfaced one. Per the page's rule (a closed-loop site with no published number is opaque), it stays red — genuinely low water use, but not a knowable figure. Capacity is leased and shown without a weight.",
       "sources": [
         {"name": "CoreWeave — AI Data Centers",
          "url": "https://www.coreweave.com/ai-data-centers"},
-        {"name": "Applied Digital — additional 150 MW North Dakota lease to CoreWeave",
-         "url": "https://ir.applieddigital.com/news-events/press-releases/detail/128/applied-digital-finalizes-additional-150mw-lease-with"},
+        {"name": "Applied Digital — 250 MW Ellendale lease with CoreWeave",
+         "url": "https://ir.applieddigital.com/news-events/press-releases/detail/123/applied-digital-announces-250mw-ai-data-center-lease-with"},
+        {"name": "Data Center Dynamics — Applied Digital/CoreWeave Ellendale campus",
+         "url": "https://www.datacenterdynamics.com/en/news/applied-digital-signs-250mw-agreement-with-coreweave-for-capacity-at-ellendale-campus-north-dakota/"},
         {"name": "CoreWeave 10-K (FY2025), SEC EDGAR",
          "url": "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm"}
       ],
