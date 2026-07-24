@@ -149,6 +149,86 @@
          "url": "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm"}
       ],
       "as_of": "2025-12"
+    },
+    {
+      "id": "meta-hyperion",
+      "provider": "Meta",
+      "name": "Hyperion",
+      "location": "Richland Parish, LA, USA",
+      "power_mw": null,
+      "power_mw_planned": 5000,
+      "water_grade": "partial",
+      "water_note": "Meta's largest campus yet — a $50B+ build ramping to ~2 GW by 2030 and ~5 GW at full buildout (~2036), so little is operational today. Meta itself hasn't published an operational figure: pressed locally, a representative said only that the site would use about the same water per year as the ~2,500 acres of irrigated farmland it replaced. But a real number is public through the state — permit/registration filings put the draw at roughly 1.5M gal/day baseline, authorized up to ~23M gal/day at peak, from the Mississippi River Alluvial Aquifer (not the already-stressed Sparta aquifer). That figure comes from the regulator and local reporting, not Meta — hence partial. Shown for scale; excluded from the weighted average until it has meaningful operating capacity.",
+      "sources": [
+        {"name": "Meta — Richland Parish data center (company page)",
+         "url": "https://datacenters.atmeta.com/richland-parish-data-center/"},
+        {"name": "LouisianAI — Louisiana data center water: usage, permits, cooling",
+         "url": "https://louisianai.com/topics/water"},
+        {"name": "The Hayride — Louisiana groundwater crisis (permit context)",
+         "url": "https://thehayride.com/2025/01/garlington-the-groundwater-crisis-isnt-coming-its-here/"},
+        {"name": "Sierra Club — In rural Louisiana, Meta's data center at what cost",
+         "url": "https://www.sierraclub.org/sierra/rural-louisiana-meta-s-new-data-center-promises-growth-what-cost"}
+      ],
+      "as_of": "2026-07"
+    },
+    {
+      "id": "microsoft-fairwater-atlanta",
+      "provider": "Microsoft",
+      "name": "Fairwater (Atlanta)",
+      "location": "Atlanta, GA, USA",
+      "power_mw": 700,
+      "water_grade": "opaque",
+      "water_note": "Microsoft's second Fairwater site, wired to the Wisconsin campus as one 'AI superfactory'; ramping past ~700 MW of IT capacity by end-2026. Microsoft describes a closed-loop liquid-cooling design and cites fleet-wide WUE, but has published no verifiable Atlanta-specific water figure — only the qualitative 'closed-loop uses about as much water as a restaurant per year' line. That's less than even the Abilene site, which at least has an ~8M-gal initial-fill number; on the page's own rule (a closed-loop site with no published number scores opaque), Atlanta lands there. A Georgia records investigation reported that 'the water use numbers for a Microsoft Data Center were also hidden,' but it didn't name the facility, so we don't lean on it. Because Atlanta is Microsoft's larger AI site, capacity-weighting pulls Microsoft's overall grade down to opaque — a flagged call that is sensitive to Atlanta's still-ramping capacity.",
+      "sources": [
+        {"name": "Microsoft — From Wisconsin to Atlanta: first AI superfactory",
+         "url": "https://news.microsoft.com/source/features/ai/from-wisconsin-to-atlanta-microsoft-connects-datacenters-to-build-its-first-ai-superfactory/"},
+        {"name": "Data Center Frontier — Microsoft's Fairwater Atlanta",
+         "url": "https://www.datacenterfrontier.com/machine-learning/article/55330039/microsofts-fairwater-atlanta-and-the-rise-of-the-distributed-ai-supercomputer"},
+        {"name": "Measured AI — Fairwater Atlanta (grid-only gigawatt)",
+         "url": "https://measuredai.substack.com/p/microsoft-fairwater-atlanta-data-center"},
+        {"name": "WSB-TV — Georgia data centers using NDAs to hide water use",
+         "url": "https://www.wsbtv.com/news/local/data-centers-water-secrets-companies-using-ndas-hide-water-usage-georgia/ESYQS4GRDVAM7A6EJUQKGXTPWY/"}
+      ],
+      "as_of": "2026-06"
+    },
+    {
+      "id": "aws-anthropic-canton-ms",
+      "provider": "Amazon / Anthropic (Project Rainier)",
+      "name": "Canton Campus (Madison County)",
+      "location": "Canton, MS, USA",
+      "power_mw": 350,
+      "power_mw_planned": 1000,
+      "water_grade": "partial",
+      "water_note": "The Mississippi half of Project Rainier — the other Anthropic-dedicated Trainium2 build: >350 MW of IT capacity today, ramping past 1 GW, powered by Entergy Mississippi plus new solar farms. Here Amazon has actually put numbers out (via local reporting): the Canton campus is projected to use ~83M gallons/year, drawn from Canton Municipal Utilities and set to shift entirely to recycled wastewater (Madison County Wastewater Authority, with Veolia) by 2027, paired with an aquifer-replenishment program targeting ~150M gal/year of offsets. More disclosure than most — but still a forward projection surfaced largely through local outlets rather than an audited company environmental report, so partial rather than transparent.",
+      "sources": [
+        {"name": "Amazon — $25B Mississippi investment (addresses water usage)",
+         "url": "https://www.aboutamazon.com/news/company-news/amazon-25-billion-mississippi-data-centers"},
+        {"name": "Mississippi Today — Where Amazon's Mississippi data centers stand",
+         "url": "https://mississippitoday.org/2026/06/09/amazon-data-centers-mississippi/"},
+        {"name": "News From The States — Amazon details project status, water & energy",
+         "url": "https://www.newsfromthestates.com/article/where-do-amazons-data-centers-mississippi-stand-company-offers-details-project-status-water"},
+        {"name": "Semafor — AWS' multi-state AI data center powering Claude",
+         "url": "https://www.semafor.com/article/10/29/2025/aws-massive-multi-state-ai-data-center-is-powering-anthropics-claude"}
+      ],
+      "as_of": "2026-06"
+    },
+    {
+      "id": "google-the-dalles",
+      "provider": "Google",
+      "name": "The Dalles",
+      "location": "The Dalles, OR, USA",
+      "power_mw": null,
+      "water_grade": "partial",
+      "water_note": "The textbook 'pried loose' case: The Dalles's water figures became public only after The Oregonian sued the city and, following a multi-year fight Google helped resist, a settlement forced annual disclosure. The numbers are real and trending — 461.1M gal withdrawn / 361.4M gal consumed in 2024, ~550M gal in 2025 (~40% of the city's total supply). Google now also reports per-site water in its own environmental report (which is why its flagship Council Bluffs scores transparent); The Dalles is graded partial to reflect that here the figure was surfaced by litigation, not volunteered. No per-site MW is published, so it is shown but not capacity-weighted.",
+      "sources": [
+        {"name": "Latitude Media — data-center water 'black box,' Google",
+         "url": "https://www.latitudemedia.com/news/data-center-water-use-black-box-google-trying-to-change/"},
+        {"name": "Reynolds Center — The Oregonian exposes data-center water use",
+         "url": "https://businessjournalism.org/2023/11/oregonian-data-centers/"},
+        {"name": "The Register — Google, The Dalles water use",
+         "url": "https://www.theregister.com/2022/12/19/google_datacenters_dalles/"}
+      ],
+      "as_of": "2025-06"
     }
   ]
 }
