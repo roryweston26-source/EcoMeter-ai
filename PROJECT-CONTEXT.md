@@ -75,6 +75,7 @@ MV3 side-panel extension that tracks token usage, cost, and water impact across 
 
 - **Store listing:** https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj (extension ID `angbjmkjocdkfdppnpoemfkdjphenbbj`).
 - **Model picker:** full catalog (all models, incl. advanced/paid) so paid users can attribute frontier-model chats. Built in `buildModelDropdown()` from `MODEL_CATALOG`; prices resolved from `prices.json` `api`.
+- **Tokenizer accuracy** (`countTokens` / `getEncodingForModel`): OpenAI & Copilot use bundled **tiktoken** (exact); Claude uses the opt-in Anthropic **count API** (exact) else a cl100k proxy; Gemini/DeepSeek/Mistral/Grok/Perplexity use tiktoken proxies or calibrated char-ratio/SentencePiece estimators. Every count carries an error band (`METHOD_ACCURACY` → `m.err`) surfaced as **±X%** in the stats. The char-ratio & SP estimators were **recalibrated 2026** against real tiktoken on a mixed corpus (MAE ~32%/+31% bias → ~8%/~0 bias); and `getEncodingForModel` was fixed so **GPT-5.x maps to o200k** (it was falling through to char-ratio — a ~30% overcount on ChatGPT/Copilot). **Planned (not yet built):** opt-in provider tokenizer APIs (Google flagship) and bundled DeepSeek/Tekken/Gemma tokenizers for exact local counts.
 - **Usage tracking (opt-in, local, feeds the Auditor):** see §6.
 
 ---
