@@ -317,10 +317,18 @@ function buildUsageExport() {
   for (const date in USAGE.days) {
     const day = USAGE.days[date];
     for (const prov in day) {
-      const a = agg[prov] || (agg[prov] = { days:new Set(), msgs:0, inTok:0, outTok:0, models:new Set() });
+      const a = agg[prov] || (agg[prov] = { days:new Set(), msgs:0, inTok:0, outTok:0, models:new Set(), byModel:{} });
       a.days.add(date);
       a.msgs += day[prov].msgs; a.inTok += day[prov].inTok; a.outTok += day[prov].outTok;
-      for (const mdl in day[prov].byModel) { if (mdl !== '(unspecified)') a.models.add(mdl); }
+      // Roll up per-model tokens too (already tracked per day) so the export can carry a
+      // per-model split — lets the Auditor price each model at its own API rate.
+      for (const mdl in day[prov].byModel) {
+        if (mdl === '(unspecified)') continue;
+        a.models.add(mdl);
+        const src = day[prov].byModel[mdl];
+        const bm  = a.byModel[mdl] || (a.byModel[mdl] = { inTok:0, outTok:0 });
+        bm.inTok += src.inTok; bm.outTok += src.outTok;
+      }
     }
   }
   const platforms = Object.keys(agg).map(prov => {
@@ -333,6 +341,14 @@ function buildUsageExport() {
       total_messages: a.msgs,
       active_days: a.days.size,
       models_used: [...a.models],
+      // Per-model token split (identified models only). Same per-active-day denominator as
+      // the platform figures above, so these sum to ~the platform totals. Optional field:
+      // older readers ignore it; the Auditor falls back to conservative pricing when absent.
+      model_usage: Object.keys(a.byModel).map(mdl => ({
+        key: mdl,
+        input_tokens_per_day:  Math.round(a.byModel[mdl].inTok  / activeDays),
+        output_tokens_per_day: Math.round(a.byModel[mdl].outTok / activeDays),
+      })),
     };
   });
   return { app:'EcoMeter AI', kind:'usage-export', version:1, scope:'lifetime',
