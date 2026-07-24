@@ -347,22 +347,37 @@ function recommend(pf,sig){
   if(!fit){ return { head:`Your ${NAME[pf.provider]} usage points to a Team plan.`, why:['Your volume or seats exceed the consumer tiers — look at '+NAME[pf.provider]+' Team.'] }; }
 
   const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
-  const volumeFitsFree=(free.cap==null || eff<=free.cap);
   const known=new Set(); tiers.forEach(t=>t.models.forEach(m=>known.add(m)));
   const gating=(pf.models_used||[]).filter(m=>known.has(m));
   const missingFromFree=gating.filter(m=>!free.models.includes(m));
-  // Cost of ONLY the models free lacks (the occasional premium ones) — the real "extra"
-  // you'd pay on the API after dropping to free for everything else. Not the whole bill.
-  const apiPremium = missingFromFree.length ? apiCostPerMonth(pf, missingFromFree) : null;
 
-  // Low volume + only-occasional advanced model → free tier + pay-as-you-go beats a
-  // subscription. (e.g. Opus a couple times a semester — don't pay $20/mo for it.)
-  if(fit.price>0 && volumeFitsFree && apiPremium!=null && apiPremium<fit.price){
-    why.push(`Your everyday volume fits the free tier — you only reach for ${missingFromFree.map(labelModel).join(', ')} occasionally.`);
-    why.push(`Pay per-use via the API for those (~${money(apiPremium)}/mo) instead of ${fit.m} (${money(fit.price)}/mo) — you'd pay only for what you actually run.`);
-    if(cur && cur.price>apiPremium) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-apiPremium)}/mo</b> (${money((cur.price-apiPremium)*12)}/yr).`});
+  // Volume-aware downgrade, generalised to ANY tier below `fit`: for each cheaper tier
+  // that still clears your VOLUME, offload the models it lacks to pay-as-you-go API and
+  // total it up. If the cheapest such "base tier + API" beats `fit` (the cheapest tier
+  // that covers everything), recommend it — so occasional Opus/o3 use doesn't force the
+  // pricier all-inclusive tier. API cost scales with real usage, so heavy premium use
+  // naturally fails this test (its cost exceeds the tier gap) — no arbitrary threshold.
+  const clearsNeeds = t => (t.cap==null || eff<=t.cap) && !(sig.team && t.seats<2);
+  let hybrid=null;
+  for(const t of tiers){
+    if(t.price>=fit.price) break;              // price-sorted: no cheaper base remains
+    if(!clearsNeeds(t)) continue;
+    const missing=gating.filter(m=>!t.models.includes(m));
+    if(!missing.length) continue;              // tier already covers everything → that's just `fit`
+    const apiExtra=apiCostPerMonth(pf, missing);
+    if(apiExtra==null) continue;               // can't price the offloaded models → don't claim a saving
+    const total=t.price+apiExtra;
+    if(total<fit.price && (!hybrid || total<hybrid.total)) hybrid={tier:t, missing, apiExtra, total};
+  }
+
+  if(hybrid){
+    const t=hybrid.tier, labels=hybrid.missing.map(labelModel).join(', ');
+    why.push(`Your everyday volume fits ${t.price===0?`the free ${NAME[pf.provider]} tier`:t.m} — you only reach for ${labels} occasionally.`);
+    why.push(`Pay per-use via the API for those (~${money(hybrid.apiExtra)}/mo)${t.price>0?` — about ${money(hybrid.total)}/mo all in`:''} versus ${fit.m} at ${money(fit.price)}/mo; you pay only for what you actually run.`);
+    if(cur && cur.price>hybrid.total) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-hybrid.total)}/mo</b> (${money((cur.price-hybrid.total)*12)}/yr).`});
     else if(cur && cur.price>0) why.push({save:true, html:`Cheaper than your ${cur.plan} (${money(cur.price)}/mo).`});
-    return { head:`Drop to free ${NAME[pf.provider]} + pay-as-you-go.`, why };
+    return { head: t.price===0 ? `Drop to free ${NAME[pf.provider]} + pay-as-you-go.`
+                               : `${t.m} + pay-as-you-go for ${labels}.`, why };
   }
 
   let head, cost;
