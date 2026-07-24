@@ -18,7 +18,7 @@
       { "grade": "pending", "symbol": "⚪", "label": "Not yet assessed" }
     ],
     "caveats": [
-      "Site coverage is currently small — 8 sites across 7 providers — and expanding over time. That reflects our research pace, not a judgment on any provider we haven't listed yet. Pure-play colocation landlords (e.g. Equinix, NTT, CyrusOne) aren't scored here yet — they publish fleet-wide efficiency rather than per-AI-site figures, and need their own treatment.",
+      "Site coverage is currently 12 sites across 7 providers and expanding over time — that reflects our research pace, not a judgment on any provider we haven't listed yet. Early-stage campuses with no meaningful operating capacity yet (e.g. Meta's Hyperion, the Stargate expansion sites) are tracked but shown without a capacity weight until they're running. Pure-play colocation landlords (e.g. Equinix, NTT, CyrusOne) aren't scored here yet — they publish fleet-wide efficiency rather than per-AI-site figures, and need their own treatment.",
       "Most 🟡 grades today exist only because of local advocacy groups and utility-records work — not because any law requires the company to disclose. That gap is itself part of the story.",
       "Grades are re-verified periodically, not continuously — a site can move between checks.",
       "This is Legerly's independent read of public information, not a regulatory finding. Tell us if we got something wrong."
