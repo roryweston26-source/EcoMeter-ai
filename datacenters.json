@@ -158,14 +158,14 @@
       "power_mw": null,
       "power_mw_planned": 5000,
       "water_grade": "partial",
-      "water_note": "Meta's largest campus yet — a $50B+ build ramping to ~2 GW by 2030 and ~5 GW at full buildout (~2036), so little is operational today. Meta itself hasn't published an operational figure: pressed locally, a representative said only that the site would use about the same water per year as the ~2,500 acres of irrigated farmland it replaced. But a real number is public through the state — permit/registration filings put the draw at roughly 1.5M gal/day baseline, authorized up to ~23M gal/day at peak, from the Mississippi River Alluvial Aquifer (not the already-stressed Sparta aquifer). That figure comes from the regulator and local reporting, not Meta — hence partial. Shown for scale; excluded from the weighted average until it has meaningful operating capacity.",
+      "water_note": "Meta's largest campus yet — a $50B+ build ramping to ~2 GW by 2030 and ~5 GW at full buildout (~2036), so little is operational today. Meta hasn't put this in an environmental report, but real numbers are public via state water-registration records and Meta's own projections (reported by nola.com and WBRZ): up to ~23M gal/day is registered as the maximum, while Meta projects ~1.5M gal/day — 500–600M gal/year — in normal operation once running in 2028, cycled through a closed-loop system and drawn from the Mississippi River Alluvial Aquifer. Critics note sustained pumping near the 23M/day maximum could drop local groundwater 65+ feet. Graded partial: the figures reach the public through state records and local reporting, not a Meta disclosure. Shown for scale; excluded from the weighted average until it has meaningful operating capacity.",
       "sources": [
         {"name": "Meta — Richland Parish data center (company page)",
          "url": "https://datacenters.atmeta.com/richland-parish-data-center/"},
-        {"name": "LouisianAI — Louisiana data center water: usage, permits, cooling",
-         "url": "https://louisianai.com/topics/water"},
-        {"name": "The Hayride — Louisiana groundwater crisis (permit context)",
-         "url": "https://thehayride.com/2025/01/garlington-the-groundwater-crisis-isnt-coming-its-here/"},
+        {"name": "NOLA.com — How much water will Meta's Louisiana data center use?",
+         "url": "https://www.nola.com/news/environment/meta-louisiana-data-center-water-ai/article_d27dea17-d571-453c-b5a5-0deb571ea272.html"},
+        {"name": "WBRZ — Meta's Louisiana data center water-usage concern",
+         "url": "https://www.wbrz.com/news/meta-s-louisiana-data-center-causing-concern-over-water-usage"},
         {"name": "Sierra Club — In rural Louisiana, Meta's data center at what cost",
          "url": "https://www.sierraclub.org/sierra/rural-louisiana-meta-s-new-data-center-promises-growth-what-cost"}
       ],
@@ -176,18 +176,18 @@
       "provider": "Microsoft",
       "name": "Fairwater (Atlanta)",
       "location": "Atlanta, GA, USA",
-      "power_mw": 700,
+      "power_mw": 636,
       "water_grade": "opaque",
-      "water_note": "Microsoft's second Fairwater site, wired to the Wisconsin campus as one 'AI superfactory'; ramping past ~700 MW of IT capacity by end-2026. Microsoft describes a closed-loop liquid-cooling design and cites fleet-wide WUE, but has published no verifiable Atlanta-specific water figure — only the qualitative 'closed-loop uses about as much water as a restaurant per year' line. That's less than even the Abilene site, which at least has an ~8M-gal initial-fill number; on the page's own rule (a closed-loop site with no published number scores opaque), Atlanta lands there. A Georgia records investigation reported that 'the water use numbers for a Microsoft Data Center were also hidden,' but it didn't name the facility, so we don't lean on it. Because Atlanta is Microsoft's larger AI site, capacity-weighting pulls Microsoft's overall grade down to opaque — a flagged call that is sensitive to Atlanta's still-ramping capacity.",
+      "water_note": "Microsoft's second Fairwater site — built by QTS with Microsoft as the tenant (a colocation arrangement), wired to the Wisconsin campus as one 'AI superfactory'; ~636 MW of IT capacity operational per Epoch AI, ramping past 700 by end-2026. Microsoft describes a closed-loop liquid-cooling design and cites fleet-wide WUE, but no verifiable water figure is published for this specific site — Epoch's facility record lists none, and neither Microsoft nor QTS has released one; all that exists is Microsoft's qualitative 'closed-loop uses about as much water as a restaurant per year' line. That's less than even the Abilene site, which at least has an ~8M-gal initial-fill number, so on the page's own rule (a closed-loop site with no published number scores opaque) Atlanta is opaque. Because Atlanta (636 MW) is larger than Mount Pleasant (400 MW), capacity-weighting pulls Microsoft's overall grade to opaque — and with Atlanta verified above 400 MW that flip is robust, not a knife-edge.",
       "sources": [
+        {"name": "Epoch AI — Microsoft Fairwater Atlanta (facility record; QTS-built, 636 MW)",
+         "url": "https://epoch.ai/data/ai-data-centers/directory/microsoft-fairwater-atlanta"},
         {"name": "Microsoft — From Wisconsin to Atlanta: first AI superfactory",
          "url": "https://news.microsoft.com/source/features/ai/from-wisconsin-to-atlanta-microsoft-connects-datacenters-to-build-its-first-ai-superfactory/"},
         {"name": "Data Center Frontier — Microsoft's Fairwater Atlanta",
          "url": "https://www.datacenterfrontier.com/machine-learning/article/55330039/microsofts-fairwater-atlanta-and-the-rise-of-the-distributed-ai-supercomputer"},
         {"name": "Measured AI — Fairwater Atlanta (grid-only gigawatt)",
-         "url": "https://measuredai.substack.com/p/microsoft-fairwater-atlanta-data-center"},
-        {"name": "WSB-TV — Georgia data centers using NDAs to hide water use",
-         "url": "https://www.wsbtv.com/news/local/data-centers-water-secrets-companies-using-ndas-hide-water-usage-georgia/ESYQS4GRDVAM7A6EJUQKGXTPWY/"}
+         "url": "https://measuredai.substack.com/p/microsoft-fairwater-atlanta-data-center"}
       ],
       "as_of": "2026-06"
     },
