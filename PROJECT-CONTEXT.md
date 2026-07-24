@@ -108,8 +108,9 @@ Notable prices: Claude Sonnet 5 `$2/$10` (free default), Fable 5 & Mythos 5 `$10
 - **10 questions:** 7 usage (tools, frequency, messages/day, purpose, limits hit, need-frontier, media) → a **5-level classification** (Dabbler → Casual → Regular → Heavy → Power user); 3 current-spend (what you pay, solo/team, priority).
 - **Engine** (`recommend()`): for each provider you use, picks the cheapest tier that clears your **volume** (with a limit-hit headroom factor) and **model access**, then:
   - flags over/under-payment vs. what you pay now (with $/yr savings),
-  - **volume-aware downgrade:** if a paid tier is needed *only* for an advanced model but your volume fits the free tier and API pay-as-you-go is cheaper, it recommends **"free tier + API"** (e.g. "you use Opus twice a term → drop the plan, pay pennies via API"),
+  - **volume-aware downgrade:** if a paid tier is needed *only* for an advanced model but your volume fits the free tier and paying per-use for *just that model* via the API is cheaper, it recommends **"free tier + API"** (e.g. "you use Opus twice a term → drop the plan, pay pennies via API"),
   - shows API-cost context, and a cross-provider note for media generation.
+- **API cost is per-model.** `apiCostPerMonth(pf, only?)` sums each model's own tokens × its own rate (rates for **all** models come live from `prices.json.api`, ~50+ models). The downgrade prices **only** the models the free tier lacks (`only = missingFromFree`), not the whole bill. When an export carries no per-model token split, it falls back **conservatively** — all tokens attributed to the priciest used model — so it is correct-but-pessimistic and never over-recommends the downgrade.
 - **Plan metadata** (caps/models/features/seats) is **inline in `audit.html`** (auditor-specific, approximate); **prices sync live** from `prices.json`, and free-tier model lists sync from `free_tiers`.
 
 **EcoMeter → Auditor data path**
@@ -123,9 +124,13 @@ Notable prices: Claude Sonnet 5 `$2/$10` (free default), Fable 5 & Mythos 5 `$10
 { "app":"EcoMeter AI", "kind":"usage-export", "version":1, "scope":"lifetime",
   "generated":"YYYY-MM-DD", "days_tracked":N,
   "platforms":[ { "provider", "messages_per_day", "input_tokens_per_day",
-                  "output_tokens_per_day", "total_messages", "active_days", "models_used":[...] } ] }
+                  "output_tokens_per_day", "total_messages", "active_days", "models_used":[...],
+                  // OPTIONAL: per-model token split → exact per-model API costing
+                  "model_usage":[ { "key", "input_tokens_per_day", "output_tokens_per_day" } ] } ] }
 ```
 Volume is averaged **per active day** ("on a day you use it"); **lifetime** (not a recent window) so infrequent-but-real advanced-model use still shows up.
+
+The optional **`model_usage`** array carries per-model token counts. It's what lets the Auditor price each model at its own rate and charge the API only for the models the free tier lacks; the extension already accumulates usage **per platform/model** (see step 2), so emitting it is an export-format addition, not new tracking. Without it, the Auditor prices conservatively (all tokens at the priciest used model's rate) — never a false downgrade, just a pessimistic dollar figure. **Not yet emitted by the extension export as of v6.10** — the `audit.html` consumer is ready and backward-compatible.
 
 ---
 

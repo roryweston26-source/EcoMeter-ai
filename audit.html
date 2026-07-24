@@ -197,8 +197,11 @@ const money = n => n===0 ? '$0' : '$'+(Math.round(n*100)/100);
 /* keep prices + API rates fresh from the maintained file (no user data sent) */
 fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
   if(!d) return;
-  if(d.api){ const flat={}; for(const p in d.api) for(const k in d.api[p]) flat[k]=d.api[p][k];
-    for(const m in API){ if(flat[m]) API[m]={in:flat[m].input,out:flat[m].output}; } }
+  // Populate API rates from prices.json (the single source of truth) for EVERY model,
+  // not just the handful of hardcoded fallbacks — so per-model cost can price whatever
+  // a user actually ran, and rates stay current when prices.json is updated.
+  if(d.api){ for(const p in d.api) for(const k in d.api[p]){ const r=d.api[p][k];
+    if(r && typeof r.input==='number') API[k]={in:r.input,out:r.output}; } }
   if(Array.isArray(d.subscriptions)){
     for(const prov in PLANS) for(const t of PLANS[prov]){
       const row=d.subscriptions.find(s=>s.p===prov && s.m===t.m);
@@ -284,9 +287,27 @@ function classify(a){
 
 /* ---------- engine ---------- */
 const limitsFactor = l => ({never:1,rarely:1,sometimes:1.2,often:1.5,constant:2}[l]||1);
-function apiCostPerMonth(pf){
-  const m=(pf.models_used||[]).find(x=>API[x]); if(!m) return null;
-  const p=API[m]; return (pf.input_tokens_per_day*p.in + pf.output_tokens_per_day*p.out)*30;
+// Per-model tokens/day for a profile. Uses the export's real per-model split when it
+// provided one; otherwise attributes the platform's aggregate tokens to its priciest
+// priceable model, so a mixed workload is never UNDER-priced (no false "downgrade wins").
+// `only` (array of model keys) restricts to a subset, e.g. just the models free lacks.
+function tokenBuckets(pf, only){
+  let list;
+  if(pf.perModel && pf.perModel.length){
+    list = pf.perModel.map(x=>({key:x.key, in:x.inTok||0, out:x.outTok||0}));
+  } else {
+    const rate = k => API[k] ? API[k].in+API[k].out : -1;
+    const priciest = (pf.models_used||[]).filter(k=>API[k]).sort((a,b)=>rate(b)-rate(a))[0];
+    list = priciest ? [{key:priciest, in:pf.input_tokens_per_day, out:pf.output_tokens_per_day}] : [];
+  }
+  if(only){ const set=new Set(only); list=list.filter(m=>set.has(m.key)); }
+  return list;
+}
+// Monthly API $ = sum over each (priceable) model of its own tokens x its own rate x 30.
+function apiCostPerMonth(pf, only){
+  const list=tokenBuckets(pf, only).filter(m=>API[m.key]);
+  if(!list.length) return null;
+  return list.reduce((s,m)=> s + (m.in*API[m.key].in + m.out*API[m.key].out)*30, 0);
 }
 function meetsNeeds(t,pf,sig){
   const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
@@ -308,12 +329,13 @@ function profileFor(prov,a,sig){
       input_tokens_per_day:  eco.inTok!=null ? eco.inTok  : Math.round(msgs*avg*0.4),
       output_tokens_per_day: eco.outTok!=null ? eco.outTok : Math.round(msgs*avg*0.6),
       models_used: (eco.models && eco.models.length) ? eco.models : (a.frontier==='default'?[pm.free]:[pm.top]),
+      perModel: eco.perModel || null,
       signals:sig };
   }
   const msgs=MSG_MID[a.messages];
   return { provider:prov, messages_per_day:msgs,
     input_tokens_per_day:Math.round(msgs*avg*0.4), output_tokens_per_day:Math.round(msgs*avg*0.6),
-    models_used: a.frontier==='default'?[pm.free]:[pm.top], signals:sig };
+    models_used: a.frontier==='default'?[pm.free]:[pm.top], perModel:null, signals:sig };
 }
 function recommend(pf,sig){
   const tiers=PLANS[pf.provider].slice().sort((x,y)=>x.price-y.price);
@@ -329,13 +351,16 @@ function recommend(pf,sig){
   const known=new Set(); tiers.forEach(t=>t.models.forEach(m=>known.add(m)));
   const gating=(pf.models_used||[]).filter(m=>known.has(m));
   const missingFromFree=gating.filter(m=>!free.models.includes(m));
+  // Cost of ONLY the models free lacks (the occasional premium ones) — the real "extra"
+  // you'd pay on the API after dropping to free for everything else. Not the whole bill.
+  const apiPremium = missingFromFree.length ? apiCostPerMonth(pf, missingFromFree) : null;
 
   // Low volume + only-occasional advanced model → free tier + pay-as-you-go beats a
   // subscription. (e.g. Opus a couple times a semester — don't pay $20/mo for it.)
-  if(fit.price>0 && volumeFitsFree && missingFromFree.length && api!=null && api<fit.price){
+  if(fit.price>0 && volumeFitsFree && apiPremium!=null && apiPremium<fit.price){
     why.push(`Your everyday volume fits the free tier — you only reach for ${missingFromFree.map(labelModel).join(', ')} occasionally.`);
-    why.push(`Pay per-use via the API for those (~${money(api)}/mo) instead of ${fit.m} (${money(fit.price)}/mo) — you'd pay only for what you actually run.`);
-    if(cur && cur.price>api) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-api)}/mo</b> (${money((cur.price-api)*12)}/yr).`});
+    why.push(`Pay per-use via the API for those (~${money(apiPremium)}/mo) instead of ${fit.m} (${money(fit.price)}/mo) — you'd pay only for what you actually run.`);
+    if(cur && cur.price>apiPremium) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-apiPremium)}/mo</b> (${money((cur.price-apiPremium)*12)}/yr).`});
     else if(cur && cur.price>0) why.push({save:true, html:`Cheaper than your ${cur.plan} (${money(cur.price)}/mo).`});
     return { head:`Drop to free ${NAME[pf.provider]} + pay-as-you-go.`, why };
   }
@@ -467,7 +492,12 @@ function applyEcometer(log){
   state.answers._eco={};
   pf.forEach(p=>{ if(PLANS[p.provider]) state.answers._eco[p.provider]={
     models:(p.models_used||[]).filter(Boolean),
-    messages:p.messages_per_day, inTok:p.input_tokens_per_day, outTok:p.output_tokens_per_day }; });
+    messages:p.messages_per_day, inTok:p.input_tokens_per_day, outTok:p.output_tokens_per_day,
+    // optional per-model token split; lets the engine price each model at its own rate
+    perModel: Array.isArray(p.model_usage)
+      ? p.model_usage.filter(x=>x&&x.key).map(x=>({key:x.key,
+          inTok:x.input_tokens_per_day||0, outTok:x.output_tokens_per_day||0}))
+      : null }; });
   const usesAdvanced=pf.some(p=>(p.models_used||[]).some(m=>ADVANCED.has(m)));
   state.answers.frontier=usesAdvanced?'always':'default';
   state.i=1;               // tools + volume prefilled; continue at frequency
