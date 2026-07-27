@@ -427,6 +427,33 @@ async function loadTokenizers() {
   return _tokenizerPromise;
 }
 
+// ── Exact-LOCAL tokenizers (Phase 3, pluggable + self-verified) ────────────
+// An encoder module (tokenizer_hf.js, and future Tekken/Gemma modules) registers here
+// ONLY after it reproduces reference counts exactly (see tokenizer_hf.js). Until one
+// does, exactLocalCount() returns null and counting falls back to the tiktoken proxy /
+// estimate — so this is completely inert unless a verified tokenizer asset is bundled.
+const EXACT_LOCAL = {};                                   // model-substring -> async (text) => count
+function registerExactTokenizer(match, fn) { EXACT_LOCAL[match] = fn; }   // global: injected modules call this
+let _exactLoaded = false, _exactPromise = null;
+function loadExactTokenizers() {
+  if (_exactLoaded) return Promise.resolve();
+  if (_exactPromise) return _exactPromise;
+  _exactPromise = (async () => {
+    try { await _injectScript('tokenizer_hf.js'); } catch (e) {}   // no-op if the file/asset is absent
+    _exactLoaded = true;
+  })();
+  return _exactPromise;
+}
+async function exactLocalCount(text, modelKey) {
+  if (!modelKey) return null;
+  await loadExactTokenizers();
+  const k = modelKey.toLowerCase();
+  for (const m in EXACT_LOCAL) {
+    if (k.includes(m)) { try { return await EXACT_LOCAL[m](text); } catch (e) { return null; } }
+  }
+  return null;
+}
+
 // Which tiktoken encoding to use for a given model key.
 function getEncodingForModel(modelKey) {
   if (!modelKey) return 'char-ratio';
@@ -469,6 +496,7 @@ function methodLabel(enc, modelKey) {
 // hidden system/role/tool tokens, modelled separately by PLATFORM_OVERHEAD_TOKENS.
 const METHOD_ACCURACY = {
   'api-visible':     { err: 0.00, label: 'exact · provider API' },
+  'exact-local':     { err: 0.00, label: 'exact · local tokenizer' },
   'tiktoken-exact':  { err: 0.00, label: 'exact tokenizer' },
   'tiktoken-approx': { err: 0.10, label: '±10% · approx (BPE family)' },
   'sp-estimated':    { err: 0.10, label: '±10% · estimated' },
@@ -605,6 +633,14 @@ async function countTokens(text, role, modelKey) {
   if (modelKey && modelKey.toLowerCase().includes('gemini') && googleApiKey && role === 'user') {
     const g = await countTokensGoogleAPI(text, modelKey);
     if (g !== null) return { count: g, method: 'api-visible', err: methodErr('api-visible') };
+  }
+
+  // Exact LOCAL tokenizer (Phase 3) — only if a bundled tokenizer verified itself;
+  // otherwise null and we fall through to tiktoken/estimate. Applies to both roles.
+  const local = await exactLocalCount(text, modelKey);
+  if (local !== null) {
+    const count = (role === 'assistant') ? Math.ceil(local * 1.04) : local;
+    return { count, method: 'exact-local', err: methodErr('exact-local') };
   }
 
   const enc = getEncodingForModel(modelKey);

@@ -38,13 +38,16 @@ extension/            The Chrome extension (load THIS folder unpacked)
   prices.json           SHARED data: { _meta, api, subscriptions, free_tiers }
   water.json            Per-model water intensity tiers
   privacy-policy.html   Privacy policy (also linked from the site)
-  tokenizer_*.js        Bundled tiktoken tokenizers (lazy-loaded)
+  tokenizer_cl100k/o200k.js  Bundled tiktoken tokenizers (lazy-loaded)
+  tokenizer_hf.js       Phase-3 exact-local byte-BPE encoder (self-verifying; DeepSeek)
+  tokenizers/           Staged exact-local assets + reference.json + README (Phase 3)
   icons/ fonts/
 
 scripts/
   update-prices.js      Writes prices.json api section (hardcoded values)
   bump-version.js       Increments manifest version (called reactively)
   roll-clock.js         Rolls clock.json anchor forward
+  fetch-tokenizers.js   Stages real provider tokenizer assets for exact-local counts
   deploy.sh
 
 .github/workflows/
@@ -75,7 +78,7 @@ MV3 side-panel extension that tracks token usage, cost, and water impact across 
 
 - **Store listing:** https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj (extension ID `angbjmkjocdkfdppnpoemfkdjphenbbj`).
 - **Model picker:** full catalog (all models, incl. advanced/paid) so paid users can attribute frontier-model chats. Built in `buildModelDropdown()` from `MODEL_CATALOG`; prices resolved from `prices.json` `api`.
-- **Tokenizer accuracy** (`countTokens` / `getEncodingForModel`): OpenAI & Copilot use bundled **tiktoken** (exact); Claude uses the opt-in Anthropic **count API** (exact) else a cl100k proxy; Gemini/DeepSeek/Mistral/Grok/Perplexity use tiktoken proxies or calibrated char-ratio/SentencePiece estimators. Every count carries an error band (`METHOD_ACCURACY` → `m.err`) surfaced as **±X%** in the stats. The char-ratio & SP estimators were **recalibrated 2026** against real tiktoken on a mixed corpus (MAE ~32%/+31% bias → ~8%/~0 bias); and `getEncodingForModel` was fixed so **GPT-5.x maps to o200k** (it was falling through to char-ratio — a ~30% overcount on ChatGPT/Copilot). **Opt-in provider token-count APIs** (exact, off by default, key-gated, session-only keys): Anthropic (Claude) and now **Google (Gemini)** via `generativelanguage.googleapis.com` (`countTokensGoogleAPI`; host permission added; user messages only) — disclosed in `privacy-policy.html`. **Still planned:** bundled DeepSeek/Tekken/Gemma tokenizers for exact *local* counts (needs the vocab/model asset files).
+- **Tokenizer accuracy** (`countTokens` / `getEncodingForModel`): OpenAI & Copilot use bundled **tiktoken** (exact); Claude uses the opt-in Anthropic **count API** (exact) else a cl100k proxy; Gemini/DeepSeek/Mistral/Grok/Perplexity use tiktoken proxies or calibrated char-ratio/SentencePiece estimators. Every count carries an error band (`METHOD_ACCURACY` → `m.err`) surfaced as **±X%** in the stats. The char-ratio & SP estimators were **recalibrated 2026** against real tiktoken on a mixed corpus (MAE ~32%/+31% bias → ~8%/~0 bias); and `getEncodingForModel` was fixed so **GPT-5.x maps to o200k** (it was falling through to char-ratio — a ~30% overcount on ChatGPT/Copilot). **Opt-in provider token-count APIs** (exact, off by default, key-gated, session-only keys): Anthropic (Claude) and now **Google (Gemini)** via `generativelanguage.googleapis.com` (`countTokensGoogleAPI`; host permission added; user messages only) — disclosed in `privacy-policy.html`. **Exact-local tokenizers (Phase 3, scaffolded — off until verified):** `scripts/fetch-tokenizers.js` stages the real assets; `extension/tokenizer_hf.js` is a self-verifying byte-BPE encoder (DeepSeek) that registers via `registerExactTokenizer`/`exactLocalCount` **only if it reproduces `tokenizers/reference.json` counts exactly** — so it can never present an unverified count as exact, and merging it changes nothing until an asset + reference are staged. Tekken/Gemma are documented drop-in points. See `extension/tokenizers/README.md`.
 - **Usage tracking (opt-in, local, feeds the Auditor):** see §6.
 
 ---
