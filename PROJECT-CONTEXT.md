@@ -8,24 +8,17 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-07-13
 
-Recent work spans several PRs; here's exactly what's landed vs. pending so a new session isn't misled.
-
-**Merged to `main`** (tip ≈ PR #17):
+**Everything from this run is now merged to `main`** (2026-07-13):
 - **AI Transparency Index** — full env-impact scoring, 12 sites / 7 providers (§7).
-- **EcoMeter tokenizer accuracy** — recalibration, GPT-5 routing fix, error bands, **opt-in Google `countTokens`**, exact-local scaffold, and the publish-time asset staging (§4).
+- **EcoMeter tokenizer accuracy** — recalibration, GPT-5 routing fix, error bands, **opt-in Google `countTokens`**, exact-local scaffold, publish-time asset staging (§4).
+- **Subscription Auditor — per-model cost** + generalised "any tier + API" downgrade (§6).
+- **EcoMeter export — `model_usage[]`** per-model token split (§6).
+- **`validate-site` CI gate** (§8).
 - Everything from the prior session (workflow fix, `prices.json` restructure, AI Clock, Subscription Auditor base, EcoMeter usage export, mission docs / CLAUDE.md).
 
-**Open branches, NOT yet on `main`** (intended to merge):
-| Branch | Contents | Surface |
-|---|---|---|
-| `feat/auditor-per-model-cost` | Per-model API costing + generalised "any tier + API" downgrade (§6) | `audit.html` (website) |
-| `feat/ecometer-per-model-export` | Adds `model_usage[]` to the usage export (§6) | `extension/sidepanel.js` |
-| `ci/validate-site` | `validate-site.yml` pre-deploy gate + `scripts/validate-site.js` (§8) | CI |
-| `docs/project-context-2026-07` | **Superseded** earlier doc-rewrite attempt — discard it | docs |
+Leftover branch to delete: `docs/project-context-2026-07` (a superseded doc-rewrite attempt).
 
-Merge in any order; the only conflicts are trivial overlapping `PROJECT-CONTEXT.md` sections (take the newer text). Where a §-body below describes an open-branch feature, it's tagged **(pending: <branch>)**.
-
-**Ship status:** extension is **v6.10** on `main`; the tokenizer + Google-API work reaches users only on the **next store publish** (§10) — which also surfaces a **new host permission** (`generativelanguage.googleapis.com`) for re-review. Website changes deploy on merge. **Smoke-test in Chrome before publishing** the extension (the accuracy line, the Google-key path, and that exact-local stays off with no assets) — those weren't runtime-testable outside Chrome.
+**Ship status:** extension is **v6.10** on `main`; the tokenizer + Google-API + `model_usage` work reaches users only on the **next store publish** (§10) — which also surfaces a **new host permission** (`generativelanguage.googleapis.com`) for re-review. Website changes (Transparency Index, Auditor per-model cost) deployed on merge. **Before publishing the extension, smoke-test in Chrome** (the accuracy line, the Google-key path, and that exact-local stays off with no assets) — those weren't runtime-testable outside Chrome.
 
 ---
 
@@ -77,7 +70,7 @@ scripts/
   bump-version.js           Increments manifest version (reactive)
   roll-clock.js             Rolls clock.json anchor forward
   fetch-tokenizers.js       Stages real provider tokenizer assets for exact-local counts
-  validate-site.js          Pre-deploy sanity check for the static site  (pending: ci/validate-site)
+  validate-site.js          Pre-deploy sanity check for the static site
   deploy.sh
 
 .github/workflows/
@@ -85,7 +78,7 @@ scripts/
   update-prices.yml         Manual PR-based price updates (cron disabled)
   release.yml               On push: build zip + GitHub Release + artifact
   roll-clock.yml            Quarterly: roll the AI Clock anchor, open a PR
-  validate-site.yml         PR/push to main: run validate-site.js  (pending: ci/validate-site)
+  validate-site.yml         PR/push to main: run validate-site.js
 ```
 
 ---
@@ -157,7 +150,7 @@ Consumed by the extension (`api` → cost), `pricing.html` (all sections), `audi
 - **Engine** (`recommend()`): for each provider, picks the cheapest tier clearing your **volume** (× a limit-hit headroom factor) and **model access**, flags over/under-payment vs. current spend, and does the **volume-aware downgrade** (below).
 - **Plan metadata** (caps/models/features/seats) is inline in `audit.html` (approximate); **prices sync live** from `prices.json`, free-tier model lists from `free_tiers`.
 
-**Per-model cost + generalised downgrade (pending: `feat/auditor-per-model-cost`)**
+**Per-model cost + generalised downgrade**
 - `apiCostPerMonth(pf, only?)` prices **each model at its own rate** (rates for ~50 models pulled from `prices.json.api`), not all tokens at one rate.
 - The downgrade is generalised from "free + API" to **any tier below `fit` + API for the models it lacks** — so occasional Opus/o3 use recommends e.g. *"ChatGPT Go + API for o3"* instead of jumping to Plus. Decided by real per-model cost (heavy premium use fails the test naturally — no threshold).
 
@@ -173,7 +166,7 @@ Consumed by the extension (`api` → cost), `pricing.html` (all sections), `audi
   "generated":"YYYY-MM-DD","days_tracked":N,
   "platforms":[ { "provider","messages_per_day","input_tokens_per_day","output_tokens_per_day",
                   "total_messages","active_days","models_used":[...],
-                  "model_usage":[ { "key","input_tokens_per_day","output_tokens_per_day" } ]  // pending: feat/ecometer-per-model-export
+                  "model_usage":[ { "key","input_tokens_per_day","output_tokens_per_day" } ]  // optional per-model token split
   } ] }
 ```
 Volume is averaged **per active day**, **lifetime**. The optional **`model_usage[]`** (per-model token split) is what lets the Auditor price each model at its own rate; the extension already tracks per-model internally, so it's an export-format addition. Without it the Auditor prices conservatively (all tokens at the priciest used model's rate) — never a false downgrade.
@@ -206,7 +199,7 @@ Grades **how openly** providers let the public see what their AI costs — trans
 | `update-prices.yml` | Manual only | PR-based price refresh. |
 | `release.yml` | Push to `main` | Build zip + GitHub Release + 30-day artifact. |
 | `roll-clock.yml` | Quarterly + manual | Roll `clock.json` anchor; open a re-anchor PR. Last roll 2026-07-12. |
-| `validate-site.yml` *(pending: ci/validate-site)* | PR into `main` (`**.html`/`**.json`) + push | Runs `scripts/validate-site.js`: zero-dep no-build gate (doctype, balanced tags, broken local refs, malformed JSON). |
+| `validate-site.yml` | PR into `main` (`**.html`/`**.json`) + push | Runs `scripts/validate-site.js`: zero-dep no-build gate (doctype, balanced tags, broken local refs, malformed JSON). |
 
 **Secrets:** `CWS_CLIENT_ID/SECRET/REFRESH_TOKEN/EXTENSION_ID`; optional **`HF_TOKEN`** (license-gated tokenizer repos). ⚠️ The Google OAuth **consent screen must be "Production"** or the refresh token expires every 7 days.
 
@@ -216,9 +209,9 @@ Grades **how openly** providers let the public see what their AI costs — trans
 
 - **AI Transparency Index — environmental axis:** built `datacenters.json` + the capacity-weighted `renderEnv()` engine + three-axis framing; adopted a public-knowability 4-state scale and nested the existing disclosure matrix beneath it; expanded to **12 sites / 7 providers** with a watchdog-then-primary sourcing pass that corrected several grades. *(merged)*
 - **EcoMeter tokenizer accuracy:** measured + recalibrated the estimators (32%→8%), fixed the GPT-5→o200k routing bug, added `METHOD_ACCURACY` error bands + a UI accuracy line, added **opt-in Google `countTokens`** (with privacy-policy + principle updates), and scaffolded the self-verifying **exact-local** tokenizer path + `fetch-tokenizers.js` + publish-time staging. *(merged, PR #17)*
-- **Subscription Auditor — per-model cost:** `apiCostPerMonth(pf, only)` prices per-model; the downgrade generalised to any tier + API. *(pending: `feat/auditor-per-model-cost`)*
-- **EcoMeter export — `model_usage[]`:** per-model token split so the Auditor prices exactly. *(pending: `feat/ecometer-per-model-export`)*
-- **`validate-site` CI gate.** *(pending: `ci/validate-site`)*
+- **Subscription Auditor — per-model cost:** `apiCostPerMonth(pf, only)` prices per-model; the downgrade generalised to any tier + API.
+- **EcoMeter export — `model_usage[]`:** per-model token split so the Auditor prices exactly.
+- **`validate-site` CI gate.**
 
 ---
 
