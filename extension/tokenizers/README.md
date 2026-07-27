@@ -56,6 +56,12 @@ falls back to the existing proxy/estimate. It can never present an unverified co
 
 The big vocab/model files are **git-ignored** (`.gitignore` here) to keep the repo lean;
 only `README.md`, `reference.json`, and `manifest.json` are committed. Because the store
-build zips `extension/`, the assets must be present **at build time** — so run
-`node scripts/fetch-tokenizers.js` in the publish workflow before zipping (or commit the
-assets if you prefer). Until then, exact-local stays off and nothing regresses.
+build zips `extension/`, the assets must be present **at build time**.
+
+**`publish.yml` already does this**, conditionally: before zipping it runs
+`scripts/fetch-tokenizers.js` **only if `reference.json` is committed** (the signal that
+exact-local is configured) — so builds stay lean until you opt in. License-gated repos
+(Gemma, some Mistral) need an optional **`HF_TOKEN`** repo secret; without it they're
+skipped and only their exact-local counts stay off. So the full enable path is: commit a
+`reference.json` (+ add `HF_TOKEN` if you want the gated ones) → next publish bundles the
+assets → the encoder self-verifies and turns on.

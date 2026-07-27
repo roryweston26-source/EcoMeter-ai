@@ -20,6 +20,10 @@ const crypto = require('crypto');
 
 const OUT = path.resolve(__dirname, '..', 'extension', 'tokenizers');
 
+// Optional Hugging Face token (env) so CI can pull license-gated repos (Gemma, some
+// Mistral). Without it, gated repos 401 and are skipped; public repos (DeepSeek) work.
+const HF_TOKEN = process.env.HF_TOKEN || process.env.HUGGINGFACE_TOKEN || '';
+
 // URLs are best-known public locations; pin to a specific model revision you trust.
 // The tokenizer is shared across a family's versions, so any one model's file works.
 const ASSETS = [
@@ -37,7 +41,9 @@ const ASSETS = [
 function get(url, depth = 0) {
   return new Promise((resolve, reject) => {
     if (depth > 5) return reject(new Error('too many redirects'));
-    https.get(url, { headers: { 'user-agent': 'ecometer-fetch-tokenizers' } }, res => {
+    const headers = { 'user-agent': 'ecometer-fetch-tokenizers' };
+    if (HF_TOKEN) headers['authorization'] = 'Bearer ' + HF_TOKEN;
+    https.get(url, { headers }, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         res.resume();
         return resolve(get(res.headers.location, depth + 1));

@@ -99,6 +99,24 @@ jobs:
           echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
           echo "✓ Got access token"
 
+      # ── Stage exact-local tokenizer assets (Phase 3) — only when configured ─
+      # The exact-local encoder stays OFF unless extension/tokenizers/reference.json is
+      # committed (it self-verifies against it). So we only fetch the multi-MB vocab
+      # assets when that signal is present — otherwise the package stays lean and nothing
+      # changes. Gated HF repos (Gemma, some Mistral) need the optional HF_TOKEN secret;
+      # without it they're skipped and only their exact-local counts stay off.
+      - name: Stage exact-local tokenizer assets
+        if: steps.detect.outputs.changed == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -f extension/tokenizers/reference.json ]; then
+            echo "reference.json present — staging tokenizer assets for exact-local counts."
+            node scripts/fetch-tokenizers.js || echo "⚠ some assets failed (gated repos need the HF_TOKEN secret) — exact-local stays off for those."
+          else
+            echo "No extension/tokenizers/reference.json — exact-local not configured; skipping asset fetch (keeps the package lean)."
+          fi
+
       # ── Build + upload as a DRAFT. Upload the CURRENT manifest version as-is;
       #    only bump-and-retry if the store rejects it as a duplicate. So a
       #    manual version bump is respected, a stale version self-heals, and
