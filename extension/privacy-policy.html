@@ -98,13 +98,16 @@
   <li><span class="no">Does not</span> load any resources from external servers at runtime.
       All fonts, scripts, and data files are bundled inside the extension package.</li>
   <li><span class="no">Does not</span> make any network requests unless you optionally provide
-      an Anthropic API key. When a key is provided, only the text of your own messages
-      (not AI responses) is sent to Anthropic's token-counting API
-      (<code>api.anthropic.com/v1/messages/count_tokens</code>). No other external
-      connections are made under any circumstances.</li>
-  <li><span class="yes">Does</span> store your optional API key in <code>chrome.storage.session</code>
-      (cleared automatically when the browser closes) and your model preference in
-      <code>chrome.storage.local</code> (persisted on your device only).</li>
+      a provider API key for exact token counts. When you do, only the text of your own
+      messages (never AI responses) is sent to that provider's token-counting endpoint —
+      Anthropic's (<code>api.anthropic.com/v1/messages/count_tokens</code>) for Claude, or,
+      if you add a Google key, Google's
+      (<code>generativelanguage.googleapis.com/&hellip;:countTokens</code>) for Gemini. Both
+      are <strong>off unless you opt in</strong>, and each sends the same text you are already
+      sending to that AI. No other external connections are made under any circumstances.</li>
+  <li><span class="yes">Does</span> store any optional API key(s) you provide in
+      <code>chrome.storage.session</code> (cleared automatically when the browser closes) and
+      your model preference in <code>chrome.storage.local</code> (persisted on your device only).</li>
 </ul>
 
 <h2>Data the Extension Accesses</h2>
@@ -127,6 +130,16 @@ call Anthropic's official token-counting endpoint
 using the message text already present in your browser — no conversation data
 is stored by this call. You can remove the key at any time using the
 "remove key" button in the panel.</p>
+
+<p><strong>Google (Gemini) API key (optional, off by default, session-only).</strong>
+If you choose to add a Google AI API key for exact Gemini token counts, it is stored the same
+way as the Anthropic key — <code>chrome.storage.session</code>, in memory only, cleared when
+the browser closes, never written to persistent storage and never synced anywhere. It is used
+solely to call Google's official token-count endpoint
+(<code>generativelanguage.googleapis.com/v1beta/models/&hellip;:countTokens</code>) with your
+own message text — the same content you are already sending to Gemini. This feature is
+<strong>off unless you add the key</strong>, and you can remove it any time with "Clear" in
+the "Exact token counts" panel.</p>
 
 <p><strong>Model preference (local device only).</strong>
 Your selected AI model is stored in <code>chrome.storage.local</code>, which

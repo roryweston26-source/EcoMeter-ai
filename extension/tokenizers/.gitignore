@@ -1,0 +1,7 @@
+# Large tokenizer vocab/model assets are staged by scripts/fetch-tokenizers.js and
+# (per README) fetched at build time rather than committed — they bloat the repo.
+# Keep the small, meaningful files: README, reference counts, and the fetch manifest.
+deepseek.tokenizer.json
+tekken.json
+gemma.tokenizer.model
+*.model

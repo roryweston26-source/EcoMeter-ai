@@ -487,6 +487,7 @@
         <div class="stat-card-value" id="total-tokens">0</div>
         <div class="stat-card-sub" id="total-msgs">0 messages</div>
         <div class="stat-card-sub" id="io-ratio" style="margin-top:2px;color:var(--muted);">0 in · 0 out</div>
+        <div class="stat-card-sub" id="token-accuracy" style="margin-top:2px;color:var(--muted);font-size:8px;line-height:1.4;"></div>
       </div>
       <div class="stat-card">
         <div class="stat-card-label">True Est. Cost</div>
@@ -536,6 +537,19 @@
       <button class="ctrl-btn" id="export-btn">⤓ Export for Auditor</button>
       <button class="ctrl-btn danger" id="clear-usage-btn">🗑 Clear history</button>
     </div>
+  </details>
+
+  <!-- Optional: exact token counts via a provider's own tokenizer API (opt-in, off by default) -->
+  <details class="usage-panel" id="exact-panel">
+    <summary>🎯 Exact token counts</summary>
+    <p style="margin:6px 0 0;">Optional. With a provider API key, EcoMeter counts tokens using that provider's <b>own tokenizer</b> instead of a local estimate. <b>Off by default.</b> When on, your <b>prompts are sent to that provider's token-count endpoint</b> (your messages only) — the same content you're already sending to that AI.</p>
+    <p style="margin:6px 0 0;">Gemini — get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Claude uses the Anthropic key from setup.</p>
+    <div style="display:flex;gap:6px;margin-top:7px;">
+      <input type="password" id="google-key-input" placeholder="Google AI API key (Gemini)" style="flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 9px;font-size:11px;" />
+      <button class="ctrl-btn" id="google-key-save">Save</button>
+      <button class="ctrl-btn danger" id="google-key-clear">Clear</button>
+    </div>
+    <div class="footer-status" id="exact-status" style="margin-top:5px;"></div>
   </details>
 
   <!-- Disclaimer — collapsible -->

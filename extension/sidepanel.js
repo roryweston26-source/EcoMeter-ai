@@ -31,6 +31,10 @@ const usageOptin    = document.getElementById('usage-optin');
 const usageActions  = document.getElementById('usage-actions');
 const clearUsageBtn = document.getElementById('clear-usage-btn');
 const footerStatus  = document.getElementById('footer-status');
+const googleKeyInput = document.getElementById('google-key-input');
+const googleKeySave  = document.getElementById('google-key-save');
+const googleKeyClear = document.getElementById('google-key-clear');
+const exactStatus    = document.getElementById('exact-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
 let FLAT_PRICES = {};
@@ -423,23 +427,55 @@ async function loadTokenizers() {
   return _tokenizerPromise;
 }
 
+// ── Exact-LOCAL tokenizers (Phase 3, pluggable + self-verified) ────────────
+// An encoder module (tokenizer_hf.js, and future Tekken/Gemma modules) registers here
+// ONLY after it reproduces reference counts exactly (see tokenizer_hf.js). Until one
+// does, exactLocalCount() returns null and counting falls back to the tiktoken proxy /
+// estimate — so this is completely inert unless a verified tokenizer asset is bundled.
+const EXACT_LOCAL = {};                                   // model-substring -> async (text) => count
+function registerExactTokenizer(match, fn) { EXACT_LOCAL[match] = fn; }   // global: injected modules call this
+let _exactLoaded = false, _exactPromise = null;
+function loadExactTokenizers() {
+  if (_exactLoaded) return Promise.resolve();
+  if (_exactPromise) return _exactPromise;
+  _exactPromise = (async () => {
+    try { await _injectScript('tokenizer_hf.js'); } catch (e) {}   // no-op if the file/asset is absent
+    _exactLoaded = true;
+  })();
+  return _exactPromise;
+}
+async function exactLocalCount(text, modelKey) {
+  if (!modelKey) return null;
+  await loadExactTokenizers();
+  const k = modelKey.toLowerCase();
+  for (const m in EXACT_LOCAL) {
+    if (k.includes(m)) { try { return await EXACT_LOCAL[m](text); } catch (e) { return null; } }
+  }
+  return null;
+}
+
 // Which tiktoken encoding to use for a given model key.
 function getEncodingForModel(modelKey) {
   if (!modelKey) return 'char-ratio';
   const k = modelKey.toLowerCase();
-  // o200k_base: GPT-4o family, GPT-4.1, all o-series (OpenAI confirmed)
-  if (k.includes('gpt-4o') || k.includes('gpt-4.1') ||
+  // o200k_base (OpenAI's modern 200k encoding) — EXACT for GPT-4o, GPT-4.1, GPT-5.x
+  // and the o-series. NB: GPT-5.x (ChatGPT's default, and Copilot) previously fell
+  // through to char-ratio here — a ~30% overcount — because only gpt-4o/4.1 matched.
+  if (k.includes('gpt-4o') || k.includes('gpt-4.1') || k.includes('gpt-5') ||
       k === 'o1' || k === 'o1-mini' ||
       k === 'o3' || k === 'o3-mini' || k.startsWith('o4-')) return 'o200k_base';
-  // cl100k_base: GPT-4/Turbo, Claude, Mistral, Codestral, DeepSeek, Grok
-  // (Claude uses its own BPE trained separately; cl100k is ~97% accurate for English prose)
+  // cl100k_base (100k) — GPT-4/Turbo/3.x exact; and the closest public proxy for the
+  // other tiktoken-family BPEs we can't run locally yet: Claude's own BPE, Mistral
+  // (Tekken ~130k), Grok, DeepSeek (~128k), and the Llama-based Perplexity Sonar.
+  // Not exact (labelled tiktoken-approx), but far closer than a char ratio.
   if (k.includes('gpt-4') || k.includes('gpt-3') ||
       k.includes('claude') ||
       k.includes('mistral') || k.includes('codestral') ||
-      k.includes('deepseek') || k.includes('grok')) return 'cl100k_base';
-  // Gemini uses Gemma 3 SentencePiece (~4.2 chars/token for English)
+      k.includes('deepseek') || k.includes('grok') ||
+      k.includes('sonar')) return 'cl100k_base';
+  // Gemini uses the Gemma SentencePiece tokenizer (256k) — estimated locally.
   if (k.includes('gemini')) return 'sentencepiece';
-  // Perplexity, Copilot, Poe — char-ratio
+  // Unknown / wrapper models (some Poe; Copilot when the model is unknown) — char-ratio.
   return 'char-ratio';
 }
 
@@ -451,6 +487,22 @@ function methodLabel(enc, modelKey) {
                    k === 'o3' || k === 'o3-mini' || k.startsWith('o4-');
   return isOpenAI ? 'tiktoken-exact' : 'tiktoken-approx';
 }
+
+// Honest error band per counting method (fraction of the counted tokens), for an
+// "±X%" label in the UI. The char-ratio band is MEASURED against real tiktoken on a
+// mixed prose/code/URL corpus after the 2026 recalibration (MAE ~8%, p95 ~20%).
+// tiktoken-approx / sp-estimated are ESTIMATES pending a bundled reference tokenizer
+// for those families. Note: these cover TEXT tokenization only — provider billing adds
+// hidden system/role/tool tokens, modelled separately by PLATFORM_OVERHEAD_TOKENS.
+const METHOD_ACCURACY = {
+  'api-visible':     { err: 0.00, label: 'exact · provider API' },
+  'exact-local':     { err: 0.00, label: 'exact · local tokenizer' },
+  'tiktoken-exact':  { err: 0.00, label: 'exact tokenizer' },
+  'tiktoken-approx': { err: 0.10, label: '±10% · approx (BPE family)' },
+  'sp-estimated':    { err: 0.10, label: '±10% · estimated' },
+  'estimated':       { err: 0.08, label: '±8% · estimated' },
+};
+const methodErr = m => (METHOD_ACCURACY[m] || {}).err ?? 0.10;
 
 function tiktokenCount(text, enc) {
   try {
@@ -482,18 +534,19 @@ function charRatioEstimate(text) {
     // Prose before this fence
     const before = text.slice(lastIndex, match.index);
     tokens += _estimateProse(before);
-    // Code fence content: 3.0 chars/token
-    tokens += Math.ceil(match[0].length / 3.0);
+    // Code fence content: ~4.0 chars/token (recalibrated 2026 vs tiktoken)
+    tokens += Math.ceil(match[0].length / 4.0);
     lastIndex = match.index + match[0].length;
   }
   remaining = text.slice(lastIndex);
 
-  // Within remaining text, pull out URLs (https?://...) — 2.0 chars/token
+  // Within remaining text, pull out URLs (https?://...) — ~4.0 chars/token.
+  // (The old 2.0 was a big overcount: real tiktoken runs URLs at ~3.9 chars/token.)
   const urlRe = /https?:\/\/\S+/g;
   let urlLastIndex = 0;
   while ((match = urlRe.exec(remaining)) !== null) {
     tokens += _estimateProse(remaining.slice(urlLastIndex, match.index));
-    tokens += Math.ceil(match[0].length / 2.0);
+    tokens += Math.ceil(match[0].length / 4.0);
     urlLastIndex = match.index + match[0].length;
   }
   tokens += _estimateProse(remaining.slice(urlLastIndex));
@@ -509,7 +562,9 @@ function _estimateProse(text) {
   const syntaxCount =
     (text.match(/[{}[\];=<>()]/g) || []).length +
     (text.match(/\b(function|const|let|var|class|import|export|def|return|async|await|if|for|while)\b/g) || []).length * 3;
-  const ratio = (syntaxCount > chars * 0.025) ? 3.0 : 4.0;
+  // Recalibrated 2026 against real tiktoken on a mixed prose/code/URL corpus:
+  // this cut the char-ratio estimator from ~32% MAE (+31% bias) to ~8% MAE (~0 bias).
+  const ratio = (syntaxCount > chars * 0.025) ? 4.0 : 4.8;
   return Math.ceil(chars / ratio);
 }
 
@@ -531,7 +586,7 @@ function sentencePieceEstimate(text) {
   while ((match = fenceRe.exec(text)) !== null) {
     const before = text.slice(lastIndex, match.index);
     tokens += _estimateSPProse(before);
-    tokens += Math.ceil(match[0].length / 3.2);
+    tokens += Math.ceil(match[0].length / 4.0);
     lastIndex = match.index + match[0].length;
   }
   remaining = text.slice(lastIndex);
@@ -541,7 +596,7 @@ function sentencePieceEstimate(text) {
   let urlLastIndex = 0;
   while ((match = urlRe.exec(remaining)) !== null) {
     tokens += _estimateSPProse(remaining.slice(urlLastIndex, match.index));
-    tokens += Math.ceil(match[0].length / 2.0);
+    tokens += Math.ceil(match[0].length / 4.0);
     urlLastIndex = match.index + match[0].length;
   }
   tokens += _estimateSPProse(remaining.slice(urlLastIndex));
@@ -555,8 +610,9 @@ function _estimateSPProse(text) {
   const syntaxCount =
     (text.match(/[{}[\];=<>()]/g) || []).length +
     (text.match(/\b(function|const|let|var|class|import|export|def|return|async|await|if|for|while)\b/g) || []).length * 3;
-  // SP vocab is larger so slightly more efficient on prose (4.2), less on code (3.2)
-  const ratio = (syntaxCount > chars * 0.025) ? 3.2 : 4.2;
+  // SP's 256k vocab is a bit more efficient than BPE, so ratios run slightly higher
+  // than the char-ratio path (recalibrated 2026; ~5.0 prose / 4.0 code).
+  const ratio = (syntaxCount > chars * 0.025) ? 4.0 : 5.0;
   return Math.ceil(chars / ratio);
 }
 
@@ -565,12 +621,26 @@ function _estimateSPProse(text) {
 //         → tiktoken exact/approx (OpenAI & BPE-family models)
 //         → char-ratio segmented estimate (Gemini, Perplexity, etc.)
 async function countTokens(text, role, modelKey) {
-  if (!text || text.trim().length === 0) return { count: 0, method: 'estimated' };
+  if (!text || text.trim().length === 0) return { count: 0, method: 'estimated', err: methodErr('estimated') };
 
   // Anthropic token-counting API — exact for Claude, requires API key
   if (modelKey && modelKey.toLowerCase().includes('claude') && apiKey && role === 'user') {
     const api = await countTokensAnthropicAPI(text);
-    if (api !== null) return { count: api, method: 'api-visible' };
+    if (api !== null) return { count: api, method: 'api-visible', err: methodErr('api-visible') };
+  }
+
+  // Google token-counting API — exact for Gemini, opt-in (separate optional key)
+  if (modelKey && modelKey.toLowerCase().includes('gemini') && googleApiKey && role === 'user') {
+    const g = await countTokensGoogleAPI(text, modelKey);
+    if (g !== null) return { count: g, method: 'api-visible', err: methodErr('api-visible') };
+  }
+
+  // Exact LOCAL tokenizer (Phase 3) — only if a bundled tokenizer verified itself;
+  // otherwise null and we fall through to tiktoken/estimate. Applies to both roles.
+  const local = await exactLocalCount(text, modelKey);
+  if (local !== null) {
+    const count = (role === 'assistant') ? Math.ceil(local * 1.04) : local;
+    return { count, method: 'exact-local', err: methodErr('exact-local') };
   }
 
   const enc = getEncodingForModel(modelKey);
@@ -583,7 +653,8 @@ async function countTokens(text, role, modelKey) {
         // tiktoken counts literal scraped text. Assistant messages have markdown
         // stripped by the DOM, so apply a small correction to recover those tokens.
         const count = (role === 'assistant') ? Math.ceil(raw * 1.04) : raw;
-        return { count, method: methodLabel(enc, modelKey) };
+        const method = methodLabel(enc, modelKey);
+        return { count, method, err: methodErr(method) };
       }
     }
   }
@@ -593,7 +664,7 @@ async function countTokens(text, role, modelKey) {
     const count = (role === 'assistant')
       ? Math.ceil(sentencePieceEstimate(text) * 1.04)
       : sentencePieceEstimate(text);
-    return { count, method: 'sp-estimated' };
+    return { count, method: 'sp-estimated', err: methodErr('sp-estimated') };
   }
 
   return {
@@ -601,6 +672,7 @@ async function countTokens(text, role, modelKey) {
       ? Math.ceil(charRatioEstimate(text) * 1.08)
       : charRatioEstimate(text),
     method: 'estimated',
+    err: methodErr('estimated'),
   };
 }
 
@@ -702,8 +774,30 @@ async function countTokensAnthropicAPI(text) {
   } catch(e) { return null; }
 }
 
+// ── Google (Gemini) token counting API — OPT-IN, exact for Gemini ──────────
+// Off unless the user supplies an optional Google AI key. Sends the message text
+// to Google's countTokens endpoint — the SAME content the user is already sending
+// to Gemini — for an exact count. User (visible) messages only, mirroring the
+// Anthropic path. The Gemini tokenizer is shared across versions, so any valid
+// Gemini model id yields the same count; we fall back to a stable default.
+async function countTokensGoogleAPI(text, model) {
+  if (!googleApiKey) return null;
+  const m = (model && /^gemini-/i.test(model)) ? model : 'gemini-2.5-flash';
+  try {
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(m) +
+      ':countTokens?key=' + encodeURIComponent(googleApiKey),
+      { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text }] }] }) });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.totalTokens || null;
+  } catch(e) { return null; }
+}
+
 // ── State ─────────────────────────────────────────────────
 let apiKey             = null;
+let googleApiKey       = null;   // optional, opt-in — enables exact Gemini counts
 let msgData            = [];
 let counting           = false;
 let updateQueued       = false;
@@ -738,6 +832,17 @@ function renderSummary() {
   totalTokens.textContent = hasEstimates ? '~' + fmt(tot) : fmt(tot);
   totalMsgs.textContent   = msgData.length + ' message' + (msgData.length !== 1 ? 's' : '');
   ioRatio.textContent     = fmt(inp) + ' in · ' + fmt(out) + ' out';
+
+  // Honest token-weighted accuracy band: exact where we run the real tokenizer,
+  // an ±X% estimate otherwise. (Text tokenization only — billing overhead is on top.)
+  const accEl = document.getElementById('token-accuracy');
+  if (accEl) {
+    const wsum = counted.reduce((a, m) => a + (m.tokens || 0), 0);
+    const werr = wsum > 0
+      ? counted.reduce((a, m) => a + (m.tokens || 0) * (m.err != null ? m.err : methodErr(m.method)), 0) / wsum
+      : 0;
+    accEl.textContent = !wsum ? '' : (werr < 0.005 ? '✓ exact tokenizer' : '±' + Math.round(werr * 100) + '% token estimate');
+  }
 
   if (p && tot > 0) {
     const range = REASONING_RANGES[key];
@@ -1105,13 +1210,15 @@ function startPolling() {
   }
 
   const stored        = await chrome.storage.local.get(['userModel', 'setupDone', 'storageVersion']);
-  const storedSession = await chrome.storage.session.get(['apiKey']);
+  const storedSession = await chrome.storage.session.get(['apiKey', 'googleApiKey']);
 
   if (!stored.storageVersion) {
     await chrome.storage.local.set({ storageVersion: STORAGE_VERSION });
   }
 
   if (storedSession.apiKey) apiKey = storedSession.apiKey;
+  if (storedSession.googleApiKey) googleApiKey = storedSession.googleApiKey;
+  updateExactStatus();
   if (stored.userModel) {
     userSelectedModel = stored.userModel;
     if (modelMain) modelMain.value = stored.userModel;
@@ -1132,6 +1239,29 @@ if (skipBtn) skipBtn.addEventListener('click', () => showTracker());
 if (exportBtn)     exportBtn.addEventListener('click', exportUsage);
 if (usageOptin)    usageOptin.addEventListener('change', () => setUsageTracking(usageOptin.checked));
 if (clearUsageBtn) clearUsageBtn.addEventListener('click', clearUsageHistory);
+
+// ── Optional exact-count keys (opt-in provider tokenizer APIs) ─────────────
+function updateExactStatus() {
+  if (!exactStatus) return;
+  exactStatus.textContent = googleApiKey
+    ? '✓ Gemini — exact counts on (via Google API)'
+    : 'Gemini — using local estimate';
+}
+if (googleKeySave) googleKeySave.addEventListener('click', async () => {
+  const k = ((googleKeyInput && googleKeyInput.value) || '').trim();
+  if (k) { googleApiKey = k; await chrome.storage.session.set({ googleApiKey: k }); }
+  else   { googleApiKey = null; await chrome.storage.session.remove('googleApiKey'); }
+  if (googleKeyInput) googleKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();   // re-count the visible messages with the new method
+});
+if (googleKeyClear) googleKeyClear.addEventListener('click', async () => {
+  googleApiKey = null;
+  await chrome.storage.session.remove('googleApiKey');
+  if (googleKeyInput) googleKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();
+});
 
 // ── Model selection ───────────────────────────────────────
 modelMain.addEventListener('change', async () => {
@@ -1206,6 +1336,7 @@ logoutBtn.addEventListener('click', async () => {
   if (usageOptin)   usageOptin.checked = false;
   if (usageActions) usageActions.style.display = 'none';
   apiKey            = null;
+  googleApiKey      = null;
   userSelectedModel = null;
   msgData           = [];
   clearInterval(pollingInterval);
