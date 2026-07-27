@@ -31,6 +31,10 @@ const usageOptin    = document.getElementById('usage-optin');
 const usageActions  = document.getElementById('usage-actions');
 const clearUsageBtn = document.getElementById('clear-usage-btn');
 const footerStatus  = document.getElementById('footer-status');
+const googleKeyInput = document.getElementById('google-key-input');
+const googleKeySave  = document.getElementById('google-key-save');
+const googleKeyClear = document.getElementById('google-key-clear');
+const exactStatus    = document.getElementById('exact-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
 let FLAT_PRICES = {};
@@ -597,6 +601,12 @@ async function countTokens(text, role, modelKey) {
     if (api !== null) return { count: api, method: 'api-visible', err: methodErr('api-visible') };
   }
 
+  // Google token-counting API — exact for Gemini, opt-in (separate optional key)
+  if (modelKey && modelKey.toLowerCase().includes('gemini') && googleApiKey && role === 'user') {
+    const g = await countTokensGoogleAPI(text, modelKey);
+    if (g !== null) return { count: g, method: 'api-visible', err: methodErr('api-visible') };
+  }
+
   const enc = getEncodingForModel(modelKey);
 
   if (enc !== 'char-ratio') {
@@ -728,8 +738,30 @@ async function countTokensAnthropicAPI(text) {
   } catch(e) { return null; }
 }
 
+// ── Google (Gemini) token counting API — OPT-IN, exact for Gemini ──────────
+// Off unless the user supplies an optional Google AI key. Sends the message text
+// to Google's countTokens endpoint — the SAME content the user is already sending
+// to Gemini — for an exact count. User (visible) messages only, mirroring the
+// Anthropic path. The Gemini tokenizer is shared across versions, so any valid
+// Gemini model id yields the same count; we fall back to a stable default.
+async function countTokensGoogleAPI(text, model) {
+  if (!googleApiKey) return null;
+  const m = (model && /^gemini-/i.test(model)) ? model : 'gemini-2.5-flash';
+  try {
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(m) +
+      ':countTokens?key=' + encodeURIComponent(googleApiKey),
+      { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text }] }] }) });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.totalTokens || null;
+  } catch(e) { return null; }
+}
+
 // ── State ─────────────────────────────────────────────────
 let apiKey             = null;
+let googleApiKey       = null;   // optional, opt-in — enables exact Gemini counts
 let msgData            = [];
 let counting           = false;
 let updateQueued       = false;
@@ -1142,13 +1174,15 @@ function startPolling() {
   }
 
   const stored        = await chrome.storage.local.get(['userModel', 'setupDone', 'storageVersion']);
-  const storedSession = await chrome.storage.session.get(['apiKey']);
+  const storedSession = await chrome.storage.session.get(['apiKey', 'googleApiKey']);
 
   if (!stored.storageVersion) {
     await chrome.storage.local.set({ storageVersion: STORAGE_VERSION });
   }
 
   if (storedSession.apiKey) apiKey = storedSession.apiKey;
+  if (storedSession.googleApiKey) googleApiKey = storedSession.googleApiKey;
+  updateExactStatus();
   if (stored.userModel) {
     userSelectedModel = stored.userModel;
     if (modelMain) modelMain.value = stored.userModel;
@@ -1169,6 +1203,29 @@ if (skipBtn) skipBtn.addEventListener('click', () => showTracker());
 if (exportBtn)     exportBtn.addEventListener('click', exportUsage);
 if (usageOptin)    usageOptin.addEventListener('change', () => setUsageTracking(usageOptin.checked));
 if (clearUsageBtn) clearUsageBtn.addEventListener('click', clearUsageHistory);
+
+// ── Optional exact-count keys (opt-in provider tokenizer APIs) ─────────────
+function updateExactStatus() {
+  if (!exactStatus) return;
+  exactStatus.textContent = googleApiKey
+    ? '✓ Gemini — exact counts on (via Google API)'
+    : 'Gemini — using local estimate';
+}
+if (googleKeySave) googleKeySave.addEventListener('click', async () => {
+  const k = ((googleKeyInput && googleKeyInput.value) || '').trim();
+  if (k) { googleApiKey = k; await chrome.storage.session.set({ googleApiKey: k }); }
+  else   { googleApiKey = null; await chrome.storage.session.remove('googleApiKey'); }
+  if (googleKeyInput) googleKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();   // re-count the visible messages with the new method
+});
+if (googleKeyClear) googleKeyClear.addEventListener('click', async () => {
+  googleApiKey = null;
+  await chrome.storage.session.remove('googleApiKey');
+  if (googleKeyInput) googleKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();
+});
 
 // ── Model selection ───────────────────────────────────────
 modelMain.addEventListener('change', async () => {
@@ -1243,6 +1300,7 @@ logoutBtn.addEventListener('click', async () => {
   if (usageOptin)   usageOptin.checked = false;
   if (usageActions) usageActions.style.display = 'none';
   apiKey            = null;
+  googleApiKey      = null;
   userSelectedModel = null;
   msgData           = [];
   clearInterval(pollingInterval);

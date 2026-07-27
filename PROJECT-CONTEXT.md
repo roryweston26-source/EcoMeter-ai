@@ -12,7 +12,7 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 - **EcoMeter AI** — a Manifest V3 **Chrome extension** in `extension/`, published to the Chrome Web Store.
 
 **Design principles**
-- **Privacy-first:** nothing is transmitted off-device except the one optional Anthropic token-count call; usage tracking is opt-in and local-only.
+- **Privacy-first:** nothing is transmitted off-device except **optional, opt-in provider token-count calls** (Anthropic for Claude, Google for Gemini — each off by default, key-gated); usage tracking is opt-in and local-only.
 - **No build step, no framework, no CDN:** every page is a self-contained HTML file; fonts load from Google Fonts (the one privacy wart — see Open Items).
 - **`prices.json` is the single source of truth** for model prices, shared by the extension and the website.
 - **Reactive versioning:** the publish workflow only bumps the extension version when the store rejects a duplicate — manual and automatic uploads never collide.
@@ -75,7 +75,7 @@ MV3 side-panel extension that tracks token usage, cost, and water impact across 
 
 - **Store listing:** https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj (extension ID `angbjmkjocdkfdppnpoemfkdjphenbbj`).
 - **Model picker:** full catalog (all models, incl. advanced/paid) so paid users can attribute frontier-model chats. Built in `buildModelDropdown()` from `MODEL_CATALOG`; prices resolved from `prices.json` `api`.
-- **Tokenizer accuracy** (`countTokens` / `getEncodingForModel`): OpenAI & Copilot use bundled **tiktoken** (exact); Claude uses the opt-in Anthropic **count API** (exact) else a cl100k proxy; Gemini/DeepSeek/Mistral/Grok/Perplexity use tiktoken proxies or calibrated char-ratio/SentencePiece estimators. Every count carries an error band (`METHOD_ACCURACY` → `m.err`) surfaced as **±X%** in the stats. The char-ratio & SP estimators were **recalibrated 2026** against real tiktoken on a mixed corpus (MAE ~32%/+31% bias → ~8%/~0 bias); and `getEncodingForModel` was fixed so **GPT-5.x maps to o200k** (it was falling through to char-ratio — a ~30% overcount on ChatGPT/Copilot). **Planned (not yet built):** opt-in provider tokenizer APIs (Google flagship) and bundled DeepSeek/Tekken/Gemma tokenizers for exact local counts.
+- **Tokenizer accuracy** (`countTokens` / `getEncodingForModel`): OpenAI & Copilot use bundled **tiktoken** (exact); Claude uses the opt-in Anthropic **count API** (exact) else a cl100k proxy; Gemini/DeepSeek/Mistral/Grok/Perplexity use tiktoken proxies or calibrated char-ratio/SentencePiece estimators. Every count carries an error band (`METHOD_ACCURACY` → `m.err`) surfaced as **±X%** in the stats. The char-ratio & SP estimators were **recalibrated 2026** against real tiktoken on a mixed corpus (MAE ~32%/+31% bias → ~8%/~0 bias); and `getEncodingForModel` was fixed so **GPT-5.x maps to o200k** (it was falling through to char-ratio — a ~30% overcount on ChatGPT/Copilot). **Opt-in provider token-count APIs** (exact, off by default, key-gated, session-only keys): Anthropic (Claude) and now **Google (Gemini)** via `generativelanguage.googleapis.com` (`countTokensGoogleAPI`; host permission added; user messages only) — disclosed in `privacy-policy.html`. **Still planned:** bundled DeepSeek/Tekken/Gemma tokenizers for exact *local* counts (needs the vocab/model asset files).
 - **Usage tracking (opt-in, local, feeds the Auditor):** see §6.
 
 ---
