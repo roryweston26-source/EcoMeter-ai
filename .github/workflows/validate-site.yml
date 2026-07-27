@@ -1,0 +1,33 @@
+name: Validate Site
+
+# The website (repo-root *.html) is served straight to GitHub Pages on merge to
+# main — there is no build step, so nothing parses the pages before they go live.
+# This is that missing gate: it runs on PRs into main so a broken tag, a renamed
+# page, or a malformed prices.json is caught BEFORE the merge that deploys.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.html'
+      - '**.json'
+      - 'scripts/validate-site.js'
+      - '.github/workflows/validate-site.yml'
+  push:
+    branches: [main]        # backstop: also verify what actually landed
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate the static site
+        run: node scripts/validate-site.js
