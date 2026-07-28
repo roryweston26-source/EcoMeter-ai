@@ -96,6 +96,18 @@ Served by GitHub Pages from `main` root. **Ship a website change: merge to `main
 | `audit.html` | Subscription Auditor (§6). | fetches `/extension/prices.json` |
 | `transparency-index.html` | AI Transparency Index (§7). | fetches `/datacenters.json` + `/transparency-index.json` |
 
+### 3a. Subscriptions view — Break even / Ceiling (added 2026-07-28)
+
+Two computed columns answering "what is this plan actually worth", from `plan-limits.json` + live API rates.
+
+- **Break even** — how long a day you'd have to use the plan before it beats paying per token at that provider's own API rates, shown as a **time** (`19 min–2.1 h /day`) with the message count beneath. Needs no limit data at all, so it works for all 26 plans. This is the column that actually informs a decision.
+- **Ceiling** — the upper bound if the cap were hit every window, every day, for 30 days. Only computable for the **4 plans** with a published absolute cap.
+- **"Usage style"** selector (light/standard/heavy) re-runs both against different tokens-per-message archetypes; **"show the math"** expands per row to every input, the provider's own wording, and sources.
+
+**Why the ceiling is framed the way it is.** Computed straight, it produces things like *ChatGPT Pro (20×) → $26,880/mo, 134× the price*. That's arithmetically correct from disclosed figures and useless — it needs 17.8 days of nonstop messaging per day. So the ceiling is rendered **in time as well as dollars**, and where the required time exceeds waking hours it says so in gold: *"more than anyone is awake for."* The absurdity is the finding — it shows the cap isn't what limits the plan's value to you, your time is. **Don't quietly drop the time framing to make the number look cleaner; without it the column is upsell copy.**
+
+⚠️ **The tokens-per-message archetypes are assumptions, not measurements**, and they are the largest lever on every figure. They're labelled as assumptions in `_meta.archetypes`, in the footer, and in every expander. The intended fix is to anchor them to real EcoMeter usage exports. **Until that lands, nothing may describe them as measured.**
+
 All pages share the dark theme (`--bg:#0a0f0d`, greens `#4caf82`/`#38c9a0`, gold `#d4a843`) and Syne / Inter / DM Mono fonts. Pattern: same-origin `fetch` + client-side render with an inline `FALLBACK`.
 
 ---
@@ -139,6 +151,17 @@ Consumed by the extension (`api` → cost), `pricing.html` (all sections), `audi
 - **`_meta.caveats`** (added 2026-07-28) records per-model pricing caveats a bare number can't carry. Currently holds the **Sonnet 5 introductory rate: $2/$10 is promotional and reverts to $3/$15 after 2026-08-31** — it was previously listed as if permanent. Surfaced on `pricing.html` as a note; also flagged in a comment in `update-prices.js`. **Re-check that line after 2026-08-31.**
 - `update-prices.js` **merges** into the existing file (it mutates `api[provider][model]` and only rewrites `_meta.last_updated`), so hand-written `_meta` keys and models absent from its hardcoded table survive a run. Verified by executing it against a backup — zero diff.
 - **A model must exist in BOTH `prices.json` and `water.json`.** A key missing from `water.json` renders no water figure at all, silently — that gap had accumulated for 9 models before 2026-07-28. Cross-check with: every key in the extension's `MODEL_CATALOG` resolves in both files.
+
+### `plan-limits.json` — what each plan allows, and how well it's disclosed
+Drives the **Break even / Ceiling** columns on `pricing.html` (§3a). Joins to `prices.json.subscriptions` on **`p` + `m` (exact string match)** — if you rename a plan in one file, rename it in both or the row silently loses its columns. Rates are deliberately **not** stored here; they're read from `prices.json.api` at render time, so the figures re-price themselves when API prices move (including when Sonnet 5's intro rate expires).
+
+```jsonc
+{ "_meta": { "last_verified", "month_days", "archetypes", "throughput", "provenance_legend", "finding", "caveats" },
+  "plans": [ { "p", "m", "provenance", "caps"?, "multiplier"?, "third_party"?, "stated"?, "value_models", "source"?, "as_of" } ] }
+```
+- **`provenance`** is the point of the file: `disclosed` (provider publishes it about its own product) · `derived` (disclosed cap × disclosed multiplier) · `third_party` · `not_disclosed`. Rendered as a first-class state — a blank cell is a finding, not a gap.
+- **`multiplier.base_disclosed: false`** is what stops Anthropic's "5× Pro" and Google's "4× standard" from being silently treated as real numbers. `capPerDay()` refuses to follow a multiplier chain that doesn't terminate in a published absolute. Don't "fix" this by inventing a base.
+- **`value_models.low/high` are labels, not an ordering** — several plans pair a flagship with a pricier reasoning variant. `breakEven()` sorts by computed cost, not by the key name.
 
 ### `clock.json` — AI Clock model
 `{ _meta:{anchor,last_rolled}, scenarios:{conservative|moderate|high}, rates }`. **Re-anchored 2026-07-12 (Q3).** Two-force projection (volume up, per-unit cost down); re-anchored quarterly by `roll-clock.yml` (opens a PR for a human to drop in fresh disclosures).
