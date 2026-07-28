@@ -153,10 +153,28 @@ is <strong>off by default</strong>. When you turn it on, the extension keeps a r
 tally — on your device only, in <code>chrome.storage.local</code> — of how many
 messages and tokens you use per platform and per model. It stores
 <strong>counts only; no message content is kept</strong> (text is used transiently to
-count tokens, then discarded). This data is never transmitted. You export it yourself
-as a file to upload to the Auditor, and you can erase it at any time with "Clear
-history", by turning the switch off, or via "remove key" (logout). Leave the switch
-off and none of this is recorded.</p>
+count tokens, then discarded). This data is never transmitted.</p>
+
+<p><strong>How the tally reaches the Subscription Auditor — no upload is involved.</strong>
+The connection between the extension and the Auditor is a file you move yourself, deliberately,
+in three steps. Nothing happens automatically and nothing is sent anywhere:</p>
+<ol>
+  <li>You press <strong>&ldquo;⤓ Export for Auditor&rdquo;</strong>. The extension writes a small
+      JSON file (<code>ecometer-usage.json</code>) to your own downloads folder. This is a local
+      file save — no network request is made, and the file is not sent to Legerly or anyone else.</li>
+  <li>You choose to open the Subscription Auditor
+      (<a href="https://legerlyai.com/audit.html" target="_blank" rel="noopener">legerlyai.com/audit.html</a>)
+      and select that file with the &ldquo;Connect usage&rdquo; control.</li>
+  <li>The Auditor reads the file <strong>inside your own browser</strong>, using the browser's
+      built-in <code>FileReader</code>, to pre-fill the questionnaire. The file is
+      <strong>never transmitted to a server</strong> — not to Legerly, not to anyone. The Auditor
+      is a static page with no backend that could receive it.</li>
+</ol>
+<p>The exported file contains counts only — messages, tokens, models used, and days tracked.
+It contains <strong>no message content</strong>. You can inspect it in any text editor before
+you use it, and you can erase the underlying tally at any time with &ldquo;Clear history&rdquo;,
+by turning the switch off, or via &ldquo;remove key&rdquo; (logout). Leave the switch off and
+none of this is recorded in the first place.</p>
 
 <p><strong>Active tab identity (not stored, not transmitted).</strong>
 When the user clicks the extension icon, the browser grants temporary access to

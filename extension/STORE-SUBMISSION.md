@@ -13,7 +13,11 @@
 > Field: *"Single purpose description"*
 
 ```
-EcoMeter AI shows the user the token usage, estimated cost, and estimated water footprint of their own AI chat conversations, in a side panel next to the chat they are already having. Everything is computed on the user's own device from the text visible on the page. That is the extension's only function.
+EcoMeter AI shows the user the token usage, estimated cost, and estimated water footprint of their own AI chat conversations, in a side panel next to the chat they are already having. Everything is computed on the user's own device from the text visible on the page.
+
+A single optional feature extends this: the user may switch on a local usage tally and then export it, as a file saved to their own computer, so they can load it into Legerly's Subscription Auditor (legerlyai.com/audit.html) and see which subscription plan fits their measured usage. The export is a local file save; the Auditor reads the file in the user's own browser and it is never transmitted to any server. Both the tally and the export are off by default and user-initiated.
+
+Measuring the user's own AI usage and letting them act on that measurement is the extension's only function.
 ```
 
 ---
@@ -73,13 +77,23 @@ All code is bundled in the extension package. No script, module, or eval'd strin
 
 > Field: *"What user data do you plan to collect?"*
 
-**Recommended answer: tick "Website content" only.** Leave every other category unticked.
+**Tick "Website content" only.** Leave every other category unticked.
 
-Reasoning, so you can confirm it yourself rather than take it on trust: Chrome counts data as *collected* when it leaves the user's device. In the default configuration nothing leaves the device and no box would be needed. But if the user opts in by entering an API key, the text of their own chat messages is transmitted to Anthropic's or Google's token-count endpoint. That is user-authored text from a web page, which falls under **Website content**.
+Reasoning, in case a reviewer queries it: Chrome counts data as *collected* when it leaves the user's device. In the default configuration nothing leaves the device at all. The single case where anything does is when the user opts in by entering their own API key, at which point the text of their own chat messages is transmitted to Anthropic's or Google's token-count endpoint. That is user-authored text from a web page, which falls under **Website content**.
 
-Do **not** tick the following, none of which apply: personally identifiable information, health information, financial and payment information, authentication information, personal communications, location, web history, user activity.
+Do **not** tick: personally identifiable information, health information, financial and payment information, authentication information, personal communications, location, web history, user activity. "Personal communications" in Chrome's sense means messages between people — emails, texts, chats. A prompt written to a machine is not that, which is why Website content is the correct category here.
 
-> ⚠️ One judgment call worth making deliberately: an argument exists that chat messages are **"Personal communications"** rather than **"Website content"**. Chrome's own definition of personal communications centres on emails, texts, and chat messages between people, whereas this is a person's prompt to a machine — which is why "Website content" is the better fit. Under-declaring is a common cause of removal, so if you would rather be conservative, tick both. It costs nothing in review and cannot be held against you.
+### The Subscription Auditor export is NOT data collection
+
+State this plainly if the point ever comes up in review, because "export your usage to our website" invites the wrong assumption:
+
+```
+EcoMeter's optional usage tracking stores a local tally (counts only, no message content) in chrome.storage.local. The "Export for Auditor" button writes that tally to a JSON file in the user's own downloads folder. This is a local file save — no network request is made and the file is not sent to Legerly or any third party.
+
+If the user then chooses to open Legerly's Subscription Auditor at legerlyai.com/audit.html, they select that file themselves and the page reads it in their own browser using the built-in FileReader API. The Auditor is a static page with no backend; there is no server that could receive the file. Nothing is uploaded at any point in this flow.
+```
+
+Because the export is a user-initiated local file save and the Auditor never receives it over the network, this flow involves **no collection** and requires no additional disclosure.
 
 ### Certifications
 
