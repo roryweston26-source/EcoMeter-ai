@@ -27,7 +27,7 @@ AI runs on **asymmetric information**: providers know exactly what each conversa
 
 | Provider | Models |
 |---|---|
-| Anthropic | Claude Opus 4.8 / 4.7 / 4.6, Sonnet 5, Sonnet 4.6, Haiku 4.5, plus Fable 5 & Mythos 5 |
+| Anthropic | Claude Opus 5, Opus 4.8 / 4.7 / 4.6, Sonnet 5, Sonnet 4.6, Haiku 4.5, plus Fable 5 & Mythos 5 |
 | Google | Gemini 3.5 Flash, 3.1 Pro, 3.1 Flash-Lite, 2.5 Pro / Flash / Flash-Lite |
 | OpenAI | GPT-5.5, GPT-5.4 (+ mini), GPT-4o, GPT-4.1, o3, o4-mini |
 | xAI | Grok 4.3, Grok 4.20, Grok 4, Grok 3, Grok 3 Mini |

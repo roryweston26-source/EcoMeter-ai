@@ -1,6 +1,6 @@
 {
   "_comment": "Water estimates in milliliters per token. Two scopes: conservative (company-reported, on-site cooling only) and academic (full lifecycle including electricity generation water). Update as new research emerges.",
-  "_last_updated": "2026-06-05",
+  "_last_updated": "2026-07-27",
   "_sources": [
     "Li et al. 2023 - Making AI Less Thirsty (UC Riverside / UT Arlington) - arxiv.org/abs/2304.03271",
     "Google official disclosure - Measuring the environmental impact of AI inference - cloud.google.com/blog - Aug 2025",
@@ -29,10 +29,14 @@
   },
 
   "anthropic": {
+    "claude-fable-5":            { "tier": "large"  },
+    "claude-mythos-5":           { "tier": "large"  },
+    "claude-opus-5":             { "tier": "large"  },
     "claude-opus-4-8":           { "tier": "large"  },
     "claude-opus-4-7":           { "tier": "large"  },
     "claude-opus-4-6":           { "tier": "large"  },
     "claude-opus":               { "tier": "large"  },
+    "claude-sonnet-5":           { "tier": "medium" },
     "claude-sonnet-4-6":         { "tier": "medium" },
     "claude-sonnet":             { "tier": "medium" },
     "claude-haiku-4-5-20251001": { "tier": "small"  },
@@ -58,6 +62,8 @@
 
   "google": {
     "gemini-3.5-flash":      { "tier": "medium" },
+    "gemini-3.1-pro-preview":{ "tier": "large"  },
+    "gemini-3.1-flash-lite": { "tier": "tiny"   },
     "gemini-2.5-pro":        { "tier": "large"  },
     "gemini-2.5-flash":      { "tier": "medium" },
     "gemini-2.5-flash-lite": { "tier": "tiny"   },
@@ -75,9 +81,11 @@
   "mistral": {
     "mistral-large":   { "tier": "large"  },
     "mistral-large-3": { "tier": "large"  },
+    "mistral-medium-3.5":{ "tier": "medium" },
     "mistral-medium-3":{ "tier": "medium" },
     "mistral-small":   { "tier": "small"  },
     "mistral-small-3": { "tier": "small"  },
+    "mistral-small-4": { "tier": "small"  },
     "codestral":       { "tier": "small"  }
   },
 
@@ -88,6 +96,8 @@
   },
 
   "deepseek": {
+    "deepseek-v4-pro":   { "tier": "large"  },
+    "deepseek-v4-flash": { "tier": "medium" },
     "deepseek-r1": { "tier": "large"  },
     "deepseek-v3": { "tier": "medium" }
   }

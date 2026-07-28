@@ -161,9 +161,9 @@ let PLANS = {
   ],
   anthropic: [
     { m:'Claude Free',   price:0,   cap:40,   models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
-    { m:'Claude Pro',    price:20,  cap:225,  models:['claude-sonnet-5','claude-sonnet-4-6','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking'], seats:1 },
-    { m:'Claude Max 5×', price:100, cap:1125, models:['claude-sonnet-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
-    { m:'Claude Max 20×',price:200, cap:null, models:['claude-sonnet-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
+    { m:'Claude Pro',    price:20,  cap:225,  models:['claude-sonnet-5','claude-sonnet-4-6','claude-opus-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking'], seats:1 },
+    { m:'Claude Max 5×', price:100, cap:1125, models:['claude-sonnet-5','claude-opus-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
+    { m:'Claude Max 20×',price:200, cap:null, models:['claude-sonnet-5','claude-opus-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
     { m:'Gemini (Free)',  price:0,    cap:60,  models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:[], seats:1 },
@@ -178,17 +178,17 @@ let PLANS = {
 };
 let API = {
   'gpt-5.5':{in:5e-6,out:30e-6}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
-  'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
+  'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
   'gemini-3.5-flash':{in:5e-7,out:3e-6}, 'gemini-2.5-pro':{in:1.25e-6,out:1e-5},
 };
 const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot' };
 const MODELS = {
-  openai:{free:'gpt-5.5',top:'o3'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-4-8'},
+  openai:{free:'gpt-5.5',top:'o3'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-5'},
   google:{free:'gemini-3.5-flash',top:'gemini-2.5-pro'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
 };
 // models that generally require a PAID tier — used to set the "frontier" signal from a log
-const ADVANCED = new Set(['claude-opus-4-8','claude-fable-5','claude-mythos-5','gpt-5.4','o3','o4-mini','gemini-2.5-pro','sonar-reasoning-pro','deepseek-v4-pro']);
-const LABELS = { 'claude-opus-4-8':'Claude Opus', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
+const ADVANCED = new Set(['claude-opus-5','claude-opus-4-8','claude-fable-5','claude-mythos-5','gpt-5.4','o3','o4-mini','gemini-2.5-pro','sonar-reasoning-pro','deepseek-v4-pro']);
+const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus 4.8', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
   'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gemini-2.5-pro':'Gemini 2.5 Pro',
   'sonar-reasoning-pro':'Sonar Reasoning Pro', 'deepseek-v4-pro':'DeepSeek V4 Pro' };
 const labelModel = k => LABELS[k] || k;
