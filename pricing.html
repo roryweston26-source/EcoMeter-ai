@@ -614,8 +614,8 @@
         caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
       { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
         caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
-      { p:"openai", m:"ChatGPT Pro",       provenance:"derived", multiplier:{of:"ChatGPT Plus", x:5},  value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
-      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"derived", multiplier:{of:"ChatGPT Plus", x:20}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
+      { p:"openai", m:"ChatGPT Pro",       provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:5,  scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:20, scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
 
       { p:"anthropic", m:"Claude Free",    provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5"} },
       { p:"anthropic", m:"Claude Pro",     provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-opus-5"} },
@@ -729,8 +729,11 @@
       if (!hours) return null;
       return { perDay: cap.n * (24 / hours), cap: cap };
     }
-    // A multiplier is only usable if the base is itself disclosed.
-    if (lim.multiplier && lim.multiplier.base_disclosed !== false) {
+    // A multiplier is only usable if the base is disclosed AND the provider says what
+    // the multiplier applies to. OpenAI's "5x higher usage than Plus" fails the second
+    // test: the one published cap is identical on Go and Plus, so it plainly isn't the
+    // figure being multiplied. Guessing would manufacture a number nobody claimed.
+    if (lim.multiplier && lim.multiplier.base_disclosed !== false && !lim.multiplier.scope_unclear) {
       var plans = PLAN_LIMITS.plans || [];
       for (var j = 0; j < plans.length; j++) {
         if (plans[j].p === lim.p && plans[j].m === lim.multiplier.of) {
@@ -1098,10 +1101,11 @@
     $("callout-body").innerHTML =
       'Of the <span class="tally">' + total + '</span> consumer plans tracked here, ' +
       '<span class="tally">' + disclosed + '</span> have a usage cap the provider publishes about its own product. ' +
-      '<span class="tally">' + third + '</span> have only a third-party estimate. The rest publish nothing usable — ' +
-      'Anthropic and Google give multipliers ("5× more usage than Pro", "4× higher than standard limits") ' +
-      'against a base they never state, and both now meter by compute, which varies per prompt. ' +
-      'Google reserves the right to change limits "without notice."';
+      '<span class="tally">' + third + '</span> have only a third-party estimate. ' +
+      'The rest are sold on multipliers — "5× more usage than Pro", "20× higher usage than Plus", ' +
+      '"4× higher than standard limits" — against a base nobody states. The one published cap is ' +
+      'identical on ChatGPT Go at $8 and Plus at $20, so it doesn\'t even separate the tiers you\'re ' +
+      'choosing between. Google reserves the right to change limits "without notice."';
   }
 
   // ---- Wire up ----

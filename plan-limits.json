@@ -9,7 +9,7 @@
       "third_party": "Measured or reported by someone other than the provider. Treat as indicative.",
       "not_disclosed": "The provider does not publish a usable figure."
     },
-    "finding": "As of July 2026, only one absolute consumer usage cap is published by any major provider about its own product: OpenAI's 160 GPT-5.5 Instant messages per 3 hours on Plus and Go. Anthropic and Google publish relative multipliers (5x/20x, 2x/4x/20x) against a base they never quantify, and both have moved to compute-based metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' Disclosure gets worse as price rises.",
+    "finding": "As of July 2026, exactly one absolute consumer usage cap is published by any major provider about its own product: OpenAI's 160 GPT-5.5 Instant messages per 3 hours — and it is identical on Go at $8 and Plus at $20, so it does not distinguish the tiers you are choosing between. Every other tier is sold on a relative multiplier against a base nobody quantifies: OpenAI's Pro tiers as '5x/20x higher usage than Plus' (what it multiplies is unstated), Anthropic's Max as '5x/20x more usage than Pro', Google's tiers as '2x/4x/20x higher than standard limits'. Anthropic, Google and OpenAI have all moved to metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' The pattern is consistent: disclosure gets worse as the price goes up.",
     "archetypes": {
       "comment": "Tokens per message exchange. 'input' covers re-sent conversation history plus the platform's hidden system prompt; 'output' is the reply. THESE ARE ASSUMPTIONS, not measurements — round numbers chosen to be legible, not derived from data. They are the largest single lever on every figure on the page. The intended fix is to anchor them to real EcoMeter usage exports (per-platform input/output tokens per message, which the extension already tracks per model); until that lands, do not describe them as measured. For scale, EcoMeter's own modelled system-prompt overhead alone is 1,500-8,000 tokens per turn depending on platform (PLATFORM_OVERHEAD_TOKENS in extension/sidepanel.js), which is itself an estimate.",
       "light":    { "input": 1500,  "output": 300,  "label": "Short exchanges, little history" },
@@ -70,18 +70,18 @@
     },
     {
       "p": "openai", "m": "ChatGPT Pro",
-      "provenance": "derived",
-      "multiplier": { "of": "ChatGPT Plus", "x": 5 },
-      "stated": "'Pro $100 unlocks 5x higher usage than Plus.'",
+      "provenance": "not_disclosed",
+      "multiplier": { "of": "ChatGPT Plus", "x": 5, "scope_unclear": true },
+      "stated": "'Pro $100 unlocks 5x higher usage than Plus.' What it multiplies is not stated: the one published absolute cap (160 GPT-5.5 Instant messages / 3h) is identical on Go at $8 and Plus at $20, so it is plainly not the figure that separates tiers. OpenAI adds only that 'some models have separate usage allowances' — those allowances are never published.",
       "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.5" },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
       "as_of": "2026-07-28"
     },
     {
       "p": "openai", "m": "ChatGPT Pro (20×)",
-      "provenance": "derived",
-      "multiplier": { "of": "ChatGPT Plus", "x": 20 },
-      "stated": "'Pro $200 unlocks 20x usage than Plus.'",
+      "provenance": "not_disclosed",
+      "multiplier": { "of": "ChatGPT Plus", "x": 20, "scope_unclear": true },
+      "stated": "'Pro $200 unlocks 20x usage than Plus.' What it multiplies is not stated — see the $100 tier. Multiplying the published Instant cap by 20 would imply 25,600 messages a day, which is not a claim OpenAI makes and not one worth repeating.",
       "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.5" },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
       "as_of": "2026-07-28"
