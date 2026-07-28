@@ -67,7 +67,7 @@
 
 <div class="header">
   <h1>EcoMeter AI — Privacy Policy</h1>
-  <div class="meta">Effective date: May 31, 2026</div>
+  <div class="meta">Effective date: July 27, 2026</div>
 </div>
 
 <h2>Single Purpose</h2>
@@ -153,10 +153,28 @@ is <strong>off by default</strong>. When you turn it on, the extension keeps a r
 tally — on your device only, in <code>chrome.storage.local</code> — of how many
 messages and tokens you use per platform and per model. It stores
 <strong>counts only; no message content is kept</strong> (text is used transiently to
-count tokens, then discarded). This data is never transmitted. You export it yourself
-as a file to upload to the Auditor, and you can erase it at any time with "Clear
-history", by turning the switch off, or via "remove key" (logout). Leave the switch
-off and none of this is recorded.</p>
+count tokens, then discarded). This data is never transmitted.</p>
+
+<p><strong>How the tally reaches the Subscription Auditor — no upload is involved.</strong>
+The connection between the extension and the Auditor is a file you move yourself, deliberately,
+in three steps. Nothing happens automatically and nothing is sent anywhere:</p>
+<ol>
+  <li>You press <strong>&ldquo;⤓ Export for Auditor&rdquo;</strong>. The extension writes a small
+      JSON file (<code>ecometer-usage.json</code>) to your own downloads folder. This is a local
+      file save — no network request is made, and the file is not sent to Legerly or anyone else.</li>
+  <li>You choose to open the Subscription Auditor
+      (<a href="https://legerlyai.com/audit.html" target="_blank" rel="noopener">legerlyai.com/audit.html</a>)
+      and select that file with the &ldquo;Connect usage&rdquo; control.</li>
+  <li>The Auditor reads the file <strong>inside your own browser</strong>, using the browser's
+      built-in <code>FileReader</code>, to pre-fill the questionnaire. The file is
+      <strong>never transmitted to a server</strong> — not to Legerly, not to anyone. The Auditor
+      is a static page with no backend that could receive it.</li>
+</ol>
+<p>The exported file contains counts only — messages, tokens, models used, and days tracked.
+It contains <strong>no message content</strong>. You can inspect it in any text editor before
+you use it, and you can erase the underlying tally at any time with &ldquo;Clear history&rdquo;,
+by turning the switch off, or via &ldquo;remove key&rdquo; (logout). Leave the switch off and
+none of this is recorded in the first place.</p>
 
 <p><strong>Active tab identity (not stored, not transmitted).</strong>
 When the user clicks the extension icon, the browser grants temporary access to
@@ -171,14 +189,24 @@ The tab URL is not read, stored, or transmitted by the extension.</p>
   the extension package; no content is loaded from external servers at runtime.
 </p>
 <p>
-  When an API key is provided, the only external connection the extension makes
-  is to <strong>Anthropic's token-counting API</strong>
-  (<code>api.anthropic.com/v1/messages/count_tokens</code>), using your own key.
-  Only the text of <strong>your own messages</strong> is sent — AI responses are
-  counted locally and never transmitted. This request is governed by
-  <a href="https://www.anthropic.com/legal/privacy" target="_blank">Anthropic's
-  Privacy Policy</a>. No other external connections are made under any
-  circumstances.
+  When you provide an API key, the extension makes external connections to
+  <strong>that provider's official token-counting endpoint only</strong>, using your own key:
+</p>
+<ul>
+  <li><strong>Anthropic</strong> (<code>api.anthropic.com/v1/messages/count_tokens</code>) —
+      only when you have entered an Anthropic API key, and only for Claude conversations.
+      Governed by <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener">Anthropic's Privacy Policy</a>.</li>
+  <li><strong>Google</strong> (<code>generativelanguage.googleapis.com/v1beta/models/&hellip;:countTokens</code>) —
+      only when you have entered a Google AI API key, and only for Gemini conversations.
+      Governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+</ul>
+<p>
+  Each key is independent: entering one does not enable the other, and neither is
+  required to use the extension. In both cases only the text of
+  <strong>your own messages</strong> is sent — AI responses are counted locally and
+  never transmitted, and no message content is stored or sent anywhere else.
+  Beyond these two endpoints, and only when the corresponding key is present, the
+  extension makes no external connections under any circumstances.
 </p>
 
 <h2>Permission Justifications</h2>
@@ -194,9 +222,10 @@ The tab URL is not read, stored, or transmitted by the extension.</p>
   <tbody>
     <tr>
       <td>storage</td>
-      <td>Stores your model preference in <code>chrome.storage.local</code>
-          and your optional API key in <code>chrome.storage.session</code>,
-          both on your device only. No data is synced remotely.</td>
+      <td>Stores your model preference, setup state, and (if you opt in) your
+          local usage tally in <code>chrome.storage.local</code>, and any optional
+          API keys in <code>chrome.storage.session</code> — all on your device
+          only. No data is synced remotely.</td>
     </tr>
     <tr>
       <td>sidePanel</td>
@@ -224,11 +253,22 @@ The tab URL is not read, stored, or transmitted by the extension.</p>
       <td>Host: api.anthropic.com</td>
       <td>Required only when the user provides an Anthropic API key. Used
           solely to call Anthropic's official token-counting API on the
-          user's behalf. No request is made without an explicit API key.</td>
+          user's behalf, so that Claude token counts are exact rather than
+          estimated. Only the user's own message text is sent. No request is
+          made without an explicit API key.</td>
+    </tr>
+    <tr>
+      <td>Host: generativelanguage.googleapis.com</td>
+      <td>Required only when the user provides a Google AI API key, which is
+          optional and off by default. Used solely to call Google's official
+          <code>countTokens</code> endpoint on the user's behalf, so that Gemini
+          token counts are exact rather than estimated. Only the user's own
+          message text is sent. No request is made without an explicit API key,
+          and this permission is unused for every other platform.</td>
     </tr>
     <tr>
       <td>Host: claude.ai, chatgpt.com, chat.openai.com, gemini.google.com,
-          grok.com, chat.mistral.ai, perplexity.ai,
+          grok.com, chat.mistral.ai, perplexity.ai, www.perplexity.ai,
           copilot.microsoft.com, poe.com, chat.deepseek.com</td>
       <td>Required to inject the content script that reads visible
           conversation text on each supported AI platform. Access is limited

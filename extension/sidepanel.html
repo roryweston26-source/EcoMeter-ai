@@ -370,6 +370,29 @@
     }
     .usage-panel[open] summary::after { content: '▾ less'; }
     .usage-panel a { color: var(--green); }
+    /* Divider + sub-heading for the merged Auditor panel */
+    .panel-rule {
+      height: 1px; margin: 11px 0 9px;
+      background: rgba(76,175,130,0.18);
+    }
+    .panel-subhead {
+      color: var(--green); font-weight: 700; font-size: 10px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .panel-subhead span {
+      color: var(--muted); font-weight: 400; font-size: 8px;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .key-row { display: flex; gap: 6px; margin-top: 7px; }
+    .key-row input {
+      flex: 1; min-width: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 7px 9px;
+      font-size: 11px;
+    }
     .usage-toggle {
       display: flex; align-items: center; gap: 7px;
       margin-top: 8px; cursor: pointer; color: var(--text); font-size: 10px;
@@ -456,14 +479,23 @@
   </div>
 
   <div class="setup-step">
-    <div class="step-num">Option 2 — Anthropic API Key</div>
+    <div class="step-num">Option 2 — Exact token counts</div>
     <div class="step-text">
-      Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> for exact token counts on Claude. Leave blank and hit Start if you just want estimates.
+      Add a provider key to count tokens with that provider's <b>own tokenizer</b> instead of a local estimate. Add either, both, or neither — each only affects its own platform, and everything else keeps using estimates. When a key is set, your <b>own messages</b> are sent to that provider's token-count endpoint — the same text you're already sending to that AI. Nothing else leaves your device.
     </div>
-    <label>Anthropic API Key</label>
+
+    <label>Anthropic API Key <span style="opacity:.6;font-weight:400;">— exact counts on Claude</span></label>
     <input type="password" id="api-key-input" placeholder="sk-ant-api03-…" />
+    <div class="step-text" style="margin:3px 0 0;">Free key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a></div>
+
+    <label style="margin-top:9px;">Google AI API Key <span style="opacity:.6;font-weight:400;">— exact counts on Gemini</span></label>
+    <input type="password" id="setup-google-key-input" placeholder="AIza…" />
+    <div class="step-text" style="margin:3px 0 0;">Free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></div>
+
+    <div class="step-text" style="margin:7px 0 0;opacity:.7;">Other platforms (ChatGPT, Grok, Mistral, DeepSeek, Perplexity) don't publish a token-count endpoint, so those stay on local estimates whatever you enter here.</div>
+
     <div class="error-msg" id="error-msg"></div>
-    <button class="btn-primary" id="save-btn" style="margin-top:10px;background:linear-gradient(135deg,#4caf82,#38c9a0);">Connect Key &amp; Start</button>
+    <button class="btn-primary" id="save-btn" style="margin-top:10px;background:linear-gradient(135deg,#4caf82,#38c9a0);">Connect &amp; Start</button>
   </div>
 </div>
 
@@ -477,6 +509,7 @@
     <div class="platform-row">
       <div class="platform-badge" id="platform-badge">—</div>
       <div class="platform-divider"></div>
+      <div class="logout-link" id="setup-link" style="margin-right:10px;">setup</div>
       <div class="logout-link" id="logout-btn">remove key</div>
     </div>
 
@@ -519,9 +552,11 @@
     </div>
   </div>
 
-  <!-- Usage tracking opt-in (feeds the Subscription Auditor) -->
+  <!-- One Auditor section: the usage tally and the optional provider keys both
+       exist for the same reason — making the exported numbers real. -->
   <details class="usage-panel" id="usage-panel">
-    <summary>📊 Usage tracking</summary>
+    <summary>📊 Usage &amp; accuracy</summary>
+
     <label class="usage-toggle">
       <input type="checkbox" id="usage-optin">
       <span>Track my usage on this device</span>
@@ -537,19 +572,34 @@
       <button class="ctrl-btn" id="export-btn">⤓ Export for Auditor</button>
       <button class="ctrl-btn danger" id="clear-usage-btn">🗑 Clear history</button>
     </div>
-  </details>
 
-  <!-- Optional: exact token counts via a provider's own tokenizer API (opt-in, off by default) -->
-  <details class="usage-panel" id="exact-panel">
-    <summary>🎯 Exact token counts</summary>
-    <p style="margin:6px 0 0;">Optional. With a provider API key, EcoMeter counts tokens using that provider's <b>own tokenizer</b> instead of a local estimate. <b>Off by default.</b> When on, your <b>prompts are sent to that provider's token-count endpoint</b> (your messages only) — the same content you're already sending to that AI.</p>
-    <p style="margin:6px 0 0;">Gemini — get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Claude uses the Anthropic key from setup.</p>
-    <div style="display:flex;gap:6px;margin-top:7px;">
-      <input type="password" id="google-key-input" placeholder="Google AI API key (Gemini)" style="flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 9px;font-size:11px;" />
+    <div class="panel-rule"></div>
+
+    <div class="panel-subhead">🎯 Exact token counts <span>optional</span></div>
+    <p class="usage-note">
+      With a provider API key, EcoMeter counts tokens using that provider's <b>own tokenizer</b>
+      instead of a local estimate — so what you export is measured rather than modelled.
+      <b>Off by default.</b> When on, <b>your own messages</b> are sent to that provider's
+      token-count endpoint — the same text you're already sending to that AI. Nothing else leaves your device.
+    </p>
+    <p class="usage-note" style="opacity:.72;">
+      Keys are kept for this browser session only and are cleared when Chrome or the extension
+      restarts — re-enter them right here, no need to start over.
+      Free keys: <a href="https://console.anthropic.com" target="_blank" rel="noopener">Anthropic ↗</a> ·
+      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI ↗</a>
+    </p>
+
+    <div class="key-row">
+      <input type="password" id="anthropic-key-input" placeholder="Anthropic key (Claude) — sk-ant-…" />
+      <button class="ctrl-btn" id="anthropic-key-save">Save</button>
+      <button class="ctrl-btn danger" id="anthropic-key-clear">Clear</button>
+    </div>
+    <div class="key-row">
+      <input type="password" id="google-key-input" placeholder="Google AI key (Gemini) — AIza…" />
       <button class="ctrl-btn" id="google-key-save">Save</button>
       <button class="ctrl-btn danger" id="google-key-clear">Clear</button>
     </div>
-    <div class="footer-status" id="exact-status" style="margin-top:5px;"></div>
+    <div class="footer-status" id="exact-status" style="margin-top:6px;"></div>
   </details>
 
   <!-- Disclaimer — collapsible -->
@@ -557,8 +607,8 @@
     <summary>⚠️ These are estimates, not billing receipts</summary>
     <div class="detail-text">
       <strong style="color:var(--text)">What's accurate:</strong> token counts (±10–15% English prose), per-token pricing from official sources.<br><br>
-      <strong style="color:var(--text)">What's estimated:</strong> context replay cost (assumes full history resent each turn), system prompt overhead (2–8k tokens per platform), reasoning tokens for o1/o3/R1 (highly variable), image tokens (average per platform).<br><br>
-      <strong style="color:var(--text)">What's missing:</strong> caching discounts (may overestimate), file/PDF attachments, tool use tokens.<br><br>
+      <strong style="color:var(--text)">What's estimated:</strong> context replay cost (assumes full history resent each turn), system prompt overhead (2–8k tokens per platform, counted once per turn since it's re-sent every call), reasoning tokens for o1/o3/R1 (highly variable), image tokens (average per platform).<br><br>
+      <strong style="color:var(--text)">What's missing:</strong> prompt caching — cached input bills at roughly a tenth of the base rate, and long conversations are exactly where providers cache most, so <b>we overestimate, and the gap widens as a chat gets longer</b>. We don't model it because no provider discloses per-conversation cache-hit rates, and a guessed number would look precise without being true. Also missing: file/PDF attachments, tool use tokens.<br><br>
       <strong style="color:var(--text)">💧 Water:</strong> Conservative = company-reported on-site cooling (Google: 0.26ml/query). Full-scope = includes electricity generation water (Li et al. 2023, UC Riverside) — ~40× higher. Varies 10–25× by location.
       <a href="https://arxiv.org/abs/2304.03271" target="_blank" style="color:var(--green)">Source ↗</a>
     </div>

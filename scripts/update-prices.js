@@ -85,12 +85,18 @@ async function fetchAnthropic() {
   const prices = {
     'claude-haiku-4-5-20251001': { input: perM(1.00),  output: perM(5.00)  },
     'claude-haiku':              { input: perM(1.00),  output: perM(5.00)  },
+    // Sonnet 5 is on Anthropic's introductory rate ($2/$10) through 2026-08-31;
+    // it reverts to $3/$15 after that — re-check this line then.
+    'claude-sonnet-5':           { input: perM(2.00),  output: perM(10.00) },
     'claude-sonnet-4-6':         { input: perM(3.00),  output: perM(15.00) },
     'claude-sonnet':             { input: perM(3.00),  output: perM(15.00) },
-    'claude-opus-4-6':           { input: perM(5.00),  output: perM(25.00) },
-    'claude-opus-4-7':           { input: perM(5.00),  output: perM(25.00) },
+    'claude-opus-5':             { input: perM(5.00),  output: perM(25.00) },
     'claude-opus-4-8':           { input: perM(5.00),  output: perM(25.00) },
+    'claude-opus-4-7':           { input: perM(5.00),  output: perM(25.00) },
+    'claude-opus-4-6':           { input: perM(5.00),  output: perM(25.00) },
     'claude-opus':               { input: perM(5.00),  output: perM(25.00) },
+    'claude-fable-5':            { input: perM(10.00), output: perM(50.00) },
+    'claude-mythos-5':           { input: perM(10.00), output: perM(50.00) },
   };
 
   try {

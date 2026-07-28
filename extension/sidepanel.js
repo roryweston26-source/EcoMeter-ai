@@ -31,6 +31,11 @@ const usageOptin    = document.getElementById('usage-optin');
 const usageActions  = document.getElementById('usage-actions');
 const clearUsageBtn = document.getElementById('clear-usage-btn');
 const footerStatus  = document.getElementById('footer-status');
+const setupGoogleKeyInput   = document.getElementById('setup-google-key-input');
+const setupLink             = document.getElementById('setup-link');
+const anthropicKeyInput     = document.getElementById('anthropic-key-input');
+const anthropicKeySave      = document.getElementById('anthropic-key-save');
+const anthropicKeyClear     = document.getElementById('anthropic-key-clear');
 const googleKeyInput = document.getElementById('google-key-input');
 const googleKeySave  = document.getElementById('google-key-save');
 const googleKeyClear = document.getElementById('google-key-clear');
@@ -61,6 +66,7 @@ const FALLBACK_API = {
   anthropic: {
     'claude-sonnet-5':           { input: 2.00/1e6, output: 10.00/1e6 },
     'claude-sonnet-4-6':         { input: 3.00/1e6, output: 15.00/1e6 },
+    'claude-opus-5':             { input: 5.00/1e6, output: 25.00/1e6 },
     'claude-haiku-4-5-20251001': { input: 1.00/1e6, output:  5.00/1e6 },
   },
   openai: {
@@ -79,6 +85,7 @@ const MODEL_CATALOG = [
   { label:'Claude', models:[
     { key:'claude-sonnet-5', name:'Claude Sonnet 5' },
     { key:'claude-sonnet-4-6', name:'Claude Sonnet 4.6' },
+    { key:'claude-opus-5', name:'Claude Opus 5' },
     { key:'claude-opus-4-8', name:'Claude Opus 4.8' },
     { key:'claude-haiku-4-5-20251001', name:'Claude Haiku 4.5' },
     { key:'claude-fable-5', name:'Claude Fable 5' },
@@ -641,7 +648,7 @@ async function countTokens(text, role, modelKey) {
 
   // Anthropic token-counting API — exact for Claude, requires API key
   if (modelKey && modelKey.toLowerCase().includes('claude') && apiKey && role === 'user') {
-    const api = await countTokensAnthropicAPI(text);
+    const api = await countTokensAnthropicAPI(text, modelKey);
     if (api !== null) return { count: api, method: 'api-visible', err: methodErr('api-visible') };
   }
 
@@ -768,7 +775,15 @@ function estimateConversationReplay(messages) {
 }
 
 // ── Anthropic token counting API ──────────────────────────
-async function countTokensAnthropicAPI(text) {
+// Counts are tokenizer-specific, and Claude models do NOT all share one: Opus 4.7
+// introduced a new tokenizer (also used by Opus 4.8 / Opus 5 / Sonnet 5 / Fable 5 /
+// Mythos 5) that yields materially more tokens for the same text than the older
+// Haiku 4.5 / Sonnet 4.6 family. So count against the model the user actually
+// selected — counting everything against Haiku undercounts frontier models while
+// labelling the result "exact", which is exactly the kind of false precision we
+// refuse to ship. If the id isn't valid for this key, the call fails and we fall
+// through to the cl100k proxy, correctly labelled as an estimate.
+async function countTokensAnthropicAPI(text, modelKey) {
   if (!apiKey) return null;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages/count_tokens', {
@@ -780,7 +795,7 @@ async function countTokensAnthropicAPI(text) {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: modelKey || 'claude-haiku-4-5-20251001',
         messages: [{ role: 'user', content: text }],
       }),
     });
@@ -875,8 +890,13 @@ function renderSummary() {
     const replayTokens = estimateConversationReplay(msgData.filter(m => m.counted));
     const replayCost   = replayTokens * p.input;
 
-    const overhead     = PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000;
-    const overheadCost = overhead * p.input;
+    // The hidden system prompt / tool schemas are re-sent on EVERY API call, not
+    // once per conversation — so overhead scales with the number of user turns.
+    // (Charging it once, as this did previously, undercounts more the longer the
+    // conversation runs.)
+    const turns        = msgData.filter(m => m.counted && m.role === 'user').length;
+    const overheadTok  = (PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000) * Math.max(turns, 1);
+    const overheadCost = overheadTok * p.input;
 
     const trueCost    = adjustedCost + imgCost + replayCost + overheadCost;
     const visibleCost = adjustedCost + imgCost;
@@ -1257,12 +1277,51 @@ if (usageOptin)    usageOptin.addEventListener('change', () => setUsageTracking(
 if (clearUsageBtn) clearUsageBtn.addEventListener('click', clearUsageHistory);
 
 // ── Optional exact-count keys (opt-in provider tokenizer APIs) ─────────────
+// Reports both providers independently — each key only affects its own platform,
+// so a single combined "on/off" would misrepresent the state.
 function updateExactStatus() {
   if (!exactStatus) return;
-  exactStatus.textContent = googleApiKey
-    ? '✓ Gemini — exact counts on (via Google API)'
-    : 'Gemini — using local estimate';
+  const claude = apiKey       ? '✓ Claude — exact (Anthropic API)' : 'Claude — local estimate';
+  const gemini = googleApiKey ? '✓ Gemini — exact (Google API)'    : 'Gemini — local estimate';
+  exactStatus.textContent = claude + '  ·  ' + gemini;
 }
+
+// Non-destructive route back to the setup screen. Deliberately NOT the same as
+// "remove key" (logoutBtn), which is a full forget-me: it wipes usage history,
+// model choice and setup state. Adding a key should never cost you your data.
+if (setupLink) setupLink.addEventListener('click', () => {
+  errorMsg.textContent = '';
+  apiKeyInput.value = '';
+  if (setupGoogleKeyInput) setupGoogleKeyInput.value = '';
+  trackerScreen.style.display = 'none';
+  setupScreen.style.display   = 'flex';
+});
+
+if (anthropicKeySave) anthropicKeySave.addEventListener('click', async () => {
+  const k = ((anthropicKeyInput && anthropicKeyInput.value) || '').trim();
+  if (!k) { exactStatus.textContent = 'Enter an Anthropic key (sk-ant-…) first.'; return; }
+  if (!k.startsWith('sk-ant-')) { exactStatus.textContent = 'Anthropic key should start with sk-ant-…'; return; }
+  anthropicKeySave.disabled = true;
+  const prev = anthropicKeySave.textContent;
+  anthropicKeySave.textContent = 'Verifying…';
+  const ok = await verifyKey(k);
+  anthropicKeySave.textContent = prev;
+  anthropicKeySave.disabled = false;
+  if (!ok) { exactStatus.textContent = '✗ Anthropic key rejected — still using local estimates.'; return; }
+  apiKey = k;
+  await chrome.storage.session.set({ apiKey: k });
+  if (anthropicKeyInput) anthropicKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();   // re-count the visible messages with the new method
+});
+
+if (anthropicKeyClear) anthropicKeyClear.addEventListener('click', async () => {
+  apiKey = null;
+  await chrome.storage.session.remove('apiKey');
+  if (anthropicKeyInput) anthropicKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();
+});
 if (googleKeySave) googleKeySave.addEventListener('click', async () => {
   const k = ((googleKeyInput && googleKeyInput.value) || '').trim();
   if (k) { googleApiKey = k; await chrome.storage.session.set({ googleApiKey: k }); }
@@ -1292,33 +1351,48 @@ modelMain.addEventListener('change', async () => {
 });
 
 // ── Save API key ──────────────────────────────────────────
+// Either key alone is enough — they're independent, and each only enables exact
+// counts on its own platform. Both blank is what the Skip button is for.
 saveBtn.addEventListener('click', async () => {
-  const key = apiKeyInput.value.trim();
+  const key   = apiKeyInput.value.trim();
+  const gKey  = ((setupGoogleKeyInput && setupGoogleKeyInput.value) || '').trim();
   errorMsg.textContent = '';
 
-  if (!key) {
-    errorMsg.textContent = 'Please enter a key, or use the Skip button above.';
+  if (!key && !gKey) {
+    errorMsg.textContent = 'Enter at least one key, or use Skip above for estimates.';
     return;
   }
-  if (!key.startsWith('sk-ant-')) {
-    errorMsg.textContent = 'Key should start with sk-ant-…';
+  if (key && !key.startsWith('sk-ant-')) {
+    errorMsg.textContent = 'Anthropic key should start with sk-ant-…';
     return;
   }
 
   saveBtn.textContent = 'Verifying…';
   saveBtn.disabled    = true;
 
-  const ok = await verifyKey(key);
-  saveBtn.textContent = 'Connect Key & Start';
+  // Only the Anthropic key has a cheap verify endpoint. A bad Google key can't be
+  // checked up front — it fails at count time and silently falls back to the local
+  // estimate, which stays correctly labelled as an estimate.
+  const ok = key ? await verifyKey(key) : true;
+
+  saveBtn.textContent = 'Connect & Start';
   saveBtn.disabled    = false;
 
   if (!ok) {
-    errorMsg.textContent = 'Key invalid — check it, or use Skip above for estimates.';
+    errorMsg.textContent = 'Anthropic key invalid — check it, or use Skip above for estimates.';
     return;
   }
 
-  apiKey = key;
-  await chrome.storage.session.set({ apiKey: key });
+  if (key) {
+    apiKey = key;
+    await chrome.storage.session.set({ apiKey: key });
+  }
+  if (gKey) {
+    googleApiKey = gKey;
+    await chrome.storage.session.set({ googleApiKey: gKey });
+  }
+  if (setupGoogleKeyInput) setupGoogleKeyInput.value = '';
+  updateExactStatus();
   showTracker();
 });
 
