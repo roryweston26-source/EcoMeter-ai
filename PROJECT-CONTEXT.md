@@ -1,24 +1,23 @@
 # Legerly — Project Context
 
-_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-07-13._
+_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-07-28._
 
 > Read **CLAUDE.md** first (mission, principles, voice — auto-loaded). This is the deep dive.
 
 ---
 
-## 0. Working state (read this first) — as of 2026-07-13
+## 0. Working state (read this first) — as of 2026-07-28
 
-**Everything from this run is now merged to `main`** (2026-07-13):
-- **AI Transparency Index** — full env-impact scoring, 12 sites / 7 providers (§7).
-- **EcoMeter tokenizer accuracy** — recalibration, GPT-5 routing fix, error bands, **opt-in Google `countTokens`**, exact-local scaffold, publish-time asset staging (§4).
-- **Subscription Auditor — per-model cost** + generalised "any tier + API" downgrade (§6).
-- **EcoMeter export — `model_usage[]`** per-model token split (§6).
-- **`validate-site` CI gate** (§8).
-- Everything from the prior session (workflow fix, `prices.json` restructure, AI Clock, Subscription Auditor base, EcoMeter usage export, mission docs / CLAUDE.md).
+**Merged to `main` in this run** (PR #18, 2026-07-28):
+- **Claude Opus 5** added everywhere ($5/$25 per 1M) — `prices.json`, `water.json`, the EcoMeter picker, `pricing.html`, Auditor plans + `ADVANCED`/`LABELS`, `update-prices.js`. Anthropic's Auditor "top model" is now Opus 5.
+- **Two token-accuracy bugs fixed** (§4) — the Anthropic count API was called with a hardcoded Haiku model id, and system-prompt overhead was charged once per conversation instead of per turn.
+- **Auditor panel merged into one section** (§6) with both API-key fields inline, plus a non-destructive `setup` link.
+- **Store docs rewritten** (§10) — the privacy policy contradicted itself on network calls and had no justification for the Google host permission.
+- **Data gaps closed** — `water.json` was silently missing 9 models; `update-prices.js` didn't know about Sonnet 5 / Fable 5 / Mythos 5.
 
-Leftover branch to delete: `docs/project-context-2026-07` (a superseded doc-rewrite attempt).
+**Ship status: v6.12 submitted to the Chrome Web Store 2026-07-28, awaiting review.** This is the first publish since v6.9, so it carries everything from the previous run too (tokenizer recalibration, opt-in Google `countTokens`, `model_usage[]` export). It adds the **`generativelanguage.googleapis.com` host permission**, so expect **permission re-review and a user-facing permission notice** — slower than a normal update. Website changes deployed on merge.
 
-**Ship status:** extension is **v6.10** on `main`; the tokenizer + Google-API + `model_usage` work reaches users only on the **next store publish** (§10) — which also surfaces a **new host permission** (`generativelanguage.googleapis.com`) for re-review. Website changes (Transparency Index, Auditor per-model cost) deployed on merge. **Before publishing the extension, smoke-test in Chrome** (the accuracy line, the Google-key path, and that exact-local stays off with no assets) — those weren't runtime-testable outside Chrome.
+**If the review comes back with questions**, the paste-ready answers are already written: `extension/STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure) and `extension/STORE-LISTING.md` (description + pre-upload checklist). Data-usage disclosure was submitted as **"Website content" only** — reasoning recorded in `STORE-SUBMISSION.md` §3.
 
 ---
 
@@ -53,7 +52,9 @@ CNAME                     legerlyai.com
 PROJECT-CONTEXT.md        (this file)
 
 extension/                The Chrome extension (load THIS folder unpacked)
-  manifest.json             MV3, version 6.10  (host perms incl. generativelanguage.googleapis.com)
+  manifest.json             MV3, version 6.12  (host perms incl. generativelanguage.googleapis.com)
+  STORE-LISTING.md          Paste-ready store description + pre-upload checklist
+  STORE-SUBMISSION.md       Paste-ready privacy practices + per-permission justifications
   sidepanel.html/.js        The side-panel UI + all logic
   content.js                Scrapes visible chat text per platform
   background.js             Service worker (message routing)
@@ -116,18 +117,28 @@ Counting is a priority chain: **opt-in provider API → exact-local tokenizer �
 - **2026 recalibration (measured):** char-ratio & SP estimators were tuned against real tiktoken on a mixed corpus — **MAE ~32%/+31% bias → ~8%/~0 bias**. Also fixed a routing bug: **GPT-5.x fell through to char-ratio** (~30% overcount on ChatGPT/Copilot) → now o200k.
 - **Exact-local (Phase 3, scaffolded, OFF until verified):** `scripts/fetch-tokenizers.js` stages real assets; `tokenizer_hf.js` is a self-verifying byte-BPE encoder (DeepSeek) that registers via `registerExactTokenizer`/`exactLocalCount` **only if it reproduces `tokenizers/reference.json` counts exactly** — so it can never present an unverified count as exact. `publish.yml` bundles the (git-ignored, multi-MB) assets at build time **only when `reference.json` is committed** (optional `HF_TOKEN` secret for license-gated Gemma/Mistral). Tekken/Gemma are documented drop-in points. See `extension/tokenizers/README.md`. Also: system-prompt overhead, reasoning-token multipliers (o3/R1), and image tokens are modeled separately — "exact" is about *text*, billing overhead is on top.
 
+**Two accuracy bugs fixed 2026-07-28 — both were mislabelling, which is the failure mode this project least tolerates:**
+- **`countTokensAnthropicAPI()` ignored the selected model.** Every Claude request went to `count_tokens` hardcoded as `claude-haiku-4-5-20251001`, and the result was still labelled "✓ exact tokenizer". Claude models do **not** share a tokenizer — Opus 4.7 introduced a new one now used by Opus 4.8 / Opus 5 / Sonnet 5 / Fable 5 / Mythos 5 — so frontier-model counts were wrong *while presented as certain*. Now passes `modelKey` through; an id the API rejects falls back to the cl100k proxy and is correctly labelled an estimate. **If you add a model to the picker, its key must be a valid Anthropic API model id** or exact counts silently degrade for it.
+- **System-prompt overhead was charged once per conversation**, not once per turn. It is re-sent on every API call, so the undercount grew with length. Now `overhead × user-turn count`. Turn count uses `m.role === 'user'`, the same discriminator as the input-token filter — if the scraper's role strings ever change, this silently returns 0 and the fix becomes a no-op.
+
+**Still not modelled: prompt caching.** Cached input bills ~0.1×, and long conversations are where providers cache most — so EcoMeter **overestimates, and the gap widens with length**. Deliberately not modelled: no provider publishes per-conversation hit rates, and a guessed number would look precise without being true. Disclosed in the panel disclaimer with its direction and the reason.
+
 ---
 
 ## 5. Shared & site data files
 
 ### `extension/prices.json` — single source of truth
 ```jsonc
-{ "_meta": { "last_updated", "version", "source" },
+{ "_meta": { "last_updated", "version", "source", "caveats"? },
   "api":   { "<provider>": { "<model-key>": { "input": <$/token>, "output": <$/token> } } },
   "subscriptions": [ { "p", "m", "price", "note"? } ],
   "free_tiers":    { "<provider>": { "label", "note", "models": [ { "key", "name", "note"? } ] } } }
 ```
 Consumed by the extension (`api` → cost), `pricing.html` (all sections), `audit.html` (prices + free-tier access).
+
+- **`_meta.caveats`** (added 2026-07-28) records per-model pricing caveats a bare number can't carry. Currently holds the **Sonnet 5 introductory rate: $2/$10 is promotional and reverts to $3/$15 after 2026-08-31** — it was previously listed as if permanent. Surfaced on `pricing.html` as a note; also flagged in a comment in `update-prices.js`. **Re-check that line after 2026-08-31.**
+- `update-prices.js` **merges** into the existing file (it mutates `api[provider][model]` and only rewrites `_meta.last_updated`), so hand-written `_meta` keys and models absent from its hardcoded table survive a run. Verified by executing it against a backup — zero diff.
+- **A model must exist in BOTH `prices.json` and `water.json`.** A key missing from `water.json` renders no water figure at all, silently — that gap had accumulated for 9 models before 2026-07-28. Cross-check with: every key in the extension's `MODEL_CATALOG` resolves in both files.
 
 ### `clock.json` — AI Clock model
 `{ _meta:{anchor,last_rolled}, scenarios:{conservative|moderate|high}, rates }`. **Re-anchored 2026-07-12 (Q3).** Two-force projection (volume up, per-unit cost down); re-anchored quarterly by `roll-clock.yml` (opens a PR for a human to drop in fresh disclosures).
@@ -171,6 +182,12 @@ Consumed by the extension (`api` → cost), `pricing.html` (all sections), `audi
 ```
 Volume is averaged **per active day**, **lifetime**. The optional **`model_usage[]`** (per-model token split) is what lets the Auditor price each model at its own rate; the extension already tracks per-model internally, so it's an export-format addition. Without it the Auditor prices conservatively (all tokens at the priciest used model's rate) — never a false downgrade.
 
+**Panel UI (reworked 2026-07-28).** The usage tally and the exact-count keys used to be two separate `<details>` panels; they're now **one "📊 Usage & accuracy" panel**, since both exist for the same reason — making the exported numbers real. Consequences worth knowing:
+- **Both API-key fields (Anthropic + Google) are inline in that panel**, each with Save/Clear and independent status. Previously the Anthropic key could only be entered on the setup screen.
+- **`remove key` (`logoutBtn`) is a full forget-me** — it wipes usage history, model choice, setup state and session storage. It is *not* a way to re-enter a key. The new **`setup` link** beside it returns to the welcome screen non-destructively; use that.
+- **Keys live in `chrome.storage.session`, `setupDone` in `chrome.storage.local`.** So after an extension reload or browser restart the keys are gone but setup is still "done" — the user lands on the tracker silently downgraded to estimates. That's deliberate (keys never touch disk), but it *looks* like a bug. The panel copy now explains it and offers inline re-entry.
+- The panel's `summary::after` CSS already appends "for the Subscription Auditor" — don't repeat it in the `<summary>` text.
+
 ---
 
 ## 7. The AI Transparency Index (`transparency-index.html`)
@@ -213,18 +230,28 @@ Grades **how openly** providers let the public see what their AI costs — trans
 - **EcoMeter export — `model_usage[]`:** per-model token split so the Auditor prices exactly.
 - **`validate-site` CI gate.**
 
+### This session (2026-07-28, PR #18)
+- **Claude Opus 5** across catalog, picker, pricing page, Auditor, and the price updater (§0).
+- **Two token-accuracy fixes** — hardcoded count-API model id, and per-conversation vs per-turn overhead (§4).
+- **Merged Auditor panel** with inline key entry + non-destructive `setup` link (§6).
+- **Sonnet 5 intro-rate caveat** + `_meta.caveats` (§5); 9 missing `water.json` models; `update-prices.js` gaps.
+- **Store docs** — `STORE-SUBMISSION.md` created, `STORE-LISTING.md` rewritten, privacy policy corrected (§10).
+- **v6.12 submitted to the store 2026-07-28.**
+
 ---
 
 ## 10. Open items / caveats
 
-- **Extension not yet published** with the tokenizer + Google-API work — needs a store publish (§ below); adds a **new host permission** → re-review + user notice.
+- **v6.12 is awaiting store review** (submitted 2026-07-28) — first publish since v6.9, carrying two runs of work. Adds a **new host permission** → re-review + user notice. Nothing further to do until it clears; if it's rejected, the answers are in `extension/STORE-SUBMISSION.md`.
+- **Sonnet 5's introductory API rate expires 2026-08-31** ($2/$10 → $3/$15). `prices.json`, `pricing.html` and `update-prices.js` all need the new numbers then; the caveat text should be removed at the same time.
 - **Transparency Index:** env-only; pricing/data axes are ⚪. The two-scale design is intentional — don't "reconcile" xAI's 🟡-vs-🔴 by mistake (documented in `_meta.detail.note`). Colo landlords not scored yet; a couple of `power_mw` values are third-party estimates (don't change a badge).
 - **Auditor caveats:** plan caps are approximate (rolling-window/compute-based limits); the per-model API cost skips models not in `prices.json.api` (undercount risk); API ≠ the product (no app/limits/features).
 - **`update-prices.js` is not a real scraper** — hardcoded values, only Anthropic/OpenAI/Google; other providers change by hand.
 - **The AI Clock is a modeled projection** — re-anchor quarterly.
 - **`README.md`** is extension-focused and somewhat stale.
 - **Google Fonts** load from `fonts.googleapis.com` on site pages (the privacy wart) — consider self-hosting.
-- **Stale branch:** `docs/project-context-2026-07` was a superseded doc-rewrite attempt — discard it.
+- **Stale branches to delete:** `docs/project-context-2026-07` (superseded doc-rewrite attempt) and `feat/opus-5-and-auditor-panel` (merged in PR #18).
+- **Prompt caching is unmodelled** in the cost estimate — we overestimate, increasingly with conversation length (§4). Disclosed rather than guessed; revisit only if a provider publishes hit rates.
 
 ---
 
@@ -233,4 +260,40 @@ Grades **how openly** providers let the public see what their AI costs — trans
 - **Website change:** open a PR into `main` (runs `validate-site.yml` once merged) → merge → GitHub Pages redeploys.
 - **Extension change (automatic):** Actions → **Weekly Publish → Run workflow** (a manual run force-builds even without a price change) → uploads a draft + opens an issue → click **Publish** in the [dashboard](https://chrome.google.com/webstore/devconsole). Reactive versioning bumps `6.10` only if the store rejects it as a duplicate.
 - **Extension change (manual):** bump the manifest version, zip the **contents** of `extension/` (manifest at zip root), upload in the CWS dashboard. ⚠️ If a prior version is "Pending review," the store blocks new uploads until it clears.
-- `gh` is **not** installed locally — open/merge PRs in the browser.
+- `gh` **is** installed and authenticated — use it to open/merge PRs (`gh pr create` / `gh pr view`).
+
+### ⚠️ Building the zip on Windows — two traps
+
+Both were hit on the 6.12 upload; the second one is the dangerous one because the upload *succeeds*.
+
+1. **`manifest.json` must be at the zip ROOT.** Zipping the `extension` folder gives `extension/manifest.json` and the store rejects it as missing. Zip the **contents**.
+2. **Windows zip tools write backslash path separators**, which violate the ZIP spec. `manifest.json` is still found (it's at root), but Chrome then can't resolve `fonts/` and `icons/` — so it installs with **missing icons and fonts instead of failing**. This affects `Compress-Archive`, .NET `ZipFile::CreateFromDirectory` under PowerShell 5.1, *and* Explorer's "Send to → Compressed folder". `zip` is not available in this Git Bash.
+
+Working build (writes each entry with an explicit forward-slash path; also drops the two store-docs markdown files, which shouldn't ship to users):
+
+```powershell
+$stage="$env:TEMP\ecometer-build"; $out="$PWD\ecometer-ai-v<VERSION>.zip"
+if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
+New-Item -ItemType Directory -Force -Path $stage | Out-Null
+Copy-Item "$PWD\extension\*" -Destination $stage -Recurse -Force
+Remove-Item "$stage\STORE-LISTING.md","$stage\STORE-SUBMISSION.md" -Force -ErrorAction SilentlyContinue
+if (Test-Path $out) { Remove-Item $out -Force }
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zip=[System.IO.Compression.ZipFile]::Open($out,'Create')
+$base=(Resolve-Path $stage).Path.TrimEnd('\') + '\'
+foreach ($f in Get-ChildItem $stage -Recurse -File) {
+  $rel=$f.FullName.Substring($base.Length).Replace('\','/')
+  [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip,$f.FullName,$rel,'Optimal') | Out-Null
+}
+$zip.Dispose()
+```
+
+Verify before uploading: no backslashes in entry names, `manifest.json` present at root, `fonts/` and `icons/` present. `*.zip` is gitignored, so the artifact won't be committed.
+
+> Note: `release.yml` builds with `cd extension && zip -r ..` on Linux, which is correct, but it does **not** exclude `STORE-LISTING.md` / `STORE-SUBMISSION.md` — CI zips still contain them. Harmless, but the two paths differ.
+
+### Store submission fields
+Everything the dashboard asks for is pre-written — don't recompose it from scratch:
+- `extension/STORE-LISTING.md` — short + detailed description, category, pre-upload checklist.
+- `extension/STORE-SUBMISSION.md` — single purpose, per-permission justifications, remote-code answer, data-usage disclosure (**"Website content" only**, with reasoning), and a paste-ready explanation that the Auditor export is a local file save, not an upload.
+- **Redeploy the hosted privacy policy in the same release as the zip** — the store checks the URL resolves and that the policy matches the permissions requested.
