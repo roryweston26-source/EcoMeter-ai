@@ -1,0 +1,275 @@
+{
+  "_meta": {
+    "comment": "Per-plan usage limits and the assumptions behind the 'break even at' and 'ceiling' columns on pricing.html. Joins to extension/prices.json 'subscriptions' on p + m (exact string match). Rates are NOT stored here — they are read live from prices.json.api at render time, so these figures re-price themselves when API prices change.",
+    "last_verified": "2026-07-28",
+    "month_days": 30,
+    "provenance_legend": {
+      "disclosed": "The provider publishes this figure about its own product.",
+      "derived": "Computed from a disclosed absolute cap and a disclosed multiplier, both from the provider.",
+      "third_party": "Measured or reported by someone other than the provider. Treat as indicative.",
+      "not_disclosed": "The provider does not publish a usable figure."
+    },
+    "finding": "As of July 2026, only one absolute consumer usage cap is published by any major provider about its own product: OpenAI's 160 GPT-5.5 Instant messages per 3 hours on Plus and Go. Anthropic and Google publish relative multipliers (5x/20x, 2x/4x/20x) against a base they never quantify, and both have moved to compute-based metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' Disclosure gets worse as price rises.",
+    "archetypes": {
+      "comment": "Tokens per message exchange. 'input' covers re-sent conversation history plus the platform's hidden system prompt; 'output' is the reply. THESE ARE ASSUMPTIONS, not measurements — round numbers chosen to be legible, not derived from data. They are the largest single lever on every figure on the page. The intended fix is to anchor them to real EcoMeter usage exports (per-platform input/output tokens per message, which the extension already tracks per model); until that lands, do not describe them as measured. For scale, EcoMeter's own modelled system-prompt overhead alone is 1,500-8,000 tokens per turn depending on platform (PLATFORM_OVERHEAD_TOKENS in extension/sidepanel.js), which is itself an estimate.",
+      "light":    { "input": 1500,  "output": 300,  "label": "Short exchanges, little history" },
+      "standard": { "input": 4000,  "output": 500,  "label": "Typical multi-turn chat" },
+      "heavy":    { "input": 15000, "output": 1200, "label": "Long context, documents, code" }
+    },
+    "default_archetype": "standard",
+    "throughput": {
+      "messages_per_active_minute": 1,
+      "basis": "One message exchange per minute of active use — time to read the reply and write the next prompt. A round number, chosen to be legible rather than precise; it is an assumption, not a measurement.",
+      "waking_hours": 16,
+      "waking_hours_basis": "Used only to flag caps that cannot be reached by a person in a day."
+    },
+    "caveats": [
+      "Break-even is what the same usage would cost at the provider's own published API rates. The API is not the product: no app, no memory, no file handling, no support. Treat it as a floor on value, not a full accounting.",
+      "The tokens-per-message archetypes are an assumption, not a measurement. They are the single largest lever on every figure here.",
+      "Ceiling figures assume the cap is hit in every window, every day, for 30 days. Essentially nobody does this. It is an upper bound, not an expectation.",
+      "Prompt caching is not modelled, consistent with EcoMeter. Cached input bills far less, so real API cost is lower than shown and break-even is correspondingly harder to reach.",
+      "Where a cap is a soft fallback rather than a hard stop (OpenAI downgrades to mini rather than cutting you off), the ceiling understates total value and overstates top-model value.",
+      "Microsoft plans have no break-even figure: Copilot runs on OpenAI models but Microsoft publishes no equivalent per-token rate to compare against."
+    ]
+  },
+
+  "plans": [
+    {
+      "p": "openai", "m": "ChatGPT Free",
+      "provenance": "not_disclosed",
+      "stated": "'Limited GPT-5.5 Instant access within a 5-hour window.' OpenAI adds the limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage.'",
+      "value_models": { "low": "gpt-4o-mini", "high": "gpt-5.4-mini" },
+      "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "openai", "m": "ChatGPT Go",
+      "provenance": "disclosed",
+      "caps": [
+        { "n": 160, "unit": "messages", "window": "3h", "scope": "GPT-5.5 Instant", "soft": true,
+          "note": "Not a hard stop — chats switch to GPT-5.5 Instant mini until the limit resets." },
+        { "n": 10, "unit": "messages", "window": "5h", "scope": "Thinking", "soft": false }
+      ],
+      "binding": "3h",
+      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.5" },
+      "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "openai", "m": "ChatGPT Plus",
+      "provenance": "disclosed",
+      "caps": [
+        { "n": 160, "unit": "messages", "window": "3h", "scope": "GPT-5.5 Instant", "soft": true,
+          "note": "Not a hard stop — chats switch to GPT-5.5 Instant mini until the limit resets." }
+      ],
+      "binding": "3h",
+      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.5" },
+      "note": "Plus no longer includes the highest reasoning tier; Extra High and Pro reasoning are Pro-only.",
+      "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "openai", "m": "ChatGPT Pro",
+      "provenance": "derived",
+      "multiplier": { "of": "ChatGPT Plus", "x": 5 },
+      "stated": "'Pro $100 unlocks 5x higher usage than Plus.'",
+      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.5" },
+      "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "openai", "m": "ChatGPT Pro (20×)",
+      "provenance": "derived",
+      "multiplier": { "of": "ChatGPT Plus", "x": 20 },
+      "stated": "'Pro $200 unlocks 20x usage than Plus.'",
+      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.5" },
+      "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
+      "as_of": "2026-07-28"
+    },
+
+    {
+      "p": "anthropic", "m": "Claude Free",
+      "provenance": "not_disclosed",
+      "stated": "'Free for everyone.' No usage figure published.",
+      "value_models": { "low": "claude-haiku-4-5-20251001", "high": "claude-sonnet-5" },
+      "source": "https://www.claude.com/pricing",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "anthropic", "m": "Claude Pro",
+      "provenance": "not_disclosed",
+      "stated": "'More usage' than Free. Anthropic describes a 'conversation budget' that varies with 'length and complexity of your conversations, the features you use, which Claude model you're chatting with, and the effort level you've selected', and publishes no numbers.",
+      "third_party": [
+        { "n": 45, "unit": "messages", "window": "5h", "scope": "all models",
+          "source": "https://tokenkarma.app/claude-usage-limit/",
+          "note": "Community measurement. Sources disagree with each other; Anthropic states nothing." }
+      ],
+      "value_models": { "low": "claude-haiku-4-5-20251001", "high": "claude-opus-5" },
+      "note": "A weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit every day for 30 days.",
+      "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "anthropic", "m": "Claude Max 5×",
+      "provenance": "not_disclosed",
+      "stated": "'5x more usage than Pro' — a disclosed multiplier against an undisclosed base.",
+      "multiplier": { "of": "Claude Pro", "x": 5, "base_disclosed": false },
+      "value_models": { "low": "claude-sonnet-5", "high": "claude-opus-5" },
+      "source": "https://www.claude.com/pricing",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "anthropic", "m": "Claude Max 20×",
+      "provenance": "not_disclosed",
+      "stated": "'20x more usage than Pro' — a disclosed multiplier against an undisclosed base.",
+      "multiplier": { "of": "Claude Pro", "x": 20, "base_disclosed": false },
+      "value_models": { "low": "claude-sonnet-5", "high": "claude-opus-5" },
+      "source": "https://www.claude.com/pricing",
+      "as_of": "2026-07-28"
+    },
+
+    {
+      "p": "google", "m": "Gemini (Free)",
+      "provenance": "not_disclosed",
+      "stated": "'Standard limits' — never quantified. Compute-based, refreshing every 5 hours up to a weekly limit.",
+      "value_models": { "low": "gemini-2.5-flash-lite", "high": "gemini-3.5-flash" },
+      "source": "https://support.google.com/gemini/answer/16275805",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "google", "m": "Google AI Plus",
+      "provenance": "not_disclosed",
+      "stated": "'2x higher than standard limits' — a disclosed multiplier against an undisclosed base.",
+      "multiplier": { "of": "Gemini (Free)", "x": 2, "base_disclosed": false },
+      "value_models": { "low": "gemini-3.1-flash-lite", "high": "gemini-3.5-flash" },
+      "source": "https://support.google.com/gemini/answer/16275805",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "google", "m": "Google AI Pro",
+      "provenance": "not_disclosed",
+      "stated": "'4x higher than standard limits' — a disclosed multiplier against an undisclosed base.",
+      "multiplier": { "of": "Gemini (Free)", "x": 4, "base_disclosed": false },
+      "value_models": { "low": "gemini-3.5-flash", "high": "gemini-3.1-pro-preview" },
+      "source": "https://support.google.com/gemini/answer/16275805",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "google", "m": "Google AI Ultra",
+      "provenance": "not_disclosed",
+      "stated": "'5x higher than AI Pro limits.' Pay-as-you-go credits can be bought to continue past the limit.",
+      "multiplier": { "of": "Google AI Pro", "x": 5, "base_disclosed": false },
+      "value_models": { "low": "gemini-3.5-flash", "high": "gemini-3.1-pro-preview" },
+      "source": "https://support.google.com/gemini/answer/16275805",
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "google", "m": "Google AI Ultra (20×)",
+      "provenance": "not_disclosed",
+      "stated": "'20x higher than AI Pro limits.' Pay-as-you-go credits can be bought to continue past the limit.",
+      "multiplier": { "of": "Google AI Pro", "x": 20, "base_disclosed": false },
+      "value_models": { "low": "gemini-3.5-flash", "high": "gemini-3.1-pro-preview" },
+      "source": "https://support.google.com/gemini/answer/16275805",
+      "as_of": "2026-07-28"
+    },
+
+    {
+      "p": "xai", "m": "Grok (Free)",
+      "provenance": "not_disclosed",
+      "value_models": { "low": "grok-3-mini", "high": "grok-3" },
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "xai", "m": "SuperGrok Lite",
+      "provenance": "not_disclosed",
+      "value_models": { "low": "grok-3-mini", "high": "grok-4" },
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "xai", "m": "SuperGrok",
+      "provenance": "not_disclosed",
+      "value_models": { "low": "grok-4", "high": "grok-4.3" },
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "xai", "m": "SuperGrok Heavy",
+      "provenance": "not_disclosed",
+      "value_models": { "low": "grok-4.20", "high": "grok-4.3" },
+      "as_of": "2026-07-28"
+    },
+
+    {
+      "p": "perplexity", "m": "Perplexity Free",
+      "provenance": "not_disclosed",
+      "third_party": [
+        { "n": 5, "unit": "Pro searches", "window": "1d", "scope": "Pro Search",
+          "source": "https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained" }
+      ],
+      "value_models": { "low": "sonar", "high": "sonar" },
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "perplexity", "m": "Perplexity Pro",
+      "provenance": "not_disclosed",
+      "third_party": [
+        { "n": 600, "unit": "searches", "window": "1d", "scope": "Pro Search",
+          "source": "https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained",
+          "note": "Low confidence. Pro users reported limits being cut substantially in 2026; Perplexity does not publish a current figure." }
+      ],
+      "value_models": { "low": "sonar", "high": "sonar-reasoning-pro" },
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "perplexity", "m": "Perplexity Max",
+      "provenance": "not_disclosed",
+      "stated": "Marketed as unlimited Pro searches with no daily or hourly cap; no figure published and 'unlimited' is not a number we can price.",
+      "value_models": { "low": "sonar-pro", "high": "sonar-reasoning-pro" },
+      "as_of": "2026-07-28"
+    },
+
+    {
+      "p": "microsoft", "m": "Copilot (Free)",
+      "provenance": "not_disclosed",
+      "no_api_rate": true,
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "microsoft", "m": "Microsoft 365 Premium",
+      "provenance": "not_disclosed",
+      "no_api_rate": true,
+      "stated": "'Extensive use' beyond the standard credit limit. Microsoft publishes a hard 60 AI credits/month for the cheaper Personal and Family plans but no figure for Premium — disclosure decreasing as price rises.",
+      "source": "https://support.microsoft.com/en-us/office/ai-credits-and-limits-for-microsoft-365-personal-family-and-premium-68530f1a-4459-4d02-9818-8233c1f673b8",
+      "as_of": "2026-07-28"
+    },
+
+    {
+      "p": "mistral", "m": "Le Chat Free",
+      "provenance": "not_disclosed",
+      "third_party": [
+        { "n": 25, "unit": "messages", "window": "1d", "scope": "all models",
+          "source": "https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }
+      ],
+      "value_models": { "low": "mistral-small-3", "high": "mistral-medium-3" },
+      "as_of": "2026-07-28"
+    },
+    {
+      "p": "mistral", "m": "Le Chat Pro",
+      "provenance": "not_disclosed",
+      "third_party": [
+        { "n": 150, "unit": "messages", "window": "1d", "scope": "all models",
+          "source": "https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v",
+          "note": "Low confidence — reported as a soft cap on an 'unlimited' plan." }
+      ],
+      "value_models": { "low": "mistral-small-3", "high": "mistral-large-3" },
+      "as_of": "2026-07-28"
+    },
+
+    {
+      "p": "deepseek", "m": "DeepSeek (Free)",
+      "provenance": "not_disclosed",
+      "stated": "No paid consumer tier and no published chat usage limits.",
+      "value_models": { "low": "deepseek-v3", "high": "deepseek-v4-pro" },
+      "as_of": "2026-07-28"
+    }
+  ]
+}

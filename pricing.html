@@ -242,6 +242,61 @@
 
   .empty { padding: 40px 16px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 13px; }
 
+  /* ---------- Break-even / ceiling columns ---------- */
+  .be { font-family: var(--mono); color: var(--ink); white-space: nowrap; }
+  /* the sub-line explains the number above it — it must wrap even when the
+     headline it sits under is nowrap, in both the normal and warning states */
+  .be .sub, .tp .sub, .nd .sub {
+    display: block; font-family: var(--body); font-size: 11px;
+    color: var(--ink-faint); margin-top: 3px; white-space: normal; max-width: 30ch;
+  }
+
+  /* provenance states for the ceiling column */
+  .nd { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); font-style: italic; }
+  .tp { font-family: var(--mono); color: var(--gold); white-space: nowrap; }
+  .tp::before { content: "⚠ "; }
+
+  /* the math expander */
+  .mathbtn {
+    appearance: none; border: 1px solid var(--line); background: var(--panel-2);
+    color: var(--ink-faint); font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: .04em; padding: 2px 7px; border-radius: 999px; cursor: pointer;
+    margin-top: 5px; transition: color .14s ease, border-color .14s ease;
+  }
+  .mathbtn:hover { color: var(--green-2); border-color: var(--green-2); }
+  tr.mathrow > td { background: #070c0a; border-bottom: 1px solid var(--line); padding: 0 16px; }
+  tr.mathrow.open > td { padding: 14px 16px 16px; }
+  tr.mathrow .inner { display: none; font-size: 12.5px; color: var(--ink-dim); max-width: 78ch; }
+  tr.mathrow.open .inner { display: block; }
+  tr.mathrow dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 0 0 10px; font-family: var(--mono); font-size: 12px; }
+  tr.mathrow dt { color: var(--ink-faint); white-space: nowrap; }
+  tr.mathrow dd { margin: 0; color: var(--ink); }
+  tr.mathrow .why { margin: 0 0 8px; }
+  tr.mathrow .src { font-size: 11.5px; }
+  tr.mathrow .src a { color: var(--green); text-decoration: none; }
+  tr.mathrow .src a:hover { text-decoration: underline; }
+  tr.mathrow:not(.open) > td { border-bottom: 0; }
+
+  /* archetype selector (subscriptions view only) */
+  .arch { display: none; align-items: center; gap: 9px; font-family: var(--mono); font-size: 12px; color: var(--ink-faint); }
+  .arch.on { display: inline-flex; }
+  .arch select {
+    appearance: none; border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); font-family: var(--mono); font-size: 12px;
+    padding: 8px 11px; border-radius: 8px; cursor: pointer; outline: none;
+  }
+
+  /* the disclosure callout above the table */
+  .callout {
+    display: none; border: 1px solid var(--line); border-left: 2px solid var(--gold);
+    background: var(--panel); border-radius: 8px; padding: 15px 18px; margin: 0 0 18px;
+  }
+  .callout.on { display: block; }
+  .callout h2 { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; font-weight: 400; }
+  .callout p { margin: 0 0 8px; font-size: 13.5px; color: var(--ink-dim); max-width: 74ch; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .tally { font-family: var(--mono); color: var(--ink); }
+
   /* ---------- Footer ---------- */
   footer { padding: 26px 0 60px; color: var(--ink-faint); font-size: 12.5px; }
   footer .note-line { font-family: var(--mono); margin: 0 0 7px; }
@@ -254,6 +309,12 @@
     .tablewrap { overflow-x: auto; }
     table { min-width: 520px; }
     .ticker .cell { min-width: 50%; }
+    /* The break-even / ceiling sub-lines name models, which makes cells very wide.
+       Cap them so the subscriptions table stays draggable rather than endless. */
+    .be .sub, .tp .sub, .nd .sub { max-width: 20ch; }
+    tr.mathrow .inner { max-width: 42ch; }
+    .arch { width: 100%; }
+    .arch select { flex: 1; min-width: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -292,6 +353,16 @@
       </svg>
       <input id="search" type="search" placeholder="Search model, plan or provider…" autocomplete="off" aria-label="Search" />
     </label>
+    <label class="arch" id="arch">
+      <span>Usage style</span>
+      <select id="arch-select" aria-label="Usage style used for the break-even estimate"></select>
+    </label>
+  </div>
+
+  <div class="callout" id="callout">
+    <h2>What the providers won't tell you</h2>
+    <p id="callout-body">—</p>
+    <p>So "how much is my plan worth" can't be answered from the ceiling for most plans. What <em>can</em> be answered, from published API rates alone, is the other direction: <strong>how long you'd have to use a plan each day before it beats paying per token.</strong> That's the break-even column — and it's the one worth reading. Where a ceiling does exist, it usually turns out to need more hours a day than anyone is awake for, which tells you the cap isn't what limits the plan's value. Your time is.</p>
   </div>
 
   <div class="chips" id="chips" role="group" aria-label="Filter by provider"></div>
@@ -307,6 +378,7 @@
     <p class="note-line" id="foot-token">API rates shown per 1,000,000 tokens · pulled live from prices.json</p>
     <p class="note-line" id="foot-free" style="display:none">Models each platform's free plan exposes · API list rates shown for reference · pulled live from prices.json</p>
     <p class="note-line">Subscription prices verified from official provider pages · June 2026 · USD/month</p>
+    <p class="note-line" id="foot-sub" style="display:none">Break even = what the same usage would cost at that provider's own API rates. It's an estimate built on an assumed message size — open "show the math" on any row to see every input. The API isn't the product, so treat it as a floor on value, not a full accounting. Prompt caching isn't modelled, which makes real API cost lower and break-even harder to reach.</p>
     <p class="note-line">Prices change. We refresh weekly — spotted something stale? <a href="https://github.com/roryweston26-source/EcoMeter-ai/issues" target="_blank" rel="noopener">Open an issue.</a></p>
     <p class="manifesto">Markets work best when both sides have the same information. AI isn't there yet. We're here to bring that to you.</p>
   </footer>
@@ -516,8 +588,189 @@
 
   var UPDATED = FALLBACK_PRICES._last_updated;
 
+  // Raw per-token rates (provider -> model -> {input,output}), swapped for live data on load.
+  // Kept separate from perTokenData, which is display rows scaled to /1M.
+  var RATES = FALLBACK_PRICES;
+
+  // ---- Plan limits: what each plan actually allows, and how well it's disclosed ----
+  // Lives in /plan-limits.json so audit.html can share it. Joined to SUBSCRIPTIONS on p + m.
+  var LIMITS_URL = "/plan-limits.json";
+
+  // Fallback snapshot — only the fields the columns need, so the table never renders bare.
+  // The full record (sources, third-party figures, caveats) comes from the live file.
+  var FALLBACK_LIMITS = {
+    _meta: {
+      month_days: 30,
+      default_archetype: "standard",
+      archetypes: {
+        light:    { input: 1500,  output: 300,  label: "Short exchanges, little history" },
+        standard: { input: 4000,  output: 500,  label: "Typical multi-turn chat" },
+        heavy:    { input: 15000, output: 1200, label: "Long context, documents, code" }
+      }
+    },
+    plans: [
+      { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-4o-mini",   high:"gpt-5.4-mini"} },
+      { p:"openai", m:"ChatGPT Go",    provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
+        caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
+      { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
+        caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
+      { p:"openai", m:"ChatGPT Pro",       provenance:"derived", multiplier:{of:"ChatGPT Plus", x:5},  value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"derived", multiplier:{of:"ChatGPT Plus", x:20}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
+
+      { p:"anthropic", m:"Claude Free",    provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5"} },
+      { p:"anthropic", m:"Claude Pro",     provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-opus-5"} },
+      { p:"anthropic", m:"Claude Max 5×",  provenance:"not_disclosed", value_models:{low:"claude-sonnet-5", high:"claude-opus-5"} },
+      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", value_models:{low:"claude-sonnet-5", high:"claude-opus-5"} },
+
+      { p:"google", m:"Gemini (Free)",         provenance:"not_disclosed", value_models:{low:"gemini-2.5-flash-lite",  high:"gemini-3.5-flash"} },
+      { p:"google", m:"Google AI Plus",        provenance:"not_disclosed", value_models:{low:"gemini-3.1-flash-lite",  high:"gemini-3.5-flash"} },
+      { p:"google", m:"Google AI Pro",         provenance:"not_disclosed", value_models:{low:"gemini-3.5-flash",       high:"gemini-3.1-pro-preview"} },
+      { p:"google", m:"Google AI Ultra",       provenance:"not_disclosed", value_models:{low:"gemini-3.5-flash",       high:"gemini-3.1-pro-preview"} },
+      { p:"google", m:"Google AI Ultra (20×)", provenance:"not_disclosed", value_models:{low:"gemini-3.5-flash",       high:"gemini-3.1-pro-preview"} },
+
+      { p:"xai", m:"Grok (Free)",      provenance:"not_disclosed", value_models:{low:"grok-3-mini", high:"grok-3"} },
+      { p:"xai", m:"SuperGrok Lite",   provenance:"not_disclosed", value_models:{low:"grok-3-mini", high:"grok-4"} },
+      { p:"xai", m:"SuperGrok",        provenance:"not_disclosed", value_models:{low:"grok-4",      high:"grok-4.3"} },
+      { p:"xai", m:"SuperGrok Heavy",  provenance:"not_disclosed", value_models:{low:"grok-4.20",   high:"grok-4.3"} },
+
+      { p:"perplexity", m:"Perplexity Free", provenance:"not_disclosed", value_models:{low:"sonar",     high:"sonar"} },
+      { p:"perplexity", m:"Perplexity Pro",  provenance:"not_disclosed", value_models:{low:"sonar",     high:"sonar-reasoning-pro"} },
+      { p:"perplexity", m:"Perplexity Max",  provenance:"not_disclosed", value_models:{low:"sonar-pro", high:"sonar-reasoning-pro"} },
+
+      { p:"microsoft", m:"Copilot (Free)",          provenance:"not_disclosed", no_api_rate:true },
+      { p:"microsoft", m:"Microsoft 365 Premium",   provenance:"not_disclosed", no_api_rate:true },
+
+      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{low:"mistral-small-3", high:"mistral-medium-3"} },
+      { p:"mistral", m:"Le Chat Pro",  provenance:"not_disclosed", value_models:{low:"mistral-small-3", high:"mistral-large-3"} },
+
+      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{low:"deepseek-v3", high:"deepseek-v4-pro"} }
+    ]
+  };
+
+  var PLAN_LIMITS = FALLBACK_LIMITS;
+
+  function throughput() {
+    var t = (PLAN_LIMITS._meta && PLAN_LIMITS._meta.throughput) || {};
+    return { mpm: t.messages_per_active_minute || 1, waking: t.waking_hours || 16 };
+  }
+
+  // Messages -> a duration a person can picture. The whole point of the time framing
+  // is that it makes an unreachable cap obviously unreachable.
+  function fmtTime(messages) {
+    var mins = messages / throughput().mpm;
+    if (mins < 1)   return "under a minute";
+    if (mins < 90)  return Math.round(mins) + " min";
+    var hrs = mins / 60;
+    // Past a day, hours stop meaning anything to a reader — say it in days.
+    if (hrs > 24) return (hrs / 24).toFixed(1) + " days";
+    return (hrs < 10 ? hrs.toFixed(1) : String(Math.round(hrs))) + " h";
+  }
+
+  function limitsFor(sub) {
+    var plans = PLAN_LIMITS.plans || [];
+    for (var i = 0; i < plans.length; i++) {
+      if (plans[i].p === sub.p && plans[i].m === sub.m) { return plans[i]; }
+    }
+    return null;
+  }
+
+  function archetype() {
+    var a = (PLAN_LIMITS._meta && PLAN_LIMITS._meta.archetypes) || {};
+    return a[state.arch] || a.standard || { input: 4000, output: 500 };
+  }
+
+  function monthDays() { return (PLAN_LIMITS._meta && PLAN_LIMITS._meta.month_days) || 30; }
+
+  // What one message exchange costs at that model's published API rate.
+  function costPerMessage(prov, modelKey) {
+    var group = RATES[prov];
+    var rec = group && group[modelKey];
+    if (!rec || typeof rec.input !== "number" || typeof rec.output !== "number") return null;
+    var a = archetype();
+    return a.input * rec.input + a.output * rec.output;
+  }
+
+  // Messages per day needed before the subscription beats per-token pricing.
+  // Needs no limit data at all — just the price and the provider's own API rates.
+  function breakEven(sub, lim) {
+    if (!lim || !lim.value_models || !sub.price) return null;
+    var d = monthDays();
+    var ends = [];
+    ["high", "low"].forEach(function (which) {
+      var key = lim.value_models[which];
+      var c = costPerMessage(sub.p, key);
+      if (c) ends.push({ msgs: sub.price / c / d, model: key });
+    });
+    if (!ends.length) return null;
+    // Don't assume "high" is the pricier model — several plans pair a flagship with a
+    // reasoning variant that costs more. Order by the answer, not by the label.
+    ends.sort(function (a, b) { return a.msgs - b.msgs; });
+    return {
+      few: ends[0].msgs,
+      many: ends[ends.length - 1].msgs,
+      fewModel: ends[0].model,
+      manyModel: ends[ends.length - 1].model
+    };
+  }
+
+  // Resolve a plan's cap to messages/day, following a disclosed multiplier if needed.
+  // Returns null unless the chain terminates in a figure the provider itself published.
+  function capPerDay(lim, depth) {
+    if (!lim || (depth || 0) > 4) return null;
+    if (lim.caps && lim.caps.length) {
+      var cap = null;
+      for (var i = 0; i < lim.caps.length; i++) {
+        var c = lim.caps[i];
+        if (lim.binding && c.window !== lim.binding) continue;
+        cap = c; break;
+      }
+      if (!cap || typeof cap.n !== "number") return null;
+      var hours = { "1h":1, "3h":3, "5h":5, "1d":24, "7d":168 }[cap.window];
+      if (!hours) return null;
+      return { perDay: cap.n * (24 / hours), cap: cap };
+    }
+    // A multiplier is only usable if the base is itself disclosed.
+    if (lim.multiplier && lim.multiplier.base_disclosed !== false) {
+      var plans = PLAN_LIMITS.plans || [];
+      for (var j = 0; j < plans.length; j++) {
+        if (plans[j].p === lim.p && plans[j].m === lim.multiplier.of) {
+          var base = capPerDay(plans[j], (depth || 0) + 1);
+          if (!base) return null;
+          return { perDay: base.perDay * lim.multiplier.x, cap: base.cap, via: lim.multiplier };
+        }
+      }
+    }
+    return null;
+  }
+
+  // Upper bound on what a plan could be worth: cap hit in every window, every day.
+  function ceiling(sub, lim) {
+    var c = capPerDay(lim);
+    if (!c || !lim.value_models) return null;
+    var hi = costPerMessage(sub.p, lim.value_models.high);
+    if (!hi) return null;
+    var perMonth = c.perDay * hi * monthDays();
+    return {
+      perMonth: perMonth,
+      perDay: c.perDay,
+      cap: c.cap,
+      via: c.via,
+      model: lim.value_models.high,
+      multiple: sub.price ? perMonth / sub.price : null
+    };
+  }
+
+  function fmtNum(n) {
+    if (n === null || n === undefined) return "—";
+    if (n >= 1000) return Math.round(n / 10) * 10 >= 10000 ? Math.round(n).toLocaleString("en-US") : Math.round(n).toLocaleString("en-US");
+    if (n >= 100) return String(Math.round(n));
+    if (n >= 10)  return String(Math.round(n));
+    return n.toFixed(1);
+  }
+  function money0(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+
   // ---- State ----
-  var state = { view: "token", search: "", provider: "all", sortKey: null, sortDir: 1 };
+  var state = { view: "token", search: "", provider: "all", sortKey: null, sortDir: 1, arch: "standard" };
 
   var $ = function (id) { return document.getElementById(id); };
   function provName(p) { return (PROVIDERS[p] || {}).name || p; }
@@ -571,9 +824,11 @@
     var cols;
     if (state.view === "sub") {
       cols = [
-        { key: "p",     label: "Provider", cls: "" },
-        { key: "m",     label: "Plan",     cls: "" },
-        { key: "price", label: "Per month", cls: "num" }
+        { key: "p",       label: "Provider",     cls: "" },
+        { key: "m",       label: "Plan",         cls: "" },
+        { key: "price",   label: "Per month",    cls: "num" },
+        { key: "_be",     label: "Break even at", cls: "num" },
+        { key: "_ceil",   label: "Ceiling",      cls: "num" }
       ];
     } else {
       cols = [
@@ -619,9 +874,17 @@
     }
     if (state.sortKey) {
       var k = state.sortKey, dir = state.sortDir;
+      // The computed columns have no stored value — derive one to sort on.
+      var derive = function (r) {
+        var lim = limitsFor(r);
+        if (k === "_be")   { var b = breakEven(r, lim); return b && b.few  !== null ? b.few  : Infinity; }
+        if (k === "_ceil") { var c = ceiling(r, lim);   return c ? c.perMonth : -Infinity; }
+        return null;
+      };
       data.sort(function (a, b) {
-        var av = a[k], bv = b[k];
-        if (k === "p") { av = provName(a.p); bv = provName(b.p); }
+        var av, bv;
+        if (k === "_be" || k === "_ceil") { av = derive(a); bv = derive(b); }
+        else { av = a[k]; bv = b[k]; if (k === "p") { av = provName(a.p); bv = provName(b.p); } }
         if (typeof av === "string") { return av.localeCompare(bv) * dir; }
         return (av - bv) * dir;
       });
@@ -629,12 +892,12 @@
 
     var tbody = $("tbody");
     if (!data.length) {
-      var span = state.view === "sub" ? 3 : 4;
+      var span = state.view === "sub" ? 5 : 4;
       tbody.innerHTML = '<tr><td class="empty" colspan="' + span + '">No matches. Try a different search.</td></tr>';
       return;
     }
 
-    var rows = data.map(function (r) {
+    var rows = data.map(function (r, i) {
       var prov = '<span class="prov"><span class="swatch" style="background:' + provColor(r.p) + '"></span>' +
                  '<span class="name">' + provName(r.p) + '</span></span>';
       var model = '<span class="model">' + r.m + '</span>' + (r.note ? '<span class="note">' + r.note + '</span>' : '');
@@ -643,15 +906,154 @@
         return '<tr><td>' + prov + '</td><td>' + model + '</td>' +
                '<td class="num">' + money(r.in) + '</td>' +
                '<td class="num">' + money(r.out) + '</td></tr>';
-      } else {
-        var priceCell = r.price === 0
-          ? '<span class="free">Free</span>'
-          : money(r.price);
-        return '<tr><td>' + prov + '</td><td>' + model + '</td>' +
-               '<td class="num">' + priceCell + '</td></tr>';
       }
+
+      var lim = limitsFor(r);
+      var priceCell = r.price === 0 ? '<span class="free">Free</span>' : money(r.price);
+      var rid = "m" + i;
+
+      // --- break-even cell ---
+      var be = breakEven(r, lim), beCell;
+      if (r.price === 0) {
+        beCell = '<span class="nd">n/a — free</span>';
+      } else if (!be) {
+        beCell = '<span class="nd">no API rate</span>';
+      } else {
+        var tp = throughput();
+        // If even the cheapest end needs more hours than a day holds, the plan can't
+        // pay for itself against the API at all. That's the finding, not the number.
+        var neverPays = (be.few / tp.mpm / 60) > 24;
+        var wide = Math.round(be.few) !== Math.round(be.many);
+        if (neverPays) {
+          beCell = '<span class="tp">can\'t break even' +
+                   '<span class="sub">would need ' + fmtTime(be.few) + '/day at ' + modelLabel(be.fewModel) + ' rates</span></span>';
+        } else if (wide && (be.many / tp.mpm / 60) > 24) {
+          // Cheap end of the range is unreachable — don't print "1.3 days /day".
+          beCell = '<span class="be">' + fmtTime(be.few) + '+ /day' +
+                   '<span class="sub">' + fmtNum(be.few) + ' msgs at ' + modelLabel(be.fewModel) +
+                   ' · never pays off on ' + modelLabel(be.manyModel) + '</span></span>';
+        } else if (wide) {
+          beCell = '<span class="be">' + fmtTime(be.few) + '–' + fmtTime(be.many) + ' /day' +
+                   '<span class="sub">' + fmtNum(be.few) + '–' + fmtNum(be.many) + ' msgs · ' +
+                   modelLabel(be.fewModel) + ' → ' + modelLabel(be.manyModel) + '</span></span>';
+        } else {
+          beCell = '<span class="be">' + fmtTime(be.few) + ' /day' +
+                   '<span class="sub">' + fmtNum(be.few) + ' msgs · ' + modelLabel(be.fewModel) + '</span></span>';
+        }
+      }
+
+      // --- ceiling cell ---
+      var ceil = ceiling(r, lim), ceilCell;
+      if (ceil) {
+        var hoursNeeded = ceil.perDay / throughput().mpm / 60;
+        var unreachable = hoursNeeded > throughput().waking;
+        var tail = hoursNeeded > 24
+          ? 'needs ' + fmtTime(ceil.perDay) + ' of nonstop use to reach in one day — it cannot be reached'
+          : 'needs ' + fmtTime(ceil.perDay) + '/day nonstop' + (unreachable ? ' — more than anyone is awake for' : "");
+        ceilCell = '<span class="' + (unreachable ? "tp" : "be") + '">' + money0(ceil.perMonth) + ' /mo' +
+                   '<span class="sub">' + (ceil.multiple ? "up to " + Math.round(ceil.multiple) + "× the price · " : "") +
+                   tail + '</span></span>';
+      } else if (lim && lim.third_party && lim.third_party.length) {
+        var t = lim.third_party[0];
+        ceilCell = '<span class="tp">' + t.n + ' ' + t.unit + '/' + t.window.replace("1d", "day") +
+                   '<span class="sub">third-party figure — not published by ' + provName(r.p) + '</span></span>';
+      } else {
+        ceilCell = '<span class="nd">not disclosed</span>';
+      }
+
+      var mathBtn = '<button class="mathbtn" type="button" data-math="' + rid + '" aria-expanded="false">show the math</button>';
+
+      var main = '<tr><td>' + prov + '</td>' +
+                 '<td>' + model + mathBtn + '</td>' +
+                 '<td class="num">' + priceCell + '</td>' +
+                 '<td class="num">' + beCell + '</td>' +
+                 '<td class="num">' + ceilCell + '</td></tr>';
+
+      return main + '<tr class="mathrow" id="' + rid + '"><td colspan="5"><div class="inner">' +
+             mathHTML(r, lim, be, ceil) + '</div></td></tr>';
     });
     tbody.innerHTML = rows.join("");
+
+    Array.prototype.forEach.call(tbody.querySelectorAll(".mathbtn"), function (btn) {
+      btn.addEventListener("click", function () {
+        var row = document.getElementById(btn.getAttribute("data-math"));
+        if (!row) return;
+        var open = row.classList.toggle("open");
+        btn.setAttribute("aria-expanded", String(open));
+        btn.textContent = open ? "hide the math" : "show the math";
+      });
+    });
+  }
+
+  // Friendly model name from a prices.json key, via MODEL_REGISTRY where possible.
+  function modelLabel(key) {
+    for (var i = 0; i < MODEL_REGISTRY.length; i++) {
+      if (MODEL_REGISTRY[i].key === key) return MODEL_REGISTRY[i].m;
+    }
+    return key;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  // The expandable working: every number on the row, where it came from, and what we assumed.
+  function mathHTML(sub, lim, be, ceil) {
+    var a = archetype(), out = "";
+
+    if (be) {
+      var hiRate = (RATES[sub.p] || {})[be.fewModel];
+      out += '<dl>' +
+             '<dt>Assumed per message</dt><dd>' + a.input.toLocaleString("en-US") + ' in + ' + a.output.toLocaleString("en-US") + ' out tokens</dd>' +
+             (hiRate ? '<dt>' + esc(modelLabel(be.fewModel)) + ' API rate</dt><dd>$' + (hiRate.input * 1e6).toFixed(2) + ' / $' + (hiRate.output * 1e6).toFixed(2) + ' per 1M</dd>' : "") +
+             (hiRate ? '<dt>Cost per message</dt><dd>$' + (a.input * hiRate.input + a.output * hiRate.output).toFixed(4) + '</dd>' : "") +
+             '<dt>Break even</dt><dd>$' + sub.price + ' ÷ cost ÷ ' + monthDays() + ' days = ' + fmtNum(be.few) + ' messages/day</dd>' +
+             '<dt>As time</dt><dd>' + fmtTime(be.few) + '/day at ' + throughput().mpm + ' message/minute of active use</dd>' +
+             '</dl>';
+    }
+
+    if (ceil) {
+      out += '<dl>' +
+             '<dt>Published cap</dt><dd>' + ceil.cap.n + ' ' + esc(ceil.cap.unit) + ' per ' + ceil.cap.window +
+             (ceil.cap.scope ? ' (' + esc(ceil.cap.scope) + ')' : "") + '</dd>' +
+             (ceil.via ? '<dt>Multiplier</dt><dd>' + ceil.via.x + '× ' + esc(ceil.via.of) + ', as stated by the provider</dd>' : "") +
+             '<dt>Ceiling</dt><dd>' + fmtNum(ceil.perDay) + ' msgs/day × ' + monthDays() + ' days at ' + esc(modelLabel(ceil.model)) + ' rates = ' + money0(ceil.perMonth) + '</dd>' +
+             '</dl>' +
+             '<p class="why">This assumes the cap is hit in every window, every day, for a month — ' +
+             fmtTime(ceil.perDay) + ' a day of nonstop messaging. ' +
+             (ceil.perDay / throughput().mpm / 60 > throughput().waking
+               ? 'That is longer than a person is awake, so this plan\'s cap is not what limits its value to you — your time is. The headline multiple is arithmetic, not an opportunity.'
+               : 'Treat it as the outer edge of possible, not a forecast.') +
+             (ceil.cap.soft ? ' This cap is also a downgrade rather than a cut-off, so usage continues on a cheaper model past this point.' : "") + '</p>';
+    }
+
+    if (lim && lim.stated) {
+      out += '<p class="why"><strong>' + provName(sub.p) + ' says:</strong> ' + esc(lim.stated) + '</p>';
+    }
+    if (lim && lim.note) {
+      out += '<p class="why">' + esc(lim.note) + '</p>';
+    }
+    if (lim && lim.third_party && lim.third_party.length) {
+      var t = lim.third_party[0];
+      out += '<p class="why"><strong>Third-party figure:</strong> ' + t.n + ' ' + esc(t.unit) + ' per ' +
+             t.window.replace("1d", "day") + '. ' + (t.note ? esc(t.note) : "") +
+             ' ' + provName(sub.p) + ' publishes no figure of its own.</p>';
+    }
+    if (!ceil && !(lim && lim.third_party && lim.third_party.length)) {
+      out += '<p class="why">No usable cap is published for this plan, so there is no honest ceiling to compute. The blank is the finding.</p>';
+    }
+
+    var srcs = [];
+    if (lim && lim.source) srcs.push(lim.source);
+    if (lim && lim.third_party) lim.third_party.forEach(function (t) { if (t.source) srcs.push(t.source); });
+    if (srcs.length) {
+      out += '<p class="src">Source: ' + srcs.map(function (u) {
+        var host = u.replace(/^https?:\/\//, "").split("/")[0];
+        return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(host) + '</a>';
+      }).join(" · ") + (lim.as_of ? ' · checked ' + esc(lim.as_of) : "") + '</p>';
+    }
+
+    return out || '<p class="why">Nothing published for this plan.</p>';
   }
 
   // ---- View toggle ----
@@ -665,8 +1067,41 @@
     $("view-free").setAttribute("aria-pressed", view === "free");
     $("foot-token").style.display = view === "token" ? "" : "none";
     $("foot-free").style.display  = view === "free"  ? "" : "none";
+    $("foot-sub").style.display   = view === "sub"   ? "" : "none";
+    $("arch").className     = view === "sub" ? "arch on" : "arch";
+    $("callout").className  = view === "sub" ? "callout on" : "callout";
     buildChips();
     render();
+  }
+
+  // Populate the usage-style selector from whatever archetypes the data file defines.
+  function buildArchSelect() {
+    var a = (PLAN_LIMITS._meta && PLAN_LIMITS._meta.archetypes) || {};
+    var sel = $("arch-select"), html = "";
+    for (var k in a) {
+      // the data file carries a "comment" string alongside the archetype objects
+      if (!a[k] || typeof a[k] !== "object" || typeof a[k].input !== "number") continue;
+      html += '<option value="' + k + '"' + (k === state.arch ? " selected" : "") + '>' +
+              k.charAt(0).toUpperCase() + k.slice(1) + ' — ' + (a[k].label || "") + '</option>';
+    }
+    sel.innerHTML = html;
+  }
+
+  // Tally how many plans actually have a provider-published cap.
+  function fillCallout() {
+    var plans = (PLAN_LIMITS.plans || []);
+    var total = plans.length, disclosed = 0, third = 0;
+    plans.forEach(function (l) {
+      if (l.provenance === "disclosed" || l.provenance === "derived") disclosed++;
+      else if (l.third_party && l.third_party.length) third++;
+    });
+    $("callout-body").innerHTML =
+      'Of the <span class="tally">' + total + '</span> consumer plans tracked here, ' +
+      '<span class="tally">' + disclosed + '</span> have a usage cap the provider publishes about its own product. ' +
+      '<span class="tally">' + third + '</span> have only a third-party estimate. The rest publish nothing usable — ' +
+      'Anthropic and Google give multipliers ("5× more usage than Pro", "4× higher than standard limits") ' +
+      'against a base they never state, and both now meter by compute, which varies per prompt. ' +
+      'Google reserves the right to change limits "without notice."';
   }
 
   // ---- Wire up ----
@@ -674,6 +1109,7 @@
   $("view-sub").addEventListener("click", function () { setView("sub"); });
   $("view-free").addEventListener("click", function () { setView("free"); });
   $("search").addEventListener("input", function (e) { state.search = e.target.value; render(); });
+  $("arch-select").addEventListener("change", function (e) { state.arch = e.target.value; render(); });
 
   // ---- Pull live prices from prices.json (the file the Monday Action updates) ----
   function loadLivePrices() {
@@ -683,6 +1119,7 @@
       .then(function (text) {
         var data = JSON.parse(text);
         var api  = data.api || data;             // new shape nests prices under "api"
+        RATES = api;
         var rows = buildPerToken(api);
         if (rows.length) { perTokenData = rows; }
         if (Array.isArray(data.subscriptions)) { SUBSCRIPTIONS = data.subscriptions; }
@@ -696,10 +1133,33 @@
       .catch(function () { /* network/parse failed — keep the fallback snapshot */ });
   }
 
+  // ---- Pull the plan-limit data (caps, provenance, sources, assumptions) ----
+  function loadPlanLimits() {
+    if (typeof fetch !== "function") return;
+    fetch(LIMITS_URL, { cache: "no-store" })
+      .then(function (res) { if (!res.ok) { throw new Error("HTTP " + res.status); } return res.text(); })
+      .then(function (text) {
+        var data = JSON.parse(text);
+        if (data && Array.isArray(data.plans) && data.plans.length) {
+          PLAN_LIMITS = data;
+          if (data._meta && data._meta.default_archetype && (data._meta.archetypes || {})[data._meta.default_archetype]) {
+            state.arch = data._meta.default_archetype;
+          }
+          buildArchSelect();
+          fillCallout();
+          render();
+        }
+      })
+      .catch(function () { /* keep the fallback snapshot */ });
+  }
+
+  buildArchSelect();
+  fillCallout();
   fillTicker();
   buildChips();
   render();
   loadLivePrices();
+  loadPlanLimits();
 })();
 </script>
 </body>
