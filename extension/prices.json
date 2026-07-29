@@ -1,11 +1,17 @@
 {
   "_meta": {
     "comment": "Shared data for the EcoMeter extension and the Legerly pricing page. 'api' = per-token USD (input/output). 'subscriptions' = consumer plan $/month. 'free_tiers' = which models each platform's FREE plan exposes (drives the extension model picker). To update prices, edit the numbers here.",
-    "last_updated": "2026-07-27",
+    "last_updated": "2026-07-28",
     "version": "6.12",
     "source": "Official provider pricing pages + free-tier availability",
+    "verified": "2026-07-28 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com pricing, ai.google.dev + cloud.google.com/vertex-ai pricing, docs.x.ai/docs/models, api-docs.deepseek.com, mistral.ai/pricing/api, docs.perplexity.ai",
     "caveats": {
-      "claude-sonnet-5": "$2/$10 per 1M is Anthropic's introductory rate, listed through 2026-08-31. Standard rate is $3/$15 — re-check after that date."
+      "claude-sonnet-5": "$2/$10 per 1M is Anthropic's introductory rate, listed through 2026-08-31. Standard rate is $3/$15 — re-check after that date.",
+      "_short_context_only": "Every rate here is the SHORT-CONTEXT rate. OpenAI, Google and xAI all charge roughly double past a threshold, and the higher rate applies to ALL tokens in the request, not just the excess: OpenAI gpt-5.5 $5/$30 becomes $10/$45 on long context; xAI doubles at 200k prompt tokens; Google's 3.1 Pro goes $2/$12 to $4/$18 above 200k and 2.5 Pro $1.25/$10 to $2.50/$15. Anthropic does not tier this way. Long conversations therefore cost MORE than anything computed from this file — the opposite direction to the unmodelled prompt-caching discount, and not a safe assumption to net off against it.",
+      "_perplexity_request_fees": "Sonar token rates are correct but they are not the whole bill. Perplexity also charges $5-$14 per 1,000 requests depending on model and search-context size. For chat-shaped usage that per-request fee typically exceeds the token cost, so any Perplexity figure derived from this file is a substantial UNDERCOUNT.",
+      "_claude_tokenizer": "Anthropic states that Claude 4.7 and later (Opus 4.7/4.8/5, Sonnet 5, Fable 5, Mythos 5) use a newer tokenizer producing approximately 30% more tokens for the same text than Sonnet 4.6 and earlier. Identical text is therefore NOT an identical token count across providers or across Claude generations. Any cross-model cost comparison built on a fixed token count understates these models by roughly a third.",
+      "_legacy_keys": "grok-4 / grok-3 / grok-3-mini, deepseek-v3 / deepseek-r1, mistral-medium-3 / mistral-small-3 and the o1 / gpt-4 / gpt-4-turbo family are no longer listed on their providers' current pricing pages. They are retained at last-known rates because they remain selectable in the extension's model picker; treat those numbers as historical, not current.",
+      "deepseek-reasoner": "DeepSeek's API aliases (deepseek-chat, deepseek-reasoner) track whichever model is current rather than a fixed version. Priced here as v4-flash and v4-pro respectively, which is an inference from DeepSeek's current lineup, not a published mapping."
     }
   },
   "api": {
@@ -14,8 +20,10 @@
       "claude-haiku": { "input": 1e-06, "output": 5e-06 },
       "claude-sonnet-5": { "input": 2e-06, "output": 1e-05 },
       "claude-sonnet-4-6": { "input": 3e-06, "output": 1.5e-05 },
+      "claude-sonnet-4-5": { "input": 3e-06, "output": 1.5e-05 },
       "claude-sonnet": { "input": 3e-06, "output": 1.5e-05 },
       "claude-opus-5": { "input": 5e-06, "output": 2.5e-05 },
+      "claude-opus-4-5": { "input": 5e-06, "output": 2.5e-05 },
       "claude-opus-4-8": { "input": 5e-06, "output": 2.5e-05 },
       "claude-opus-4-7": { "input": 5e-06, "output": 2.5e-05 },
       "claude-opus-4-6": { "input": 5e-06, "output": 2.5e-05 },
@@ -29,9 +37,15 @@
       "gpt-4.1": { "input": 2e-06, "output": 8e-06 },
       "gpt-4.1-mini": { "input": 4e-07, "output": 1.6e-06 },
       "gpt-4.1-nano": { "input": 1e-07, "output": 4e-07 },
+      "gpt-5.6-sol": { "input": 5e-06, "output": 3e-05 },
+      "gpt-5.6-terra": { "input": 2.5e-06, "output": 1.5e-05 },
+      "gpt-5.6-luna": { "input": 1e-06, "output": 6e-06 },
+      "gpt-5.5": { "input": 5e-06, "output": 3e-05 },
+      "gpt-5.5-pro": { "input": 3e-05, "output": 1.8e-04 },
       "gpt-5.4": { "input": 2.5e-06, "output": 1.5e-05 },
       "gpt-5.4-mini": { "input": 7.5e-07, "output": 4.5e-06 },
-      "gpt-5.5": { "input": 5e-06, "output": 3e-05 },
+      "gpt-5.4-nano": { "input": 2e-07, "output": 1.25e-06 },
+      "gpt-5.4-pro": { "input": 3e-05, "output": 1.8e-04 },
       "o4-mini": { "input": 1.1e-06, "output": 4.4e-06 },
       "o3": { "input": 2e-06, "output": 8e-06 },
       "o3-mini": { "input": 1.1e-06, "output": 4.4e-06 },
@@ -40,7 +54,10 @@
       "gpt-4": { "input": 3e-05, "output": 6e-05 }
     },
     "google": {
-      "gemini-3.5-flash": { "input": 5e-07, "output": 3e-06 },
+      "gemini-3.6-flash": { "input": 1.5e-06, "output": 7.5e-06 },
+      "gemini-3.5-flash": { "input": 1.5e-06, "output": 9e-06 },
+      "gemini-3.5-flash-lite": { "input": 3e-07, "output": 2.5e-06 },
+      "gemini-3-flash-preview": { "input": 5e-07, "output": 3e-06 },
       "gemini-3.1-pro-preview": { "input": 2e-06, "output": 1.2e-05 },
       "gemini-3.1-flash-lite": { "input": 2.5e-07, "output": 1.5e-06 },
       "gemini-2.5-pro": { "input": 1.25e-06, "output": 1e-05 },
@@ -48,8 +65,9 @@
       "gemini-2.5-flash-lite": { "input": 1e-07, "output": 4e-07 }
     },
     "xai": {
+      "grok-4.5": { "input": 2e-06, "output": 6e-06 },
       "grok-4.3": { "input": 1.25e-06, "output": 2.5e-06 },
-      "grok-4.20": { "input": 2e-06, "output": 6e-06 },
+      "grok-4.20": { "input": 1.25e-06, "output": 2.5e-06 },
       "grok-4": { "input": 3e-06, "output": 1.5e-05 },
       "grok-3": { "input": 2e-06, "output": 1e-05 },
       "grok-3-mini": { "input": 3e-07, "output": 5e-07 }
@@ -71,11 +89,11 @@
     },
     "deepseek": {
       "deepseek-v4-flash": { "input": 1.4e-07, "output": 2.8e-07 },
-      "deepseek-v4-pro": { "input": 1.74e-06, "output": 3.48e-06 },
+      "deepseek-v4-pro": { "input": 4.35e-07, "output": 8.7e-07 },
       "deepseek-v3": { "input": 1.4e-07, "output": 2.8e-07 },
       "deepseek-r1": { "input": 5.5e-07, "output": 2.19e-06 },
       "deepseek-chat": { "input": 1.4e-07, "output": 2.8e-07 },
-      "deepseek-reasoner": { "input": 1.4e-07, "output": 2.8e-07 }
+      "deepseek-reasoner": { "input": 4.35e-07, "output": 8.7e-07 }
     }
   },
   "subscriptions": [

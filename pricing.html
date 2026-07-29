@@ -409,13 +409,18 @@
     { p:"anthropic", key:"claude-sonnet-4-6",         m:"Claude Sonnet 4.6" },
     { p:"anthropic", key:"claude-haiku-4-5-20251001", m:"Claude Haiku 4.5" },
     { p:"anthropic", key:"claude-opus-5",             m:"Claude Opus 5" },
-    { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.6 / 4.7 priced the same" },
+    { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.5 / 4.6 / 4.7 priced the same" },
     { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
     { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
-    { p:"openai", key:"gpt-5.5",      m:"GPT-5.5" },
+    { p:"openai", key:"gpt-5.6-sol",   m:"GPT-5.6 Sol", note:"powers Medium / High / Extra High reasoning in ChatGPT" },
+    { p:"openai", key:"gpt-5.6-terra", m:"GPT-5.6 Terra" },
+    { p:"openai", key:"gpt-5.6-luna",  m:"GPT-5.6 Luna" },
+    { p:"openai", key:"gpt-5.5",      m:"GPT-5.5", note:"ChatGPT's default Instant model" },
+    { p:"openai", key:"gpt-5.5-pro",  m:"GPT-5.5 Pro" },
     { p:"openai", key:"gpt-5.4",      m:"GPT-5.4" },
     { p:"openai", key:"gpt-5.4-mini", m:"GPT-5.4 mini" },
+    { p:"openai", key:"gpt-5.4-nano", m:"GPT-5.4 nano" },
     { p:"openai", key:"gpt-4.1",      m:"GPT-4.1" },
     { p:"openai", key:"gpt-4.1-mini", m:"GPT-4.1 mini" },
     { p:"openai", key:"gpt-4.1-nano", m:"GPT-4.1 nano" },
@@ -424,23 +429,26 @@
     { p:"openai", key:"o3",           m:"o3" },
     { p:"openai", key:"o4-mini",      m:"o4-mini" },
 
+    { p:"google", key:"gemini-3.6-flash",       m:"Gemini 3.6 Flash" },
     { p:"google", key:"gemini-3.5-flash",       m:"Gemini 3.5 Flash" },
-    { p:"google", key:"gemini-3.1-pro-preview", m:"Gemini 3.1 Pro", note:"Preview" },
+    { p:"google", key:"gemini-3.5-flash-lite",  m:"Gemini 3.5 Flash-Lite" },
+    { p:"google", key:"gemini-3.1-pro-preview", m:"Gemini 3.1 Pro", note:"Preview · doubles above 200k tokens" },
     { p:"google", key:"gemini-3.1-flash-lite",  m:"Gemini 3.1 Flash-Lite" },
     { p:"google", key:"gemini-2.5-pro",         m:"Gemini 2.5 Pro" },
     { p:"google", key:"gemini-2.5-flash",       m:"Gemini 2.5 Flash" },
     { p:"google", key:"gemini-2.5-flash-lite",  m:"Gemini 2.5 Flash-Lite" },
 
+    { p:"xai", key:"grok-4.5",    m:"Grok 4.5" },
     { p:"xai", key:"grok-4.3",    m:"Grok 4.3" },
     { p:"xai", key:"grok-4.20",   m:"Grok 4.20" },
-    { p:"xai", key:"grok-4",      m:"Grok 4" },
-    { p:"xai", key:"grok-3",      m:"Grok 3" },
-    { p:"xai", key:"grok-3-mini", m:"Grok 3 Mini" },
+    { p:"xai", key:"grok-4",      m:"Grok 4", note:"no longer listed by xAI · last known rate" },
+    { p:"xai", key:"grok-3",      m:"Grok 3", note:"no longer listed by xAI · last known rate" },
+    { p:"xai", key:"grok-3-mini", m:"Grok 3 Mini", note:"no longer listed by xAI · last known rate" },
 
-    { p:"mistral", key:"mistral-large-3",  m:"Mistral Large 3" },
-    { p:"mistral", key:"mistral-medium-3", m:"Mistral Medium 3" },
-    { p:"mistral", key:"mistral-small-3",  m:"Mistral Small 3" },
-    { p:"mistral", key:"codestral",        m:"Codestral" },
+    { p:"mistral", key:"mistral-medium-3.5", m:"Mistral Medium 3.5" },
+    { p:"mistral", key:"mistral-large-3",    m:"Mistral Large 3" },
+    { p:"mistral", key:"mistral-small-4",    m:"Mistral Small 4" },
+    { p:"mistral", key:"codestral",          m:"Codestral" },
 
     { p:"perplexity", key:"sonar-pro",           m:"Sonar Pro" },
     { p:"perplexity", key:"sonar",               m:"Sonar" },
@@ -448,8 +456,8 @@
 
     { p:"deepseek", key:"deepseek-v4-flash", m:"DeepSeek V4 Flash" },
     { p:"deepseek", key:"deepseek-v4-pro",   m:"DeepSeek V4 Pro" },
-    { p:"deepseek", key:"deepseek-v3",       m:"DeepSeek V3" },
-    { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1" }
+    { p:"deepseek", key:"deepseek-v3",       m:"DeepSeek V3", note:"no longer listed by DeepSeek · last known rate" },
+    { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1", note:"no longer listed by DeepSeek · last known rate" }
   ];
 
   // ---- Path to the live prices file (same file the Monday Action maintains) ----
@@ -469,9 +477,14 @@
       "claude-mythos-5":           { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
+      "gpt-5.6-sol":   { input: 5e-6,   output: 3e-5 },
+      "gpt-5.6-terra": { input: 2.5e-6, output: 1.5e-5 },
+      "gpt-5.6-luna":  { input: 1e-6,   output: 6e-6 },
       "gpt-5.5":      { input: 5e-6,    output: 3e-5 },
+      "gpt-5.5-pro":  { input: 3e-5,    output: 1.8e-4 },
       "gpt-5.4":      { input: 2.5e-6,  output: 1.5e-5 },
       "gpt-5.4-mini": { input: 7.5e-7,  output: 4.5e-6 },
+      "gpt-5.4-nano": { input: 2e-7,    output: 1.25e-6 },
       "gpt-4.1":      { input: 2e-6,    output: 8e-6 },
       "gpt-4.1-mini": { input: 4e-7,    output: 1.6e-6 },
       "gpt-4.1-nano": { input: 1e-7,    output: 4e-7 },
@@ -481,7 +494,9 @@
       "o4-mini":      { input: 1.1e-6,  output: 4.4e-6 }
     },
     "google": {
+      "gemini-3.6-flash":       { input: 1.5e-6,  output: 7.5e-6 },
       "gemini-3.5-flash":       { input: 1.5e-6,  output: 9e-6 },
+      "gemini-3.5-flash-lite":  { input: 3e-7,    output: 2.5e-6 },
       "gemini-3.1-pro-preview": { input: 2e-6,    output: 1.2e-5 },
       "gemini-3.1-flash-lite":  { input: 2.5e-7,  output: 1.5e-6 },
       "gemini-2.5-pro":         { input: 1.25e-6, output: 1e-5 },
@@ -489,16 +504,17 @@
       "gemini-2.5-flash-lite":  { input: 1e-7,    output: 4e-7 }
     },
     "xai": {
+      "grok-4.5":    { input: 2e-6,    output: 6e-6 },
       "grok-4.3":    { input: 1.25e-6, output: 2.5e-6 },
-      "grok-4.20":   { input: 2e-6,    output: 6e-6 },
+      "grok-4.20":   { input: 1.25e-6, output: 2.5e-6 },
       "grok-4":      { input: 3e-6,    output: 1.5e-5 },
       "grok-3":      { input: 2e-6,    output: 1e-5 },
       "grok-3-mini": { input: 3e-7,    output: 5e-7 }
     },
     "mistral": {
-      "mistral-large-3":  { input: 2e-6,    output: 6e-6 },
-      "mistral-medium-3": { input: 4e-7,    output: 2e-6 },
-      "mistral-small-3":  { input: 2e-7,    output: 6e-7 },
+      "mistral-medium-3.5": { input: 1.5e-6, output: 7.5e-6 },
+      "mistral-large-3":  { input: 5e-7,    output: 1.5e-6 },
+      "mistral-small-4":  { input: 1.5e-7,  output: 6e-7 },
       "codestral":        { input: 3e-7,    output: 9e-7 }
     },
     "perplexity": {
@@ -508,7 +524,7 @@
     },
     "deepseek": {
       "deepseek-v4-flash": { input: 1.4e-7,  output: 2.8e-7 },
-      "deepseek-v4-pro":   { input: 1.74e-6, output: 3.48e-6 },
+      "deepseek-v4-pro":   { input: 4.35e-7, output: 8.7e-7 },
       "deepseek-v3":       { input: 1.4e-7,  output: 2.8e-7 },
       "deepseek-r1":       { input: 5.5e-7,  output: 2.19e-6 }
     }
@@ -612,10 +628,10 @@
       { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-4o-mini",   high:"gpt-5.4-mini"} },
       { p:"openai", m:"ChatGPT Go",    provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
         caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
-      { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
+      { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"},
         caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
-      { p:"openai", m:"ChatGPT Pro",       provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:5,  scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
-      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:20, scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
+      { p:"openai", m:"ChatGPT Pro",       provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:5,  scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:20, scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
 
       { p:"anthropic", m:"Claude Free",    provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5"} },
       { p:"anthropic", m:"Claude Pro",     provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-opus-5"} },
@@ -640,10 +656,10 @@
       { p:"microsoft", m:"Copilot (Free)",          provenance:"not_disclosed", no_api_rate:true },
       { p:"microsoft", m:"Microsoft 365 Premium",   provenance:"not_disclosed", no_api_rate:true },
 
-      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{low:"mistral-small-3", high:"mistral-medium-3"} },
-      { p:"mistral", m:"Le Chat Pro",  provenance:"not_disclosed", value_models:{low:"mistral-small-3", high:"mistral-large-3"} },
+      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{low:"mistral-small-4", high:"mistral-medium-3.5"} },
+      { p:"mistral", m:"Le Chat Pro",  provenance:"not_disclosed", value_models:{low:"mistral-small-4", high:"mistral-medium-3.5"} },
 
-      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{low:"deepseek-v3", high:"deepseek-v4-pro"} }
+      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{low:"deepseek-v4-flash", high:"deepseek-v4-pro"} }
     ]
   };
 

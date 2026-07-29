@@ -92,6 +92,9 @@ const MODEL_CATALOG = [
     { key:'claude-mythos-5', name:'Claude Mythos 5' },
   ]},
   { label:'ChatGPT', models:[
+    { key:'gpt-5.6-sol', name:'GPT-5.6 Sol' },
+    { key:'gpt-5.6-terra', name:'GPT-5.6 Terra' },
+    { key:'gpt-5.6-luna', name:'GPT-5.6 Luna' },
     { key:'gpt-5.5', name:'GPT-5.5' },
     { key:'gpt-5.4', name:'GPT-5.4' },
     { key:'gpt-5.4-mini', name:'GPT-5.4 mini' },
@@ -102,7 +105,9 @@ const MODEL_CATALOG = [
     { key:'o4-mini', name:'o4-mini' },
   ]},
   { label:'Gemini', models:[
+    { key:'gemini-3.6-flash', name:'Gemini 3.6 Flash' },
     { key:'gemini-3.5-flash', name:'Gemini 3.5 Flash' },
+    { key:'gemini-3.5-flash-lite', name:'Gemini 3.5 Flash-Lite' },
     { key:'gemini-3.1-pro-preview', name:'Gemini 3.1 Pro' },
     { key:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash-Lite' },
     { key:'gemini-2.5-pro', name:'Gemini 2.5 Pro' },
@@ -110,6 +115,7 @@ const MODEL_CATALOG = [
     { key:'gemini-2.5-flash-lite', name:'Gemini 2.5 Flash-Lite' },
   ]},
   { label:'Grok', models:[
+    { key:'grok-4.5', name:'Grok 4.5' },
     { key:'grok-4.3', name:'Grok 4.3' },
     { key:'grok-4.20', name:'Grok 4.20' },
     { key:'grok-4', name:'Grok 4' },
