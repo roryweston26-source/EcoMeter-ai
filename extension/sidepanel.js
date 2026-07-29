@@ -744,13 +744,36 @@ const PLATFORM_OVERHEAD_TOKENS = {
 // GPT-4o:   85 base + ceil(w/512) * ceil(h/512) * 170 tiles
 // Gemini:   fixed 258 tokens per image (Google-documented)
 // Others:   1000 token fallback
-function estimateImageTokens(img, platformName) {
+function estimateImageTokens(img, platformName, modelKey) {
   const w = img.width  || 0;
   const h = img.height || 0;
 
   if (w > 0 && h > 0) {
     if (platformName === 'Claude') {
-      return Math.ceil(w / 32) * Math.ceil(h / 32) * 65;
+      // Anthropic: "Claude views images in patches instead of pixels. Each patch is
+      // a 28x28-pixel block... an image costs ceil(w/28) x ceil(h/28) visual tokens."
+      // Images over a tier's long-edge or visual-token limit are downscaled first,
+      // which CAPS the cost — so a 4K screenshot is not ruinous.
+      //
+      // This previously used 32px patches multiplied by 65, a factor with no basis
+      // in the docs, which overcounted every Claude image by ~51x. Verified against
+      // every row of Anthropic's published worked table.
+      const hi = /(-4-7|-4-8|opus-5|sonnet-5|fable-5|mythos-5)/.test(modelKey || '');
+      const maxEdge   = hi ? 2576 : 1568;   // Claude 4.7+ get the high-resolution tier
+      const maxTokens = hi ? 4784 : 1568;
+      let sw = w, sh = h;
+      const edge = Math.max(sw, sh);
+      if (edge > maxEdge) { const s = maxEdge / edge; sw = Math.round(sw * s); sh = Math.round(sh * s); }
+      const at = s => Math.ceil((sw * s) / 28) * Math.ceil((sh * s) / 28);
+      if (at(1) <= maxTokens) return at(1);
+      // Anthropic scales to "the largest size that fits the tier's limits", so find
+      // the biggest scale still inside the budget rather than undershooting it.
+      let lo = 0, hi2 = 1;
+      for (let i = 0; i < 40; i++) {
+        const mid = (lo + hi2) / 2;
+        if (at(mid) <= maxTokens) lo = mid; else hi2 = mid;
+      }
+      return Math.min(at(lo), maxTokens);
     }
     if (platformName === 'ChatGPT') {
       // Images >2048 on either side are scaled down by the API
@@ -767,15 +790,26 @@ function estimateImageTokens(img, platformName) {
   return FALLBACK[platformName] || 1000;
 }
 
-// ── Context replay estimation ─────────────────────────────
-// Real AI APIs resend the full conversation history with every message.
-// Turn 1 costs msg1; Turn 2 costs msg1+msg2; Turn N costs msg1+…+msgN.
-// Replay tokens are billed at the input rate only (not the avg of in+out).
-function estimateConversationReplay(messages) {
-  let running = 0, total = 0;
+// ── Billed input estimation ───────────────────────────────
+// Real AI APIs resend the whole transcript with every request, so total input is
+// the sum of each request's context — NOT the sum of the messages.
+//
+// A request happens once per USER turn, and carries everything before it plus the
+// new message:  input_k = sum_{j<k}(u_j + a_j) + u_k.
+//
+// Two things this must not do, both of which it did before 2026-07-29 and which
+// together charged input at almost exactly 2x:
+//   1. Accumulate after assistant messages as well as user ones. Replies don't
+//      trigger a request, and the final reply is generated, never re-sent.
+//   2. Be added on top of a separate "each message once" charge by the caller.
+//      The returned figure is the COMPLETE input for the conversation, excluding
+//      only the per-turn system-prompt overhead, which the caller adds.
+function estimateBilledInput(messages) {
+  let prior = 0, total = 0;
   for (const m of messages) {
-    running += m.tokens || 0;
-    total   += running;
+    const tok = m.tokens || 0;
+    if (m.role === 'user') total += prior + tok;   // this request's full context
+    prior += tok;
   }
   return total;
 }
@@ -794,13 +828,18 @@ function estimateConversationReplay(messages) {
 // return the token-weighted average rate.
 function blendedInputRate(messages, p, overheadPerTurn) {
   if (!p || !p.long) return p ? p.input : 0;
-  let running = 0, tokens = 0, weighted = 0;
+  let prior = 0, tokens = 0, weighted = 0;
   for (const m of messages) {
-    running += m.tokens || 0;
-    const ctx  = running + overheadPerTurn;   // what this request actually sends
-    const rate = ctx > p.long.over ? p.long.input : p.input;
-    weighted += ctx * rate;
-    tokens   += ctx;
+    const tok = m.tokens || 0;
+    // One request per user turn — same discriminator estimateBilledInput() uses,
+    // so the tier chosen always matches the tokens actually being charged.
+    if (m.role === 'user') {
+      const ctx  = prior + tok + overheadPerTurn;
+      const rate = ctx > p.long.over ? p.long.input : p.input;
+      weighted += ctx * rate;
+      tokens   += ctx;
+    }
+    prior += tok;
   }
   return tokens ? weighted / tokens : p.input;
 }
@@ -928,27 +967,29 @@ function renderSummary() {
     const outRate  = outputRateAt(p, peakCtx);
     const onLongTier = !!(p.long && peakCtx > p.long.over);
 
-    const adjustedCost = inp * inRate + adjustedOut * outRate;
-
     // Image cost — use actual dimensions if available
     const imgCost = currentImages.reduce((sum, img) => {
-      const toks = estimateImageTokens(img, currentPlatformName);
+      const toks = estimateImageTokens(img, currentPlatformName, key);
       return sum + toks * inRate;
     }, 0);
 
-    // Context replay: cumulative input resent each turn, billed at input rate
-    const replayTokens = estimateConversationReplay(msgData.filter(m => m.counted));
-    const replayCost   = replayTokens * inRate;
+    // Every request resends the transcript, so this IS the whole input bill —
+    // the visible messages included. Do not add `inp` on top of it.
+    const billedInput = estimateBilledInput(msgData.filter(m => m.counted));
 
     // The hidden system prompt / tool schemas are re-sent on EVERY API call, not
     // once per conversation — so overhead scales with the number of user turns.
     // (Charging it once, as this did previously, undercounts more the longer the
     // conversation runs.)
     const overheadTok  = overheadPerTurn * Math.max(turns, 1);
-    const overheadCost = overheadTok * inRate;
 
-    const trueCost    = adjustedCost + imgCost + replayCost + overheadCost;
-    const visibleCost = adjustedCost + imgCost;
+    const inputCost  = (billedInput + overheadTok) * inRate;
+    const outputCost = adjustedOut * outRate;
+
+    const trueCost = inputCost + outputCost + imgCost;
+    // "Visible" = what the messages on screen would cost if history were free —
+    // the naive figure, kept so the panel can show the gap between the two.
+    const visibleCost = inp * inRate + outputCost + imgCost;
 
     totalCost.textContent = '~$' + trueCost.toFixed(3);
 
