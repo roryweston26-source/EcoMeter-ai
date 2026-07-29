@@ -477,12 +477,12 @@
       "claude-mythos-5":           { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
-      "gpt-5.6-sol":   { input: 5e-6,   output: 3e-5 },
-      "gpt-5.6-terra": { input: 2.5e-6, output: 1.5e-5 },
-      "gpt-5.6-luna":  { input: 1e-6,   output: 6e-6 },
-      "gpt-5.5":      { input: 5e-6,    output: 3e-5 },
-      "gpt-5.5-pro":  { input: 3e-5,    output: 1.8e-4 },
-      "gpt-5.4":      { input: 2.5e-6,  output: 1.5e-5 },
+      "gpt-5.6-sol":   { input: 5e-6,   output: 3e-5, long: { over: 272000, input: 0.00001, output: 0.000045 } },
+      "gpt-5.6-terra": { input: 2.5e-6, output: 1.5e-5, long: { over: 272000, input: 0.000005, output: 0.0000225 } },
+      "gpt-5.6-luna":  { input: 1e-6,   output: 6e-6, long: { over: 272000, input: 0.000002, output: 0.000009 } },
+      "gpt-5.5":      { input: 5e-6,    output: 3e-5, long: { over: 272000, input: 0.00001, output: 0.000045 } },
+      "gpt-5.5-pro":  { input: 3e-5,    output: 1.8e-4, long: { over: 272000, input: 0.00006, output: 0.00027 } },
+      "gpt-5.4":      { input: 2.5e-6,  output: 1.5e-5, long: { over: 272000, input: 0.000005, output: 0.0000225 } },
       "gpt-5.4-mini": { input: 7.5e-7,  output: 4.5e-6 },
       "gpt-5.4-nano": { input: 2e-7,    output: 1.25e-6 },
       "gpt-4.1":      { input: 2e-6,    output: 8e-6 },
@@ -497,16 +497,16 @@
       "gemini-3.6-flash":       { input: 1.5e-6,  output: 7.5e-6 },
       "gemini-3.5-flash":       { input: 1.5e-6,  output: 9e-6 },
       "gemini-3.5-flash-lite":  { input: 3e-7,    output: 2.5e-6 },
-      "gemini-3.1-pro-preview": { input: 2e-6,    output: 1.2e-5 },
+      "gemini-3.1-pro-preview": { input: 2e-6,    output: 1.2e-5, long: { over: 200000, input: 0.000004, output: 0.000018 } },
       "gemini-3.1-flash-lite":  { input: 2.5e-7,  output: 1.5e-6 },
-      "gemini-2.5-pro":         { input: 1.25e-6, output: 1e-5 },
+      "gemini-2.5-pro":         { input: 1.25e-6, output: 1e-5, long: { over: 200000, input: 0.0000025, output: 0.000015 } },
       "gemini-2.5-flash":       { input: 3e-7,    output: 2.5e-6 },
       "gemini-2.5-flash-lite":  { input: 1e-7,    output: 4e-7 }
     },
     "xai": {
-      "grok-4.5":    { input: 2e-6,    output: 6e-6 },
-      "grok-4.3":    { input: 1.25e-6, output: 2.5e-6 },
-      "grok-4.20":   { input: 1.25e-6, output: 2.5e-6 },
+      "grok-4.5":    { input: 2e-6,    output: 6e-6, long: { over: 200000, input: 0.000004, output: 0.000012 } },
+      "grok-4.3":    { input: 1.25e-6, output: 2.5e-6, long: { over: 200000, input: 0.0000025, output: 0.000005 } },
+      "grok-4.20":   { input: 1.25e-6, output: 2.5e-6, long: { over: 200000, input: 0.0000025, output: 0.000005 } },
       "grok-4":      { input: 3e-6,    output: 1.5e-5 },
       "grok-3":      { input: 2e-6,    output: 1e-5 },
       "grok-3-mini": { input: 3e-7,    output: 5e-7 }
@@ -537,7 +537,14 @@
       var group = prices[e.p];
       var rec = group && group[e.key];
       if (!rec || typeof rec.input !== "number" || typeof rec.output !== "number") return;
-      rows.push({ p: e.p, m: e.m, note: e.note, in: rec.input * 1e6, out: rec.output * 1e6 });
+      // A model with a long-context tier has two prices, and a table showing only
+      // the cheaper one is the kind of half-truth this page exists to correct.
+      var longNote = rec.long
+        ? "$" + (rec.long.input * 1e6).toFixed(2) + " / $" + (rec.long.output * 1e6).toFixed(2) +
+          " above " + Math.round(rec.long.over / 1000) + "k input tokens"
+        : "";
+      var note = e.note ? (longNote ? e.note + " · " + longNote : e.note) : longNote;
+      rows.push({ p: e.p, m: e.m, note: note, in: rec.input * 1e6, out: rec.output * 1e6 });
     });
     return rows;
   }
@@ -703,7 +710,13 @@
     var rec = group && group[modelKey];
     if (!rec || typeof rec.input !== "number" || typeof rec.output !== "number") return null;
     var a = archetype();
-    return a.input * rec.input + a.output * rec.output;
+    // Long-context tier, where one exists: the higher rate applies to every token
+    // in the request once the input crosses the threshold. None of the current
+    // archetypes are anywhere near 200k, so this doesn't bite today — but it will
+    // the moment someone adds a document-sized archetype, and silently halving the
+    // cost then would be worse than the arithmetic being unused now.
+    var rate = (rec.long && a.input > rec.long.over) ? rec.long : rec;
+    return a.input * rate.input + a.output * rate.output;
   }
 
   // Messages per day needed before the subscription beats per-token pricing.

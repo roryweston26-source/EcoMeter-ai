@@ -780,6 +780,38 @@ function estimateConversationReplay(messages) {
   return total;
 }
 
+// ── Long-context pricing tiers ────────────────────────────
+// OpenAI (>272k input tokens), Google (>200k) and xAI (>=200k) charge roughly
+// double past a threshold, and the higher rate applies to EVERY token in that
+// request, not just the excess. Anthropic does not tier this way.
+//
+// The tier is a property of a single API call, not of the conversation: each turn
+// resends the whole history plus the hidden system prompt, so a long chat crosses
+// the threshold partway through and every subsequent turn is billed at the higher
+// rate. Charging the whole conversation at one tier would be wrong in both
+// directions — short rate undercounts the tail, long rate overcounts the start.
+// So walk the turns, pick the tier each request would actually be billed at, and
+// return the token-weighted average rate.
+function blendedInputRate(messages, p, overheadPerTurn) {
+  if (!p || !p.long) return p ? p.input : 0;
+  let running = 0, tokens = 0, weighted = 0;
+  for (const m of messages) {
+    running += m.tokens || 0;
+    const ctx  = running + overheadPerTurn;   // what this request actually sends
+    const rate = ctx > p.long.over ? p.long.input : p.input;
+    weighted += ctx * rate;
+    tokens   += ctx;
+  }
+  return tokens ? weighted / tokens : p.input;
+}
+
+// Output is billed per response at that request's tier. The peak context is the
+// right discriminator for the replies that matter (the later, larger ones).
+function outputRateAt(p, peakContextTokens) {
+  if (!p || !p.long) return p ? p.output : 0;
+  return peakContextTokens > p.long.over ? p.long.output : p.output;
+}
+
 // ── Anthropic token counting API ──────────────────────────
 // Counts are tokenizer-specific, and Claude models do NOT all share one: Opus 4.7
 // introduced a new tokenizer (also used by Opus 4.8 / Opus 5 / Sonnet 5 / Fable 5 /
@@ -884,25 +916,36 @@ function renderSummary() {
   if (p && tot > 0) {
     const range = REASONING_RANGES[key];
     const adjustedOut  = out * (range ? range.mid : 1.0);
-    const adjustedCost = inp * p.input + adjustedOut * p.output;
+
+    const turns          = msgData.filter(m => m.counted && m.role === 'user').length;
+    const overheadPerTurn = PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000;
+
+    // Long-context tiers: resolve the effective rates before costing anything.
+    // Without this the estimate silently halves once a conversation crosses the
+    // provider's threshold — and long chats are exactly where that happens.
+    const inRate   = blendedInputRate(msgData.filter(m => m.counted), p, overheadPerTurn);
+    const peakCtx  = tot + overheadPerTurn;
+    const outRate  = outputRateAt(p, peakCtx);
+    const onLongTier = !!(p.long && peakCtx > p.long.over);
+
+    const adjustedCost = inp * inRate + adjustedOut * outRate;
 
     // Image cost — use actual dimensions if available
     const imgCost = currentImages.reduce((sum, img) => {
       const toks = estimateImageTokens(img, currentPlatformName);
-      return sum + toks * p.input;
+      return sum + toks * inRate;
     }, 0);
 
     // Context replay: cumulative input resent each turn, billed at input rate
     const replayTokens = estimateConversationReplay(msgData.filter(m => m.counted));
-    const replayCost   = replayTokens * p.input;
+    const replayCost   = replayTokens * inRate;
 
     // The hidden system prompt / tool schemas are re-sent on EVERY API call, not
     // once per conversation — so overhead scales with the number of user turns.
     // (Charging it once, as this did previously, undercounts more the longer the
     // conversation runs.)
-    const turns        = msgData.filter(m => m.counted && m.role === 'user').length;
-    const overheadTok  = (PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000) * Math.max(turns, 1);
-    const overheadCost = overheadTok * p.input;
+    const overheadTok  = overheadPerTurn * Math.max(turns, 1);
+    const overheadCost = overheadTok * inRate;
 
     const trueCost    = adjustedCost + imgCost + replayCost + overheadCost;
     const visibleCost = adjustedCost + imgCost;
@@ -912,6 +955,9 @@ function renderSummary() {
     // Model label: show reasoning range if applicable
     let labelText = key;
     if (range) labelText += ` · ×${range.lo}–${range.hi} reasoning (mid ×${range.mid})`;
+    // A crossed context threshold roughly doubles the bill — the user should be
+    // told, not just quietly charged more.
+    if (onLongTier) labelText += ` · long-context rate (>${fmt(p.long.over)} tokens)`;
     modelLabel.textContent = labelText;
 
     const imgNote  = currentImages.length > 0
@@ -978,6 +1024,20 @@ function renderMessages() {
   const key       = userSelectedModel;
   const platColor = currentPlatformColor;
 
+  // Which price tier a message was billed at depends on how much history preceded
+  // it, not on the message alone — so map each message to the context size of the
+  // request it belonged to. Built from msgData because `display` may be a subset.
+  const ctxAt = new Map();
+  {
+    const ovh = PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000;
+    let running = 0;
+    for (const mm of msgData) {
+      if (!mm.counted) continue;
+      running += mm.tokens || 0;
+      ctxAt.set(mm, running + ovh);
+    }
+  }
+
   display.forEach(m => {
     const isUser      = m.role === 'user';
     const borderColor = isUser ? (platColor || '#d4a843') : '#5b9cf6';
@@ -1013,7 +1073,11 @@ function renderMessages() {
       if (key) {
         const p = getPrice(key);
         if (p) {
-          const c = m.tokens * (isUser ? p.input : p.output);
+          const onLong = !!(p.long && (ctxAt.get(m) || 0) > p.long.over);
+          const rate   = isUser
+            ? (onLong ? p.long.input  : p.input)
+            : (onLong ? p.long.output : p.output);
+          const c = m.tokens * rate;
           const costSpan = document.createElement('span');
           costSpan.className   = 'c-cost';
           costSpan.textContent = '$' + c.toFixed(5);
