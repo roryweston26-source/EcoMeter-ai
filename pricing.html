@@ -255,6 +255,13 @@
   .nd { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); font-style: italic; }
   .tp { font-family: var(--mono); color: var(--gold); white-space: nowrap; }
   .tp::before { content: "⚠ "; }
+  /* A low-confidence estimate should not read as confidently as a corroborated
+     one. Dimmed and dashed rather than dropped — the gap is worth showing. */
+  .tp-low { color: #a08a4e; border-bottom: 1px dashed #6b5a34; }
+  .tp .sub b { color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: 10px; }
+  .tp-low .sub b { color: #a08a4e; }
+  .tp .sub a { color: var(--ink-faint); text-decoration: underline dotted; }
+  .tp .sub a:hover { color: var(--green-2); }
 
   /* the math expander */
   .mathbtn {
@@ -987,8 +994,12 @@
                    tail + '</span></span>';
       } else if (lim && lim.third_party && lim.third_party.length) {
         var t = lim.third_party[0];
-        ceilCell = '<span class="tp">' + t.n + ' ' + t.unit + '/' + t.window.replace("1d", "day") +
-                   '<span class="sub">third-party figure — not published by ' + provName(r.p) + '</span></span>';
+        var conf = t.confidence || "low";
+        var win = { "1d": "day", "7d": "week", "5h": "5h", "3h": "3h" }[t.window] || t.window;
+        ceilCell = '<span class="tp ' + (conf === "low" ? "tp-low" : "") + '">~' + t.n + ' ' + t.unit + '/' + win +
+                   '<span class="sub"><b>' + conf + ' confidence</b> · not published by ' + provName(r.p) +
+                   ' · estimated by <a href="' + esc(t.source) + '" target="_blank" rel="noopener">' +
+                   esc(t.source.replace(/^https?:\/\//, "").split("/")[0]) + '</a></span></span>';
       } else {
         ceilCell = '<span class="nd">not disclosed</span>';
       }
@@ -1067,9 +1078,18 @@
     }
     if (lim && lim.third_party && lim.third_party.length) {
       var t = lim.third_party[0];
-      out += '<p class="why"><strong>Third-party figure:</strong> ' + t.n + ' ' + esc(t.unit) + ' per ' +
-             t.window.replace("1d", "day") + '. ' + (t.note ? esc(t.note) : "") +
-             ' ' + provName(sub.p) + ' publishes no figure of its own.</p>';
+      var w = { "1d": "day", "7d": "week", "5h": "5 hours", "3h": "3 hours" }[t.window] || t.window;
+      out += '<p class="why"><strong>Third-party estimate — ' + esc(t.confidence || "low") + ' confidence.</strong> ' +
+             '~' + t.n + ' ' + esc(t.unit) + ' per ' + w + (t.scope ? ' — ' + esc(t.scope) : "") + '. ' +
+             provName(sub.p) + ' publishes no figure of its own, so this cannot be confirmed.</p>';
+      if (t.why)      { out += '<p class="why"><strong>Why we rate it that way:</strong> ' + esc(t.why) + '</p>'; }
+      if (t.replaces) { out += '<p class="why"><strong>Superseded figure:</strong> ' + esc(t.replaces) + '</p>'; }
+      if (t.corroborated_by && t.corroborated_by.length) {
+        out += '<p class="src">Corroborated by ' + t.corroborated_by.map(function (u) {
+          var h = u.replace(/^https?:\/\//, "").split("/")[0];
+          return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(h) + '</a>';
+        }).join(" · ") + '</p>';
+      }
     }
     if (!ceil && !(lim && lim.third_party && lim.third_party.length)) {
       out += '<p class="why">No usable cap is published for this plan, so there is no honest ceiling to compute. The blank is the finding.</p>';
@@ -1122,15 +1142,19 @@
   // Tally how many plans actually have a provider-published cap.
   function fillCallout() {
     var plans = (PLAN_LIMITS.plans || []);
-    var total = plans.length, disclosed = 0, third = 0;
+    var total = plans.length, disclosed = 0, third = 0, lowConf = 0;
     plans.forEach(function (l) {
       if (l.provenance === "disclosed" || l.provenance === "derived") disclosed++;
-      else if (l.third_party && l.third_party.length) third++;
+      else if (l.third_party && l.third_party.length) {
+        third++;
+        if ((l.third_party[0].confidence || "low") === "low") lowConf++;
+      }
     });
     $("callout-body").innerHTML =
       'Of the <span class="tally">' + total + '</span> consumer plans tracked here, ' +
       '<span class="tally">' + disclosed + '</span> have a usage cap the provider publishes about its own product. ' +
-      '<span class="tally">' + third + '</span> have only a third-party estimate. ' +
+      '<span class="tally">' + third + '</span> have only a third-party estimate' +
+      (lowConf ? ', and <span class="tally">' + lowConf + '</span> of those we rate low confidence' : "") + '. ' +
       'The rest are sold on multipliers — "5× more usage than Pro", "20× higher usage than Plus", ' +
       '"4× higher than standard limits" — against a base nobody states. The one published cap is ' +
       'identical on ChatGPT Go at $8 and Plus at $20, so it doesn\'t even separate the tiers you\'re ' +

@@ -101,8 +101,14 @@
       "stated": "'More usage' than Free. Anthropic describes a 'conversation budget' that varies with 'length and complexity of your conversations, the features you use, which Claude model you're chatting with, and the effort level you've selected', and publishes no numbers.",
       "third_party": [
         { "n": 45, "unit": "messages", "window": "5h", "scope": "all models",
-          "source": "https://tokenkarma.app/claude-usage-limit/",
-          "note": "Community measurement. Sources disagree with each other; Anthropic states nothing." }
+          "confidence": "medium",
+          "source": "https://claudelimit.com/claude-pro-limits/",
+          "corroborated_by": [
+            "https://tokenkarma.app/claude-usage-limit/",
+            "https://www.morphllm.com/claude-code-usage-limits",
+            "https://deployhyre.com/ai-tools/claude-usage-limits/"
+          ],
+          "why": "The strongest third-party figure on this page. Several independent trackers converge on ~45 per 5 hours, and it is internally consistent with the separately-reported ~225 per 5 hours on Max 5x (exactly 5x). Still an estimate: Anthropic publishes nothing, the 5-hour caps were doubled on 2026-05-06 so older figures are stale, and Anthropic says the real budget varies with conversation length, features, model and effort level." }
       ],
       "value_models": { "low": "claude-haiku-4-5-20251001", "high": "claude-opus-5" },
       "note": "A weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit every day for 30 days.",
@@ -203,7 +209,9 @@
       "provenance": "not_disclosed",
       "third_party": [
         { "n": 5, "unit": "Pro searches", "window": "1d", "scope": "Pro Search",
-          "source": "https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained" }
+          "confidence": "low",
+          "source": "https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained",
+          "why": "Sources disagree — some report 3 per day as of July 2026 rather than 5. Perplexity publishes no figure, so there is no way to settle it." }
       ],
       "value_models": { "low": "sonar", "high": "sonar" },
       "as_of": "2026-07-28"
@@ -211,10 +219,13 @@
     {
       "p": "perplexity", "m": "Perplexity Pro",
       "provenance": "not_disclosed",
+      "stated": "Pro Search is marketed as unlimited. Perplexity does not publish the limit that actually binds — the weekly allowance on advanced models — and has confirmed it is not even the same for every Pro subscriber.",
       "third_party": [
-        { "n": 600, "unit": "searches", "window": "1d", "scope": "Pro Search",
-          "source": "https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained",
-          "note": "Low confidence. Pro users reported limits being cut substantially in 2026; Perplexity does not publish a current figure." }
+        { "n": 125, "unit": "advanced-model queries", "window": "7d", "scope": "advanced models (e.g. Gemini 3.1 Pro, Thinking)",
+          "confidence": "low",
+          "source": "https://www.androidauthority.com/perplexity-pro-advanced-ai-limits-reduced-3667942/",
+          "why": "Midpoint of the 100-150 per week that Pro users reported in May 2026 after limits were cut; standard Pro Search was unaffected. Weak for an unusual reason: Perplexity's own response was that 'some users are seeing different usage limits because their accounts are tied to promotional-code offers, and we've had to adjust enforcement due to fraud and unauthorized resale' — i.e. the provider confirms the limit differs between subscribers on the same plan. There may be no single true number to find.",
+          "replaces": "An earlier 600 searches/day figure, dropped: it described unlimited Pro Search rather than the advanced-model allowance that actually binds." }
       ],
       "value_models": { "low": "sonar", "high": "sonar-reasoning-pro" },
       "as_of": "2026-07-28"
@@ -245,21 +256,28 @@
     {
       "p": "mistral", "m": "Le Chat Free",
       "provenance": "not_disclosed",
+      "stated": "'Limited messages and web searches' — no number.",
       "third_party": [
         { "n": 25, "unit": "messages", "window": "1d", "scope": "all models",
-          "source": "https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }
+          "confidence": "low",
+          "source": "https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v",
+          "why": "Single source, described as a soft cap. Mistral's own help-centre articles on Le Chat limits now 404, so there is nothing to check it against." }
       ],
+      "source": "https://mistral.ai/pricing",
       "value_models": { "low": "mistral-small-4", "high": "mistral-medium-3.5" },
       "as_of": "2026-07-28"
     },
     {
       "p": "mistral", "m": "Le Chat Pro",
       "provenance": "not_disclosed",
+      "stated": "Messages are 'subject to fair usage limits and Mistral's Terms of Service' — unquantified. Mistral does publish one number on its pricing page: 150 Flash answers per day on Pro (200 on Team). Flash answers are one feature, not the general message allowance.",
       "third_party": [
         { "n": 150, "unit": "messages", "window": "1d", "scope": "all models",
+          "confidence": "low",
           "source": "https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v",
-          "note": "Low confidence — reported as a soft cap on an 'unlimited' plan." }
+          "why": "Treat with real suspicion. The widely-repeated '150 messages/day soft cap' for Le Chat Pro is the same number Mistral publishes for Flash answers per day — a specific feature, not a general message limit. Most likely one figure misread as the other. Kept because it is the only general-message estimate in circulation, but the coincidence is not reassuring." }
       ],
+      "source": "https://mistral.ai/pricing",
       "value_models": { "low": "mistral-small-4", "high": "mistral-medium-3.5" },
       "as_of": "2026-07-28"
     },
