@@ -505,13 +505,22 @@ function applyEcometer(log){
   if(totalMsgs) state.answers.messages=bandFor(totalMsgs);
   // carry real per-provider usage so the engine uses MEASURED models/volume, not guesses
   state.answers._eco={};
+  // Export v2 adds billed_input_tokens_per_day: what the provider actually charges
+  // for, which is much larger than the visible text because every turn resends the
+  // transcript. Prefer it where present — pricing API-equivalent cost off the
+  // visible tokens alone understates the API side and biases toward "keep paying
+  // per token", which is exactly the wrong way for this tool to be wrong.
+  const billedIn = x => (x && x.billed_input_tokens_per_day != null)
+    ? x.billed_input_tokens_per_day : (x ? x.input_tokens_per_day : 0);
   pf.forEach(p=>{ if(PLANS[p.provider]) state.answers._eco[p.provider]={
     models:(p.models_used||[]).filter(Boolean),
-    messages:p.messages_per_day, inTok:p.input_tokens_per_day, outTok:p.output_tokens_per_day,
+    messages:p.messages_per_day, inTok:billedIn(p), outTok:p.output_tokens_per_day,
+    visibleInTok:p.input_tokens_per_day,
+    billed:p.billed_input_tokens_per_day!=null,
     // optional per-model token split; lets the engine price each model at its own rate
     perModel: Array.isArray(p.model_usage)
       ? p.model_usage.filter(x=>x&&x.key).map(x=>({key:x.key,
-          inTok:x.input_tokens_per_day||0, outTok:x.output_tokens_per_day||0}))
+          inTok:billedIn(x)||0, outTok:x.output_tokens_per_day||0}))
       : null }; });
   const usesAdvanced=pf.some(p=>(p.models_used||[]).some(m=>ADVANCED.has(m)));
   state.answers.frontier=usesAdvanced?'always':'default';

@@ -210,15 +210,20 @@ Drives the **Break even / Ceiling** columns on `pricing.html` (§3a). Joins to `
 3. **⤓ Export for Auditor** downloads `ecometer-usage.json`.
 4. `audit.html` **Connect usage** reads it **in-browser** (FileReader — never uploaded) and pre-fills the quiz with measured models/volume.
 
-**`ecometer-usage.json` schema**
+**`ecometer-usage.json` schema (v2 — 2026-07-29)**
 ```jsonc
-{ "app":"EcoMeter AI","kind":"usage-export","version":1,"scope":"lifetime",
+{ "app":"EcoMeter AI","kind":"usage-export","version":2,"scope":"lifetime",
   "generated":"YYYY-MM-DD","days_tracked":N,
   "platforms":[ { "provider","messages_per_day","input_tokens_per_day","output_tokens_per_day",
+                  "billed_input_tokens_per_day","user_turns_per_day","billed_days",   // v2, optional
                   "total_messages","active_days","models_used":[...],
-                  "model_usage":[ { "key","input_tokens_per_day","output_tokens_per_day" } ]  // optional per-model token split
+                  "model_usage":[ { "key","input_tokens_per_day","output_tokens_per_day",
+                                    "billed_input_tokens_per_day","user_turns_per_day" } ]
   } ] }
 ```
+⚠️ **`input_tokens_per_day` is VISIBLE text only** — what you typed. It is not what you're charged for: every turn resends the transcript, so real input is several times larger and grows with conversation length. **v2 adds `billed_input_tokens_per_day`**, the figure `estimateBilledInput()` computes, which is the one to use for any cost or plan-fit comparison. `audit.html` prefers it and falls back to the visible figure for v1 exports.
+- **`billed_input_tokens_per_day ÷ user_turns_per_day` = billed input per message** — the number the `pricing.html` archetypes should be anchored to. It **excludes** the per-turn system-prompt overhead, because that's a modelled constant rather than a measurement (§4); add `PLATFORM_OVERHEAD_TOKENS` yourself if you want it, and say that you did.
+- The v2 fields are **omitted, not zeroed**, when nothing has been recorded since they were added, and are averaged over `billed_days` rather than `active_days` — otherwise pre-v2 history dilutes the average toward zero. A reader must treat absent as "not measured", never as 0.
 Volume is averaged **per active day**, **lifetime**. The optional **`model_usage[]`** (per-model token split) is what lets the Auditor price each model at its own rate; the extension already tracks per-model internally, so it's an export-format addition. Without it the Auditor prices conservatively (all tokens at the priciest used model's rate) — never a false downgrade.
 
 **Panel UI (reworked 2026-07-28).** The usage tally and the exact-count keys used to be two separate `<details>` panels; they're now **one "📊 Usage & accuracy" panel**, since both exist for the same reason — making the exported numbers real. Consequences worth knowing:

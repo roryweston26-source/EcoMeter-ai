@@ -301,16 +301,28 @@ function accumulateUsage(msgs, platformName, model) {
   const first = counted[0];
   const key = usageHash(first.role, first.text.slice(0, 200));
 
-  let cm = 0, ci = 0, co = 0;
-  for (const m of counted) { cm++; if (m.role === 'user') ci += m.tokens; else co += m.tokens; }
+  let cm = 0, ci = 0, co = 0, cu = 0;
+  for (const m of counted) { cm++; if (m.role === 'user') { ci += m.tokens; cu++; } else co += m.tokens; }
 
-  const prev = convState[key] || { msgs:0, inTok:0, outTok:0 };
+  // Visible tokens (ci/co) are what's on screen. They are NOT what gets billed:
+  // every turn resends the transcript, so real input is several times larger and
+  // grows with conversation length. Track the billed figure too — it's the one the
+  // Subscription Auditor needs, and it cannot be reconstructed from ci afterwards.
+  // Excludes the per-turn system-prompt overhead, which is a modelled constant
+  // rather than a measurement; uTurns is exported so a consumer can add it.
+  const cb = estimateBilledInput(counted);
+
+  const prev = convState[key] || { msgs:0, inTok:0, outTok:0, billedIn:0, uTurns:0 };
   const dM = Math.max(0, cm - prev.msgs), dI = Math.max(0, ci - prev.inTok), dO = Math.max(0, co - prev.outTok);
-  if (dM === 0 && dI === 0 && dO === 0) return;   // nothing new (re-poll of same state)
+  const dB = Math.max(0, cb - (prev.billedIn || 0)), dU = Math.max(0, cu - (prev.uTurns || 0));
+  if (dM === 0 && dI === 0 && dO === 0 && dB === 0) return;   // nothing new (re-poll of same state)
 
   // Track the per-field MAXIMUM, never the latest — so a transient scrape drop or
   // a lower re-count can't later be re-added as a phantom delta (no double-count).
-  convState[key] = { msgs: Math.max(cm, prev.msgs), inTok: Math.max(ci, prev.inTok), outTok: Math.max(co, prev.outTok) };
+  convState[key] = {
+    msgs: Math.max(cm, prev.msgs), inTok: Math.max(ci, prev.inTok), outTok: Math.max(co, prev.outTok),
+    billedIn: Math.max(cb, prev.billedIn || 0), uTurns: Math.max(cu, prev.uTurns || 0),
+  };
   if (convOrder[convOrder.length - 1] !== key) { convOrder = convOrder.filter(k => k !== key); convOrder.push(key); }
   while (convOrder.length > 2000) { delete convState[convOrder.shift()]; }   // bound history (generous)
 
@@ -322,6 +334,11 @@ function accumulateUsage(msgs, platformName, model) {
   const bm   = p.byModel[mdl]   || (p.byModel[mdl] = { msgs:0, inTok:0, outTok:0 });
   p.msgs += dM;  p.inTok += dI;  p.outTok += dO;
   bm.msgs += dM; bm.inTok += dI; bm.outTok += dO;
+  // Added 2026-07-29. Days recorded before this exist without these keys, so every
+  // reader must treat them as absent rather than zero — a 0 here means "not
+  // measured", and averaging it in would silently drag the figure down.
+  p.billedIn  = (p.billedIn  || 0) + dB;  p.uTurns  = (p.uTurns  || 0) + dU;
+  bm.billedIn = (bm.billedIn || 0) + dB;  bm.uTurns = (bm.uTurns || 0) + dU;
   scheduleUsageSave();
 }
 
@@ -334,41 +351,68 @@ function buildUsageExport() {
   for (const date in USAGE.days) {
     const day = USAGE.days[date];
     for (const prov in day) {
-      const a = agg[prov] || (agg[prov] = { days:new Set(), msgs:0, inTok:0, outTok:0, models:new Set(), byModel:{} });
+      const a = agg[prov] || (agg[prov] = { days:new Set(), billedDays:new Set(), msgs:0, inTok:0, outTok:0, billedIn:0, uTurns:0, models:new Set(), byModel:{} });
       a.days.add(date);
       a.msgs += day[prov].msgs; a.inTok += day[prov].inTok; a.outTok += day[prov].outTok;
+      // Billed input is averaged over the days that actually recorded it, not over
+      // all tracked days — otherwise history from before the field existed dilutes
+      // the average toward zero and the Auditor under-reads real usage.
+      if (day[prov].billedIn != null) {
+        a.billedDays.add(date);
+        a.billedIn += day[prov].billedIn; a.uTurns += (day[prov].uTurns || 0);
+      }
       // Roll up per-model tokens too (already tracked per day) so the export can carry a
       // per-model split — lets the Auditor price each model at its own API rate.
       for (const mdl in day[prov].byModel) {
         if (mdl === '(unspecified)') continue;
         a.models.add(mdl);
         const src = day[prov].byModel[mdl];
-        const bm  = a.byModel[mdl] || (a.byModel[mdl] = { inTok:0, outTok:0 });
+        const bm  = a.byModel[mdl] || (a.byModel[mdl] = { inTok:0, outTok:0, billedIn:0, uTurns:0, billedDays:new Set() });
         bm.inTok += src.inTok; bm.outTok += src.outTok;
+        if (src.billedIn != null) { bm.billedDays.add(date); bm.billedIn += src.billedIn; bm.uTurns += (src.uTurns || 0); }
       }
     }
   }
   const platforms = Object.keys(agg).map(prov => {
     const a = agg[prov], activeDays = Math.max(1, a.days.size);
+    const bDays = a.billedDays.size;
     return {
       provider: prov,
       messages_per_day:      Math.round(a.msgs   / activeDays),
       input_tokens_per_day:  Math.round(a.inTok  / activeDays),
       output_tokens_per_day: Math.round(a.outTok / activeDays),
+      // v2 fields. input_tokens_per_day counts only the text you can see; this is
+      // what the provider actually charges for, which is larger because every turn
+      // resends the transcript. Omitted entirely (not zeroed) when nothing has been
+      // recorded since the field was added, so a reader can tell "none" from "zero".
+      // Excludes the modelled per-turn system-prompt overhead; divide by
+      // user_turns_per_day for billed input per message.
+      ...(bDays ? {
+        billed_input_tokens_per_day: Math.round(a.billedIn / bDays),
+        user_turns_per_day:          Math.round(a.uTurns   / bDays),
+        billed_days:                 bDays,
+      } : {}),
       total_messages: a.msgs,
       active_days: a.days.size,
       models_used: [...a.models],
       // Per-model token split (identified models only). Same per-active-day denominator as
       // the platform figures above, so these sum to ~the platform totals. Optional field:
       // older readers ignore it; the Auditor falls back to conservative pricing when absent.
-      model_usage: Object.keys(a.byModel).map(mdl => ({
-        key: mdl,
-        input_tokens_per_day:  Math.round(a.byModel[mdl].inTok  / activeDays),
-        output_tokens_per_day: Math.round(a.byModel[mdl].outTok / activeDays),
-      })),
+      model_usage: Object.keys(a.byModel).map(mdl => {
+        const m = a.byModel[mdl], mb = m.billedDays.size;
+        return {
+          key: mdl,
+          input_tokens_per_day:  Math.round(m.inTok  / activeDays),
+          output_tokens_per_day: Math.round(m.outTok / activeDays),
+          ...(mb ? {
+            billed_input_tokens_per_day: Math.round(m.billedIn / mb),
+            user_turns_per_day:          Math.round(m.uTurns   / mb),
+          } : {}),
+        };
+      }),
     };
   });
-  return { app:'EcoMeter AI', kind:'usage-export', version:1, scope:'lifetime',
+  return { app:'EcoMeter AI', kind:'usage-export', version:2, scope:'lifetime',
     generated: new Date().toISOString().split('T')[0], days_tracked: Object.keys(USAGE.days).length, platforms };
 }
 

@@ -105,5 +105,53 @@ ok(mono, 'blended rate rises monotonically, stays within [short, long]');
 ok(outputRateAt(p, 100000) === p.output && outputRateAt(p, 300000) === p.long.output, 'output tier flips at the threshold');
 ok(outputRateAt(flat, 9e9) === flat.output, 'output with no long block -> base rate');
 
+// ── 4. Usage export (v2) ──────────────────────────────────
+// accumulateUsage -> buildUsageExport, with just enough of the extension stubbed.
+console.log('\nusage export v2:');
+{
+  let usageTrackingEnabled = true;
+  let convState = {}, convOrder = [];
+  let USAGE = { days: {} };
+  const PROVIDER_OF = { Claude: 'anthropic', ChatGPT: 'openai' };
+  const usageTodayStr = () => '2026-07-29';
+  const usageHash = (r, t) => r + ':' + t.length + ':' + t.slice(0, 12);
+  const scheduleUsageSave = () => {};
+  eval(lift('accumulateUsage'));
+  eval(lift('buildUsageExport'));
+
+  const convo = [];
+  for (let i = 0; i < 5; i++) {
+    convo.push({ counted: true, tokens: 1000, role: 'user', text: 'user message ' + i });
+    convo.push({ counted: true, tokens: 1000, role: 'assistant', text: 'reply ' + i });
+  }
+  // Feed it the way polling actually sees it: growing, repeatedly.
+  for (let t = 1; t <= 5; t++) accumulateUsage(convo.slice(0, t * 2), 'Claude', 'claude-opus-5');
+
+  const truthBilled = (() => { let prior = 0, tot = 0; for (let k = 0; k < 5; k++) { tot += prior + 1000; prior += 2000; } return tot; })();
+  const p = buildUsageExport().platforms[0];
+
+  ok(buildUsageExport().version === 2, 'export declares version 2');
+  ok(p.input_tokens_per_day === 5000, 'visible input unchanged by the v2 addition');
+  ok(p.billed_input_tokens_per_day === truthBilled, 'billed input matches ground truth (' + truthBilled + ')');
+  ok(p.billed_input_tokens_per_day === 5 * p.input_tokens_per_day, 'billed is 5x visible on a 5-turn chat');
+  ok(p.user_turns_per_day === 5 && p.messages_per_day === 10, 'user turns tracked separately from messages');
+  ok(p.model_usage[0].billed_input_tokens_per_day === truthBilled, 'per-model billed split present');
+
+  const before = JSON.stringify(buildUsageExport());
+  accumulateUsage(convo, 'Claude', 'claude-opus-5');
+  ok(JSON.stringify(buildUsageExport()) === before, 're-polling identical state adds nothing');
+
+  // Days recorded before v2 carry no billed keys and must not dilute the average.
+  USAGE.days['2026-07-01'] = { anthropic: { msgs: 10, inTok: 5000, outTok: 5000, byModel: {} } };
+  const e2 = buildUsageExport().platforms[0];
+  ok(e2.billed_days === 1, 'pre-v2 day excluded from billed_days');
+  ok(e2.billed_input_tokens_per_day === truthBilled, 'pre-v2 day does not drag the billed average down');
+  ok(e2.active_days === 2, 'pre-v2 day still counts toward active_days');
+
+  USAGE.days['2026-07-01'].openai = { msgs: 4, inTok: 2000, outTok: 2000, byModel: {} };
+  const oa = buildUsageExport().platforms.find(x => x.provider === 'openai');
+  ok(oa && oa.billed_input_tokens_per_day === undefined, 'no billed data -> field omitted, never zeroed');
+}
+
 console.log(fail ? '\n' + fail + ' FAILURE(S)' : '\nall cost-model tests pass');
 process.exit(fail ? 1 : 0);
