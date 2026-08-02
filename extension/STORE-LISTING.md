@@ -16,7 +16,13 @@ v6.12 was rejected under **"Spam and Placement in the Store"** (ref: *Yellow Arg
 
 The nine-name list ran in the **opening sentence**, a **shortened version repeated in a bullet**, and **three more names in the short description** — which is also `manifest.json`'s `description`, so the same brands hit the reviewer across several fields at once. That repetition is what reads as stuffing, not the fact of naming platforms.
 
-**Rule for this file from now on: name supported platforms at most ONCE, in plain prose, as functional information — never in the short description, never in the hook, never repeated.** If you add a platform, extend the single sentence; don't start a second list.
+**Rule for this file from now on:**
+
+- **Short description and `manifest.json`: no product names at all.**
+- **Detailed description: name at most the big three (Claude, ChatGPT, Gemini), once, in prose, after the feature list — never in the hook, never repeated.**
+- **The full supported-platform list belongs in a SCREENSHOT, not in the text.** That is the fix for the real tension here: users genuinely need to know whether their tool is covered, and an image conveys it without a keyword list for a reviewer to count. When a platform is added, update the screenshot — do not extend the sentence into a list.
+
+⚠️ **This means the listing now depends on a screenshot that actually shows the supported platforms.** If that image isn't uploaded, the description points at something that doesn't exist, which is its own metadata problem. Check it before resubmitting.
 
 ---
 
@@ -74,7 +80,7 @@ Entirely optional and off by default. Each key affects only its own platform. Ke
 • Up-to-date per-model API pricing, refreshed weekly, covering current frontier models as they ship
 • A one-click usage export that makes the Subscription Auditor's recommendation real
 
-It works in the side panel on the major AI chat services, including those from Anthropic, OpenAI, Google and Microsoft. The panel names the site and model it has detected, so you can always see what it is measuring.
+It runs in the side panel on the major AI chat services — Claude, ChatGPT and Gemini among them. The screenshots below show the full list of supported platforms. The panel always names the site and the model it has detected, so you can see exactly what it is measuring.
 
 **Honest about what it can't see**
 
@@ -96,7 +102,8 @@ Free, open about its methodology, and built by Legerly.
 
 - [ ] `manifest.json` version bumped and matching `prices.json._meta.version`
 - [ ] Short description above matches `manifest.json` `description`
-- [ ] **No brand names in the short description**, and supported platforms named at most **once** in the detailed description (this is what got v6.12 rejected — see the note at the top)
+- [ ] **No product names in the short description / manifest**, and at most the big three named **once** in the detailed description (this is what got v6.12 rejected — see the note at the top)
+- [ ] **A screenshot showing the full supported-platform list is uploaded** — the description points at it, so it has to be there
 - [ ] Hosted privacy policy redeployed **in the same release** as the extension
 - [ ] Permission justifications pasted from `STORE-SUBMISSION.md`
 - [ ] Data-usage disclosure reviewed (see the judgment call in `STORE-SUBMISSION.md` §3)
