@@ -8,15 +8,27 @@
 
 ---
 
+## ⚠️ Rejected 2026-07-29 — read before editing this file
+
+v6.12 was rejected under **"Spam and Placement in the Store"** (ref: *Yellow Argon*) for *"excessive keywords in the item's description"*, quoting exactly:
+
+> Claude, ChatGPT, Gemini, Grok, Mistral, Perplexity, DeepSeek, Copilot, and Poe
+
+The nine-name list ran in the **opening sentence**, a **shortened version repeated in a bullet**, and **three more names in the short description** — which is also `manifest.json`'s `description`, so the same brands hit the reviewer across several fields at once. That repetition is what reads as stuffing, not the fact of naming platforms.
+
+**Rule for this file from now on: name supported platforms at most ONCE, in plain prose, as functional information — never in the short description, never in the hook, never repeated.** If you add a platform, extend the single sentence; don't start a second list.
+
+---
+
 ## Short description
 
-> Field: *"Short description"* — max 132 characters. This is also the `description` field in `manifest.json`; keep the two identical.
+> Field: *"Short description"* — max 132 characters. This is also the `description` field in `manifest.json`; keep the two identical. **No brand names here** — see the rejection note above.
 
 ```
-Track token usage, cost & environmental impact across Claude, ChatGPT, Gemini, and more — by Legerly.
+See what your AI chats really cost — tokens, money and water — computed on your device. By Legerly.
 ```
 
-*(100 characters)*
+*(98 characters)*
 
 ---
 
@@ -28,7 +40,7 @@ Track token usage, cost & environmental impact across Claude, ChatGPT, Gemini, a
 
 **Know what your AI habit actually costs.**
 
-EcoMeter AI tracks token usage, cost, and water consumption in real time across Claude, ChatGPT, Gemini, Grok, Mistral, Perplexity, DeepSeek, Copilot, and Poe — in a side panel right next to your chat.
+EcoMeter AI tracks token usage, cost, and water consumption in real time, in a side panel right next to your chat.
 
 No signup. No account. No servers of ours, ever. Everything is computed locally in your browser.
 
@@ -59,8 +71,10 @@ Entirely optional and off by default. Each key affects only its own platform. Ke
 • Live token counts, split input vs output, per message and per conversation
 • True estimated cost including replay and hidden overhead — not just your visible words
 • Water footprint with switchable conservative and full-lifecycle scopes
-• Current per-model API pricing across the full Claude, GPT, Gemini, Grok, Mistral, Perplexity and DeepSeek line-ups, including Claude Opus 5
+• Up-to-date per-model API pricing, refreshed weekly, covering current frontier models as they ship
 • A one-click usage export that makes the Subscription Auditor's recommendation real
+
+It works in the side panel on the major AI chat services, including those from Anthropic, OpenAI, Google and Microsoft. The panel names the site and model it has detected, so you can always see what it is measuring.
 
 **Honest about what it can't see**
 
@@ -82,7 +96,9 @@ Free, open about its methodology, and built by Legerly.
 
 - [ ] `manifest.json` version bumped and matching `prices.json._meta.version`
 - [ ] Short description above matches `manifest.json` `description`
+- [ ] **No brand names in the short description**, and supported platforms named at most **once** in the detailed description (this is what got v6.12 rejected — see the note at the top)
 - [ ] Hosted privacy policy redeployed **in the same release** as the extension
 - [ ] Permission justifications pasted from `STORE-SUBMISSION.md`
 - [ ] Data-usage disclosure reviewed (see the judgment call in `STORE-SUBMISSION.md` §3)
 - [ ] Smoke-tested via load-unpacked at the version being uploaded
+- [ ] `node scripts/test-cost-model.js` and `node scripts/check-prices.js` both pass

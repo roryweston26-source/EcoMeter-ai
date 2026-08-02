@@ -15,7 +15,9 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 - **Store docs rewritten** (§10) — the privacy policy contradicted itself on network calls and had no justification for the Google host permission.
 - **Data gaps closed** — `water.json` was silently missing 9 models; `update-prices.js` didn't know about Sonnet 5 / Fable 5 / Mythos 5.
 
-**Ship status: v6.12 submitted to the Chrome Web Store 2026-07-28, awaiting review.** This is the first publish since v6.9, so it carries everything from the previous run too (tokenizer recalibration, opt-in Google `countTokens`, `model_usage[]` export). It adds the **`generativelanguage.googleapis.com` host permission**, so expect **permission re-review and a user-facing permission notice** — slower than a normal update. Website changes deployed on merge.
+**Ship status: v6.12 was REJECTED by the Chrome Web Store on 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Fixed in `STORE-LISTING.md` (details and the standing rule are in the note at the top of that file) and in `manifest.json`'s `description`. **The rejection clears the upload block**, so the next submission can carry the export-v2 and cost-model work too. Nothing about the code or permissions was at issue — this was listing copy only.
+
+*(Superseded, kept for context:)* **v6.12 submitted to the Chrome Web Store 2026-07-28, awaiting review.** This is the first publish since v6.9, so it carries everything from the previous run too (tokenizer recalibration, opt-in Google `countTokens`, `model_usage[]` export). It adds the **`generativelanguage.googleapis.com` host permission**, so expect **permission re-review and a user-facing permission notice** — slower than a normal update. Website changes deployed on merge.
 
 **If the review comes back with questions**, the paste-ready answers are already written: `extension/STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure) and `extension/STORE-LISTING.md` (description + pre-upload checklist). Data-usage disclosure was submitted as **"Website content" only** — reasoning recorded in `STORE-SUBMISSION.md` §3.
 
@@ -286,7 +288,7 @@ Grades **how openly** providers let the public see what their AI costs — trans
 
 ## 10. Open items / caveats
 
-- **v6.12 is awaiting store review** (submitted 2026-07-28) — first publish since v6.9, carrying two runs of work. Adds a **new host permission** → re-review + user notice. Nothing further to do until it clears; if it's rejected, the answers are in `extension/STORE-SUBMISSION.md`.
+- **v6.12 was rejected 2026-07-29 for listing copy, not code** (excessive keywords — the nine-platform list). Copy is fixed; **re-upload is unblocked**. When resubmitting: it still adds the `generativelanguage.googleapis.com` host permission, so expect permission re-review and a user-facing notice regardless. **Name supported platforms at most once, in prose, and never in the short description** — the standing rule is at the top of `extension/STORE-LISTING.md`.
 - **Sonnet 5's introductory API rate expires 2026-08-31** ($2/$10 → $3/$15). `prices.json`, `pricing.html` and `update-prices.js` all need the new numbers then; the caveat text should be removed at the same time.
 - **Transparency Index:** env-only; pricing/data axes are ⚪. The two-scale design is intentional — don't "reconcile" xAI's 🟡-vs-🔴 by mistake (documented in `_meta.detail.note`). Colo landlords not scored yet; a couple of `power_mw` values are third-party estimates (don't change a badge).
 - **Auditor caveats:** plan caps are approximate (rolling-window/compute-based limits); the per-model API cost skips models not in `prices.json.api` (undercount risk); API ≠ the product (no app/limits/features).
