@@ -35,16 +35,24 @@
     "claude-opus-4-8":           { "tier": "large"  },
     "claude-opus-4-7":           { "tier": "large"  },
     "claude-opus-4-6":           { "tier": "large"  },
+    "claude-opus-4-5":           { "tier": "large"  },
     "claude-opus":               { "tier": "large"  },
     "claude-sonnet-5":           { "tier": "medium" },
     "claude-sonnet-4-6":         { "tier": "medium" },
+    "claude-sonnet-4-5":         { "tier": "medium" },
     "claude-sonnet":             { "tier": "medium" },
     "claude-haiku-4-5-20251001": { "tier": "small"  },
     "claude-haiku":              { "tier": "small"  }
   },
 
   "openai": {
+    "gpt-5.6-sol":   { "tier": "large"  },
+    "gpt-5.6-terra": { "tier": "medium" },
+    "gpt-5.6-luna":  { "tier": "small"  },
     "gpt-5.5":       { "tier": "large"  },
+    "gpt-5.5-pro":   { "tier": "large"  },
+    "gpt-5.4-nano":  { "tier": "tiny"   },
+    "gpt-5.4-pro":   { "tier": "large"  },
     "gpt-5.4":       { "tier": "large"  },
     "gpt-5.4-mini":  { "tier": "medium" },
     "o3":            { "tier": "large"  },
@@ -61,17 +69,20 @@
   },
 
   "google": {
+    "gemini-3.6-flash":      { "tier": "medium" },
     "gemini-3.5-flash":      { "tier": "medium" },
+    "gemini-3.5-flash-lite": { "tier": "tiny"   },
+    "gemini-3-flash-preview":{ "tier": "small"  },
     "gemini-3.1-pro-preview":{ "tier": "large"  },
     "gemini-3.1-flash-lite": { "tier": "tiny"   },
     "gemini-2.5-pro":        { "tier": "large"  },
     "gemini-2.5-flash":      { "tier": "medium" },
-    "gemini-2.5-flash-lite": { "tier": "tiny"   },
-    "gemini-2.0-flash":      { "tier": "small"  }
+    "gemini-2.5-flash-lite": { "tier": "tiny"   }
   },
 
   "xai": {
     "grok-4":      { "tier": "large"  },
+    "grok-4.5":    { "tier": "large"  },
     "grok-4.3":    { "tier": "large"  },
     "grok-4.20":   { "tier": "large"  },
     "grok-3":      { "tier": "large"  },
@@ -97,6 +108,8 @@
 
   "deepseek": {
     "deepseek-v4-pro":   { "tier": "large"  },
+    "deepseek-chat":     { "tier": "medium" },
+    "deepseek-reasoner": { "tier": "large"  },
     "deepseek-v4-flash": { "tier": "medium" },
     "deepseek-r1": { "tier": "large"  },
     "deepseek-v3": { "tier": "medium" }

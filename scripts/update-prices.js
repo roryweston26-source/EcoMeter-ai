@@ -50,7 +50,13 @@ async function fetchGoogle() {
     // [ model key,           input $/1M,   output $/1M ]
     // These are hardcoded from the live page as a reliable fallback;
     // the regex below will override them if it can parse the live page.
-    ['gemini-3.5-flash',        0.50,   3.00],
+    // Verified 2026-07-28 against ai.google.dev + cloud.google.com/vertex-ai.
+    // These are SHORT-CONTEXT rates; 3.1 Pro and 2.5 Pro roughly double above
+    // 200k prompt tokens (see _meta.caveats._short_context_only in prices.json).
+    ['gemini-3.6-flash',        1.50,   7.50],
+    ['gemini-3.5-flash',        1.50,   9.00],
+    ['gemini-3.5-flash-lite',   0.30,   2.50],
+    ['gemini-3-flash-preview',  0.50,   3.00],
     ['gemini-3.1-pro-preview',  2.00,  12.00],
     ['gemini-3.1-flash-lite',   0.25,   1.50],
     ['gemini-2.5-pro',          1.25,  10.00],
@@ -89,8 +95,10 @@ async function fetchAnthropic() {
     // it reverts to $3/$15 after that — re-check this line then.
     'claude-sonnet-5':           { input: perM(2.00),  output: perM(10.00) },
     'claude-sonnet-4-6':         { input: perM(3.00),  output: perM(15.00) },
+    'claude-sonnet-4-5':         { input: perM(3.00),  output: perM(15.00) },
     'claude-sonnet':             { input: perM(3.00),  output: perM(15.00) },
     'claude-opus-5':             { input: perM(5.00),  output: perM(25.00) },
+    'claude-opus-4-5':           { input: perM(5.00),  output: perM(25.00) },
     'claude-opus-4-8':           { input: perM(5.00),  output: perM(25.00) },
     'claude-opus-4-7':           { input: perM(5.00),  output: perM(25.00) },
     'claude-opus-4-6':           { input: perM(5.00),  output: perM(25.00) },
@@ -122,10 +130,19 @@ async function fetchAnthropic() {
 async function fetchOpenAI() {
   console.log('  Fetching OpenAI prices...');
 
+  // Verified 2026-07-28 against developers.openai.com/docs/pricing.
+  // SHORT-CONTEXT rates — the long-context column is roughly double and applies
+  // to every token in the request (see _meta.caveats._short_context_only).
   const prices = {
+    'gpt-5.6-sol':  { input: perM(5.00),   output: perM(30.00)  },
+    'gpt-5.6-terra':{ input: perM(2.50),   output: perM(15.00)  },
+    'gpt-5.6-luna': { input: perM(1.00),   output: perM(6.00)   },
     'gpt-5.5':     { input: perM(5.00),   output: perM(30.00)  },
+    'gpt-5.5-pro': { input: perM(30.00),  output: perM(180.00) },
     'gpt-5.4':     { input: perM(2.50),   output: perM(15.00)  },
     'gpt-5.4-mini':{ input: perM(0.75),   output: perM(4.50)   },
+    'gpt-5.4-nano':{ input: perM(0.20),   output: perM(1.25)   },
+    'gpt-5.4-pro': { input: perM(30.00),  output: perM(180.00) },
     'gpt-4o':      { input: perM(2.50),   output: perM(10.00)  },
     'gpt-4.1':     { input: perM(2.00),   output: perM(8.00)   },
     'gpt-4.1-mini':{ input: perM(0.40),   output: perM(1.60)   },

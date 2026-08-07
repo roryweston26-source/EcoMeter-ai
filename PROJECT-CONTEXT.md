@@ -15,7 +15,9 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 - **Store docs rewritten** (§10) — the privacy policy contradicted itself on network calls and had no justification for the Google host permission.
 - **Data gaps closed** — `water.json` was silently missing 9 models; `update-prices.js` didn't know about Sonnet 5 / Fable 5 / Mythos 5.
 
-**Ship status: v6.12 submitted to the Chrome Web Store 2026-07-28, awaiting review.** This is the first publish since v6.9, so it carries everything from the previous run too (tokenizer recalibration, opt-in Google `countTokens`, `model_usage[]` export). It adds the **`generativelanguage.googleapis.com` host permission**, so expect **permission re-review and a user-facing permission notice** — slower than a normal update. Website changes deployed on merge.
+**Ship status: v6.12 was REJECTED by the Chrome Web Store on 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Fixed in `STORE-LISTING.md` (details and the standing rule are in the note at the top of that file) and in `manifest.json`'s `description`. **The rejection clears the upload block**, so the next submission can carry the export-v2 and cost-model work too. Nothing about the code or permissions was at issue — this was listing copy only.
+
+*(Superseded, kept for context:)* **v6.12 submitted to the Chrome Web Store 2026-07-28, awaiting review.** This is the first publish since v6.9, so it carries everything from the previous run too (tokenizer recalibration, opt-in Google `countTokens`, `model_usage[]` export). It adds the **`generativelanguage.googleapis.com` host permission**, so expect **permission re-review and a user-facing permission notice** — slower than a normal update. Website changes deployed on merge.
 
 **If the review comes back with questions**, the paste-ready answers are already written: `extension/STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure) and `extension/STORE-LISTING.md` (description + pre-upload checklist). Data-usage disclosure was submitted as **"Website content" only** — reasoning recorded in `STORE-SUBMISSION.md` §3.
 
@@ -133,6 +135,19 @@ Counting is a priority chain: **opt-in provider API → exact-local tokenizer �
 - **`countTokensAnthropicAPI()` ignored the selected model.** Every Claude request went to `count_tokens` hardcoded as `claude-haiku-4-5-20251001`, and the result was still labelled "✓ exact tokenizer". Claude models do **not** share a tokenizer — Opus 4.7 introduced a new one now used by Opus 4.8 / Opus 5 / Sonnet 5 / Fable 5 / Mythos 5 — so frontier-model counts were wrong *while presented as certain*. Now passes `modelKey` through; an id the API rejects falls back to the cl100k proxy and is correctly labelled an estimate. **If you add a model to the picker, its key must be a valid Anthropic API model id** or exact counts silently degrade for it.
 - **System-prompt overhead was charged once per conversation**, not once per turn. It is re-sent on every API call, so the undercount grew with length. Now `overhead × user-turn count`. Turn count uses `m.role === 'user'`, the same discriminator as the input-token filter — if the scraper's role strings ever change, this silently returns 0 and the fix becomes a no-op.
 
+**Two cost-model bugs found and fixed 2026-07-29 by testing against ground truth — reading the code did not reveal either.** Both were large, both inflated the headline "true cost", and both are now covered by `scripts/test-cost-model.js` (31 assertions, zero deps, exits non-zero — run it after touching the cost path).
+- **Billed input was charged at ~2×** (2.21× for document-heavy chats). `estimateConversationReplay()` accumulated a context snapshot after *every* message, but a request happens once per **user** turn — and it counted the final reply, which is generated and never re-sent. The caller then added every user message a second time on top of a replay total that already contained it. Replaced by `estimateBilledInput()`, which returns the complete input bill (`Σ over user turns of prior + this turn`) and must **not** have `inp` added to it. Verified exact against hand-computed truth on seven conversation shapes.
+- **Claude image tokens were ~51× too high.** The formula used 32px patches × 65; Anthropic documents **28px patches at one token per patch** (`⌈w/28⌉ × ⌈h/28⌉`), with downscaling to a tier cap (standard 1568 tokens / 1568px long edge; **Claude 4.7+ get a high-resolution tier**, 4784 / 2576px). Now matches all 12 rows of Anthropic's published worked table exactly. The old *fallback* constant (1600) was roughly right, which is what made the discrepancy visible.
+
+**Methods that remain unverified — do not present these as measured.**
+- **`PLATFORM_OVERHEAD_TOKENS`** (1,500–8,000/turn by platform) are undocumented estimates with no cited source. They scale with turn count, so they move the total materially.
+- **`REASONING_RANGES`** are wide guesses (`lo`/`hi` spans of 1–8×) and the midpoint drives the cost. `deepseek-v4-flash` carries a 2.5× reasoning multiplier, which looks wrong for a "flash" model.
+- ~~The "recalibrated 2026, MAE 32%→8%" claim has no reproducible artefact~~ — **resolved 2026-08-02.** `scripts/calibrate-tokenizer.js` now measures the char-ratio estimator against the bundled real cl100k over a corpus built deterministically from this repo. The claim did not hold: measured **12.9% MAE with a systematic −9.4% undercount bias**, not 8% and ~0 bias. The prose ratio of 4.8 chars/token was well above what cl100k does to English prose (~4.0). Recalibrated to measured ratios (prose 4.0, code-heavy 3.7, URLs 3.5) → **10.5% MAE, +2.2% bias**, and `METHOD_ACCURACY.estimated` widened 8% → 11% to match. The script **exits non-zero if the advertised band is optimistic**, so this can't silently rot again. Re-run it after touching any ratio.
+  - **The band is mean error, not worst case** — p95 ≈24%, worst ≈42% on code-heavy text. The UI's "±11%" is a typical-case figure.
+  - **`tiktoken-approx` and `sp-estimated` are still unmeasured guesses.** Validating them needs the relevant tokenizer bundled (Gemma for SentencePiece, per-family BPEs for the rest) — comparing to cl100k would measure the gap between two tokenizers, not the estimator. Don't quote them as measured.
+  - **Corpus caveat:** it's this repo's own technical prose and JavaScript, so it under-represents casual chat. The direction of the fix (4.8 → 4.0 for prose) is robust regardless, but the exact MAE is corpus-specific.
+- **Images are charged once, not per turn**, though they are re-sent with the transcript like everything else — an undercount in the opposite direction to the two bugs above.
+
 **Still not modelled: prompt caching.** Cached input bills ~0.1×, and long conversations are where providers cache most — so EcoMeter **overestimates, and the gap widens with length**. Deliberately not modelled: no provider publishes per-conversation hit rates, and a guessed number would look precise without being true. Disclosed in the panel disclaimer with its direction and the reason.
 
 ---
@@ -150,6 +165,12 @@ Consumed by the extension (`api` → cost), `pricing.html` (all sections), `audi
 
 - **`_meta.caveats`** (added 2026-07-28) records per-model pricing caveats a bare number can't carry. Currently holds the **Sonnet 5 introductory rate: $2/$10 is promotional and reverts to $3/$15 after 2026-08-31** — it was previously listed as if permanent. Surfaced on `pricing.html` as a note; also flagged in a comment in `update-prices.js`. **Re-check that line after 2026-08-31.**
 - `update-prices.js` **merges** into the existing file (it mutates `api[provider][model]` and only rewrites `_meta.last_updated`), so hand-written `_meta` keys and models absent from its hardcoded table survive a run. Verified by executing it against a backup — zero diff.
+- **Price audit 2026-07-28 — every rate re-verified against provider-owned pages.** Three were wrong: `gemini-3.5-flash` $0.50/$3.00 → **$1.50/$9.00** (it held Gemini 3 Flash Preview's price), `deepseek-v4-pro` $1.74/$3.48 → **$0.435/$0.87** (exactly 4× out), `grok-4.20` $2.00/$6.00 → **$1.25/$2.50** (it held grok-4.5's price). Added the GPT-5.6 family, Gemini 3.6 / 3.5 Flash-Lite, Grok 4.5, Opus 4.5, Sonnet 4.5.
+- **⚠️ Five places must agree on a price, and three drift silently — run `node scripts/check-prices.js` after ANY price change.** `prices.json` is the source of truth, but `pricing.html`'s `FALLBACK_PRICES` and `update-prices.js`'s hardcoded tables each hold their own copy. Before this audit `FALLBACK_PRICES` had Gemini **right** while `prices.json` had it **wrong**, and Mistral Large 3 the other way round — so the page showed different prices depending on whether the fetch succeeded; `update-prices.js` would additionally have **reverted** the Gemini fix on its next weekly run. The script checks price↔water parity, plan-limits joins, registry↔prices, fallback↔prices (including long tiers), picker↔prices, and updater↔prices. It exits non-zero, so it can gate CI.
+- **Long-context tiers are modelled** (`api.<model>.long = { over, input, output }`). OpenAI (>272k input tokens), Google (>200k) and xAI (≥200k) charge ~2× past a threshold, and **the higher rate applies to every token in the request**, not just the excess. Anthropic doesn't tier this way and has no `long` block.
+  - **The tier belongs to a single API call, not to a conversation.** Each turn resends the whole history plus the system prompt, so a long chat crosses partway through and every later turn bills higher. `blendedInputRate()` in `sidepanel.js` walks the turns and returns the token-weighted average; charging one flat tier would be wrong in both directions. A consumer that ignores `long` undercounts long chats by ~2×.
+  - This pushes the **same** way as no other correction we apply — notably it does **not** offset the unmodelled prompt-caching discount. Don't net them off.
+- **Perplexity Sonar token rates are right but incomplete** — $5–$14 per 1,000 requests on top, which for chat-shaped use exceeds the token cost. Any Perplexity figure from this file is a substantial undercount.
 - **A model must exist in BOTH `prices.json` and `water.json`.** A key missing from `water.json` renders no water figure at all, silently — that gap had accumulated for 9 models before 2026-07-28. Cross-check with: every key in the extension's `MODEL_CATALOG` resolves in both files.
 
 ### `plan-limits.json` — what each plan allows, and how well it's disclosed
@@ -194,15 +215,20 @@ Drives the **Break even / Ceiling** columns on `pricing.html` (§3a). Joins to `
 3. **⤓ Export for Auditor** downloads `ecometer-usage.json`.
 4. `audit.html` **Connect usage** reads it **in-browser** (FileReader — never uploaded) and pre-fills the quiz with measured models/volume.
 
-**`ecometer-usage.json` schema**
+**`ecometer-usage.json` schema (v2 — 2026-07-29)**
 ```jsonc
-{ "app":"EcoMeter AI","kind":"usage-export","version":1,"scope":"lifetime",
+{ "app":"EcoMeter AI","kind":"usage-export","version":2,"scope":"lifetime",
   "generated":"YYYY-MM-DD","days_tracked":N,
   "platforms":[ { "provider","messages_per_day","input_tokens_per_day","output_tokens_per_day",
+                  "billed_input_tokens_per_day","user_turns_per_day","billed_days",   // v2, optional
                   "total_messages","active_days","models_used":[...],
-                  "model_usage":[ { "key","input_tokens_per_day","output_tokens_per_day" } ]  // optional per-model token split
+                  "model_usage":[ { "key","input_tokens_per_day","output_tokens_per_day",
+                                    "billed_input_tokens_per_day","user_turns_per_day" } ]
   } ] }
 ```
+⚠️ **`input_tokens_per_day` is VISIBLE text only** — what you typed. It is not what you're charged for: every turn resends the transcript, so real input is several times larger and grows with conversation length. **v2 adds `billed_input_tokens_per_day`**, the figure `estimateBilledInput()` computes, which is the one to use for any cost or plan-fit comparison. `audit.html` prefers it and falls back to the visible figure for v1 exports.
+- **`billed_input_tokens_per_day ÷ user_turns_per_day` = billed input per message** — the number the `pricing.html` archetypes should be anchored to. It **excludes** the per-turn system-prompt overhead, because that's a modelled constant rather than a measurement (§4); add `PLATFORM_OVERHEAD_TOKENS` yourself if you want it, and say that you did.
+- The v2 fields are **omitted, not zeroed**, when nothing has been recorded since they were added, and are averaged over `billed_days` rather than `active_days` — otherwise pre-v2 history dilutes the average toward zero. A reader must treat absent as "not measured", never as 0.
 Volume is averaged **per active day**, **lifetime**. The optional **`model_usage[]`** (per-model token split) is what lets the Auditor price each model at its own rate; the extension already tracks per-model internally, so it's an export-format addition. Without it the Auditor prices conservatively (all tokens at the priciest used model's rate) — never a false downgrade.
 
 **Panel UI (reworked 2026-07-28).** The usage tally and the exact-count keys used to be two separate `<details>` panels; they're now **one "📊 Usage & accuracy" panel**, since both exist for the same reason — making the exported numbers real. Consequences worth knowing:
@@ -265,7 +291,7 @@ Grades **how openly** providers let the public see what their AI costs — trans
 
 ## 10. Open items / caveats
 
-- **v6.12 is awaiting store review** (submitted 2026-07-28) — first publish since v6.9, carrying two runs of work. Adds a **new host permission** → re-review + user notice. Nothing further to do until it clears; if it's rejected, the answers are in `extension/STORE-SUBMISSION.md`.
+- **v6.12 was rejected 2026-07-29 for listing copy, not code** (excessive keywords — the nine-platform list). Copy is fixed; **re-upload is unblocked**. When resubmitting: it still adds the `generativelanguage.googleapis.com` host permission, so expect permission re-review and a user-facing notice regardless. **Name supported platforms at most once, in prose, and never in the short description** — the standing rule is at the top of `extension/STORE-LISTING.md`.
 - **Sonnet 5's introductory API rate expires 2026-08-31** ($2/$10 → $3/$15). `prices.json`, `pricing.html` and `update-prices.js` all need the new numbers then; the caveat text should be removed at the same time.
 - **Transparency Index:** env-only; pricing/data axes are ⚪. The two-scale design is intentional — don't "reconcile" xAI's 🟡-vs-🔴 by mistake (documented in `_meta.detail.note`). Colo landlords not scored yet; a couple of `power_mw` values are third-party estimates (don't change a badge).
 - **Auditor caveats:** plan caps are approximate (rolling-window/compute-based limits); the per-model API cost skips models not in `prices.json.api` (undercount risk); API ≠ the product (no app/limits/features).

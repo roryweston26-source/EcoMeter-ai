@@ -255,6 +255,13 @@
   .nd { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); font-style: italic; }
   .tp { font-family: var(--mono); color: var(--gold); white-space: nowrap; }
   .tp::before { content: "⚠ "; }
+  /* A low-confidence estimate should not read as confidently as a corroborated
+     one. Dimmed and dashed rather than dropped — the gap is worth showing. */
+  .tp-low { color: #a08a4e; border-bottom: 1px dashed #6b5a34; }
+  .tp .sub b { color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: 10px; }
+  .tp-low .sub b { color: #a08a4e; }
+  .tp .sub a { color: var(--ink-faint); text-decoration: underline dotted; }
+  .tp .sub a:hover { color: var(--green-2); }
 
   /* the math expander */
   .mathbtn {
@@ -409,13 +416,18 @@
     { p:"anthropic", key:"claude-sonnet-4-6",         m:"Claude Sonnet 4.6" },
     { p:"anthropic", key:"claude-haiku-4-5-20251001", m:"Claude Haiku 4.5" },
     { p:"anthropic", key:"claude-opus-5",             m:"Claude Opus 5" },
-    { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.6 / 4.7 priced the same" },
+    { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.5 / 4.6 / 4.7 priced the same" },
     { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
     { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
-    { p:"openai", key:"gpt-5.5",      m:"GPT-5.5" },
+    { p:"openai", key:"gpt-5.6-sol",   m:"GPT-5.6 Sol", note:"powers Medium / High / Extra High reasoning in ChatGPT" },
+    { p:"openai", key:"gpt-5.6-terra", m:"GPT-5.6 Terra" },
+    { p:"openai", key:"gpt-5.6-luna",  m:"GPT-5.6 Luna" },
+    { p:"openai", key:"gpt-5.5",      m:"GPT-5.5", note:"ChatGPT's default Instant model" },
+    { p:"openai", key:"gpt-5.5-pro",  m:"GPT-5.5 Pro" },
     { p:"openai", key:"gpt-5.4",      m:"GPT-5.4" },
     { p:"openai", key:"gpt-5.4-mini", m:"GPT-5.4 mini" },
+    { p:"openai", key:"gpt-5.4-nano", m:"GPT-5.4 nano" },
     { p:"openai", key:"gpt-4.1",      m:"GPT-4.1" },
     { p:"openai", key:"gpt-4.1-mini", m:"GPT-4.1 mini" },
     { p:"openai", key:"gpt-4.1-nano", m:"GPT-4.1 nano" },
@@ -424,23 +436,26 @@
     { p:"openai", key:"o3",           m:"o3" },
     { p:"openai", key:"o4-mini",      m:"o4-mini" },
 
+    { p:"google", key:"gemini-3.6-flash",       m:"Gemini 3.6 Flash" },
     { p:"google", key:"gemini-3.5-flash",       m:"Gemini 3.5 Flash" },
-    { p:"google", key:"gemini-3.1-pro-preview", m:"Gemini 3.1 Pro", note:"Preview" },
+    { p:"google", key:"gemini-3.5-flash-lite",  m:"Gemini 3.5 Flash-Lite" },
+    { p:"google", key:"gemini-3.1-pro-preview", m:"Gemini 3.1 Pro", note:"Preview · doubles above 200k tokens" },
     { p:"google", key:"gemini-3.1-flash-lite",  m:"Gemini 3.1 Flash-Lite" },
     { p:"google", key:"gemini-2.5-pro",         m:"Gemini 2.5 Pro" },
     { p:"google", key:"gemini-2.5-flash",       m:"Gemini 2.5 Flash" },
     { p:"google", key:"gemini-2.5-flash-lite",  m:"Gemini 2.5 Flash-Lite" },
 
+    { p:"xai", key:"grok-4.5",    m:"Grok 4.5" },
     { p:"xai", key:"grok-4.3",    m:"Grok 4.3" },
     { p:"xai", key:"grok-4.20",   m:"Grok 4.20" },
-    { p:"xai", key:"grok-4",      m:"Grok 4" },
-    { p:"xai", key:"grok-3",      m:"Grok 3" },
-    { p:"xai", key:"grok-3-mini", m:"Grok 3 Mini" },
+    { p:"xai", key:"grok-4",      m:"Grok 4", note:"no longer listed by xAI · last known rate" },
+    { p:"xai", key:"grok-3",      m:"Grok 3", note:"no longer listed by xAI · last known rate" },
+    { p:"xai", key:"grok-3-mini", m:"Grok 3 Mini", note:"no longer listed by xAI · last known rate" },
 
-    { p:"mistral", key:"mistral-large-3",  m:"Mistral Large 3" },
-    { p:"mistral", key:"mistral-medium-3", m:"Mistral Medium 3" },
-    { p:"mistral", key:"mistral-small-3",  m:"Mistral Small 3" },
-    { p:"mistral", key:"codestral",        m:"Codestral" },
+    { p:"mistral", key:"mistral-medium-3.5", m:"Mistral Medium 3.5" },
+    { p:"mistral", key:"mistral-large-3",    m:"Mistral Large 3" },
+    { p:"mistral", key:"mistral-small-4",    m:"Mistral Small 4" },
+    { p:"mistral", key:"codestral",          m:"Codestral" },
 
     { p:"perplexity", key:"sonar-pro",           m:"Sonar Pro" },
     { p:"perplexity", key:"sonar",               m:"Sonar" },
@@ -448,8 +463,8 @@
 
     { p:"deepseek", key:"deepseek-v4-flash", m:"DeepSeek V4 Flash" },
     { p:"deepseek", key:"deepseek-v4-pro",   m:"DeepSeek V4 Pro" },
-    { p:"deepseek", key:"deepseek-v3",       m:"DeepSeek V3" },
-    { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1" }
+    { p:"deepseek", key:"deepseek-v3",       m:"DeepSeek V3", note:"no longer listed by DeepSeek · last known rate" },
+    { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1", note:"no longer listed by DeepSeek · last known rate" }
   ];
 
   // ---- Path to the live prices file (same file the Monday Action maintains) ----
@@ -469,9 +484,14 @@
       "claude-mythos-5":           { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
-      "gpt-5.5":      { input: 5e-6,    output: 3e-5 },
-      "gpt-5.4":      { input: 2.5e-6,  output: 1.5e-5 },
+      "gpt-5.6-sol":   { input: 5e-6,   output: 3e-5, long: { over: 272000, input: 0.00001, output: 0.000045 } },
+      "gpt-5.6-terra": { input: 2.5e-6, output: 1.5e-5, long: { over: 272000, input: 0.000005, output: 0.0000225 } },
+      "gpt-5.6-luna":  { input: 1e-6,   output: 6e-6, long: { over: 272000, input: 0.000002, output: 0.000009 } },
+      "gpt-5.5":      { input: 5e-6,    output: 3e-5, long: { over: 272000, input: 0.00001, output: 0.000045 } },
+      "gpt-5.5-pro":  { input: 3e-5,    output: 1.8e-4, long: { over: 272000, input: 0.00006, output: 0.00027 } },
+      "gpt-5.4":      { input: 2.5e-6,  output: 1.5e-5, long: { over: 272000, input: 0.000005, output: 0.0000225 } },
       "gpt-5.4-mini": { input: 7.5e-7,  output: 4.5e-6 },
+      "gpt-5.4-nano": { input: 2e-7,    output: 1.25e-6 },
       "gpt-4.1":      { input: 2e-6,    output: 8e-6 },
       "gpt-4.1-mini": { input: 4e-7,    output: 1.6e-6 },
       "gpt-4.1-nano": { input: 1e-7,    output: 4e-7 },
@@ -481,24 +501,27 @@
       "o4-mini":      { input: 1.1e-6,  output: 4.4e-6 }
     },
     "google": {
+      "gemini-3.6-flash":       { input: 1.5e-6,  output: 7.5e-6 },
       "gemini-3.5-flash":       { input: 1.5e-6,  output: 9e-6 },
-      "gemini-3.1-pro-preview": { input: 2e-6,    output: 1.2e-5 },
+      "gemini-3.5-flash-lite":  { input: 3e-7,    output: 2.5e-6 },
+      "gemini-3.1-pro-preview": { input: 2e-6,    output: 1.2e-5, long: { over: 200000, input: 0.000004, output: 0.000018 } },
       "gemini-3.1-flash-lite":  { input: 2.5e-7,  output: 1.5e-6 },
-      "gemini-2.5-pro":         { input: 1.25e-6, output: 1e-5 },
+      "gemini-2.5-pro":         { input: 1.25e-6, output: 1e-5, long: { over: 200000, input: 0.0000025, output: 0.000015 } },
       "gemini-2.5-flash":       { input: 3e-7,    output: 2.5e-6 },
       "gemini-2.5-flash-lite":  { input: 1e-7,    output: 4e-7 }
     },
     "xai": {
-      "grok-4.3":    { input: 1.25e-6, output: 2.5e-6 },
-      "grok-4.20":   { input: 2e-6,    output: 6e-6 },
+      "grok-4.5":    { input: 2e-6,    output: 6e-6, long: { over: 200000, input: 0.000004, output: 0.000012 } },
+      "grok-4.3":    { input: 1.25e-6, output: 2.5e-6, long: { over: 200000, input: 0.0000025, output: 0.000005 } },
+      "grok-4.20":   { input: 1.25e-6, output: 2.5e-6, long: { over: 200000, input: 0.0000025, output: 0.000005 } },
       "grok-4":      { input: 3e-6,    output: 1.5e-5 },
       "grok-3":      { input: 2e-6,    output: 1e-5 },
       "grok-3-mini": { input: 3e-7,    output: 5e-7 }
     },
     "mistral": {
-      "mistral-large-3":  { input: 2e-6,    output: 6e-6 },
-      "mistral-medium-3": { input: 4e-7,    output: 2e-6 },
-      "mistral-small-3":  { input: 2e-7,    output: 6e-7 },
+      "mistral-medium-3.5": { input: 1.5e-6, output: 7.5e-6 },
+      "mistral-large-3":  { input: 5e-7,    output: 1.5e-6 },
+      "mistral-small-4":  { input: 1.5e-7,  output: 6e-7 },
       "codestral":        { input: 3e-7,    output: 9e-7 }
     },
     "perplexity": {
@@ -508,7 +531,7 @@
     },
     "deepseek": {
       "deepseek-v4-flash": { input: 1.4e-7,  output: 2.8e-7 },
-      "deepseek-v4-pro":   { input: 1.74e-6, output: 3.48e-6 },
+      "deepseek-v4-pro":   { input: 4.35e-7, output: 8.7e-7 },
       "deepseek-v3":       { input: 1.4e-7,  output: 2.8e-7 },
       "deepseek-r1":       { input: 5.5e-7,  output: 2.19e-6 }
     }
@@ -521,7 +544,14 @@
       var group = prices[e.p];
       var rec = group && group[e.key];
       if (!rec || typeof rec.input !== "number" || typeof rec.output !== "number") return;
-      rows.push({ p: e.p, m: e.m, note: e.note, in: rec.input * 1e6, out: rec.output * 1e6 });
+      // A model with a long-context tier has two prices, and a table showing only
+      // the cheaper one is the kind of half-truth this page exists to correct.
+      var longNote = rec.long
+        ? "$" + (rec.long.input * 1e6).toFixed(2) + " / $" + (rec.long.output * 1e6).toFixed(2) +
+          " above " + Math.round(rec.long.over / 1000) + "k input tokens"
+        : "";
+      var note = e.note ? (longNote ? e.note + " · " + longNote : e.note) : longNote;
+      rows.push({ p: e.p, m: e.m, note: note, in: rec.input * 1e6, out: rec.output * 1e6 });
     });
     return rows;
   }
@@ -612,10 +642,10 @@
       { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-4o-mini",   high:"gpt-5.4-mini"} },
       { p:"openai", m:"ChatGPT Go",    provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
         caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
-      { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
+      { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"},
         caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
-      { p:"openai", m:"ChatGPT Pro",       provenance:"derived", multiplier:{of:"ChatGPT Plus", x:5},  value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
-      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"derived", multiplier:{of:"ChatGPT Plus", x:20}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"} },
+      { p:"openai", m:"ChatGPT Pro",       provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:5,  scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:20, scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
 
       { p:"anthropic", m:"Claude Free",    provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5"} },
       { p:"anthropic", m:"Claude Pro",     provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-opus-5"} },
@@ -640,10 +670,10 @@
       { p:"microsoft", m:"Copilot (Free)",          provenance:"not_disclosed", no_api_rate:true },
       { p:"microsoft", m:"Microsoft 365 Premium",   provenance:"not_disclosed", no_api_rate:true },
 
-      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{low:"mistral-small-3", high:"mistral-medium-3"} },
-      { p:"mistral", m:"Le Chat Pro",  provenance:"not_disclosed", value_models:{low:"mistral-small-3", high:"mistral-large-3"} },
+      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{low:"mistral-small-4", high:"mistral-medium-3.5"} },
+      { p:"mistral", m:"Le Chat Pro",  provenance:"not_disclosed", value_models:{low:"mistral-small-4", high:"mistral-medium-3.5"} },
 
-      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{low:"deepseek-v3", high:"deepseek-v4-pro"} }
+      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{low:"deepseek-v4-flash", high:"deepseek-v4-pro"} }
     ]
   };
 
@@ -687,7 +717,13 @@
     var rec = group && group[modelKey];
     if (!rec || typeof rec.input !== "number" || typeof rec.output !== "number") return null;
     var a = archetype();
-    return a.input * rec.input + a.output * rec.output;
+    // Long-context tier, where one exists: the higher rate applies to every token
+    // in the request once the input crosses the threshold. None of the current
+    // archetypes are anywhere near 200k, so this doesn't bite today — but it will
+    // the moment someone adds a document-sized archetype, and silently halving the
+    // cost then would be worse than the arithmetic being unused now.
+    var rate = (rec.long && a.input > rec.long.over) ? rec.long : rec;
+    return a.input * rate.input + a.output * rate.output;
   }
 
   // Messages per day needed before the subscription beats per-token pricing.
@@ -729,8 +765,11 @@
       if (!hours) return null;
       return { perDay: cap.n * (24 / hours), cap: cap };
     }
-    // A multiplier is only usable if the base is itself disclosed.
-    if (lim.multiplier && lim.multiplier.base_disclosed !== false) {
+    // A multiplier is only usable if the base is disclosed AND the provider says what
+    // the multiplier applies to. OpenAI's "5x higher usage than Plus" fails the second
+    // test: the one published cap is identical on Go and Plus, so it plainly isn't the
+    // figure being multiplied. Guessing would manufacture a number nobody claimed.
+    if (lim.multiplier && lim.multiplier.base_disclosed !== false && !lim.multiplier.scope_unclear) {
       var plans = PLAN_LIMITS.plans || [];
       for (var j = 0; j < plans.length; j++) {
         if (plans[j].p === lim.p && plans[j].m === lim.multiplier.of) {
@@ -955,8 +994,12 @@
                    tail + '</span></span>';
       } else if (lim && lim.third_party && lim.third_party.length) {
         var t = lim.third_party[0];
-        ceilCell = '<span class="tp">' + t.n + ' ' + t.unit + '/' + t.window.replace("1d", "day") +
-                   '<span class="sub">third-party figure — not published by ' + provName(r.p) + '</span></span>';
+        var conf = t.confidence || "low";
+        var win = { "1d": "day", "7d": "week", "5h": "5h", "3h": "3h" }[t.window] || t.window;
+        ceilCell = '<span class="tp ' + (conf === "low" ? "tp-low" : "") + '">~' + t.n + ' ' + t.unit + '/' + win +
+                   '<span class="sub"><b>' + conf + ' confidence</b> · not published by ' + provName(r.p) +
+                   ' · estimated by <a href="' + esc(t.source) + '" target="_blank" rel="noopener">' +
+                   esc(t.source.replace(/^https?:\/\//, "").split("/")[0]) + '</a></span></span>';
       } else {
         ceilCell = '<span class="nd">not disclosed</span>';
       }
@@ -1035,9 +1078,18 @@
     }
     if (lim && lim.third_party && lim.third_party.length) {
       var t = lim.third_party[0];
-      out += '<p class="why"><strong>Third-party figure:</strong> ' + t.n + ' ' + esc(t.unit) + ' per ' +
-             t.window.replace("1d", "day") + '. ' + (t.note ? esc(t.note) : "") +
-             ' ' + provName(sub.p) + ' publishes no figure of its own.</p>';
+      var w = { "1d": "day", "7d": "week", "5h": "5 hours", "3h": "3 hours" }[t.window] || t.window;
+      out += '<p class="why"><strong>Third-party estimate — ' + esc(t.confidence || "low") + ' confidence.</strong> ' +
+             '~' + t.n + ' ' + esc(t.unit) + ' per ' + w + (t.scope ? ' — ' + esc(t.scope) : "") + '. ' +
+             provName(sub.p) + ' publishes no figure of its own, so this cannot be confirmed.</p>';
+      if (t.why)      { out += '<p class="why"><strong>Why we rate it that way:</strong> ' + esc(t.why) + '</p>'; }
+      if (t.replaces) { out += '<p class="why"><strong>Superseded figure:</strong> ' + esc(t.replaces) + '</p>'; }
+      if (t.corroborated_by && t.corroborated_by.length) {
+        out += '<p class="src">Corroborated by ' + t.corroborated_by.map(function (u) {
+          var h = u.replace(/^https?:\/\//, "").split("/")[0];
+          return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(h) + '</a>';
+        }).join(" · ") + '</p>';
+      }
     }
     if (!ceil && !(lim && lim.third_party && lim.third_party.length)) {
       out += '<p class="why">No usable cap is published for this plan, so there is no honest ceiling to compute. The blank is the finding.</p>';
@@ -1090,18 +1142,23 @@
   // Tally how many plans actually have a provider-published cap.
   function fillCallout() {
     var plans = (PLAN_LIMITS.plans || []);
-    var total = plans.length, disclosed = 0, third = 0;
+    var total = plans.length, disclosed = 0, third = 0, lowConf = 0;
     plans.forEach(function (l) {
       if (l.provenance === "disclosed" || l.provenance === "derived") disclosed++;
-      else if (l.third_party && l.third_party.length) third++;
+      else if (l.third_party && l.third_party.length) {
+        third++;
+        if ((l.third_party[0].confidence || "low") === "low") lowConf++;
+      }
     });
     $("callout-body").innerHTML =
       'Of the <span class="tally">' + total + '</span> consumer plans tracked here, ' +
       '<span class="tally">' + disclosed + '</span> have a usage cap the provider publishes about its own product. ' +
-      '<span class="tally">' + third + '</span> have only a third-party estimate. The rest publish nothing usable — ' +
-      'Anthropic and Google give multipliers ("5× more usage than Pro", "4× higher than standard limits") ' +
-      'against a base they never state, and both now meter by compute, which varies per prompt. ' +
-      'Google reserves the right to change limits "without notice."';
+      '<span class="tally">' + third + '</span> have only a third-party estimate' +
+      (lowConf ? ', and <span class="tally">' + lowConf + '</span> of those we rate low confidence' : "") + '. ' +
+      'The rest are sold on multipliers — "5× more usage than Pro", "20× higher usage than Plus", ' +
+      '"4× higher than standard limits" — against a base nobody states. The one published cap is ' +
+      'identical on ChatGPT Go at $8 and Plus at $20, so it doesn\'t even separate the tiers you\'re ' +
+      'choosing between. Google reserves the right to change limits "without notice."';
   }
 
   // ---- Wire up ----

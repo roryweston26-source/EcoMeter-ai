@@ -92,6 +92,9 @@ const MODEL_CATALOG = [
     { key:'claude-mythos-5', name:'Claude Mythos 5' },
   ]},
   { label:'ChatGPT', models:[
+    { key:'gpt-5.6-sol', name:'GPT-5.6 Sol' },
+    { key:'gpt-5.6-terra', name:'GPT-5.6 Terra' },
+    { key:'gpt-5.6-luna', name:'GPT-5.6 Luna' },
     { key:'gpt-5.5', name:'GPT-5.5' },
     { key:'gpt-5.4', name:'GPT-5.4' },
     { key:'gpt-5.4-mini', name:'GPT-5.4 mini' },
@@ -102,7 +105,9 @@ const MODEL_CATALOG = [
     { key:'o4-mini', name:'o4-mini' },
   ]},
   { label:'Gemini', models:[
+    { key:'gemini-3.6-flash', name:'Gemini 3.6 Flash' },
     { key:'gemini-3.5-flash', name:'Gemini 3.5 Flash' },
+    { key:'gemini-3.5-flash-lite', name:'Gemini 3.5 Flash-Lite' },
     { key:'gemini-3.1-pro-preview', name:'Gemini 3.1 Pro' },
     { key:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash-Lite' },
     { key:'gemini-2.5-pro', name:'Gemini 2.5 Pro' },
@@ -110,6 +115,7 @@ const MODEL_CATALOG = [
     { key:'gemini-2.5-flash-lite', name:'Gemini 2.5 Flash-Lite' },
   ]},
   { label:'Grok', models:[
+    { key:'grok-4.5', name:'Grok 4.5' },
     { key:'grok-4.3', name:'Grok 4.3' },
     { key:'grok-4.20', name:'Grok 4.20' },
     { key:'grok-4', name:'Grok 4' },
@@ -295,16 +301,28 @@ function accumulateUsage(msgs, platformName, model) {
   const first = counted[0];
   const key = usageHash(first.role, first.text.slice(0, 200));
 
-  let cm = 0, ci = 0, co = 0;
-  for (const m of counted) { cm++; if (m.role === 'user') ci += m.tokens; else co += m.tokens; }
+  let cm = 0, ci = 0, co = 0, cu = 0;
+  for (const m of counted) { cm++; if (m.role === 'user') { ci += m.tokens; cu++; } else co += m.tokens; }
 
-  const prev = convState[key] || { msgs:0, inTok:0, outTok:0 };
+  // Visible tokens (ci/co) are what's on screen. They are NOT what gets billed:
+  // every turn resends the transcript, so real input is several times larger and
+  // grows with conversation length. Track the billed figure too — it's the one the
+  // Subscription Auditor needs, and it cannot be reconstructed from ci afterwards.
+  // Excludes the per-turn system-prompt overhead, which is a modelled constant
+  // rather than a measurement; uTurns is exported so a consumer can add it.
+  const cb = estimateBilledInput(counted);
+
+  const prev = convState[key] || { msgs:0, inTok:0, outTok:0, billedIn:0, uTurns:0 };
   const dM = Math.max(0, cm - prev.msgs), dI = Math.max(0, ci - prev.inTok), dO = Math.max(0, co - prev.outTok);
-  if (dM === 0 && dI === 0 && dO === 0) return;   // nothing new (re-poll of same state)
+  const dB = Math.max(0, cb - (prev.billedIn || 0)), dU = Math.max(0, cu - (prev.uTurns || 0));
+  if (dM === 0 && dI === 0 && dO === 0 && dB === 0) return;   // nothing new (re-poll of same state)
 
   // Track the per-field MAXIMUM, never the latest — so a transient scrape drop or
   // a lower re-count can't later be re-added as a phantom delta (no double-count).
-  convState[key] = { msgs: Math.max(cm, prev.msgs), inTok: Math.max(ci, prev.inTok), outTok: Math.max(co, prev.outTok) };
+  convState[key] = {
+    msgs: Math.max(cm, prev.msgs), inTok: Math.max(ci, prev.inTok), outTok: Math.max(co, prev.outTok),
+    billedIn: Math.max(cb, prev.billedIn || 0), uTurns: Math.max(cu, prev.uTurns || 0),
+  };
   if (convOrder[convOrder.length - 1] !== key) { convOrder = convOrder.filter(k => k !== key); convOrder.push(key); }
   while (convOrder.length > 2000) { delete convState[convOrder.shift()]; }   // bound history (generous)
 
@@ -316,6 +334,11 @@ function accumulateUsage(msgs, platformName, model) {
   const bm   = p.byModel[mdl]   || (p.byModel[mdl] = { msgs:0, inTok:0, outTok:0 });
   p.msgs += dM;  p.inTok += dI;  p.outTok += dO;
   bm.msgs += dM; bm.inTok += dI; bm.outTok += dO;
+  // Added 2026-07-29. Days recorded before this exist without these keys, so every
+  // reader must treat them as absent rather than zero — a 0 here means "not
+  // measured", and averaging it in would silently drag the figure down.
+  p.billedIn  = (p.billedIn  || 0) + dB;  p.uTurns  = (p.uTurns  || 0) + dU;
+  bm.billedIn = (bm.billedIn || 0) + dB;  bm.uTurns = (bm.uTurns || 0) + dU;
   scheduleUsageSave();
 }
 
@@ -328,41 +351,68 @@ function buildUsageExport() {
   for (const date in USAGE.days) {
     const day = USAGE.days[date];
     for (const prov in day) {
-      const a = agg[prov] || (agg[prov] = { days:new Set(), msgs:0, inTok:0, outTok:0, models:new Set(), byModel:{} });
+      const a = agg[prov] || (agg[prov] = { days:new Set(), billedDays:new Set(), msgs:0, inTok:0, outTok:0, billedIn:0, uTurns:0, models:new Set(), byModel:{} });
       a.days.add(date);
       a.msgs += day[prov].msgs; a.inTok += day[prov].inTok; a.outTok += day[prov].outTok;
+      // Billed input is averaged over the days that actually recorded it, not over
+      // all tracked days — otherwise history from before the field existed dilutes
+      // the average toward zero and the Auditor under-reads real usage.
+      if (day[prov].billedIn != null) {
+        a.billedDays.add(date);
+        a.billedIn += day[prov].billedIn; a.uTurns += (day[prov].uTurns || 0);
+      }
       // Roll up per-model tokens too (already tracked per day) so the export can carry a
       // per-model split — lets the Auditor price each model at its own API rate.
       for (const mdl in day[prov].byModel) {
         if (mdl === '(unspecified)') continue;
         a.models.add(mdl);
         const src = day[prov].byModel[mdl];
-        const bm  = a.byModel[mdl] || (a.byModel[mdl] = { inTok:0, outTok:0 });
+        const bm  = a.byModel[mdl] || (a.byModel[mdl] = { inTok:0, outTok:0, billedIn:0, uTurns:0, billedDays:new Set() });
         bm.inTok += src.inTok; bm.outTok += src.outTok;
+        if (src.billedIn != null) { bm.billedDays.add(date); bm.billedIn += src.billedIn; bm.uTurns += (src.uTurns || 0); }
       }
     }
   }
   const platforms = Object.keys(agg).map(prov => {
     const a = agg[prov], activeDays = Math.max(1, a.days.size);
+    const bDays = a.billedDays.size;
     return {
       provider: prov,
       messages_per_day:      Math.round(a.msgs   / activeDays),
       input_tokens_per_day:  Math.round(a.inTok  / activeDays),
       output_tokens_per_day: Math.round(a.outTok / activeDays),
+      // v2 fields. input_tokens_per_day counts only the text you can see; this is
+      // what the provider actually charges for, which is larger because every turn
+      // resends the transcript. Omitted entirely (not zeroed) when nothing has been
+      // recorded since the field was added, so a reader can tell "none" from "zero".
+      // Excludes the modelled per-turn system-prompt overhead; divide by
+      // user_turns_per_day for billed input per message.
+      ...(bDays ? {
+        billed_input_tokens_per_day: Math.round(a.billedIn / bDays),
+        user_turns_per_day:          Math.round(a.uTurns   / bDays),
+        billed_days:                 bDays,
+      } : {}),
       total_messages: a.msgs,
       active_days: a.days.size,
       models_used: [...a.models],
       // Per-model token split (identified models only). Same per-active-day denominator as
       // the platform figures above, so these sum to ~the platform totals. Optional field:
       // older readers ignore it; the Auditor falls back to conservative pricing when absent.
-      model_usage: Object.keys(a.byModel).map(mdl => ({
-        key: mdl,
-        input_tokens_per_day:  Math.round(a.byModel[mdl].inTok  / activeDays),
-        output_tokens_per_day: Math.round(a.byModel[mdl].outTok / activeDays),
-      })),
+      model_usage: Object.keys(a.byModel).map(mdl => {
+        const m = a.byModel[mdl], mb = m.billedDays.size;
+        return {
+          key: mdl,
+          input_tokens_per_day:  Math.round(m.inTok  / activeDays),
+          output_tokens_per_day: Math.round(m.outTok / activeDays),
+          ...(mb ? {
+            billed_input_tokens_per_day: Math.round(m.billedIn / mb),
+            user_turns_per_day:          Math.round(m.uTurns   / mb),
+          } : {}),
+        };
+      }),
     };
   });
-  return { app:'EcoMeter AI', kind:'usage-export', version:1, scope:'lifetime',
+  return { app:'EcoMeter AI', kind:'usage-export', version:2, scope:'lifetime',
     generated: new Date().toISOString().split('T')[0], days_tracked: Object.keys(USAGE.days).length, platforms };
 }
 
@@ -511,19 +561,34 @@ function methodLabel(enc, modelKey) {
   return isOpenAI ? 'tiktoken-exact' : 'tiktoken-approx';
 }
 
-// Honest error band per counting method (fraction of the counted tokens), for an
-// "±X%" label in the UI. The char-ratio band is MEASURED against real tiktoken on a
-// mixed prose/code/URL corpus after the 2026 recalibration (MAE ~8%, p95 ~20%).
-// tiktoken-approx / sp-estimated are ESTIMATES pending a bundled reference tokenizer
-// for those families. Note: these cover TEXT tokenization only — provider billing adds
-// hidden system/role/tool tokens, modelled separately by PLATFORM_OVERHEAD_TOKENS.
+// Error band per counting method (fraction of the counted tokens), for the "±X%"
+// label in the UI.
+//
+// 'estimated' (char-ratio) is the ONLY band here that is actually measured:
+// scripts/calibrate-tokenizer.js runs this estimator against the bundled real
+// cl100k over a corpus built from this repo and reports 10.5% MAE, +2.2% bias.
+// It previously advertised ±8% on the strength of a comment with nothing behind
+// it; the real figure was 12.9% MAE with a -9.4% undercount bias. Re-run the
+// script after touching the ratios — it exits non-zero if this band is optimistic.
+//
+// ⚠️ The band is MEAN absolute error, not worst case: p95 is ~24%, worst ~42% on
+// code-heavy text. A single message can be well outside ±11%.
+//
+// ⚠️ 'tiktoken-approx' and 'sp-estimated' are NOT measured — they are guesses,
+// and have been since they were written. Validating them needs the relevant
+// tokenizer bundled (Gemma for SentencePiece, per-family BPEs for the rest);
+// comparing them to cl100k would measure the gap between two tokenizers, not
+// the estimator's accuracy. Don't quote these as if they were measured.
+//
+// All of these cover TEXT tokenization only — provider billing adds hidden
+// system/role/tool tokens, modelled separately by PLATFORM_OVERHEAD_TOKENS.
 const METHOD_ACCURACY = {
   'api-visible':     { err: 0.00, label: 'exact · provider API' },
   'exact-local':     { err: 0.00, label: 'exact · local tokenizer' },
   'tiktoken-exact':  { err: 0.00, label: 'exact tokenizer' },
   'tiktoken-approx': { err: 0.10, label: '±10% · approx (BPE family)' },
   'sp-estimated':    { err: 0.10, label: '±10% · estimated' },
-  'estimated':       { err: 0.08, label: '±8% · estimated' },
+  'estimated':       { err: 0.11, label: '±11% · estimated' },
 };
 const methodErr = m => (METHOD_ACCURACY[m] || {}).err ?? 0.10;
 
@@ -563,13 +628,13 @@ function charRatioEstimate(text) {
   }
   remaining = text.slice(lastIndex);
 
-  // Within remaining text, pull out URLs (https?://...) — ~4.0 chars/token.
-  // (The old 2.0 was a big overcount: real tiktoken runs URLs at ~3.9 chars/token.)
+  // Within remaining text, pull out URLs (https?://...) — measured ~3.5 chars/token
+  // against cl100k. (An older 2.0 was a large overcount; 4.0 then undershot.)
   const urlRe = /https?:\/\/\S+/g;
   let urlLastIndex = 0;
   while ((match = urlRe.exec(remaining)) !== null) {
     tokens += _estimateProse(remaining.slice(urlLastIndex, match.index));
-    tokens += Math.ceil(match[0].length / 4.0);
+    tokens += Math.ceil(match[0].length / 3.5);
     urlLastIndex = match.index + match[0].length;
   }
   tokens += _estimateProse(remaining.slice(urlLastIndex));
@@ -585,9 +650,15 @@ function _estimateProse(text) {
   const syntaxCount =
     (text.match(/[{}[\];=<>()]/g) || []).length +
     (text.match(/\b(function|const|let|var|class|import|export|def|return|async|await|if|for|while)\b/g) || []).length * 3;
-  // Recalibrated 2026 against real tiktoken on a mixed prose/code/URL corpus:
-  // this cut the char-ratio estimator from ~32% MAE (+31% bias) to ~8% MAE (~0 bias).
-  const ratio = (syntaxCount > chars * 0.025) ? 4.0 : 4.8;
+  // Ratios MEASURED against bundled cl100k by scripts/calibrate-tokenizer.js.
+  // Re-run that script after touching these; it prints the measured chars/token
+  // per segment class and fails if METHOD_ACCURACY understates the real error.
+  //
+  // The previous values (4.8 prose / 4.0 code) carried a comment claiming ~8% MAE
+  // and ~0 bias. Measured, they were 12.9% MAE with a systematic -9.4% bias: 4.8
+  // chars/token is well above what cl100k actually does to English prose (~4.0),
+  // so every estimate came in low. Corrected to the measured figures.
+  const ratio = (syntaxCount > chars * 0.025) ? 3.7 : 4.0;
   return Math.ceil(chars / ratio);
 }
 
@@ -738,13 +809,36 @@ const PLATFORM_OVERHEAD_TOKENS = {
 // GPT-4o:   85 base + ceil(w/512) * ceil(h/512) * 170 tiles
 // Gemini:   fixed 258 tokens per image (Google-documented)
 // Others:   1000 token fallback
-function estimateImageTokens(img, platformName) {
+function estimateImageTokens(img, platformName, modelKey) {
   const w = img.width  || 0;
   const h = img.height || 0;
 
   if (w > 0 && h > 0) {
     if (platformName === 'Claude') {
-      return Math.ceil(w / 32) * Math.ceil(h / 32) * 65;
+      // Anthropic: "Claude views images in patches instead of pixels. Each patch is
+      // a 28x28-pixel block... an image costs ceil(w/28) x ceil(h/28) visual tokens."
+      // Images over a tier's long-edge or visual-token limit are downscaled first,
+      // which CAPS the cost — so a 4K screenshot is not ruinous.
+      //
+      // This previously used 32px patches multiplied by 65, a factor with no basis
+      // in the docs, which overcounted every Claude image by ~51x. Verified against
+      // every row of Anthropic's published worked table.
+      const hi = /(-4-7|-4-8|opus-5|sonnet-5|fable-5|mythos-5)/.test(modelKey || '');
+      const maxEdge   = hi ? 2576 : 1568;   // Claude 4.7+ get the high-resolution tier
+      const maxTokens = hi ? 4784 : 1568;
+      let sw = w, sh = h;
+      const edge = Math.max(sw, sh);
+      if (edge > maxEdge) { const s = maxEdge / edge; sw = Math.round(sw * s); sh = Math.round(sh * s); }
+      const at = s => Math.ceil((sw * s) / 28) * Math.ceil((sh * s) / 28);
+      if (at(1) <= maxTokens) return at(1);
+      // Anthropic scales to "the largest size that fits the tier's limits", so find
+      // the biggest scale still inside the budget rather than undershooting it.
+      let lo = 0, hi2 = 1;
+      for (let i = 0; i < 40; i++) {
+        const mid = (lo + hi2) / 2;
+        if (at(mid) <= maxTokens) lo = mid; else hi2 = mid;
+      }
+      return Math.min(at(lo), maxTokens);
     }
     if (platformName === 'ChatGPT') {
       // Images >2048 on either side are scaled down by the API
@@ -761,17 +855,65 @@ function estimateImageTokens(img, platformName) {
   return FALLBACK[platformName] || 1000;
 }
 
-// ── Context replay estimation ─────────────────────────────
-// Real AI APIs resend the full conversation history with every message.
-// Turn 1 costs msg1; Turn 2 costs msg1+msg2; Turn N costs msg1+…+msgN.
-// Replay tokens are billed at the input rate only (not the avg of in+out).
-function estimateConversationReplay(messages) {
-  let running = 0, total = 0;
+// ── Billed input estimation ───────────────────────────────
+// Real AI APIs resend the whole transcript with every request, so total input is
+// the sum of each request's context — NOT the sum of the messages.
+//
+// A request happens once per USER turn, and carries everything before it plus the
+// new message:  input_k = sum_{j<k}(u_j + a_j) + u_k.
+//
+// Two things this must not do, both of which it did before 2026-07-29 and which
+// together charged input at almost exactly 2x:
+//   1. Accumulate after assistant messages as well as user ones. Replies don't
+//      trigger a request, and the final reply is generated, never re-sent.
+//   2. Be added on top of a separate "each message once" charge by the caller.
+//      The returned figure is the COMPLETE input for the conversation, excluding
+//      only the per-turn system-prompt overhead, which the caller adds.
+function estimateBilledInput(messages) {
+  let prior = 0, total = 0;
   for (const m of messages) {
-    running += m.tokens || 0;
-    total   += running;
+    const tok = m.tokens || 0;
+    if (m.role === 'user') total += prior + tok;   // this request's full context
+    prior += tok;
   }
   return total;
+}
+
+// ── Long-context pricing tiers ────────────────────────────
+// OpenAI (>272k input tokens), Google (>200k) and xAI (>=200k) charge roughly
+// double past a threshold, and the higher rate applies to EVERY token in that
+// request, not just the excess. Anthropic does not tier this way.
+//
+// The tier is a property of a single API call, not of the conversation: each turn
+// resends the whole history plus the hidden system prompt, so a long chat crosses
+// the threshold partway through and every subsequent turn is billed at the higher
+// rate. Charging the whole conversation at one tier would be wrong in both
+// directions — short rate undercounts the tail, long rate overcounts the start.
+// So walk the turns, pick the tier each request would actually be billed at, and
+// return the token-weighted average rate.
+function blendedInputRate(messages, p, overheadPerTurn) {
+  if (!p || !p.long) return p ? p.input : 0;
+  let prior = 0, tokens = 0, weighted = 0;
+  for (const m of messages) {
+    const tok = m.tokens || 0;
+    // One request per user turn — same discriminator estimateBilledInput() uses,
+    // so the tier chosen always matches the tokens actually being charged.
+    if (m.role === 'user') {
+      const ctx  = prior + tok + overheadPerTurn;
+      const rate = ctx > p.long.over ? p.long.input : p.input;
+      weighted += ctx * rate;
+      tokens   += ctx;
+    }
+    prior += tok;
+  }
+  return tokens ? weighted / tokens : p.input;
+}
+
+// Output is billed per response at that request's tier. The peak context is the
+// right discriminator for the replies that matter (the later, larger ones).
+function outputRateAt(p, peakContextTokens) {
+  if (!p || !p.long) return p ? p.output : 0;
+  return peakContextTokens > p.long.over ? p.long.output : p.output;
 }
 
 // ── Anthropic token counting API ──────────────────────────
@@ -878,34 +1020,50 @@ function renderSummary() {
   if (p && tot > 0) {
     const range = REASONING_RANGES[key];
     const adjustedOut  = out * (range ? range.mid : 1.0);
-    const adjustedCost = inp * p.input + adjustedOut * p.output;
+
+    const turns          = msgData.filter(m => m.counted && m.role === 'user').length;
+    const overheadPerTurn = PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000;
+
+    // Long-context tiers: resolve the effective rates before costing anything.
+    // Without this the estimate silently halves once a conversation crosses the
+    // provider's threshold — and long chats are exactly where that happens.
+    const inRate   = blendedInputRate(msgData.filter(m => m.counted), p, overheadPerTurn);
+    const peakCtx  = tot + overheadPerTurn;
+    const outRate  = outputRateAt(p, peakCtx);
+    const onLongTier = !!(p.long && peakCtx > p.long.over);
 
     // Image cost — use actual dimensions if available
     const imgCost = currentImages.reduce((sum, img) => {
-      const toks = estimateImageTokens(img, currentPlatformName);
-      return sum + toks * p.input;
+      const toks = estimateImageTokens(img, currentPlatformName, key);
+      return sum + toks * inRate;
     }, 0);
 
-    // Context replay: cumulative input resent each turn, billed at input rate
-    const replayTokens = estimateConversationReplay(msgData.filter(m => m.counted));
-    const replayCost   = replayTokens * p.input;
+    // Every request resends the transcript, so this IS the whole input bill —
+    // the visible messages included. Do not add `inp` on top of it.
+    const billedInput = estimateBilledInput(msgData.filter(m => m.counted));
 
     // The hidden system prompt / tool schemas are re-sent on EVERY API call, not
     // once per conversation — so overhead scales with the number of user turns.
     // (Charging it once, as this did previously, undercounts more the longer the
     // conversation runs.)
-    const turns        = msgData.filter(m => m.counted && m.role === 'user').length;
-    const overheadTok  = (PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000) * Math.max(turns, 1);
-    const overheadCost = overheadTok * p.input;
+    const overheadTok  = overheadPerTurn * Math.max(turns, 1);
 
-    const trueCost    = adjustedCost + imgCost + replayCost + overheadCost;
-    const visibleCost = adjustedCost + imgCost;
+    const inputCost  = (billedInput + overheadTok) * inRate;
+    const outputCost = adjustedOut * outRate;
+
+    const trueCost = inputCost + outputCost + imgCost;
+    // "Visible" = what the messages on screen would cost if history were free —
+    // the naive figure, kept so the panel can show the gap between the two.
+    const visibleCost = inp * inRate + outputCost + imgCost;
 
     totalCost.textContent = '~$' + trueCost.toFixed(3);
 
     // Model label: show reasoning range if applicable
     let labelText = key;
     if (range) labelText += ` · ×${range.lo}–${range.hi} reasoning (mid ×${range.mid})`;
+    // A crossed context threshold roughly doubles the bill — the user should be
+    // told, not just quietly charged more.
+    if (onLongTier) labelText += ` · long-context rate (>${fmt(p.long.over)} tokens)`;
     modelLabel.textContent = labelText;
 
     const imgNote  = currentImages.length > 0
@@ -972,6 +1130,20 @@ function renderMessages() {
   const key       = userSelectedModel;
   const platColor = currentPlatformColor;
 
+  // Which price tier a message was billed at depends on how much history preceded
+  // it, not on the message alone — so map each message to the context size of the
+  // request it belonged to. Built from msgData because `display` may be a subset.
+  const ctxAt = new Map();
+  {
+    const ovh = PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000;
+    let running = 0;
+    for (const mm of msgData) {
+      if (!mm.counted) continue;
+      running += mm.tokens || 0;
+      ctxAt.set(mm, running + ovh);
+    }
+  }
+
   display.forEach(m => {
     const isUser      = m.role === 'user';
     const borderColor = isUser ? (platColor || '#d4a843') : '#5b9cf6';
@@ -1007,7 +1179,11 @@ function renderMessages() {
       if (key) {
         const p = getPrice(key);
         if (p) {
-          const c = m.tokens * (isUser ? p.input : p.output);
+          const onLong = !!(p.long && (ctxAt.get(m) || 0) > p.long.over);
+          const rate   = isUser
+            ? (onLong ? p.long.input  : p.input)
+            : (onLong ? p.long.output : p.output);
+          const c = m.tokens * rate;
           const costSpan = document.createElement('span');
           costSpan.className   = 'c-cost';
           costSpan.textContent = '$' + c.toFixed(5);
