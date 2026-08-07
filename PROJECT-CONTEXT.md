@@ -1,25 +1,81 @@
 # Legerly — Project Context
 
-_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-07-28._
+_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-08-02._
 
 > Read **CLAUDE.md** first (mission, principles, voice — auto-loaded). This is the deep dive.
 
 ---
 
-## 0. Working state (read this first) — as of 2026-07-28
+## 0. Working state (read this first) — as of 2026-08-02
 
-**Merged to `main` in this run** (PR #18, 2026-07-28):
-- **Claude Opus 5** added everywhere ($5/$25 per 1M) — `prices.json`, `water.json`, the EcoMeter picker, `pricing.html`, Auditor plans + `ADVANCED`/`LABELS`, `update-prices.js`. Anthropic's Auditor "top model" is now Opus 5.
-- **Two token-accuracy bugs fixed** (§4) — the Anthropic count API was called with a hardcoded Haiku model id, and system-prompt overhead was charged once per conversation instead of per turn.
-- **Auditor panel merged into one section** (§6) with both API-key fields inline, plus a non-destructive `setup` link.
-- **Store docs rewritten** (§10) — the privacy policy contradicted itself on network calls and had no justification for the Google host permission.
-- **Data gaps closed** — `water.json` was silently missing 9 models; `update-prices.js` didn't know about Sonnet 5 / Fable 5 / Mythos 5.
+### ⚠️ The single most important thing
 
-**Ship status: v6.12 was REJECTED by the Chrome Web Store on 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Fixed in `STORE-LISTING.md` (details and the standing rule are in the note at the top of that file) and in `manifest.json`'s `description`. **The rejection clears the upload block**, so the next submission can carry the export-v2 and cost-model work too. Nothing about the code or permissions was at issue — this was listing copy only.
+**The Chrome Web Store has a build that is materially wrong, and the fixed build has NOT been uploaded.** Rory submitted before the 2026-08-02 work started, so whatever is in review or published carries:
+- **billed input charged at ~2×** (every "true cost" figure roughly double)
+- **Claude image tokens at ~51×** (any conversation with an image wildly overcounted)
+- **"±8% token estimate"** in the panel, when the real figure was 12.9% with a systematic undercount bias
+- stale prices, no GPT-5.6 family, export v1
 
-*(Superseded, kept for context:)* **v6.12 submitted to the Chrome Web Store 2026-07-28, awaiting review.** This is the first publish since v6.9, so it carries everything from the previous run too (tokenizer recalibration, opt-in Google `countTokens`, `model_usage[]` export). It adds the **`generativelanguage.googleapis.com` host permission**, so expect **permission re-review and a user-facing permission notice** — slower than a normal update. Website changes deployed on merge.
+All of it is fixed on `main`. **Nothing has shipped.** Direction of error is *over*-estimating, which is the less harmful way to be wrong, but a 2× cost overcount is exactly the failure this project exists to avoid.
 
-**If the review comes back with questions**, the paste-ready answers are already written: `extension/STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure) and `extension/STORE-LISTING.md` (description + pre-upload checklist). Data-usage disclosure was submitted as **"Website content" only** — reasoning recorded in `STORE-SUBMISSION.md` §3.
+**First action for the next session: get the store status from Rory** (dashboard → the item → status + version), then:
+| Status | What to do |
+|---|---|
+| Pending review | Store blocks new uploads. Wait it out, then upload the fixed build immediately. |
+| Published | Upload the fix now. Needs a **version bump to 6.13** (6.12 would be a duplicate). |
+| Rejected | Upload unblocked immediately. If it was the keyword rejection again, the fixed copy is already in `STORE-LISTING.md`. |
+
+Also worth asking: **did the submission use the old description?** If pasted from the dashboard's existing text rather than the updated `STORE-LISTING.md`, it carries the nine-platform list that drew *Yellow Argon* — another rejection is near-certain regardless of code.
+
+### Ship status
+
+- **Website: current.** `main` auto-deploys; everything below is live on `legerlyai.com`.
+- **Extension: NOT current.** `main` is ready to build; see §11 for the build (two Windows traps, one of which uploads successfully and just ships broken icons).
+- **v6.12 was REJECTED 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Listing copy only; code and permissions were never at issue. Fixed, with a standing rule at the top of `STORE-LISTING.md`.
+- Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
+- Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
+
+### Merged to `main` 2026-08-02 (PRs #20, #21)
+
+Started as "add a value column to the pricing page" and became an audit, because checking the inputs kept turning things up.
+
+**New feature —** Break even / Ceiling columns on `pricing.html` subscriptions (§3a), from a new `plan-limits.json` (§5).
+
+**Bugs found by testing against ground truth, not by reading code (§4):**
+- **Billed input ~2×** — replay accumulated per *message* rather than per *user turn*, and the caller double-counted on top.
+- **Claude image tokens ~51×** — 32px patches × 65, versus Anthropic's documented 28px patches at one token each.
+
+**Data corrections:**
+- Three wrong API prices: `gemini-3.5-flash` 3× understated, `deepseek-v4-pro` 4× overstated, `grok-4.20` wrong.
+- **`FALLBACK_PRICES` and `prices.json` disagreed in both directions** — the page showed different numbers depending on whether the fetch succeeded.
+- Missing current flagships added (GPT-5.6 family, Gemini 3.6, Grok 4.5, Opus/Sonnet 4.5).
+- **Google AI Plus $7.99 → $4.99**; Copilot Pro finished retiring 1 Aug 2026; ChatGPT Free now advertises unlimited GPT-5.6 Luna.
+- OpenAI cut `gpt-5.6-terra` to $2/$12 and `gpt-5.6-luna` to $0.20/$1.20 (a 5× cut) on ~2026-08-02.
+
+**Modelling added:** long-context tiers (§5), usage export **v2** carrying billed input (§6).
+
+**The "±8% tokenizer" claim was false** — measured 12.9% MAE with −9.4% bias. Recalibrated to 10.5%/+2.2%, band widened to 11% (§4).
+
+### Four scripts now guard this — run them, they have already caught real regressions
+
+```bash
+node scripts/check-prices.js      # 5 files must agree on every price
+node scripts/test-cost-model.js   # 44 assertions: billed input, image tokens, tiers, export v2
+node scripts/calibrate-tokenizer.js  # measures the estimator; fails if the UI band is optimistic
+node scripts/validate-site.js     # pre-deploy HTML/JSON gate
+```
+`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. **All four pass on `main` as of 2026-08-02.**
+
+### Open threads, most useful first
+
+1. **Upload the fixed build** (above). Everything else is downstream.
+2. **Rory's EcoMeter export.** The `pricing.html` tokens-per-message archetypes are still round-number *assumptions*, and they are the largest lever on every figure in the Break even column. Export v2 exists to fix this but needs a shipped build first. `billed_input_tokens_per_day ÷ user_turns_per_day` is the number to anchor to.
+3. **A screenshot showing supported platforms.** The store description now points at one ("The screenshots below show the full list of supported platforms"). If it isn't uploaded, that's its own metadata problem — arguably worse than the original rejection.
+4. **A human read of the store description.** It was rewritten across four commits (opening, a moved sentence, a changed bullet, markdown stripped). Each diff is sound; the flow has never had a human's eyes.
+5. **Mistral may have rebranded Le Chat → "Vibe."** Their pricing page copy says "Test out Vibe's capabilities". Not renamed, because those plan strings are the join key across `prices.json`, `plan-limits.json` and `audit.html`. Confirm before touching.
+6. **`grok-build-0.1`** ($1/$2) exists and isn't tracked — a specialist build/agent model, and adding it means inventing a `water.json` tier. Flagged, not guessed.
+7. **`tiktoken-approx` / `sp-estimated` bands are still unmeasured guesses.** Validating needs the relevant tokenizer bundled. Don't quote them as measured.
+8. **Consider wiring `check-prices.js` into `validate-site.yml`** so price drift can't come back. Left undecided because it changes CI behaviour on every PR.
 
 ---
 
@@ -287,11 +343,31 @@ Grades **how openly** providers let the public see what their AI costs — trans
 - **Store docs** — `STORE-SUBMISSION.md` created, `STORE-LISTING.md` rewritten, privacy policy corrected (§10).
 - **v6.12 submitted to the store 2026-07-28.**
 
+### This session (2026-08-02, PRs #20 + #21)
+
+Full summary in §0. The short version, and the lesson worth carrying:
+
+- **Break even / Ceiling columns** on `pricing.html` + `plan-limits.json` (§3a, §5).
+- **Two large cost-model bugs** — billed input ~2×, Claude image tokens ~51× (§4).
+- **Three wrong API prices, plus fallback/source disagreement in both directions** (§5).
+- **Long-context tiers modelled**; **usage export v2** carrying billed input (§5, §6).
+- **The "±8% tokenizer accuracy" claim was false** — measured 12.9%; recalibrated and the band widened to 11% (§4).
+- **Four guard scripts** now exist; all pass on `main`.
+
+**The lesson:** every one of these was found by *testing a stated number against an independent source*, never by reading the code. The 2× and 51× bugs both sat in well-commented functions whose comments confidently described the wrong behaviour. The ±8% claim was asserted in a comment for months. Prices had drifted between four files that each looked internally fine. **When something here states a figure — an accuracy band, a price, a token count — assume it is unverified until a script checks it, and prefer writing the script to reading the code.**
+
 ---
 
 ## 10. Open items / caveats
 
+- **⚠️ The store build is materially wrong and the fix is unshipped — see §0.** A pre-2026-08-02 build was submitted, carrying the ~2× billed-input and ~51× image-token bugs and the false ±8% band. Get the store status before doing anything else.
 - **v6.12 was rejected 2026-07-29 for listing copy, not code** (excessive keywords — the nine-platform list). Copy is fixed; **re-upload is unblocked**. When resubmitting: it still adds the `generativelanguage.googleapis.com` host permission, so expect permission re-review and a user-facing notice regardless. **Name supported platforms at most once, in prose, and never in the short description** — the standing rule is at the top of `extension/STORE-LISTING.md`.
+- **Sonnet 5's intro rate expires in 29 days (2026-08-31)** — see the line below; this is the nearest-term dated task.
+- **`grok-build-0.1`, Sonar Deep Research, Magistral / Devstral / Ministral and Codex are deliberately untracked** — specialist or non-consumer-chat models. Adding any means inventing a `water.json` tier, so decide rather than default.
+- **Mistral may have rebranded Le Chat → "Vibe"** (their pricing copy says "Test out Vibe's capabilities"). Plan names are the join key across `prices.json`, `plan-limits.json` and `audit.html` — confirm before renaming.
+- **Google AI Ultra's "5× Pro limits" note is unsourced.** Google says "From $99.99/mo" with "up to 20× access" — a range, not two fixed tiers. Doesn't affect a computed number (the row is `not_disclosed`), but the note reads more confident than the evidence.
+- **Fast mode is unmodelled on purpose** — Anthropic bills Opus 5 / 4.8 at $10/$50 under it, OpenAI renamed "priority" to Fast mode 2026-07-30. Opt-in API service tiers like batch or caching, not the default consumer rate.
+- **DeepSeek has warned it will raise prices "significantly"**, no date. It is by far the cheapest provider tracked, so the Auditor's downgrade advice leans on it hardest. Re-check when it lands.
 - **Sonnet 5's introductory API rate expires 2026-08-31** ($2/$10 → $3/$15). `prices.json`, `pricing.html` and `update-prices.js` all need the new numbers then; the caveat text should be removed at the same time.
 - **Transparency Index:** env-only; pricing/data axes are ⚪. The two-scale design is intentional — don't "reconcile" xAI's 🟡-vs-🔴 by mistake (documented in `_meta.detail.note`). Colo landlords not scored yet; a couple of `power_mw` values are third-party estimates (don't change a badge).
 - **Auditor caveats:** plan caps are approximate (rolling-window/compute-based limits); the per-model API cost skips models not in `prices.json.api` (undercount risk); API ≠ the product (no app/limits/features).
@@ -299,7 +375,7 @@ Grades **how openly** providers let the public see what their AI costs — trans
 - **The AI Clock is a modeled projection** — re-anchor quarterly.
 - **`README.md`** is extension-focused and somewhat stale.
 - **Google Fonts** load from `fonts.googleapis.com` on site pages (the privacy wart) — consider self-hosting.
-- **Stale branches to delete:** `docs/project-context-2026-07` (superseded doc-rewrite attempt) and `feat/opus-5-and-auditor-panel` (merged in PR #18).
+- **Stale branches to delete:** `docs/project-context-2026-07` (superseded doc-rewrite attempt), `feat/opus-5-and-auditor-panel` (merged in PR #18), `feat/plan-value-columns` (merged in PR #20), `chore/price-refresh-2026-08-02` (merged in PR #21).
 - **Prompt caching is unmodelled** in the cost estimate — we overestimate, increasingly with conversation length (§4). Disclosed rather than guessed; revisit only if a provider publishes hit rates.
 
 ---
