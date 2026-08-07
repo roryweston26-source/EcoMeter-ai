@@ -1,16 +1,18 @@
 {
   "_meta": {
     "comment": "Shared data for the EcoMeter extension and the Legerly pricing page. 'api' = per-token USD (input/output). 'subscriptions' = consumer plan $/month. 'free_tiers' = which models each platform's FREE plan exposes (drives the extension model picker). To update prices, edit the numbers here.",
-    "last_updated": "2026-07-28",
+    "last_updated": "2026-08-02",
     "version": "6.12",
     "source": "Official provider pricing pages + free-tier availability",
-    "verified": "2026-07-28 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com pricing, ai.google.dev + cloud.google.com/vertex-ai pricing, docs.x.ai/docs/models, api-docs.deepseek.com, mistral.ai/pricing/api, docs.perplexity.ai",
+    "verified": "2026-08-02 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com/docs/pricing, ai.google.dev/gemini-api/docs/pricing, docs.x.ai/docs/models, api-docs.deepseek.com/quick_start/pricing, mistral.ai/pricing/api, docs.perplexity.ai/getting-started/pricing. Only OpenAI had moved since 2026-07-28: gpt-5.6-terra $2.50/$15 -> $2/$12 and gpt-5.6-luna $1/$6 -> $0.20/$1.20, with long-context rates cut in step. Anthropic, Google, xAI, DeepSeek, Mistral and Perplexity were unchanged.",
     "caveats": {
       "claude-sonnet-5": "$2/$10 per 1M is Anthropic's introductory rate, listed through 2026-08-31. Standard rate is $3/$15 — re-check after that date.",
       "_long_context": "'input'/'output' are the SHORT-CONTEXT rates. Where a provider charges more past a context threshold, the optional 'long' block holds { over, input, output }: 'over' is the INPUT-token count at which the higher rate starts, and that rate then applies to ALL tokens in the request, not just the excess. Thresholds are OpenAI >272k (per the tooltip on developers.openai.com/docs/pricing), Google >200k, xAI >=200k. Anthropic does not tier this way and has no 'long' block. A consumer that ignores 'long' silently undercounts long conversations by roughly 2x — which is the OPPOSITE direction to the unmodelled prompt-caching discount, so the two do not cancel out.",
       "_perplexity_request_fees": "Sonar token rates are correct but they are not the whole bill. Perplexity also charges $5-$14 per 1,000 requests depending on model and search-context size. For chat-shaped usage that per-request fee typically exceeds the token cost, so any Perplexity figure derived from this file is a substantial UNDERCOUNT.",
       "_claude_tokenizer": "Anthropic states that Claude 4.7 and later (Opus 4.7/4.8/5, Sonnet 5, Fable 5, Mythos 5) use a newer tokenizer producing approximately 30% more tokens for the same text than Sonnet 4.6 and earlier. Identical text is therefore NOT an identical token count across providers or across Claude generations. Any cross-model cost comparison built on a fixed token count understates these models by roughly a third.",
       "_legacy_keys": "grok-4 / grok-3 / grok-3-mini, deepseek-v3 / deepseek-r1, mistral-medium-3 / mistral-small-3 and the o1 / gpt-4 / gpt-4-turbo family are no longer listed on their providers' current pricing pages. They are retained at last-known rates because they remain selectable in the extension's model picker; treat those numbers as historical, not current.",
+      "_deepseek_increase_warned": "DeepSeek's own pricing page states (as of 2026-08-02): 'We plan to raise the overall pricing for DeepSeek API services in the near future, with a significant increase expected.' No date or figures given. DeepSeek is currently the cheapest provider tracked here by a wide margin, so anything that leans on that — the Auditor's downgrade advice especially — should be re-checked when it lands.",
+      "_anthropic_fast_mode": "Anthropic added a Fast mode (research preview) billing Opus 5 / Opus 4.8 at $10/$50 per 1M instead of $5/$25. Not modelled: it is an opt-in API service tier, like batch or caching, not the default rate a consumer pays. OpenAI renamed its equivalent 'priority' tier to 'Fast mode' on 2026-07-30; also not modelled.",
       "deepseek-reasoner": "DeepSeek's API aliases (deepseek-chat, deepseek-reasoner) track whichever model is current rather than a fixed version. Priced here as v4-flash and v4-pro respectively, which is an inference from DeepSeek's current lineup, not a published mapping."
     }
   },
@@ -38,8 +40,8 @@
       "gpt-4.1-mini": { "input": 4e-07, "output": 1.6e-06 },
       "gpt-4.1-nano": { "input": 1e-07, "output": 4e-07 },
       "gpt-5.6-sol": { "input": 5e-06, "output": 3e-05, "long": { "over": 272000, "input": 0.00001, "output": 0.000045 } },
-      "gpt-5.6-terra": { "input": 2.5e-06, "output": 1.5e-05, "long": { "over": 272000, "input": 0.000005, "output": 0.0000225 } },
-      "gpt-5.6-luna": { "input": 1e-06, "output": 6e-06, "long": { "over": 272000, "input": 0.000002, "output": 0.000009 } },
+      "gpt-5.6-terra": { "input": 2e-06, "output": 1.2e-05, "long": { "over": 272000, "input": 0.000004, "output": 0.000018 } },
+      "gpt-5.6-luna": { "input": 2e-07, "output": 1.2e-06, "long": { "over": 272000, "input": 4e-07, "output": 0.0000018 } },
       "gpt-5.5": { "input": 5e-06, "output": 3e-05, "long": { "over": 272000, "input": 0.00001, "output": 0.000045 } },
       "gpt-5.5-pro": { "input": 3e-05, "output": 1.8e-04, "long": { "over": 272000, "input": 0.00006, "output": 0.00027 } },
       "gpt-5.4": { "input": 2.5e-06, "output": 1.5e-05, "long": { "over": 272000, "input": 0.000005, "output": 0.0000225 } },

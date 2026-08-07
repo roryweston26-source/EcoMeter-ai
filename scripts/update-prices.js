@@ -135,8 +135,8 @@ async function fetchOpenAI() {
   // to every token in the request (see _meta.caveats._short_context_only).
   const prices = {
     'gpt-5.6-sol':  { input: perM(5.00),   output: perM(30.00)  },
-    'gpt-5.6-terra':{ input: perM(2.50),   output: perM(15.00)  },
-    'gpt-5.6-luna': { input: perM(1.00),   output: perM(6.00)   },
+    'gpt-5.6-terra':{ input: perM(2.00),   output: perM(12.00)  },
+    'gpt-5.6-luna': { input: perM(0.20),   output: perM(1.20)   },
     'gpt-5.5':     { input: perM(5.00),   output: perM(30.00)  },
     'gpt-5.5-pro': { input: perM(30.00),  output: perM(180.00) },
     'gpt-5.4':     { input: perM(2.50),   output: perM(15.00)  },
