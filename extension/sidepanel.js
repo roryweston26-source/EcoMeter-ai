@@ -561,19 +561,34 @@ function methodLabel(enc, modelKey) {
   return isOpenAI ? 'tiktoken-exact' : 'tiktoken-approx';
 }
 
-// Honest error band per counting method (fraction of the counted tokens), for an
-// "±X%" label in the UI. The char-ratio band is MEASURED against real tiktoken on a
-// mixed prose/code/URL corpus after the 2026 recalibration (MAE ~8%, p95 ~20%).
-// tiktoken-approx / sp-estimated are ESTIMATES pending a bundled reference tokenizer
-// for those families. Note: these cover TEXT tokenization only — provider billing adds
-// hidden system/role/tool tokens, modelled separately by PLATFORM_OVERHEAD_TOKENS.
+// Error band per counting method (fraction of the counted tokens), for the "±X%"
+// label in the UI.
+//
+// 'estimated' (char-ratio) is the ONLY band here that is actually measured:
+// scripts/calibrate-tokenizer.js runs this estimator against the bundled real
+// cl100k over a corpus built from this repo and reports 10.5% MAE, +2.2% bias.
+// It previously advertised ±8% on the strength of a comment with nothing behind
+// it; the real figure was 12.9% MAE with a -9.4% undercount bias. Re-run the
+// script after touching the ratios — it exits non-zero if this band is optimistic.
+//
+// ⚠️ The band is MEAN absolute error, not worst case: p95 is ~24%, worst ~42% on
+// code-heavy text. A single message can be well outside ±11%.
+//
+// ⚠️ 'tiktoken-approx' and 'sp-estimated' are NOT measured — they are guesses,
+// and have been since they were written. Validating them needs the relevant
+// tokenizer bundled (Gemma for SentencePiece, per-family BPEs for the rest);
+// comparing them to cl100k would measure the gap between two tokenizers, not
+// the estimator's accuracy. Don't quote these as if they were measured.
+//
+// All of these cover TEXT tokenization only — provider billing adds hidden
+// system/role/tool tokens, modelled separately by PLATFORM_OVERHEAD_TOKENS.
 const METHOD_ACCURACY = {
   'api-visible':     { err: 0.00, label: 'exact · provider API' },
   'exact-local':     { err: 0.00, label: 'exact · local tokenizer' },
   'tiktoken-exact':  { err: 0.00, label: 'exact tokenizer' },
   'tiktoken-approx': { err: 0.10, label: '±10% · approx (BPE family)' },
   'sp-estimated':    { err: 0.10, label: '±10% · estimated' },
-  'estimated':       { err: 0.08, label: '±8% · estimated' },
+  'estimated':       { err: 0.11, label: '±11% · estimated' },
 };
 const methodErr = m => (METHOD_ACCURACY[m] || {}).err ?? 0.10;
 
@@ -613,13 +628,13 @@ function charRatioEstimate(text) {
   }
   remaining = text.slice(lastIndex);
 
-  // Within remaining text, pull out URLs (https?://...) — ~4.0 chars/token.
-  // (The old 2.0 was a big overcount: real tiktoken runs URLs at ~3.9 chars/token.)
+  // Within remaining text, pull out URLs (https?://...) — measured ~3.5 chars/token
+  // against cl100k. (An older 2.0 was a large overcount; 4.0 then undershot.)
   const urlRe = /https?:\/\/\S+/g;
   let urlLastIndex = 0;
   while ((match = urlRe.exec(remaining)) !== null) {
     tokens += _estimateProse(remaining.slice(urlLastIndex, match.index));
-    tokens += Math.ceil(match[0].length / 4.0);
+    tokens += Math.ceil(match[0].length / 3.5);
     urlLastIndex = match.index + match[0].length;
   }
   tokens += _estimateProse(remaining.slice(urlLastIndex));
@@ -635,9 +650,15 @@ function _estimateProse(text) {
   const syntaxCount =
     (text.match(/[{}[\];=<>()]/g) || []).length +
     (text.match(/\b(function|const|let|var|class|import|export|def|return|async|await|if|for|while)\b/g) || []).length * 3;
-  // Recalibrated 2026 against real tiktoken on a mixed prose/code/URL corpus:
-  // this cut the char-ratio estimator from ~32% MAE (+31% bias) to ~8% MAE (~0 bias).
-  const ratio = (syntaxCount > chars * 0.025) ? 4.0 : 4.8;
+  // Ratios MEASURED against bundled cl100k by scripts/calibrate-tokenizer.js.
+  // Re-run that script after touching these; it prints the measured chars/token
+  // per segment class and fails if METHOD_ACCURACY understates the real error.
+  //
+  // The previous values (4.8 prose / 4.0 code) carried a comment claiming ~8% MAE
+  // and ~0 bias. Measured, they were 12.9% MAE with a systematic -9.4% bias: 4.8
+  // chars/token is well above what cl100k actually does to English prose (~4.0),
+  // so every estimate came in low. Corrected to the measured figures.
+  const ratio = (syntaxCount > chars * 0.025) ? 3.7 : 4.0;
   return Math.ceil(chars / ratio);
 }
 
