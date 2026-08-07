@@ -37,8 +37,8 @@
     {
       "p": "openai", "m": "ChatGPT Free",
       "provenance": "not_disclosed",
-      "stated": "'Limited GPT-5.5 Instant access within a 5-hour window.' OpenAI adds the limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage.'",
-      "value_models": { "low": "gpt-4o-mini", "high": "gpt-5.4-mini" },
+      "stated": "As of 2026-08-02 the plans page advertises 'Unlimited text chats with GPT-5.6 Luna' — 'subject to abuse guardrails' — alongside limited messages, uploads, image generation and voice. So the headline is now unlimited-on-the-cheapest-model rather than a capped allowance on the default one; the help centre separately describes 'limited GPT-5.5 Instant access within a 5-hour window', with limits that 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. No absolute figure either way.",
+      "value_models": { "low": "gpt-5.6-luna", "high": "gpt-5.5" },
       "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
       "as_of": "2026-07-28"
     },

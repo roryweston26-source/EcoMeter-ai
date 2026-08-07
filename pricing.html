@@ -485,8 +485,8 @@
     },
     "openai": {
       "gpt-5.6-sol":   { input: 5e-6,   output: 3e-5, long: { over: 272000, input: 0.00001, output: 0.000045 } },
-      "gpt-5.6-terra": { input: 2.5e-6, output: 1.5e-5, long: { over: 272000, input: 0.000005, output: 0.0000225 } },
-      "gpt-5.6-luna":  { input: 1e-6,   output: 6e-6, long: { over: 272000, input: 0.000002, output: 0.000009 } },
+      "gpt-5.6-terra": { input: 2e-6,   output: 1.2e-5, long: { over: 272000, input: 4e-6, output: 1.8e-5 } },
+      "gpt-5.6-luna":  { input: 2e-7,   output: 1.2e-6, long: { over: 272000, input: 4e-7, output: 1.8e-6 } },
       "gpt-5.5":      { input: 5e-6,    output: 3e-5, long: { over: 272000, input: 0.00001, output: 0.000045 } },
       "gpt-5.5-pro":  { input: 3e-5,    output: 1.8e-4, long: { over: 272000, input: 0.00006, output: 0.00027 } },
       "gpt-5.4":      { input: 2.5e-6,  output: 1.5e-5, long: { over: 272000, input: 0.000005, output: 0.0000225 } },
@@ -593,7 +593,7 @@
     { p:"anthropic",  m:"Claude Max 20×",       price:200 },
 
     { p:"google",     m:"Gemini (Free)",        price:0 },
-    { p:"google",     m:"Google AI Plus",       price:7.99 },
+    { p:"google",     m:"Google AI Plus",       price:4.99 },
     { p:"google",     m:"Google AI Pro",        price:19.99 },
     { p:"google",     m:"Google AI Ultra",      price:99.99, note:"5× Pro limits" },
     { p:"google",     m:"Google AI Ultra (20×)",price:200 },
@@ -608,7 +608,7 @@
     { p:"perplexity", m:"Perplexity Max",       price:200 },
 
     { p:"microsoft",  m:"Copilot (Free)",       price:0 },
-    { p:"microsoft",  m:"Microsoft 365 Premium",price:19.99, note:"Replaces Copilot Pro ($20), retiring Aug 2026" },
+    { p:"microsoft",  m:"Microsoft 365 Premium",price:19.99, note:"Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
 
     { p:"mistral",    m:"Le Chat Free",         price:0 },
     { p:"mistral",    m:"Le Chat Pro",          price:14.99, note:"$5.99/mo for students" },
@@ -639,7 +639,7 @@
       }
     },
     plans: [
-      { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-4o-mini",   high:"gpt-5.4-mini"} },
+      { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-5.6-luna",  high:"gpt-5.5"} },
       { p:"openai", m:"ChatGPT Go",    provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
         caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
       { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"},
