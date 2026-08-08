@@ -461,21 +461,27 @@ function apiCostPerMonth(pf, only){
   if(!list.length) return null;
   return list.reduce((s,m)=> s + (m.in*API[m.key].in + m.out*API[m.key].out)*30, 0);
 }
-// A tier "meets needs" on three axes: volume, model access, and — where the
-// provider explicitly sells a limited version of a feature — that feature.
-function meetsNeeds(t,pf,sig){
+// Everything a tier must clear that pay-as-you-go API access CANNOT substitute
+// for: volume, seats, and image generation. The downgrade path below offloads
+// missing MODELS to the API, so it must still respect these — keep them in one
+// function. They were briefly two, and the copy in the downgrade path silently
+// missed the media gate, recommending "drop to free" to people whose free tier
+// throttles the image generation they said they do regularly.
+function clearsNonModelNeeds(t,pf,sig){
   const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
   if(t.cap!=null && eff>t.cap) return false;
+  if(sig.media==='regular' && !t.features.includes('image-gen')) return false;
+  if(sig.team && t.seats<2) return false;
+  return true;
+}
+// A tier "meets needs" on those axes plus model access.
+function meetsNeeds(t,pf,sig){
+  if(!clearsNonModelNeeds(t,pf,sig)) return false;
   // Only gate on models KNOWN to this provider's tiers; unknown/legacy models
   // (e.g. gpt-4o) are assumed broadly available and don't force an upgrade.
   const known=new Set(); PLANS[pf.provider].forEach(x=>x.models.forEach(m=>known.add(m)));
   const gating=(pf.models_used||[]).filter(m=>known.has(m));
-  if(!gating.every(m=>t.models.includes(m))) return false;
-  // Regular image/video work needs a tier that actually includes generation —
-  // otherwise "free covers you" is wrong for anyone whose free tier throttles it.
-  if(sig.media==='regular' && !t.features.includes('image-gen')) return false;
-  if(sig.team && t.seats<2) return false;
-  return true;
+  return gating.every(m=>t.models.includes(m));
 }
 function profileFor(prov,a,sig){
   const pm=MODELS[prov], arc=ARCHETYPE[PURPOSE_TOK[a.purpose]] || ARCHETYPE.standard;
@@ -505,7 +511,6 @@ function recommend(pf,sig){
   const why=[];
   if(!fit){ return { head:`Your ${NAME[pf.provider]} usage points to a Team plan.`, why:['Your volume or seats exceed the consumer tiers — look at '+NAME[pf.provider]+' Team.'] }; }
 
-  const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
   const known=new Set(); tiers.forEach(t=>t.models.forEach(m=>known.add(m)));
   const gating=(pf.models_used||[]).filter(m=>known.has(m));
   const missingFromFree=gating.filter(m=>!free.models.includes(m));
@@ -516,7 +521,7 @@ function recommend(pf,sig){
   // that covers everything), recommend it — so occasional Opus/o3 use doesn't force the
   // pricier all-inclusive tier. API cost scales with real usage, so heavy premium use
   // naturally fails this test (its cost exceeds the tier gap) — no arbitrary threshold.
-  const clearsNeeds = t => (t.cap==null || eff<=t.cap) && !(sig.team && t.seats<2);
+  const clearsNeeds = t => clearsNonModelNeeds(t,pf,sig);
   let hybrid=null;
   for(const t of tiers){
     if(t.price>=fit.price) break;              // price-sorted: no cheaper base remains

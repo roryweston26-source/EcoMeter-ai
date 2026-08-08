@@ -99,16 +99,20 @@ Started as "add a value column to the pricing page" and became an audit, because
 
 **The "±8% tokenizer" claim was false** — measured 12.9% MAE with −9.4% bias. Recalibrated to 10.5%/+2.2%, band widened to 11% (§4).
 
-### Five scripts now guard this — run them, they have already caught real regressions
+### Six scripts now guard this — run them, they have already caught real regressions
 
 ```bash
 node scripts/check-prices.js      # 5 files must agree on every price
-node scripts/check-auditor.js     # audit.html vs prices.json + plan-limits.json
+node scripts/check-auditor.js     # audit.html + pricing.html fallback vs prices.json / plan-limits / student-access
+node scripts/test-auditor.js      # sweeps all 56,250 answer combos + the EcoMeter import
 node scripts/test-cost-model.js   # 44 assertions: billed input, image tokens, tiers, export v2
 node scripts/calibrate-tokenizer.js  # measures the estimator; fails if the UI band is optimistic
 node scripts/validate-site.js     # pre-deploy HTML/JSON gate
 ```
-`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **All five pass on `main` as of 2026-08-08.**
+`validate-site.yml` now runs the first, second and third of these on every PR — `check-auditor.js` and `test-auditor.js` were added to CI 2026-08-08.
+`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **`test-auditor.js` found a live bug on its first run:** the volume-aware downgrade kept its own copy of "does this tier clear your needs" that never received the image-generation gate, so **450 of 56,250 combinations told people who generate images regularly to drop to a free tier that throttles it**. The two definitions are now one function (`clearsNonModelNeeds`). **All six pass on `main` as of 2026-08-08.**
+
+**Data checks and behaviour checks catch different things, and the Auditor needed both.** `check-auditor.js` would never have found the downgrade bug — every file was internally consistent. Sweeping the answer space did, in seconds. When a change touches what the engine *decides* rather than what the data *says*, `test-auditor.js` is the one that matters.
 
 ⚠️ **`check-prices.js` does NOT cover `audit.html`.** `check-auditor.js` covers `audit.html` plus `pricing.html`'s inline `FALLBACK_LIMITS` (the seventh copy of the plan data), but not its prices — that's `check-prices.js`. They are complementary, not overlapping. Run both.
 
