@@ -1,62 +1,79 @@
 {
   "_meta": {
-    "anchor": "2026-07-12",
-    "last_rolled": "2026-07-12",
+    "anchor": "2026-08-08",
+    "last_rolled": "2026-08-08",
     "note": "Anchor levels + growth rates for the AI Clock (ai-clock.html reads this). 'anchor' is the 'as of' date for the scenario levels. The roll-clock workflow advances the anchor and rolls the levels along their growth curves quarterly, opening a PR; a human then re-anchors against fresh disclosures. Growth rates are human-judged, not scraped.",
+    "reanchor_log": "2026-08-08 (off-cycle, human): capex levels cut ~26% — the 1.77x rate matched big-four guidance exactly but the levels implied a $978B calendar-2026 total vs ~$725B actually guided. Tokens levels roughly doubled — the old anchor tracked Goldman's May 2026 estimate (5.6 quadrillion/month), since superseded by a ~11 quadrillion/month bottom-up run-rate. Energy trimmed to the IEA 2026 figure. Users rate cut 1.5 -> 1.35 as the leaders decelerate. CO2, water, spend, prompts, compute and frontier levels left as rolled. Also removed the unused unitCost/unitCostIndex fields — see why_no_unit_cost_field.",
+    "why_no_unit_cost_field": "This file deliberately does NOT carry a unit-cost decline rate, though it used to. Epoch's widely-cited ~40x/yr inference cost decline measures the price of a FIXED capability level over time (GPT-4-level output, 9x-900x/yr depending which milestone you pick). The per-unit panel in ai-clock.html measures something different: blended real-world spend per token across a shifting model mix, derived as spendPerYear / tokensPerYear and declining at rates.spend / rates.tokens. Both are defensible; they are not the same quantity, and the derived one is the honest match for what that panel claims. Per-token energy and water are derived the same way, so the three lines stay consistent. Don't re-add a unitCost field expecting the panel to use it — it won't, and a sourced-looking number that nothing reads is worse than no number. Epoch's figure, for context: https://epoch.ai/data-insights/llm-inference-price-trends",
+    "open_questions": [
+      "tokens rate (5x/yr): near-term observation supports it (Google disclosed 7x YoY at I/O 2026), but forecasts to 2030 imply ~2.2x/yr. Kept at 5 because this model is re-anchored quarterly and is explicitly not for multi-year extrapolation. Revisit each quarter.",
+      "co2 levels imply 230/309/433 g CO2/kWh across the three scenarios, i.e. the grid-intensity assumption is part of what the scenarios bracket. This is deliberate — see the CO2 note in ai-clock.html — but it is not independently sourced.",
+      "frontier level could not be re-verified: no 2026 record training run is publicly confirmed. Still projected forward from Grok 4 (mid-2025). 'Not disclosed' is the honest state here.",
+      "frontier rate is 4.5x/yr; Epoch's central estimate is 5x/yr (CI 4-6x). Within the interval, left unchanged this cycle."
+    ],
     "sources": [
       {
         "for": "users & prompts — ChatGPT WAU (900M, Feb 2026) + messages/day",
         "url": "https://techcrunch.com/2026/02/27/chatgpt-reaches-900m-weekly-active-users/"
       },
       {
-        "for": "inference cost decline (~40x/yr, cost-down force)",
-        "url": "https://epoch.ai/trends"
+        "for": "capex (~$725B big-four calendar 2026, +77% YoY — sets both level and 1.77x rate)",
+        "url": "https://www.cnbc.com/2026/07/28/hyperscalers-face-higher-capex-scrutiny-after-alphabet-report-panned.html"
       },
       {
-        "for": "installed compute growth (3.4x/yr) & datacenter power (~30 GW)",
+        "for": "tokens — Google disclosed 3.2 quadrillion/month, 7x YoY (I/O, May 2026)",
+        "url": "https://blog.google/innovation-and-ai/sundar-pichai-io-2026/"
+      },
+      {
+        "for": "tokens — worldwide ~11 quadrillion/month bottom-up run-rate vs Goldman's 5.6 estimate",
+        "url": "https://io-fund.com/ai-stocks/ai-token-demand-shattering-forecasts"
+      },
+      {
+        "for": "energy — AI-optimised servers ~31% of 565 TWh datacentre total in 2026",
+        "url": "https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary"
+      },
+      {
+        "for": "installed compute growth (3.4x/yr) & datacenter power (~30 GW at Q4 2025)",
         "url": "https://epoch.ai/data-insights/ai-datacenter-power"
       }
     ]
   },
   "scenarios": {
     "conservative": {
-      "promptsPerDay": 8510000000,
-      "tokensPerYear": 55900000000000000,
-      "twhPerYear": 155,
-      "waterBLPerYear": 358,
-      "spendPerYear": 117000000000,
-      "co2MtPerYear": 36.3,
-      "capexPerYear": 932000000000,
-      "usersNow": 1090000000,
-      "gpusNow": 24400000,
-      "frontierNow": 8.82e+26,
-      "unitCostIndex": 0.1
+      "promptsPerDay": 9170000000,
+      "tokensPerYear": 96000000000000000,
+      "twhPerYear": 160,
+      "waterBLPerYear": 365,
+      "spendPerYear": 120000000000,
+      "co2MtPerYear": 36.8,
+      "capexPerYear": 658000000000,
+      "usersNow": 1120000000,
+      "gpusNow": 26700000,
+      "frontierNow": 9.86e+26
     },
     "moderate": {
-      "promptsPerDay": 11100000000,
-      "tokensPerYear": 69900000000000000,
-      "twhPerYear": 185,
-      "waterBLPerYear": 574,
-      "spendPerYear": 132000000000,
-      "co2MtPerYear": 55,
-      "capexPerYear": 979000000000,
-      "usersNow": 1360000000,
-      "gpusNow": 28100000,
-      "frontierNow": 1.1e+27,
-      "unitCostIndex": 0.025
+      "promptsPerDay": 12000000000,
+      "tokensPerYear": 132000000000000000,
+      "twhPerYear": 180,
+      "waterBLPerYear": 585,
+      "spendPerYear": 135000000000,
+      "co2MtPerYear": 55.7,
+      "capexPerYear": 757000000000,
+      "usersNow": 1400000000,
+      "gpusNow": 30800000,
+      "frontierNow": 1.23e+27
     },
     "high": {
-      "promptsPerDay": 13600000000,
-      "tokensPerYear": 83900000000000000,
-      "twhPerYear": 215,
-      "waterBLPerYear": 878,
-      "spendPerYear": 143000000000,
-      "co2MtPerYear": 88,
-      "capexPerYear": 1030000000000,
-      "usersNow": 1910000000,
-      "gpusNow": 33700000,
-      "frontierNow": 1.32e+27,
-      "unitCostIndex": 0.00111
+      "promptsPerDay": 14700000000,
+      "tokensPerYear": 180000000000000000,
+      "twhPerYear": 206,
+      "waterBLPerYear": 895,
+      "spendPerYear": 146000000000,
+      "co2MtPerYear": 89.2,
+      "capexPerYear": 815000000000,
+      "usersNow": 1970000000,
+      "gpusNow": 36900000,
+      "frontierNow": 1.48e+27
     }
   },
   "rates": {
@@ -67,9 +84,8 @@
     "spend": 1.35,
     "co2": 1.2,
     "capex": 1.77,
-    "users": 1.5,
+    "users": 1.35,
     "compute": 3.4,
-    "frontier": 4.5,
-    "unitCost": 0.025
+    "frontier": 4.5
   }
 }
