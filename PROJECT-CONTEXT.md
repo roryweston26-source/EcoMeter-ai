@@ -1,12 +1,12 @@
 # Legerly — Project Context
 
-_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-08-02._
+_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-08-08._
 
 > Read **CLAUDE.md** first (mission, principles, voice — auto-loaded). This is the deep dive.
 
 ---
 
-## 0. Working state (read this first) — as of 2026-08-02
+## 0. Working state (read this first) — as of 2026-08-08
 
 ### ⚠️ The single most important thing
 
@@ -34,6 +34,23 @@ Also worth asking: **did the submission use the old description?** If pasted fro
 - **v6.12 was REJECTED 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Listing copy only; code and permissions were never at issue. Fixed, with a standing rule at the top of `STORE-LISTING.md`.
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
+
+### Merged to `main` 2026-08-08 (PR #22) — AI Clock re-anchor
+
+Off-cycle re-anchor of `clock.json`, a month after the Q3 anchor. **Two of these were numbers we were publishing wrong, not routine drift** — the pattern to take from it is that the growth *rates* were fine and the anchor *levels* were where the errors sat.
+
+- **Capex was ~35% too high.** The `1.77` rate matched big-four guidance exactly ($410B → $725B), but the levels implied a **$978B calendar-2026 total**. Cut to 658/757/815. The page copy already said "$725B guided for 2026" — correct prose beside wrong data, which is how it survived a quarter.
+- **Tokens were ~2× too low.** The old level tracked Goldman's May 2026 estimate (5.6 quadrillion/month), which left Google's *own disclosed* 3.2 quadrillion at ~78% of all tokens on Earth. Raised to 96/132/180 (×10¹⁵/yr). Knock-on: the per-token panel roughly halved, since those are derived as total ÷ tokens.
+- **Users rate 1.5 → 1.35**; leaders slowed to ~1.3×/yr (ChatGPT 800M Dec 2025 → ~900M Jun 2026). Energy trimmed to the IEA 2026 figure.
+
+**Three transparency fixes, which matter more than the numbers:**
+- The methodology copy said *"anchored to Jan 1, 2026"* — **hardcoded, and stale for the entire Q3 anchor.** Now rendered from `_meta.anchor` into `#anchor-date`. Never hardcode that date again.
+- Fleet size was described as ">10 GW by early 2026"; Epoch has ~30 GW at Q4 2025, and `clock.json`'s own `_meta` already had it right.
+- CO₂ levels imply 230/309/433 g CO₂/kWh, but the page stated a flat "~395–400" as if fixed. Levels kept; copy rewritten to say the intensity is part of what the scenarios bracket.
+
+**Dead data removed:** `rates.unitCost` + `unitCostIndex` were read by nothing (not the page, not the roller). Deleted rather than wired up — Epoch's ~40×/yr measures price at *fixed capability*, the panel measures *blended spend per token*; different quantities. `_meta.why_no_unit_cost_field` records why, so it doesn't get re-added. The per-unit panel is now documented on the page as derived rather than measured.
+
+**The frontier counter can't be verified.** No 2026 record training run is publicly confirmed — labs stopped disclosing training compute. Still projected from Grok 4 (mid-2025), and now labelled on the page as the weakest number. "Not disclosed" is the honest state.
 
 ### Merged to `main` 2026-08-02 (PRs #20, #21)
 
@@ -64,7 +81,9 @@ node scripts/test-cost-model.js   # 44 assertions: billed input, image tokens, t
 node scripts/calibrate-tokenizer.js  # measures the estimator; fails if the UI band is optimistic
 node scripts/validate-site.js     # pre-deploy HTML/JSON gate
 ```
-`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. **All four pass on `main` as of 2026-08-02.**
+`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. **All four pass on `main` as of 2026-08-08** (re-run after the PR #22 clock re-anchor).
+
+Note that **none of the four would have caught the clock errors** in PR #22 — `validate-site.js` checks that `clock.json` is well-formed and referenced, not that its levels are plausible. The capex level was wrong by 35% and passed cleanly. A sanity check comparing each scenario's implied calendar-year total against its cited source would have caught it; see open thread 9.
 
 ### Open threads, most useful first
 
@@ -76,6 +95,8 @@ node scripts/validate-site.js     # pre-deploy HTML/JSON gate
 6. **`grok-build-0.1`** ($1/$2) exists and isn't tracked — a specialist build/agent model, and adding it means inventing a `water.json` tier. Flagged, not guessed.
 7. **`tiktoken-approx` / `sp-estimated` bands are still unmeasured guesses.** Validating needs the relevant tokenizer bundled. Don't quote them as measured.
 8. **Consider wiring `check-prices.js` into `validate-site.yml`** so price drift can't come back. Left undecided because it changes CI behaviour on every PR.
+9. **No guard on clock plausibility.** PR #22 found capex overstated 35% and tokens understated ~2×, both of which passed `validate-site.js`. A `check-clock.js` could assert each scenario's implied calendar-year total against a figure recorded in `_meta.sources` and fail on a large divergence. The hard part is that most counters have no single authoritative total — capex and energy do, the rest don't, so it may only be worth building for those two.
+10. **Revisit the tokens rate at the October re-anchor.** `5×/yr` matches near-term observation (Google disclosed 7× YoY at I/O 2026) but longer-range forecasts imply ~2.2×/yr. Kept at 5 because the model is re-anchored quarterly and explicitly isn't for multi-year extrapolation — but if the next anchor still shows 5× diverging from reality, that's the counter to cut. Full list of live judgement calls is in `clock.json` `_meta.open_questions`.
 
 ---
 
@@ -360,6 +381,19 @@ Full summary in §0. The short version, and the lesson worth carrying:
 
 **The lesson:** every one of these was found by *testing a stated number against an independent source*, never by reading the code. The 2× and 51× bugs both sat in well-commented functions whose comments confidently described the wrong behaviour. The ±8% claim was asserted in a comment for months. Prices had drifted between four files that each looked internally fine. **When something here states a figure — an accuracy band, a price, a token count — assume it is unverified until a script checks it, and prefer writing the script to reading the code.**
 
+### This session (2026-08-08, PR #22) — AI Clock re-anchor
+
+Full summary in §0. The short version:
+
+- **Capex overstated ~35%, tokens understated ~2×** — both level errors; every growth rate was defensible (§5).
+- **Anchor date had been hardcoded** in the methodology copy and was stale for a full quarter; now rendered from `_meta.anchor`.
+- **Two factual errors in page copy** — fleet ">10 GW" vs Epoch's ~30 GW, user growth "~2×/yr" vs actual ~1.3×.
+- **CO₂ prose contradicted the CO₂ numbers**; kept the levels, fixed the claim.
+- **Dead `unitCost` fields removed** and the per-unit panel documented as derived, not measured.
+- **`_meta.reanchor_log` + `_meta.open_questions`** added to `clock.json` to carry reasoning between quarterly re-anchors.
+
+**The lesson, which sharpens the one above:** the 2026-08-02 session's rule was "assume a stated figure is unverified until a script checks it." This session found the *next* layer — **a figure can pass every script and still be wrong, because the scripts check form, not plausibility.** `validate-site.js` was perfectly happy with a capex level 35% above what four companies had publicly guided. Worse, the correct number was sitting in the prose *next to* the wrong one, and in `clock.json`'s own `_meta` in the case of the 30 GW figure. **Where a file carries both a number and a sentence describing it, check them against each other — divergence between the two is a reliable smell, and cheaper to spot than either error alone.**
+
 ---
 
 ## 10. Open items / caveats
@@ -370,6 +404,8 @@ Full summary in §0. The short version, and the lesson worth carrying:
 - **`grok-build-0.1`, Sonar Deep Research, Magistral / Devstral / Ministral and Codex are deliberately untracked** — specialist or non-consumer-chat models. Adding any means inventing a `water.json` tier, so decide rather than default.
 - **Mistral may have rebranded Le Chat → "Vibe"** (their pricing copy says "Test out Vibe's capabilities"). Plan names are the join key across `prices.json`, `plan-limits.json` and `audit.html` — confirm before renaming.
 - **Google AI Ultra's "5× Pro limits" note is unsourced.** Google says "From $99.99/mo" with "up to 20× access" — a range, not two fixed tiers. Doesn't affect a computed number (the row is `not_disclosed`), but the note reads more confident than the evidence.
+- **The AI Clock's `frontier` counter is unverifiable and now says so.** No 2026 record training run is publicly confirmed; it's projected from Grok 4 (mid-2025) at 4.5×/yr. Epoch's central rate estimate is 5× (CI 4–6×), left unchanged as it's within the interval. Don't quote the frontier level as sourced.
+- **`clock.json` levels have no plausibility guard** — see §0 open thread 9.
 - **Fast mode is unmodelled on purpose** — Anthropic bills Opus 5 / 4.8 at $10/$50 under it, OpenAI renamed "priority" to Fast mode 2026-07-30. Opt-in API service tiers like batch or caching, not the default consumer rate.
 - **DeepSeek has warned it will raise prices "significantly"**, no date. It is by far the cheapest provider tracked, so the Auditor's downgrade advice leans on it hardest. Re-check when it lands.
 - **Sonnet 5's introductory API rate expires 2026-08-31** ($2/$10 → $3/$15). `prices.json`, `pricing.html` and `update-prices.js` all need the new numbers then; the caveat text should be removed at the same time.
