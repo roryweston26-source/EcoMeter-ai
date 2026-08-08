@@ -3,7 +3,8 @@
     "anchor": "2026-08-08",
     "last_rolled": "2026-08-08",
     "note": "Anchor levels + growth rates for the AI Clock (ai-clock.html reads this). 'anchor' is the 'as of' date for the scenario levels. The roll-clock workflow advances the anchor and rolls the levels along their growth curves quarterly, opening a PR; a human then re-anchors against fresh disclosures. Growth rates are human-judged, not scraped.",
-    "reanchor_log": "2026-08-08 (off-cycle, human): capex levels cut ~26% — the 1.77x rate matched big-four guidance exactly but the levels implied a $978B calendar-2026 total vs ~$725B actually guided. Tokens levels roughly doubled — the old anchor tracked Goldman's May 2026 estimate (5.6 quadrillion/month), since superseded by a ~11 quadrillion/month bottom-up run-rate. Energy trimmed to the IEA 2026 figure. Users rate cut 1.5 -> 1.35 as the leaders decelerate. CO2, water, spend, prompts, compute, frontier and unitCost levels left as rolled.",
+    "reanchor_log": "2026-08-08 (off-cycle, human): capex levels cut ~26% — the 1.77x rate matched big-four guidance exactly but the levels implied a $978B calendar-2026 total vs ~$725B actually guided. Tokens levels roughly doubled — the old anchor tracked Goldman's May 2026 estimate (5.6 quadrillion/month), since superseded by a ~11 quadrillion/month bottom-up run-rate. Energy trimmed to the IEA 2026 figure. Users rate cut 1.5 -> 1.35 as the leaders decelerate. CO2, water, spend, prompts, compute and frontier levels left as rolled. Also removed the unused unitCost/unitCostIndex fields — see why_no_unit_cost_field.",
+    "why_no_unit_cost_field": "This file deliberately does NOT carry a unit-cost decline rate, though it used to. Epoch's widely-cited ~40x/yr inference cost decline measures the price of a FIXED capability level over time (GPT-4-level output, 9x-900x/yr depending which milestone you pick). The per-unit panel in ai-clock.html measures something different: blended real-world spend per token across a shifting model mix, derived as spendPerYear / tokensPerYear and declining at rates.spend / rates.tokens. Both are defensible; they are not the same quantity, and the derived one is the honest match for what that panel claims. Per-token energy and water are derived the same way, so the three lines stay consistent. Don't re-add a unitCost field expecting the panel to use it — it won't, and a sourced-looking number that nothing reads is worse than no number. Epoch's figure, for context: https://epoch.ai/data-insights/llm-inference-price-trends",
     "open_questions": [
       "tokens rate (5x/yr): near-term observation supports it (Google disclosed 7x YoY at I/O 2026), but forecasts to 2030 imply ~2.2x/yr. Kept at 5 because this model is re-anchored quarterly and is explicitly not for multi-year extrapolation. Revisit each quarter.",
       "co2 levels imply 230/309/433 g CO2/kWh across the three scenarios, i.e. the grid-intensity assumption is part of what the scenarios bracket. This is deliberate — see the CO2 note in ai-clock.html — but it is not independently sourced.",
@@ -32,10 +33,6 @@
         "url": "https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary"
       },
       {
-        "for": "inference cost decline (~40x/yr at GPT-4 level; 9x-900x across milestones, which is what the three unitCostIndex values bracket)",
-        "url": "https://epoch.ai/data-insights/llm-inference-price-trends"
-      },
-      {
         "for": "installed compute growth (3.4x/yr) & datacenter power (~30 GW at Q4 2025)",
         "url": "https://epoch.ai/data-insights/ai-datacenter-power"
       }
@@ -52,8 +49,7 @@
       "capexPerYear": 658000000000,
       "usersNow": 1120000000,
       "gpusNow": 26700000,
-      "frontierNow": 9.86e+26,
-      "unitCostIndex": 0.1
+      "frontierNow": 9.86e+26
     },
     "moderate": {
       "promptsPerDay": 12000000000,
@@ -65,8 +61,7 @@
       "capexPerYear": 757000000000,
       "usersNow": 1400000000,
       "gpusNow": 30800000,
-      "frontierNow": 1.23e+27,
-      "unitCostIndex": 0.025
+      "frontierNow": 1.23e+27
     },
     "high": {
       "promptsPerDay": 14700000000,
@@ -78,8 +73,7 @@
       "capexPerYear": 815000000000,
       "usersNow": 1970000000,
       "gpusNow": 36900000,
-      "frontierNow": 1.48e+27,
-      "unitCostIndex": 0.00111
+      "frontierNow": 1.48e+27
     }
   },
   "rates": {
@@ -92,7 +86,6 @@
     "capex": 1.77,
     "users": 1.35,
     "compute": 3.4,
-    "frontier": 4.5,
-    "unitCost": 0.025
+    "frontier": 4.5
   }
 }

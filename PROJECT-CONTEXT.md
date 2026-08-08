@@ -245,7 +245,7 @@ Drives the **Break even / Ceiling** columns on `pricing.html` (§3a). Joins to `
 - `_meta.reanchor_log` records what changed and why at each human re-anchor; `_meta.open_questions` carries the unresolved judgement calls forward to the next one. Read both before re-anchoring — they're the handoff.
 - **The inline `SCENARIOS`/`RATES` block in `ai-clock.html` is a fallback copy of `clock.json`.** Update both together, or a failed fetch silently serves stale numbers.
 - The `_meta.anchor` date is **rendered into the page copy** (`#anchor-date`) — never hardcode the anchor date in prose again; it drifted unnoticed for a full quarter.
-- `unitCostIndex` / `rates.unitCost` are **currently unread by any page** — see open item in §10.
+- **There is deliberately no unit-cost decline rate in this file** (there was until 2026-08-08; nothing read it). The per-unit panel derives its own decline from `rates.spend / rates.tokens`. `_meta.why_no_unit_cost_field` explains why Epoch's ~40×/yr figure measures a different quantity and isn't used — read it before re-adding one.
 
 ### `transparency-index.json` — Transparency page copy + disclosure matrix
 `_meta` holds **page-level** copy (title, lede, `last_verified`, the 4-state `grade_legend`, `axes`, `methodology`, `caveats`) **plus** a nested `detail` block (its own 3-state legend/note) for the matrix. `columns`/`rows` = the 7-provider × 6-dimension **disclosure-quality matrix**. See §7.
