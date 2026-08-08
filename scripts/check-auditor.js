@@ -176,6 +176,39 @@ for (const m of fbBlock.matchAll(/\{\s*p:"(\w+)",\s*m:"([^"]+)",\s*provenance:"(
   }
 }
 
+/* 9b. audit.html's inline ARCHETYPE is a fallback for a failed plan-limits fetch.
+       It is the tokens-per-message assumption behind every dollar figure on both
+       pages, so a drift here means the Auditor and the pricing table quietly
+       disagree about what a message costs whenever the fetch fails. */
+const arcBlock = html.slice(html.indexOf('const ARCHETYPE='), html.indexOf('const PURPOSE_TOK='));
+const arcSeen = new Set();
+for (const m of arcBlock.matchAll(/(\w+):\s*\{in:(\d+),\s*out:(\d+)\}/g)) {
+  const [, name, i, o] = m;
+  arcSeen.add(name);
+  const ref = (L._meta.archetypes || {})[name];
+  if (!ref) { fail('audit.html has an archetype plan-limits.json does not: ' + name); continue; }
+  if (+i !== ref.input || +o !== ref.output)
+    fail('archetype drift: ' + name + ' audit=' + i + '/' + o + ' vs plan-limits.json=' + ref.input + '/' + ref.output);
+}
+// _meta.archetypes also carries a prose `comment` key — only real archetypes count.
+for (const [name, v] of Object.entries(L._meta.archetypes || {}))
+  if (v && typeof v.input === 'number' && !arcSeen.has(name))
+    fail('plan-limits.json archetype missing from audit.html fallback: ' + name);
+
+/* 9c. Every value_model for an audited provider must have a display label, or its
+       raw key ("claude-haiku-4-5-20251001") is shown to the reader in the
+       break-even line. */
+const labelBlock = html.slice(html.indexOf('const LABELS = {'), html.indexOf('const labelModel'));
+const labelled = new Set([...labelBlock.matchAll(/'([\w.\-]+)'\s*:/g)].map(m => m[1]));
+for (const plan of L.plans) {
+  if (!PLANS[plan.p] || !plan.value_models) continue;
+  for (const k of ['low', 'high']) {
+    const key = plan.value_models[k];
+    if (key && !labelled.has(key))
+      fail('value_model has no display label, so its raw key would be shown: ' + plan.m + ' -> ' + key);
+  }
+}
+
 /* 10. student-access.json. Every route makes a claim about a real company's
        offer, so each needs a provenance we recognise and a date it was checked.
        Anything stated as fact ('disclosed') must carry a provider-owned source —

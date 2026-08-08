@@ -30,7 +30,9 @@ const stubEl = () => ({
 });
 const documentStub = { getElementById: stubEl, querySelector: stubEl, querySelectorAll: () => [] };
 const windowStub = { scrollTo() {} };
-const FILES = { '/extension/prices.json': 'extension/prices.json', '/student-access.json': 'student-access.json' };
+const FILES = { '/extension/prices.json': 'extension/prices.json',
+                '/student-access.json': 'student-access.json',
+                '/plan-limits.json': 'plan-limits.json' };
 const fetchStub = url => {
   const f = FILES[String(url).split('?')[0]];
   if (!f) return Promise.resolve({ ok: false });
@@ -40,9 +42,38 @@ function FileReaderStub() {}
 
 const EXPORTS = ['PLANS', 'API', 'MODELS', 'NAME', 'TOP_IS_FREE', 'LEGACY_ONLY', 'state',
   'recommend', 'profileFor', 'meetsNeeds', 'clearsNonModelNeeds', 'apiCostPerMonth',
-  'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels'];
+  'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels',
+  'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK'];
 const A = new Function('document', 'window', 'fetch', 'FileReader',
   src + '\nreturn {' + EXPORTS.join(',') + '};')(documentStub, windowStub, fetchStub, FileReaderStub);
+
+/* ---------- load pricing.html's break-even engine, to compare against ----------
+   audit.html carries its own copy of breakEven() so the Auditor can quote the same
+   figure the subscriptions table shows. Two implementations of one number is the
+   drift this repo keeps paying for, so rather than trust them to stay in step we
+   load BOTH and assert they agree. pricing.html's script is an IIFE, so we slice
+   its body and inject a return. */
+const pricingHtml = fs.readFileSync(R + 'pricing.html', 'utf8');
+const pSrc = pricingHtml.slice(pricingHtml.indexOf('<script>') + '<script>'.length, pricingHtml.lastIndexOf('</script>'));
+const pBody = pSrc.slice(pSrc.indexOf('{', pSrc.indexOf('(function')) + 1, pSrc.lastIndexOf('})()'));
+const pDocEl = () => ({
+  innerHTML: '', textContent: '', value: '', className: '', dataset: {}, style: {}, checked: false, open: false,
+  classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
+  addEventListener() {}, click() {}, appendChild() {}, setAttribute() {}, getAttribute() { return null; },
+  querySelector() { return pDocEl(); }, querySelectorAll() { return []; }, closest() { return pDocEl(); },
+  remove() {}, focus() {}
+});
+const pDoc = { getElementById: pDocEl, querySelector: pDocEl, querySelectorAll: () => [],
+               createElement: pDocEl, body: pDocEl(), addEventListener() {} };
+const pWin = { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }), location: { hash: '' } };
+const PFILES = { '/extension/prices.json': 'extension/prices.json', '/plan-limits.json': 'plan-limits.json' };
+const pFetch = url => {
+  const f = PFILES[String(url).split('?')[0]];
+  if (!f) return Promise.resolve({ ok: false });
+  return Promise.resolve({ ok: true, json: () => Promise.resolve(JSON.parse(fs.readFileSync(R + f, 'utf8'))) });
+};
+const P = new Function('document', 'window', 'fetch',
+  pBody + '\nreturn { breakEven, costPerMessage, state, PLAN_LIMITS: () => PLAN_LIMITS };')(pDoc, pWin, pFetch);
 
 let bad = 0, ran = 0;
 const ok = (name, cond, detail) => {
@@ -144,6 +175,76 @@ async function main() {
   for (const t of Object.keys(problems)) ok('sweep: ' + t, false, problems[t]);
   ok('swept every answer combination with no invariant broken', Object.keys(problems).length === 0,
      { combos, kinds: Object.keys(problems) });
+
+  /* ---------- 1b. break-even must match pricing.html exactly ---------- */
+  {
+    const limits = JSON.parse(fs.readFileSync(R + 'plan-limits.json', 'utf8'));
+    const subs = JSON.parse(fs.readFileSync(R + 'extension/prices.json', 'utf8')).subscriptions;
+    let compared = 0, mismatches = [];
+    for (const arch of ['light', 'standard', 'heavy']) {
+      P.state.arch = arch;                                   // pricing.html reads this
+      const arc = { in: limits._meta.archetypes[arch].input, out: limits._meta.archetypes[arch].output };
+      for (const prov of Object.keys(A.PLANS)) for (const tier of A.PLANS[prov]) {
+        const sub = subs.find(s => s.p === prov && s.m === tier.m);
+        const lim = limits.plans.find(x => x.p === prov && x.m === tier.m);
+        const mine = A.breakEven(prov, tier, arc);
+        const theirs = P.breakEven(sub, lim);
+        if (!mine && !theirs) continue;
+        compared++;
+        if (!mine || !theirs) { mismatches.push({ arch, plan: tier.m, mine: !!mine, theirs: !!theirs }); continue; }
+        if (Math.abs(mine.few - theirs.few) > 1e-9 || Math.abs(mine.many - theirs.many) > 1e-9
+            || mine.fewModel !== theirs.fewModel || mine.manyModel !== theirs.manyModel)
+          mismatches.push({ arch, plan: tier.m, mine, theirs });
+      }
+    }
+    P.state.arch = 'standard';
+    ok('break-even agrees with pricing.html on every plan and archetype', mismatches.length === 0,
+       { compared, mismatches: mismatches.slice(0, 3) });
+    ok('break-even was actually computed for the paid plans', compared >= 24, compared);
+
+    // The long-context tier is DORMANT at today's archetypes (heavy is 15k input,
+    // the thresholds are 200k-272k), so comparing outputs can't see it — both pages
+    // would agree even if one dropped it. Force an archetype over the threshold so
+    // the branch is actually executed, and losing it fails here rather than silently
+    // halving the cost the day someone adds a document-sized archetype.
+    const prices = JSON.parse(fs.readFileSync(R + 'extension/prices.json', 'utf8'));
+    const sol = prices.api.openai['gpt-5.6-sol'];
+    ok('the model used for the long-context check still has a long tier', !!(sol && sol.long));
+    if (sol && sol.long) {
+      const big = { in: sol.long.over + 28000, out: 1000 };
+      const pl = P.PLAN_LIMITS();
+      pl._meta.archetypes.__over = { input: big.in, output: big.out };
+      P.state.arch = '__over';
+      const mine = A.costPerMessage('openai', 'gpt-5.6-sol', big);
+      const theirs = P.costPerMessage('openai', 'gpt-5.6-sol');
+      const shortRate = big.in * sol.input + big.out * sol.output;
+      const longRate  = big.in * sol.long.input + big.out * sol.long.output;
+      ok('above the threshold the LONG rate is used, not the short one',
+         Math.abs(mine - longRate) < 1e-9 && Math.abs(mine - shortRate) > 1e-9, { mine, longRate, shortRate });
+      ok('and pricing.html does the same thing there', Math.abs(mine - theirs) < 1e-9, { mine, theirs });
+      P.state.arch = 'standard';
+      delete pl._meta.archetypes.__over;
+    }
+  }
+
+  /* ---------- 1c. break-even appears on a paid recommendation ---------- */
+  {
+    const a = { tools: ['anthropic'], messages: '50to150', frequency: 'constant', purpose: 'coding',
+                limits: 'never', frontier: 'always', media: 'no', team: 'solo', pays: ['none'],
+                priority: 'cost', student: 'no' };
+    const sig = sigFor(a);
+    const r = A.recommend(A.profileFor('anthropic', a, sig), sig);
+    const line = r.why.find(w => typeof w === 'string' && /Break even at/.test(w));
+    ok('a paid recommendation carries the break-even figure', !!line, r.why);
+    ok('break-even line names both value models', !!line && /Opus|Haiku|Sonnet/.test(line), line);
+    ok('and says where the user sits against it',
+       r.why.some(w => typeof w === 'string' && /messages\/day (clears|you're below)/.test(w)), r.why);
+    // free recommendations must NOT carry one — there is nothing to break even on
+    const b = Object.assign({}, a, { messages: 'lt5', frequency: 'rarely', purpose: 'quick', frontier: 'default' });
+    const rb = A.recommend(A.profileFor('anthropic', b, sigFor(b)), sigFor(b));
+    ok('a free recommendation carries no break-even line',
+       /Stay on the free/.test(rb.head) && !rb.why.some(w => typeof w === 'string' && /Break even/.test(w)), rb.head);
+  }
 
   /* ---------- 2. over/under-payment detection ---------- */
   {

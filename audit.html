@@ -308,7 +308,13 @@ const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
   'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-3.5-flash':'Gemini 3.5 Flash',
   'sonar-reasoning-pro':'Sonar Reasoning Pro', 'grok-4.5':'Grok 4.5',
-  'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek V4 Flash', 'deepseek-r1':'DeepSeek R1' };
+  'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek V4 Flash', 'deepseek-r1':'DeepSeek R1',
+  // Every plan-limits value_model needs a label or its raw key leaks into the
+  // break-even copy — check-auditor.js enforces that.
+  'gpt-5.4-mini':'GPT-5.4 Thinking mini', 'claude-haiku-4-5-20251001':'Claude Haiku 4.5',
+  'claude-sonnet-5':'Claude Sonnet 5', 'claude-sonnet-4-6':'Claude Sonnet 4.6',
+  'gemini-2.5-flash-lite':'Gemini 2.5 Flash-Lite', 'gemini-3.1-flash-lite':'Gemini 3.1 Flash-Lite',
+  'gemini-2.5-pro':'Gemini 2.5 Pro', 'gpt-4o':'GPT-4o' };
 const labelModel = k => LABELS[k] || k;
 const money = n => { if(!n) return '$0'; const r=Math.round(n*100)/100; return '$'+(Number.isInteger(r)?r:r.toFixed(2)); };
 
@@ -317,6 +323,21 @@ const money = n => { if(!n) return '$0'; const r=Math.round(n*100)/100; return '
 let STUDENT = null;
 fetch('/student-access.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{ STUDENT=d; }).catch(()=>{});
 
+/* Plan limits — the SAME file pricing.html uses for its "break even at" column, so
+   the two pages give one answer rather than two. Joins on p + m (exact string).
+   Also the source of the tokens-per-message archetypes: they were duplicated here
+   as constants, which is one of the drifts this project keeps having to fix. The
+   inline ARCHETYPE below is now only a fallback for a failed fetch, and
+   scripts/check-auditor.js asserts it still matches the file. */
+let LIMITS = null;
+fetch('/plan-limits.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+  if(!d) return;
+  LIMITS=d;
+  const arc=d._meta && d._meta.archetypes;
+  if(arc) for(const k in ARCHETYPE) if(arc[k] && typeof arc[k].input==='number')
+    ARCHETYPE[k]={in:arc[k].input, out:arc[k].output};
+}).catch(()=>{});
+
 /* keep prices + API rates fresh from the maintained file (no user data sent) */
 fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
   if(!d) return;
@@ -324,7 +345,10 @@ fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).t
   // not just the handful of hardcoded fallbacks — so per-model cost can price whatever
   // a user actually ran, and rates stay current when prices.json is updated.
   if(d.api){ for(const p in d.api) for(const k in d.api[p]){ const r=d.api[p][k];
-    if(r && typeof r.input==='number') API[k]={in:r.input,out:r.output}; } }
+    if(r && typeof r.input==='number') API[k]={in:r.input,out:r.output};
+    // keep the long-context block intact for costPerMessage(); a consumer that
+    // ignores it undercounts long conversations by roughly 2x
+    if(r && r.long) RAW_LONG[k]=r.long; } }
   if(Array.isArray(d.subscriptions)){
     for(const prov in PLANS) for(const t of PLANS[prov]){
       const row=d.subscriptions.find(s=>s.p===prov && s.m===t.m);
@@ -425,6 +449,10 @@ const ARCHETYPE={ light:{in:1500,out:300}, standard:{in:4000,out:500}, heavy:{in
 const PURPOSE_TOK={quick:'light',writing:'standard',research:'standard',coding:'heavy',agentic:'heavy'};
 
 function toolsCount(a){ return (a.tools||[]).filter(t=>t!=='other').length || 1; }
+// The quiz can't reach the result without answering this, but a connected export
+// can leave it unset. Fall back to the LOWEST band: guessing high here would push
+// someone toward a plan on volume we never measured.
+const msgsPerDay = a => MSG_MID[a.messages] != null ? MSG_MID[a.messages] : MSG_MID.lt5;
 function classify(a){
   let s=0;
   for(const k of Object.keys(SCORE)) s += (SCORE[k][a[k]]||0);
@@ -489,18 +517,26 @@ function profileFor(prov,a,sig){
   const assumed = (a.frontier==='default' || TOP_IS_FREE.has(prov)) ? [pm.free] : [pm.top];
   const eco=a._eco && a._eco[prov];   // measured usage from an EcoMeter export
   if(eco){
-    const msgs = eco.messages!=null ? eco.messages : MSG_MID[a.messages];
+    const msgs = eco.messages!=null ? eco.messages : msgsPerDay(a);
+    const inTok  = eco.inTok!=null  ? eco.inTok  : Math.round(msgs*arc.in);
+    const outTok = eco.outTok!=null ? eco.outTok : Math.round(msgs*arc.out);
+    // Break-even needs a cost per MESSAGE. With an export we can divide real
+    // tokens by real messages instead of assuming an archetype — this is the
+    // anchoring the pricing page's archetypes are waiting on.
+    const measuredArc = (msgs>0 && eco.inTok!=null)
+      ? { in: inTok/msgs, out: outTok/msgs } : null;
     return { provider:prov, messages_per_day:msgs,
-      input_tokens_per_day:  eco.inTok!=null ? eco.inTok  : Math.round(msgs*arc.in),
-      output_tokens_per_day: eco.outTok!=null ? eco.outTok : Math.round(msgs*arc.out),
+      input_tokens_per_day:inTok, output_tokens_per_day:outTok,
       models_used: (eco.models && eco.models.length) ? eco.models : assumed,
       perModel: eco.perModel || null, measured:true,
+      arc: measuredArc || arc, arcMeasured: !!measuredArc,
       signals:sig };
   }
-  const msgs=MSG_MID[a.messages];
+  const msgs=msgsPerDay(a);
   return { provider:prov, messages_per_day:msgs,
     input_tokens_per_day:Math.round(msgs*arc.in), output_tokens_per_day:Math.round(msgs*arc.out),
-    models_used: assumed, perModel:null, measured:false, signals:sig };
+    models_used: assumed, perModel:null, measured:false,
+    arc, arcMeasured:false, signals:sig };
 }
 function recommend(pf,sig){
   const tiers=PLANS[pf.provider].slice().sort((x,y)=>x.price-y.price);
@@ -577,6 +613,16 @@ function recommend(pf,sig){
     why.push(`For the images/video you make, add a ChatGPT or Gemini plan — ${NAME[pf.provider]} doesn’t generate them.`);
   else if(sig.media==='regular' && fit.price>0 && !free.features.includes('image-gen'))
     why.push(`Part of what you’re paying for is image generation — the free tier throttles it.`);
+  // The same "break even at" figure pricing.html shows for this plan, plus where
+  // THIS user sits against it — which is the bit a table can't tell you.
+  const be = fit.price>0 ? breakEven(pf.provider, fit, pf.arc) : null;
+  if(be){
+    why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.`);
+    const mpd=pf.messages_per_day, src=`${pf.measured?'Your measured':'Your estimated'} ${fmtMsgs(mpd)} messages/day`;
+    if(mpd>=be.many) why.push(`${src} clears that on either model, so the plan is the cheaper of the two.`);
+    else if(mpd>=be.few) why.push(`${src} clears it if you're mostly on ${labelModel(be.fewModel)}, but not if you're mostly on ${labelModel(be.manyModel)}.`);
+    else why.push(`${src} is below break-even on both — so what you're buying here isn't volume, it's the models or features the cheaper tiers don't carry.`);
+  }
   if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo` + (fit.price>0 && api<fit.price ? ` — cheaper, if you’re fine without the app.` : `.`));
   else if(LEGACY_ONLY.has(pf.provider)) why.push(`No API comparison here: Copilot runs on OpenAI models but Microsoft publishes no per-token rate to price it against.`);
   // DeepSeek has said in writing that a "significant" price rise is coming with no
@@ -585,6 +631,52 @@ function recommend(pf,sig){
   if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek says on its own pricing page that it plans to raise prices “significantly”, with no date given. It’s the cheapest provider we track by a wide margin, so that’s the number most likely to move under you.`);
   return { head, why };
 }
+
+/* ---------- break even (ported from pricing.html; must agree with it) ----------
+   How many messages a day before the subscription beats the provider's own API
+   rates. Needs no limit data — just the price and the published rates — which is
+   why pricing.html can show it for all 26 plans. scripts/test-auditor.js loads
+   BOTH pages' implementations and asserts they return identical numbers, so this
+   copy cannot drift from the table it's meant to match. */
+function costPerMessage(prov, modelKey, arc){
+  const r=API[modelKey];
+  if(!r || typeof r.in!=='number' || typeof r.out!=='number') return null;
+  // Long-context tier, where one exists, applies to EVERY token in the request.
+  // No current archetype is near the threshold, but leaving it out would silently
+  // halve the cost the day someone adds a document-sized one.
+  const long=(RAW_LONG[modelKey] && arc.in>RAW_LONG[modelKey].over) ? RAW_LONG[modelKey] : null;
+  return long ? arc.in*long.input + arc.out*long.output : arc.in*r.in + arc.out*r.out;
+}
+// Long-context blocks straight from prices.json, kept beside the flattened rates.
+let RAW_LONG = {};
+function breakEven(prov, tier, arc){
+  if(!LIMITS || !tier.price) return null;
+  const lim=(LIMITS.plans||[]).find(x=>x.p===prov && x.m===tier.m);
+  if(!lim || !lim.value_models) return null;
+  const days=(LIMITS._meta && LIMITS._meta.month_days) || 30;
+  const ends=[];
+  ['high','low'].forEach(which=>{
+    const key=lim.value_models[which], c=costPerMessage(prov,key,arc);
+    if(c) ends.push({msgs: tier.price/c/days, model:key});
+  });
+  if(!ends.length) return null;
+  // "high"/"low" are labels, not an ordering — several plans pair a flagship with a
+  // pricier reasoning variant. Order by the answer.
+  ends.sort((a,b)=>a.msgs-b.msgs);
+  return {few:ends[0].msgs, many:ends[ends.length-1].msgs,
+          fewModel:ends[0].model, manyModel:ends[ends.length-1].model};
+}
+function throughputMpm(){ return (LIMITS && LIMITS._meta && LIMITS._meta.throughput
+  && LIMITS._meta.throughput.messages_per_active_minute) || 1; }
+function fmtTime(messages){
+  const mins=messages/throughputMpm();
+  if(mins<1) return 'under a minute';
+  if(mins<90) return Math.round(mins)+' min';
+  const hrs=mins/60;
+  if(hrs>24) return (hrs/24).toFixed(1)+' days';
+  return (hrs<10 ? hrs.toFixed(1) : String(Math.round(hrs)))+' h';
+}
+const fmtMsgs = n => !isFinite(n) ? '—' : n>=10 ? String(Math.round(n)) : n.toFixed(1);
 
 /* Message caps are almost never published. Say which kind of number this is
    rather than presenting all of them as if the provider had told us. */
