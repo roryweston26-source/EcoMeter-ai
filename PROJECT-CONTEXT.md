@@ -241,7 +241,11 @@ Drives the **Break even / Ceiling** columns on `pricing.html` (§3a). Joins to `
 - **`value_models.low/high` are labels, not an ordering** — several plans pair a flagship with a pricier reasoning variant. `breakEven()` sorts by computed cost, not by the key name.
 
 ### `clock.json` — AI Clock model
-`{ _meta:{anchor,last_rolled}, scenarios:{conservative|moderate|high}, rates }`. **Re-anchored 2026-07-12 (Q3).** Two-force projection (volume up, per-unit cost down); re-anchored quarterly by `roll-clock.yml` (opens a PR for a human to drop in fresh disclosures).
+`{ _meta:{anchor,last_rolled,reanchor_log,open_questions,sources}, scenarios:{conservative|moderate|high}, rates }`. **Re-anchored 2026-08-08** (off-cycle, against fresh disclosures). Two-force projection (volume up, per-unit cost down); rolled quarterly by `roll-clock.yml` (opens a PR for a human to drop in fresh disclosures).
+- `_meta.reanchor_log` records what changed and why at each human re-anchor; `_meta.open_questions` carries the unresolved judgement calls forward to the next one. Read both before re-anchoring — they're the handoff.
+- **The inline `SCENARIOS`/`RATES` block in `ai-clock.html` is a fallback copy of `clock.json`.** Update both together, or a failed fetch silently serves stale numbers.
+- The `_meta.anchor` date is **rendered into the page copy** (`#anchor-date`) — never hardcode the anchor date in prose again; it drifted unnoticed for a full quarter.
+- `unitCostIndex` / `rates.unitCost` are **currently unread by any page** — see open item in §10.
 
 ### `transparency-index.json` — Transparency page copy + disclosure matrix
 `_meta` holds **page-level** copy (title, lede, `last_verified`, the 4-state `grade_legend`, `axes`, `methodology`, `caveats`) **plus** a nested `detail` block (its own 3-state legend/note) for the matrix. `columns`/`rows` = the 7-provider × 6-dimension **disclosure-quality matrix**. See §7.
@@ -320,7 +324,7 @@ Grades **how openly** providers let the public see what their AI costs — trans
 | `publish.yml` | Mon 09:15 UTC + manual | Refresh prices → if changed (or manual), **stage exact-local tokenizer assets** (only if `reference.json` committed) → build → upload draft to CWS → tag + open a "ready to publish" issue. **Reactive versioning:** only bumps on `PKG_INVALID_VERSION_NUMBER`. |
 | `update-prices.yml` | Manual only | PR-based price refresh. |
 | `release.yml` | Push to `main` | Build zip + GitHub Release + 30-day artifact. |
-| `roll-clock.yml` | Quarterly + manual | Roll `clock.json` anchor; open a re-anchor PR. Last roll 2026-07-12. |
+| `roll-clock.yml` | Quarterly + manual | Roll `clock.json` anchor; open a re-anchor PR. Last roll 2026-08-08. |
 | `validate-site.yml` | PR into `main` (`**.html`/`**.json`) + push | Runs `scripts/validate-site.js`: zero-dep no-build gate (doctype, balanced tags, broken local refs, malformed JSON). |
 
 **Secrets:** `CWS_CLIENT_ID/SECRET/REFRESH_TOKEN/EXTENSION_ID`; optional **`HF_TOKEN`** (license-gated tokenizer repos). ⚠️ The Google OAuth **consent screen must be "Production"** or the refresh token expires every 7 days.

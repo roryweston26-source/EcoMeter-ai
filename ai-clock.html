@@ -12,7 +12,8 @@
 <!--
   The AI Clock — a live, anchored estimate of global AI usage and its footprint.
 
-  Anchored to Jan 1, 2026. Each counter is one of three kinds (labelled on the page):
+  Anchored to Aug 8, 2026 (see clock.json — the page renders that date, don't
+  hardcode it in the copy). Each counter is one of three kinds (labelled on the page):
     - flow   — accumulates through 2026 (prompts, tokens, energy, water, inference
                spend, CO2, capex)
     - stock  — a level that stands right now (users, installed compute)
@@ -193,17 +194,17 @@
 
     <section class="method" aria-labelledby="method-h">
       <h2 id="method-h">How we count this</h2>
-      <p>These are <strong>estimates, not meter readings.</strong> No AI company publishes a live global count of prompts, tokens, power or water, so this clock builds one from the best public disclosures, anchored to <strong>Jan 1, 2026</strong>. Each counter is labelled by kind — a <strong>flow</strong> that accumulates through the year, a <strong>stock</strong> that stands right now, or a single <strong>record</strong> — because mixing those is the fastest way to mislead. The three levels bracket the honest range; the gap is wide because the real uncertainty is.</p>
+      <p>These are <strong>estimates, not meter readings.</strong> No AI company publishes a live global count of prompts, tokens, power or water, so this clock builds one from the best public disclosures, anchored to <strong id="anchor-date">Aug 8, 2026</strong>. Each counter is labelled by kind — a <strong>flow</strong> that accumulates through the year, a <strong>stock</strong> that stands right now, or a single <strong>record</strong> — because mixing those is the fastest way to mislead. The three levels bracket the honest range; the gap is wide because the real uncertainty is.</p>
       <p>Growth here is <strong>compounding, not linear</strong> — that's the whole story of AI right now. Tokens, compute and capex are accelerating several-fold a year, so the totals keep climbing even as each token gets radically cheaper and more efficient. Those multipliers are themselves moving, so the model is meant to be <strong>re-anchored every quarter</strong> against fresh hyperscaler earnings, NVIDIA filings and IEA / Epoch updates — not extrapolated for years.</p>
       <dl>
-        <dt>Prompts — ~5–8 billion a day worldwide · flow</dt>
-        <dd>Only ChatGPT's ~2.5 billion a day (18 billion messages a week) is officially disclosed; the worldwide total across every assistant is a bottom-up estimate. Compounding ~2.5–3× a year. <span class="src">Sources: OpenAI "How People Use ChatGPT" (NBER, Sept 2025); Epoch AI (Aug 2025).</span></dd>
+        <dt>Prompts — ~9–15 billion a day worldwide · flow</dt>
+        <dd>The only official disclosure is still ChatGPT's ~2.5 billion a day (18 billion messages a week) — and that figure is from <strong>mid-2025</strong>; OpenAI hasn't refreshed it since. The worldwide total across every assistant is a bottom-up estimate carried forward at ~2.75× a year, so it is one of the softer counters despite resting on a real number. <span class="src">Sources: OpenAI "How People Use ChatGPT" (NBER, Sept 2025); TechCrunch (Jul 2025); Epoch AI (Aug 2025).</span></dd>
 
-        <dt>Tokens — ~2–3 quadrillion a month worldwide · flow</dt>
-        <dd>Google alone disclosed 1.3 quadrillion tokens/month in Oct 2025, up 7× to 3.2 quadrillion by May 2026; the worldwide total adds Microsoft, OpenAI, Anthropic and others. Reasoning models inflate tokens per request. Compounding ~5× a year, decelerating. <span class="src">Sources: Google (Pichai, Oct 2025; Google I/O, May 2026); Microsoft earnings (2025).</span></dd>
+        <dt>Tokens — ~8–15 quadrillion a month worldwide · flow</dt>
+        <dd>Google alone disclosed 1.3 quadrillion tokens/month in Oct 2025, up 7× to 3.2 quadrillion by May 2026; the worldwide total adds Microsoft, OpenAI, Anthropic and others. Reasoning and agentic workloads inflate tokens per request. <strong>Re-anchored upward in Aug 2026</strong>: this counter previously tracked Goldman Sachs' May 2026 estimate of ~5.6 quadrillion/month, which bottom-up run-rate estimates have since put closer to ~11 quadrillion — a level that left Google implausibly close to the entire world total. Compounding ~5× a year; note that longer-range forecasts imply a much slower ~2× a year, so treat this counter as re-anchored quarterly rather than projected. <span class="src">Sources: Google (Pichai, Oct 2025; Google I/O, May 2026); I/O Fund token run-rate (2026); Goldman Sachs (May 2026).</span></dd>
 
-        <dt>Electricity — ~155 TWh in 2025, AI data centres only · flow</dt>
-        <dd>AI-focused data centres drew ~155 TWh in 2025 and grew ~50% that year; all data centres together were ~485 TWh (+17%). Inference and training; excludes the wider grid. <span class="src">Sources: IEA "Energy and AI" (2025); IEA "Key Questions on Energy and AI" (2026).</span></dd>
+        <dt>Electricity — ~160–206 TWh in 2026, AI data centres only · flow</dt>
+        <dd>AI-focused data centres drew ~155 TWh in 2025 and grew ~50% that year; for 2026 the IEA puts all data centres at ~565 TWh with AI-optimised servers about 31% of that, or ~175 TWh. Inference and training; excludes the wider grid. <span class="src">Sources: IEA "Energy and AI" (2025); IEA "Key Questions on Energy and AI" (2026).</span></dd>
 
         <dt>Water — ~312–765 billion liters in 2025 · flow</dt>
         <dd>On-site cooling plus the water used to generate the electricity, derived from the power figure via water-use-efficiency assumptions — one of the softest counters. ~30–35% a year. <span class="src">Sources: Cell Reports Sustainability (2025); Google 2025 Environmental Report; Microsoft (2025).</span></dd>
@@ -211,23 +212,23 @@
         <dt>Inference spend — ~$106 billion in 2025 · flow</dt>
         <dd>Operational spend running models, distinct from buildout capex. Inference is now roughly half of all AI compute, heading to two-thirds in 2026. ~1.2–1.5× a year. <span class="src">Sources: MarketsandMarkets (2025); IDC AI Infrastructure Tracker (2025); Deloitte TMT Predictions 2026.</span></dd>
 
-        <dt>CO₂ — ~33–80 Mt in 2025, AI only · flow</dt>
-        <dd>Grid carbon intensity (~395–400 g CO₂/kWh) applied to AI electricity; all data centres emitted ~180 Mt in 2024. Isolating AI's slice needs contested assumptions. <span class="src">Sources: IEA (2025); Cell Reports Sustainability / arXiv 2601.06063 (2025).</span></dd>
+        <dt>CO₂ — ~37–89 Mt in 2026, AI only · flow</dt>
+        <dd>Grid carbon intensity applied to AI electricity; all data centres emitted ~180 Mt in 2024. Isolating AI's slice needs contested assumptions. <strong>The carbon intensity is part of what the three levels bracket</strong>, not a fixed input: they work out to roughly 230, 310 and 430 g CO₂/kWh respectively, spanning a heavily-contracted clean-power fleet at the low end and something near the ~395–400 g/kWh world grid average at the high end. That assumption is a judgement, not a measurement, and it is the single biggest reason this counter's range is so wide. <span class="src">Sources: IEA (2025); Cell Reports Sustainability / arXiv 2601.06063 (2025).</span></dd>
 
-        <dt>Buildout capex — ~$410B in 2025 → $725B guided for 2026 · flow</dt>
-        <dd>Big-four hyperscaler capital spend on data centres and chips, up ~77% year over year — the firmest and largest number here. <span class="src">Sources: company Q4 2025 earnings; Goldman Sachs "Tracking Trillions" (2026); IEA (2026).</span></dd>
+        <dt>Buildout capex — ~$410B in 2025 → ~$725B guided for 2026 · flow</dt>
+        <dd>Big-four hyperscaler capital spend on data centres and chips, up ~77% year over year — the firmest and largest number here. Amazon ~$200B, Microsoft ~$190B, Alphabet $175–185B, Meta $115–135B on 2026 guidance. <strong>Corrected downward in Aug 2026</strong>: this counter had drifted to an implied ~$978B for calendar 2026, well above what the four have actually guided. <span class="src">Sources: company Q2 2026 earnings and guidance; CNBC (Jul 2026); Goldman Sachs "Tracking Trillions" (2026).</span></dd>
 
-        <dt>People using AI — ~1 billion across all tools · stock</dt>
-        <dd>ChatGPT reported ~800 million weekly users by late 2025; Gemini ~750–900M monthly; the whole gen-AI universe is near a billion, roughly 1 in 6 working-age adults. ~2× a year for leaders, decelerating as rich markets saturate. <span class="src">Sources: OpenAI (Oct 2025); Google I/O (May 2026); Microsoft AI Diffusion report; Stanford HAI AI Index 2026.</span></dd>
+        <dt>People using AI — ~1.1–2.0 billion across all tools · stock</dt>
+        <dd>ChatGPT passed ~900 million weekly users by June 2026, with reports of roughly a billion by July — the billion figure is press reporting of internal data, not an OpenAI disclosure. Gemini's app reached ~900M monthly at I/O 2026. Overlap between them is heavy, so the worldwide unique total is well below the sum. Growth at the leaders has slowed to <strong>~1.3× a year</strong> (800M in Dec 2025 → ~900M in Jun 2026), down sharply from the ~2× of a year ago as rich markets saturate; this counter now uses 1.35×. <span class="src">Sources: Reuters (Jun 2026); The Information (Jul 2026, unofficial); Google I/O (May 2026); Stanford HAI AI Index 2026.</span></dd>
 
-        <dt>AI compute installed — &gt;15 million H100-equivalents · stock</dt>
-        <dd>The global fleet drew over 10 GW by early 2026 and is doubling every ~7 months (~3.3× a year). <span class="src">Source: Epoch AI (Jan 2026).</span></dd>
+        <dt>AI compute installed — ~27–37 million H100-equivalents · stock</dt>
+        <dd>The global AI data centre fleet reached <strong>~30 GW of power capacity by Q4 2025</strong>, up from ~13.5 GW a year earlier. Capacity growth of ~2.3× a year understates compute growth, since each generation delivers more work per watt; this counter uses ~3.4× a year for H100-equivalents. <span class="src">Source: Epoch AI datacenter power tracker (2026).</span></dd>
 
-        <dt>Largest training run — ~5×10²⁶ FLOP · record</dt>
-        <dd>The biggest known single training run (Grok 4, xAI, mid-2025). The frontier grows ~4–5× a year, doubling roughly every five months. <span class="src">Source: Epoch AI Trends dashboard (2026).</span></dd>
+        <dt>Largest training run — ~1×10²⁷ FLOP · record</dt>
+        <dd>Projected forward from the biggest <em>confirmed</em> single training run (Grok 4, xAI, mid-2025) at ~4.5× a year. <strong>No 2026 record run has been publicly confirmed</strong> — labs stopped disclosing training compute for their latest frontier models, so this is the one counter where the honest answer is that nobody outside those labs knows. Treat it as the weakest number on this page. <span class="src">Source: Epoch AI Trends dashboard (2026); frontier growth 5×/yr, CI 4–6×.</span></dd>
 
         <dt>Rates of change</dt>
-        <dd>Tokens ~5×/yr; installed compute ~3.3×/yr (doubling every 7 months); frontier training ~4–5×/yr; capex ~1.77×/yr; AI electricity ~1.4×/yr; users ~2×/yr — all decelerating as power, advanced packaging and HBM supply tighten. Per-token energy, cost and water fall fast because volume outruns the totals. <span class="src">Sources: Epoch AI; IEA; Goldman Sachs; a16z.</span></dd>
+        <dd>Tokens ~5×/yr; installed compute ~3.4×/yr; frontier training ~4.5×/yr; capex ~1.77×/yr; AI electricity ~1.4×/yr; users ~1.35×/yr — most decelerating as power, advanced packaging and HBM supply tighten. Per-token energy, cost and water fall fast because volume outruns the totals. <span class="src">Sources: Epoch AI; IEA; Goldman Sachs; a16z.</span></dd>
       </dl>
     </section>
   </main>
@@ -244,15 +245,17 @@
    SCENARIOS — levels as of the ANCHOR date. Edit to update.
    RATES — annual trajectories (multipliers per year). Shared across scenarios.
    ========================================================================= */
-/* Anchor LEVELS as of Jan 1, 2026. Flows are annual amounts; stocks/record are
+/* Anchor LEVELS as of Aug 8, 2026. Flows are annual amounts; stocks/record are
    levels. conservative / moderate / high bracket the published range.
    These are the FALLBACK — clock.json (kept fresh by the roll-clock workflow)
-   overrides them on load. */
+   overrides them on load. Keep this block in sync with clock.json when you
+   re-anchor, so a failed fetch degrades to the same numbers rather than to
+   a silently stale year. */
 let SCENARIOS = {
   //             prompts/day  tokens/yr   AI TWh/yr  AI water B-L/yr  inference $/yr  AI CO2 Mt/yr  capex $/yr  users now  H100e now  frontier FLOP
-  conservative: { promptsPerDay:5.0e9, tokensPerYear:24e15, twhPerYear:130, waterBLPerYear:312, spendPerYear:100e9, co2MtPerYear:33, capexPerYear:690e9, usersNow:0.8e9, gpusNow:13e6, frontierNow:4e26 },
-  moderate:     { promptsPerDay:6.5e9, tokensPerYear:30e15, twhPerYear:155, waterBLPerYear:500, spendPerYear:113e9, co2MtPerYear:50, capexPerYear:725e9, usersNow:1.0e9, gpusNow:15e6, frontierNow:5e26 },
-  high:         { promptsPerDay:8.0e9, tokensPerYear:36e15, twhPerYear:180, waterBLPerYear:765, spendPerYear:122e9, co2MtPerYear:80, capexPerYear:765e9, usersNow:1.4e9, gpusNow:18e6, frontierNow:6e26 }
+  conservative: { promptsPerDay:9.17e9, tokensPerYear:96e15,  twhPerYear:160, waterBLPerYear:365, spendPerYear:120e9, co2MtPerYear:36.8, capexPerYear:658e9, usersNow:1.12e9, gpusNow:26.7e6, frontierNow:9.86e26 },
+  moderate:     { promptsPerDay:12.0e9, tokensPerYear:132e15, twhPerYear:180, waterBLPerYear:585, spendPerYear:135e9, co2MtPerYear:55.7, capexPerYear:757e9, usersNow:1.40e9, gpusNow:30.8e6, frontierNow:1.23e27 },
+  high:         { promptsPerDay:14.7e9, tokensPerYear:180e15, twhPerYear:206, waterBLPerYear:895, spendPerYear:146e9, co2MtPerYear:89.2, capexPerYear:815e9, usersNow:1.97e9, gpusNow:36.9e6, frontierNow:1.48e27 }
 };
 
 /* Net annual growth multipliers (>1 grows). Central values from the research,
@@ -266,8 +269,8 @@ let RATES = {
   spend:    1.35,  // ~1.2-1.5x/yr  operational inference spend
   co2:      1.20,  // +20%/yr       AI CO2 (grid intensity slowly falling)
   capex:    1.77,  // +77%/yr       hyperscaler buildout capex
-  users:    1.80,  // ~2x/yr        leaders, decelerating as markets saturate
-  compute:  3.30,  // ~3.3x/yr      installed H100e (doubling every ~7 months)
+  users:    1.35,  // ~1.35x/yr     leaders slowed to ~1.3x by mid-2026
+  compute:  3.40,  // ~3.4x/yr      installed H100e (doubling every ~7 months)
   frontier: 4.50   // ~4-5x/yr      largest training run (doubling every ~5 months)
 };
 
@@ -279,7 +282,7 @@ const SPY     = 365.25 * 86400;                    // seconds per year
    correct even after the anchor rolls forward. Both are overridden by clock.json
    on load; the values here (with SCENARIOS/RATES above) are the fallback. */
 const flowEpochFor = ms => Date.UTC(new Date(ms).getUTCFullYear(), 0, 1);
-let ANCHOR_MS  = Date.UTC(2026, 0, 1, 0, 0, 0);
+let ANCHOR_MS  = Date.UTC(2026, 7, 8, 0, 0, 0);
 let FLOW_EPOCH = flowEpochFor(ANCHOR_MS);
 
 /* net annual growth per flow (id -> multiplier), sourced directly (no composition) */
@@ -456,6 +459,16 @@ function update(){
   set('frontier', stockLevel(s.frontierNow, RATES.frontier, now));
 }
 
+/* The "anchored to <date>" line in the methodology section is written from
+   clock.json's own anchor, so the date the reader sees can't drift out of sync
+   with the data the counters actually run on. */
+function renderAnchorDate(ms){
+  const el = document.getElementById('anchor-date');
+  if (!el) return;
+  el.textContent = new Date(ms).toLocaleDateString('en-GB',
+    { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
 /* Pull anchor levels + rates from clock.json (kept fresh by the roll-clock
    workflow); silently keeps the inline fallback if it can't load. */
 function applyClock(data){
@@ -464,7 +477,7 @@ function applyClock(data){
   if (data.rates)     RATES = data.rates;
   if (data._meta && data._meta.anchor){
     const a = Date.parse(data._meta.anchor + 'T00:00:00Z');
-    if (!isNaN(a)){ ANCHOR_MS = a; FLOW_EPOCH = flowEpochFor(a); }
+    if (!isNaN(a)){ ANCHOR_MS = a; FLOW_EPOCH = flowEpochFor(a); renderAnchorDate(a); }
   }
   recomputeG();
   B = baseRates(SCENARIOS[activeKey]);
@@ -479,6 +492,7 @@ function loadClock(){
 }
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+renderAnchorDate(ANCHOR_MS);   // truthful even if clock.json never loads
 renderLabels();
 update();
 fitAll();
