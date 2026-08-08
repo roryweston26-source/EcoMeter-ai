@@ -176,7 +176,36 @@ for (const m of fbBlock.matchAll(/\{\s*p:"(\w+)",\s*m:"([^"]+)",\s*provenance:"(
   }
 }
 
-/* 10. Anything the extension can put in an export must be understood here. A
+/* 10. student-access.json. Every route makes a claim about a real company's
+       offer, so each needs a provenance we recognise and a date it was checked.
+       Anything stated as fact ('disclosed') must carry a provider-owned source —
+       the whole point of the file is that the blogs on this subject are wrong. */
+const S = JSON.parse(fs.readFileSync(R + 'student-access.json', 'utf8'));
+const ROUTE_PROV = new Set(['disclosed', 'institutional', 'unverified', 'paused', 'none']);
+const seenP = new Set();
+for (const r of S.routes) {
+  if (!ROUTE_PROV.has(r.provenance)) fail('student route has unknown provenance: ' + r.p + ' -> ' + r.provenance);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(r.as_of || '')) fail('student route missing as_of date: ' + r.p);
+  if (!r.headline || !r.detail) fail('student route missing headline/detail: ' + r.p);
+  if (r.provenance === 'disclosed' && !r.source)
+    fail('student route claims "disclosed" with no source — that is exactly the claim that needs one: ' + r.p);
+  if (!p.subscriptions.some(s => s.p === r.p)) fail('student route for a provider absent from prices.json: ' + r.p);
+  if (seenP.has(r.p)) fail('duplicate student route for provider: ' + r.p);
+  seenP.add(r.p);
+  // A route for a provider the Auditor audits must be reachable: the panel only
+  // renders rows for tools the user picked, plus 'disclosed' offers elsewhere.
+  if (!PLANS[r.p] && r.provenance !== 'disclosed' && !r.not_audited)
+    fail('student route can never render (provider not audited, offer not disclosed): ' + r.p);
+}
+// The partner list must stay flagged as examples. Rendering it as a directory
+// would tell a student at an unlisted school they cannot get access.
+if (S.partner_institutions && S.partner_institutions.not_exhaustive !== true)
+  fail('partner_institutions must set not_exhaustive:true — no provider publishes a complete list');
+const audit_ns = /not a directory/i.test(html) || /examples, not a directory/i.test(html);
+if (S.partner_institutions && !audit_ns)
+  fail('audit.html renders partner_institutions without saying it is not a directory');
+
+/* 11. Anything the extension can put in an export must be understood here. A
        catalog key the auditor cannot price is a model a real user ran that the
        recommendation quietly ignores. */
 const cat = side.slice(side.indexOf('const MODEL_CATALOG'), side.indexOf('for (const grp of MODEL_CATALOG'));

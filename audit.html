@@ -102,6 +102,30 @@
   .disclaimer{font-size:.8rem;color:var(--muted-dim);margin-top:22px;line-height:1.6}
   .center{text-align:center;margin-top:24px}
 
+  /* Student / teacher routes */
+  .student{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(212,168,67,.06),rgba(14,22,19,.35));padding:20px 22px;margin:20px 0 14px}
+  .student .shdr{font-family:var(--display);font-weight:700;font-size:1.05rem;color:var(--gold);margin-bottom:10px}
+  .student .sfind{font-size:.88rem;color:var(--ink);margin:0 0 16px;line-height:1.6}
+  .student .srow{border-top:1px solid var(--line);padding:14px 0 4px}
+  .student .shead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .student .shead b{font-family:var(--display);font-weight:700;font-size:.98rem;color:var(--ink)}
+  .student .stag{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
+    border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--muted)}
+  .student .stag.ok{color:var(--green-2);border-color:rgba(56,201,160,.4)}
+  .student .stag.warn{color:var(--gold);border-color:rgba(212,168,67,.4)}
+  .student .stag.none{color:var(--muted-dim)}
+  .student .sline{margin:0 0 6px;font-size:.92rem;color:var(--ink)}
+  .student .sdetail{margin:0 0 8px;font-size:.86rem;color:var(--muted);line-height:1.6}
+  .student .saction{margin:0 0 8px;font-size:.86rem;color:var(--green-2);line-height:1.6}
+  .student .ssrc{margin:0;font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;color:var(--muted-dim)}
+  .student .ssrc a{color:var(--muted);text-decoration:underline}
+  .student .ssrc a:hover{color:var(--green-2)}
+  .student .selse{margin-top:18px;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-dim)}
+  .student .spart{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+  .student .spart summary{cursor:pointer;font-size:.84rem;color:var(--muted)}
+  .student .spart summary:hover{color:var(--green-2)}
+  .student .spart p{margin-top:10px}
+
   footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--muted-dim)}
   footer a{color:var(--green);text-decoration:none}
   footer a:hover{color:var(--green-2)}
@@ -288,6 +312,11 @@ const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus
 const labelModel = k => LABELS[k] || k;
 const money = n => { if(!n) return '$0'; const r=Math.round(n*100)/100; return '$'+(Number.isInteger(r)?r:r.toFixed(2)); };
 
+/* What each provider offers students/teachers, with provenance. Same-origin fetch,
+   no user data sent. Absent file = the panel simply doesn't render. */
+let STUDENT = null;
+fetch('/student-access.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{ STUDENT=d; }).catch(()=>{});
+
 /* keep prices + API rates fresh from the maintained file (no user data sent) */
 fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
   if(!d) return;
@@ -360,6 +389,12 @@ const QUESTIONS = [
     {v:'google::Google AI Pro',label:'Gemini AI Pro'},
     {v:'microsoft::Microsoft 365 Premium',label:'Copilot Premium'},
     {v:'api',label:'API / pay-as-you-go'}]},
+  {id:'student',type:'single',q:'Are you a student or a teacher?',
+   help:'Most “AI student discounts” you’ll read about aren’t real consumer offers. We’ll show you the ones that are — and the one free question that’s usually worth more than any of them.',
+   options:[
+    {v:'student',label:'Yes — college or university student'},
+    {v:'teacher',label:'Yes — teacher or faculty'},
+    {v:'no',label:'No'}]},
   {id:'team',type:'single',q:'Is it just you, or a team?',options:[
     {v:'solo',label:'Just me'},{v:'team',label:'A team'}]},
   {id:'priority',type:'single',q:'What matters most to you?',options:[
@@ -560,6 +595,55 @@ function capLine(tier, lead){
   return `${lead} — roughly ${tier.cap} messages/day (${how}) —`;
 }
 
+/* ---------- student / teacher routes ----------
+   Deliberately NOT a recommendation engine. Almost nothing here is purchasable,
+   so the useful output is an honest map of what exists plus the one action that
+   reliably pays off — asking your own institution. Every line is labelled with
+   where it came from, and anything we couldn't confirm on a provider-owned page
+   is shown as unconfirmed rather than repeated. */
+const ROUTE_TAG = {
+  disclosed:    {t:'published by the provider', c:'ok'},
+  institutional:{t:'your university buys it — you can’t', c:'warn'},
+  unverified:   {t:'we could not confirm this', c:'warn'},
+  paused:       {t:'currently paused', c:'warn'},
+  none:         {t:'nothing offered', c:'none'},
+};
+function studentPanel(a){
+  const who=a.student;
+  if(!STUDENT || !(who==='student'||who==='teacher')) return '';
+  const routes=STUDENT.routes||[];
+  const picked=(a.tools||[]).filter(t=>PLANS[t]);
+  // Their own tools first, then anything elsewhere worth knowing: a verified
+  // discount, or — for teachers — a teacher-specific programme, which is the most
+  // valuable thing here and would otherwise be hidden behind "did you pick ChatGPT".
+  const mine=routes.filter(r=>picked.includes(r.p));
+  const elsewhere=routes.filter(r=>!picked.includes(r.p) &&
+    (r.provenance==='disclosed' || (who==='teacher' && r.teacher_offer)));
+  const row=r=>{
+    const tag=ROUTE_TAG[r.provenance]||{t:r.provenance,c:'warn'};
+    const name=(NAME[r.p]|| (r.p.charAt(0).toUpperCase()+r.p.slice(1)));
+    return `<div class="srow">
+      <div class="shead"><b>${name}</b><span class="stag ${tag.c}">${tag.t}</span></div>
+      <p class="sline">${r.headline}</p>
+      <p class="sdetail">${r.detail}</p>
+      ${r.action?`<p class="saction">→ ${r.action}</p>`:''}
+      ${r.source?`<p class="ssrc"><a href="${r.source}" target="_blank" rel="noopener noreferrer">source</a> · checked ${r.as_of}</p>`:`<p class="ssrc">checked ${r.as_of}</p>`}
+    </div>`;
+  };
+  const pi=STUDENT.partner_institutions;
+  return `<div class="student">
+    <div class="shdr">🎓 ${who==='teacher'?'What’s actually there for teachers':'What’s actually there for students'}</div>
+    <p class="sfind">${STUDENT._meta.finding}</p>
+    ${mine.map(row).join('')}
+    ${elsewhere.length?`<div class="selse">Worth knowing, on a tool you didn’t pick:</div>${elsewhere.map(row).join('')}`:''}
+    ${pi?`<details class="spart"><summary>Universities named publicly with Claude for Education</summary>
+      <p class="sdetail"><b>These are examples, not a directory.</b> ${pi.note}</p>
+      <p class="sdetail">${pi.named.join(' · ')}</p>
+      ${pi.also?`<p class="sdetail">${pi.also}</p>`:''}
+      <p class="ssrc"><a href="${pi.source}" target="_blank" rel="noopener noreferrer">source</a> · checked ${pi.as_of}</p></details>`:''}
+  </div>`;
+}
+
 function currentPlans(a){
   const out=[];
   (a.pays||[]).forEach(v=>{
@@ -638,6 +722,7 @@ function finish(){
       <p class="level-blurb">${level.blurb}</p>
     </div>
     ${cards || '<p class="level-blurb">Pick at least one tool to get a recommendation.</p>'}
+    ${studentPanel(a)}
     ${other}
     <p class="disclaimer">Prices are list prices, checked against each provider’s own pricing page. Most message limits are <em>not</em> published — where we show one, we say whether it’s the provider’s figure, an outside estimate, or ours. API comparisons assume typical conversation sizes, which is an assumption, not a measurement, and the biggest lever on every dollar here${measuredNote}. Figures are applied per tool, so if you split time across tools your per-tool need is lower. Confirm current limits on the provider’s site. Nothing you entered left your browser.</p>
     <div class="center"><button class="btn" id="restart">Start over</button></div>`;
