@@ -369,7 +369,7 @@
   <div class="callout" id="callout">
     <h2>What the providers won't tell you</h2>
     <p id="callout-body">—</p>
-    <p>So "how much is my plan worth" can't be answered from the ceiling for most plans. What <em>can</em> be answered, from published API rates alone, is the other direction: <strong>how long you'd have to use a plan each day before it beats paying per token.</strong> That's the break-even column — and it's the one worth reading. Where a ceiling does exist, it usually turns out to need more hours a day than anyone is awake for, which tells you the cap isn't what limits the plan's value. Your time is.</p>
+    <p>So "how much is my plan worth" can't be answered from the ceiling for most plans. What <em>can</em> be answered, from published API rates alone, is the other direction: <strong>how long you'd have to use a plan each day before it beats paying per token.</strong> That's the break-even column — and it's the one worth reading. As of August 2026 not one plan here has a cap solid enough to compute a ceiling from, so that column is now mostly a record of what nobody will tell you. Where a figure did exist, it needed more hours a day than anyone is awake for — which was already the point: the cap was never what limited the plan's value to you. Your time is.</p>
   </div>
 
   <div class="chips" id="chips" role="group" aria-label="Filter by provider"></div>
@@ -640,10 +640,9 @@
     },
     plans: [
       { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-5.6-luna",  high:"gpt-5.5"} },
-      { p:"openai", m:"ChatGPT Go",    provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
-        caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
-      { p:"openai", m:"ChatGPT Plus",  provenance:"disclosed", binding:"3h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"},
-        caps:[{ n:160, unit:"messages", window:"3h", scope:"GPT-5.5 Instant", soft:true }] },
+      { p:"openai", m:"ChatGPT Go",    provenance:"disclosed", binding:"5h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
+        caps:[{ n:10, unit:"messages", window:"5h", scope:"Thinking", soft:false, scope_limited:true }] },
+      { p:"openai", m:"ChatGPT Plus",  provenance:"not_disclosed", value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
       { p:"openai", m:"ChatGPT Pro",       provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:5,  scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
       { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:20, scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
 
@@ -758,6 +757,12 @@
       for (var i = 0; i < lim.caps.length; i++) {
         var c = lim.caps[i];
         if (lim.binding && c.window !== lim.binding) continue;
+        // A cap scoped to one FEATURE cannot bound the whole plan. Go's only
+        // published figure is 10 Thinking messages/5h while its ordinary chat is
+        // advertised as unlimited — pricing the plan off the sub-limit would put a
+        // ceiling on it several times below what it is actually worth. Same refusal
+        // as an undisclosed multiplier base: better no number than a wrong one.
+        if (c.scope_limited) continue;
         cap = c; break;
       }
       if (!cap || typeof cap.n !== "number") return null;
@@ -1152,13 +1157,15 @@
     });
     $("callout-body").innerHTML =
       'Of the <span class="tally">' + total + '</span> consumer plans tracked here, ' +
-      '<span class="tally">' + disclosed + '</span> have a usage cap the provider publishes about its own product. ' +
-      '<span class="tally">' + third + '</span> have only a third-party estimate' +
+      '<span class="tally">' + disclosed + '</span> ' + (disclosed === 1 ? 'has' : 'have') +
+      ' a usage cap the provider publishes about its own product. ' +
+      '<span class="tally">' + third + '</span> ' + (third === 1 ? 'has' : 'have') + ' only a third-party estimate' +
       (lowConf ? ', and <span class="tally">' + lowConf + '</span> of those we rate low confidence' : "") + '. ' +
       'The rest are sold on multipliers — "5× more usage than Pro", "20× higher usage than Plus", ' +
-      '"4× higher than standard limits" — against a base nobody states. The one published cap is ' +
-      'identical on ChatGPT Go at $8 and Plus at $20, so it doesn\'t even separate the tiers you\'re ' +
-      'choosing between. Google reserves the right to change limits "without notice."';
+      '"4× higher than standard limits" — against a base nobody states. The only absolute figure still ' +
+      'published anywhere covers a single feature: 10 Thinking messages every 5 hours on ChatGPT Go. ' +
+      'OpenAI deleted its general cap between our July and August 2026 checks, so ChatGPT Plus at $20 ' +
+      'now publishes no usage figure at all. Google reserves the right to change limits "without notice."';
   }
 
   // ---- Wire up ----

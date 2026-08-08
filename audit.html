@@ -149,50 +149,144 @@
 "use strict";
 
 /* ---------- plan metadata (capabilities inline; prices synced from prices.json) ----------
-   `cap` = approximate messages/day, derived from providers' published rolling-window
-   limits (researched Jul 2026; providers change these often & some are compute-based,
-   so treat as estimates). null = effectively unlimited for normal use. */
+   `cap` = approximate messages/day. null = the provider advertises no message cap
+   for normal use. `capSource` records WHERE the number came from, because almost
+   none of them are published — see plan-limits.json `_meta.finding`:
+
+     disclosed     the provider publishes this absolute figure about its own product
+     third_party   measured/reported by someone else; indicative only
+     estimate      Legerly's own working figure — nobody publishes anything usable
+     not_disclosed a relative multiplier against a base nobody quantifies
+
+   Only 'disclosed' may be presented to the user as fact. Verified against the
+   providers' own pricing pages 2026-08-08; providers change these often, and
+   several meter on compute rather than messages. */
 let PLANS = {
   openai: [
-    { m:'ChatGPT Free', price:0,   cap:45,  models:['gpt-5.5','gpt-5.4-mini'], features:[], seats:1 },
-    { m:'ChatGPT Go',   price:8,   cap:600, models:['gpt-5.5','gpt-5.4-mini'], features:['image-gen'], seats:1 },
-    { m:'ChatGPT Plus', price:20,  cap:900, models:['gpt-5.5','gpt-5.4','gpt-5.4-mini','o3','o4-mini'], features:['image-gen','voice','projects'], seats:1 },
-    { m:'ChatGPT Pro',  price:100, cap:null,models:['gpt-5.5','gpt-5.4','o3','o4-mini','gpt-4.1'], features:['image-gen','voice','projects','research'], seats:1 },
+    // OpenAI advertises "unlimited text chats with GPT-5.6 Luna" on every consumer
+    // tier (subject to abuse guardrails), so message VOLUME no longer separates
+    // these plans — model access and features do. Free and Go get NO GPT-5.6 Sol at
+    // any reasoning level; Terra is Codex-only below Plus. Luna is replacing GPT-5.5
+    // Instant as the Free/Go default mid-rollout, and GPT-5.5 Instant access remains
+    // (limited, 5h window) — so it is NOT a paid-only model, despite the plan table
+    // filing it away from the GPT-5.6 rows.
+    { m:'ChatGPT Free', price:0,   cap:null, capSource:'disclosed',
+      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini'], features:[], seats:1 },
+    { m:'ChatGPT Go',   price:8,   cap:null, capSource:'disclosed',
+      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini'], features:['image-gen','ads'], seats:1 },
+    { m:'ChatGPT Plus', price:20,  cap:null, capSource:'not_disclosed',
+      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      features:['image-gen','voice','projects','research'], seats:1 },
+    // Pro's differentiator is Sol at Extra High plus Sol Pro — reasoning levels, not
+    // a distinct model key. There is no gpt-5.6-sol-pro rate to price, so it stays a
+    // feature rather than an invented model.
+    { m:'ChatGPT Pro',  price:100, cap:null, capSource:'not_disclosed',
+      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      features:['image-gen','voice','projects','research','sol-pro'], seats:1 },
   ],
   anthropic: [
-    { m:'Claude Free',   price:0,   cap:40,   models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
-    { m:'Claude Pro',    price:20,  cap:225,  models:['claude-sonnet-5','claude-sonnet-4-6','claude-opus-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking'], seats:1 },
-    { m:'Claude Max 5×', price:100, cap:1125, models:['claude-sonnet-5','claude-opus-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
-    { m:'Claude Max 20×',price:200, cap:null, models:['claude-sonnet-5','claude-opus-5','claude-opus-4-8','claude-haiku-4-5-20251001'], features:['projects','extended-thinking','priority'], seats:1 },
+    // Anthropic publishes no usage figure at any tier. The Pro number is the
+    // strongest third-party estimate on plan-limits.json (~45 messages / 5h,
+    // several trackers converging), converted to a day at 16 waking hours =
+    // 3.2 windows. Max multiplies a base Anthropic has never quantified.
+    { m:'Claude Free',   price:0,   cap:40,  capSource:'estimate',
+      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
+    { m:'Claude Pro',    price:20,  cap:144, capSource:'third_party',
+      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
+      features:['projects','extended-thinking'], seats:1 },
+    { m:'Claude Max 5×', price:100, cap:720, capSource:'third_party',
+      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
+      features:['projects','extended-thinking','priority'], seats:1 },
+    { m:'Claude Max 20×',price:200, cap:null, capSource:'not_disclosed',
+      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
+      features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
-    { m:'Gemini (Free)',  price:0,    cap:60,  models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:[], seats:1 },
-    { m:'Google AI Plus', price:4.99, cap:120, models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:['more-pro'], seats:1 },
-    { m:'Google AI Pro',  price:19.99,cap:240, models:['gemini-3.5-flash','gemini-3.1-pro-preview','gemini-2.5-pro'], features:['deep-research','image-gen','video-gen'], seats:1 },
-    { m:'Google AI Ultra',price:99.99,cap:null,models:['gemini-3.5-flash','gemini-3.1-pro-preview','gemini-2.5-pro'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
+    // Every Google tier runs the SAME models — Gemini 3.1 Pro is the flagship and
+    // the free app already gets it (limited daily). What you buy is quota and
+    // features (video generation, Deep Research volume), never model access. The
+    // 2x/4x/20x multipliers are against "standard limits", which Google has never
+    // published, so the caps below are our own working figures.
+    { m:'Gemini (Free)',  price:0,    cap:60,  capSource:'estimate',
+      models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:[], seats:1 },
+    { m:'Google AI Plus', price:4.99, cap:120, capSource:'not_disclosed',
+      models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:['image-gen'], seats:1 },
+    { m:'Google AI Pro',  price:19.99,cap:240, capSource:'not_disclosed',
+      models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:['deep-research','image-gen','video-gen'], seats:1 },
+    { m:'Google AI Ultra',price:99.99,cap:null,capSource:'not_disclosed',
+      models:['gemini-3.5-flash','gemini-3.1-pro-preview'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
   ],
   microsoft: [
-    { m:'Copilot (Free)', price:0,    cap:200, models:['gpt-5.5'], features:[], seats:1 },
-    { m:'Microsoft 365 Premium', price:19.99, cap:null, models:['gpt-5.5'], features:['office','image-gen'], seats:1 },
+    // Microsoft publishes 60 AI credits/month for Personal and Family but nothing
+    // for Premium. Copilot resells OpenAI models and Microsoft publishes no
+    // per-token rate, so we never quote an API-equivalent cost for it.
+    { m:'Copilot (Free)', price:0,    cap:200,  capSource:'estimate',
+      models:['gpt-5.5'], features:[], seats:1 },
+    { m:'Microsoft 365 Premium', price:19.99, cap:null, capSource:'not_disclosed',
+      models:['gpt-5.5'], features:['office','image-gen'], seats:1 },
+  ],
+  deepseek: [
+    // The only provider here with NO paid consumer tier: the web chat is free and
+    // exposes the full line-up, throttled by fair use rather than a published cap.
+    // There is nothing to upgrade to, so the recommendation is always "free" — the
+    // point being that for a lot of people that is the honest answer.
+    { m:'DeepSeek (Free)', price:0, cap:null, capSource:'not_disclosed',
+      models:['deepseek-v4-flash','deepseek-v4-pro','deepseek-r1'], features:[], seats:1 },
   ],
 };
+// Fallback API rates, used only if the prices.json fetch fails. MUST match
+// prices.json exactly — scripts/check-auditor.js enforces it. This block drifted
+// unnoticed for ten days in Aug 2026 (gemini-3.5-flash was a third of the real
+// rate), which made pay-per-token look cheaper than it is whenever the fetch broke.
 let API = {
-  'gpt-5.5':{in:5e-6,out:30e-6}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
-  'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
-  'gemini-3.5-flash':{in:5e-7,out:3e-6}, 'gemini-2.5-pro':{in:1.25e-6,out:1e-5},
+  'gpt-5.6-luna':{in:2e-7,out:1.2e-6}, 'gpt-5.6-sol':{in:5e-6,out:3e-5}, 'gpt-5.6-terra':{in:2e-6,out:1.2e-5},
+  'gpt-5.5':{in:5e-6,out:3e-5}, 'gpt-5.4':{in:2.5e-6,out:1.5e-5}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
+  'o3':{in:2e-6,out:8e-6}, 'o4-mini':{in:1.1e-6,out:4.4e-6}, 'gpt-4.1':{in:2e-6,out:8e-6},
+  'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-sonnet-4-6':{in:3e-6,out:1.5e-5},
+  'claude-haiku-4-5-20251001':{in:1e-6,out:5e-6},
+  'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
+  'gemini-3.5-flash':{in:1.5e-6,out:9e-6}, 'gemini-3.1-pro-preview':{in:2e-6,out:1.2e-5},
+  'deepseek-v4-flash':{in:1.4e-7,out:2.8e-7}, 'deepseek-v4-pro':{in:4.35e-7,out:8.7e-7},
+  'deepseek-r1':{in:5.5e-7,out:2.19e-6},
 };
-const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot' };
+const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot', deepseek:'DeepSeek' };
+// `top` is what "I always want the best" means for each provider, and it must NOT
+// be on that provider's free tier or the answer can never change the result.
 const MODELS = {
-  openai:{free:'gpt-5.5',top:'o3'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-5'},
-  google:{free:'gemini-3.5-flash',top:'gemini-2.5-pro'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
+  openai:{free:'gpt-5.6-luna',top:'gpt-5.6-sol'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-5'},
+  google:{free:'gemini-3.5-flash',top:'gemini-3.1-pro-preview'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
+  deepseek:{free:'deepseek-v4-flash',top:'deepseek-v4-pro'},
 };
-// models that generally require a PAID tier — used to set the "frontier" signal from a log
-const ADVANCED = new Set(['claude-opus-5','claude-opus-4-8','claude-fable-5','claude-mythos-5','gpt-5.4','o3','o4-mini','gemini-2.5-pro','sonar-reasoning-pro','deepseek-v4-pro']);
+// Providers whose best model is already on the free tier, so "I always want the
+// best" must NOT force a paid plan: Google gates on quota (Gemini 3.1 Pro is in
+// the free app, limited daily), Copilot runs the same model on both tiers, and
+// DeepSeek's free chat exposes the whole line-up. For these, paying buys volume
+// and features — never smarter output.
+const TOP_IS_FREE = new Set(['google','microsoft','deepseek']);
+// Providers that publish no comparable per-token rate — never quote API cost for them.
+const LEGACY_ONLY = new Set(['microsoft']);
+// Models that require a PAID tier, derived from PLANS so it re-derives itself when
+// a provider changes what its free tier includes. Sets the "frontier" signal from
+// an EcoMeter export: a user who runs Sol daily must not be read as a free-tier user.
+function advancedModels(){
+  const s=new Set();
+  for(const prov in PLANS){
+    const tiers=PLANS[prov].slice().sort((a,b)=>a.price-b.price);
+    const free=new Set(tiers[0].price===0 ? tiers[0].models : []);
+    tiers.forEach(t=>{ if(t.price>0) t.models.forEach(m=>{ if(!free.has(m)) s.add(m); }); });
+  }
+  // providers the auditor doesn't yet cover, but whose models can appear in an export
+  ['claude-fable-5','claude-mythos-5','grok-4.5','sonar-reasoning-pro','deepseek-v4-pro'].forEach(m=>s.add(m));
+  return s;
+}
 const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus 4.8', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
-  'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gemini-2.5-pro':'Gemini 2.5 Pro',
-  'sonar-reasoning-pro':'Sonar Reasoning Pro', 'deepseek-v4-pro':'DeepSeek V4 Pro' };
+  'gpt-5.6-sol':'GPT-5.6 Sol', 'gpt-5.6-terra':'GPT-5.6 Terra', 'gpt-5.6-luna':'GPT-5.6 Luna',
+  'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
+  'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-3.5-flash':'Gemini 3.5 Flash',
+  'sonar-reasoning-pro':'Sonar Reasoning Pro', 'grok-4.5':'Grok 4.5',
+  'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek V4 Flash', 'deepseek-r1':'DeepSeek R1' };
 const labelModel = k => LABELS[k] || k;
-const money = n => n===0 ? '$0' : '$'+(Math.round(n*100)/100);
+const money = n => { if(!n) return '$0'; const r=Math.round(n*100)/100; return '$'+(Number.isInteger(r)?r:r.toFixed(2)); };
 
 /* keep prices + API rates fresh from the maintained file (no user data sent) */
 fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
@@ -214,8 +308,15 @@ fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).t
       const ft=d.free_tiers[prov];
       if(ft && Array.isArray(ft.models)){
         const keys=ft.models.map(m=> (m && m.key) ? m.key : m).filter(Boolean);
-        const free=PLANS[prov][0];
-        if(free && free.price===0 && keys.length) free.models=keys;
+        const free=PLANS[prov].slice().sort((a,b)=>a.price-b.price)[0];
+        if(free && free.price===0 && keys.length){
+          free.models=keys;
+          // If prices.json adds a model to a free tier that our inline paid tiers
+          // don't list, the ladder stops being monotonic and meetsNeeds() finds no
+          // fit at all — every user of that model gets dead-ended into "look at
+          // Team". Anything free is by definition available further up, so carry it.
+          PLANS[prov].forEach(t=>{ if(t.price>0) keys.forEach(k=>{ if(!t.models.includes(k)) t.models.push(k); }); });
+        }
       }
     }
   }
@@ -233,7 +334,8 @@ const LEVELS = [
 /* ---------- questions ---------- */
 const TOOLS = [
   {v:'openai',label:'ChatGPT'},{v:'anthropic',label:'Claude'},
-  {v:'google',label:'Gemini'},{v:'microsoft',label:'Copilot'},{v:'other',label:'Something else'}
+  {v:'google',label:'Gemini'},{v:'microsoft',label:'Copilot'},
+  {v:'deepseek',label:'DeepSeek'},{v:'other',label:'Something else'}
 ];
 const QUESTIONS = [
   {id:'tools',type:'multi',q:'Which AI tools do you use regularly?',help:'Pick all that apply.',options:TOOLS},
@@ -245,7 +347,7 @@ const QUESTIONS = [
     {v:'quick',label:'Quick questions'},{v:'writing',label:'Writing & everyday tasks'},{v:'research',label:'Research & analysis'},{v:'coding',label:'Coding & building'},{v:'agentic',label:'Agents & automation'}]},
   {id:'limits',type:'single',q:'Do you hit usage limits or “try again later” walls?',options:[
     {v:'never',label:'Never'},{v:'rarely',label:'Rarely'},{v:'sometimes',label:'Sometimes'},{v:'often',label:'Often'},{v:'constant',label:'Constantly'}]},
-  {id:'frontier',type:'single',q:'Do you need the smartest models (Claude Opus, GPT-5.5, Gemini Pro), or is the fast default fine?',options:[
+  {id:'frontier',type:'single',q:'Do you need the smartest models (Claude Opus, GPT-5.6 Sol, Gemini 3.1 Pro), or is the fast default fine?',options:[
     {v:'default',label:'The default is fine'},{v:'sometimes',label:'Sometimes I want the best'},{v:'always',label:'I always want the best'}]},
   {id:'media',type:'single',q:'Do you generate images or video, or use voice / advanced features?',options:[
     {v:'no',label:'No'},{v:'occ',label:'Occasionally'},{v:'regular',label:'Regularly'}]},
@@ -274,7 +376,18 @@ const SCORE = {
   media:{no:0,occ:.5,regular:1},
 };
 const MSG_MID={lt5:3,'5to20':12,'20to50':35,'50to150':100,'150plus':200};
-const PURPOSE_TOK={quick:400,writing:1500,research:3000,coding:6000,agentic:10000};
+/* Tokens per message EXCHANGE, mapped onto plan-limits.json `_meta.archetypes`
+   so the Auditor and the pricing page's break-even columns tell the same story.
+   `in` covers the re-sent conversation history plus the platform's hidden system
+   prompt — every turn resends the whole transcript, which is why input dwarfs
+   output. Pricing a chat off the visible text you typed understates the real API
+   bill several-fold, and that error points exactly the wrong way here: it makes
+   pay-per-token look cheaper than the subscription.
+   THESE ARE ASSUMPTIONS, not measurements — the single largest lever on every
+   dollar figure below. Connecting an EcoMeter export replaces them with measured
+   billed-input tokens; the fix for the quiz path is to anchor them to real exports. */
+const ARCHETYPE={ light:{in:1500,out:300}, standard:{in:4000,out:500}, heavy:{in:15000,out:1200} };
+const PURPOSE_TOK={quick:'light',writing:'standard',research:'standard',coding:'heavy',agentic:'heavy'};
 
 function toolsCount(a){ return (a.tools||[]).filter(t=>t!=='other').length || 1; }
 function classify(a){
@@ -304,11 +417,17 @@ function tokenBuckets(pf, only){
   return list;
 }
 // Monthly API $ = sum over each (priceable) model of its own tokens x its own rate x 30.
+// Returns null where the provider publishes no comparable per-token rate (Copilot
+// resells OpenAI models but Microsoft prices none of them), so we don't invent a
+// comparison plan-limits.json explicitly refuses to make.
 function apiCostPerMonth(pf, only){
+  if(LEGACY_ONLY.has(pf.provider)) return null;
   const list=tokenBuckets(pf, only).filter(m=>API[m.key]);
   if(!list.length) return null;
   return list.reduce((s,m)=> s + (m.in*API[m.key].in + m.out*API[m.key].out)*30, 0);
 }
+// A tier "meets needs" on three axes: volume, model access, and — where the
+// provider explicitly sells a limited version of a feature — that feature.
 function meetsNeeds(t,pf,sig){
   const eff=pf.messages_per_day*limitsFactor(sig.hits_limits);
   if(t.cap!=null && eff>t.cap) return false;
@@ -317,25 +436,30 @@ function meetsNeeds(t,pf,sig){
   const known=new Set(); PLANS[pf.provider].forEach(x=>x.models.forEach(m=>known.add(m)));
   const gating=(pf.models_used||[]).filter(m=>known.has(m));
   if(!gating.every(m=>t.models.includes(m))) return false;
+  // Regular image/video work needs a tier that actually includes generation —
+  // otherwise "free covers you" is wrong for anyone whose free tier throttles it.
+  if(sig.media==='regular' && !t.features.includes('image-gen')) return false;
   if(sig.team && t.seats<2) return false;
   return true;
 }
 function profileFor(prov,a,sig){
-  const pm=MODELS[prov], avg=PURPOSE_TOK[a.purpose];
+  const pm=MODELS[prov], arc=ARCHETYPE[PURPOSE_TOK[a.purpose]] || ARCHETYPE.standard;
+  // "I always want the best" only forces a paid tier where the best model IS paid.
+  const assumed = (a.frontier==='default' || TOP_IS_FREE.has(prov)) ? [pm.free] : [pm.top];
   const eco=a._eco && a._eco[prov];   // measured usage from an EcoMeter export
   if(eco){
     const msgs = eco.messages!=null ? eco.messages : MSG_MID[a.messages];
     return { provider:prov, messages_per_day:msgs,
-      input_tokens_per_day:  eco.inTok!=null ? eco.inTok  : Math.round(msgs*avg*0.4),
-      output_tokens_per_day: eco.outTok!=null ? eco.outTok : Math.round(msgs*avg*0.6),
-      models_used: (eco.models && eco.models.length) ? eco.models : (a.frontier==='default'?[pm.free]:[pm.top]),
-      perModel: eco.perModel || null,
+      input_tokens_per_day:  eco.inTok!=null ? eco.inTok  : Math.round(msgs*arc.in),
+      output_tokens_per_day: eco.outTok!=null ? eco.outTok : Math.round(msgs*arc.out),
+      models_used: (eco.models && eco.models.length) ? eco.models : assumed,
+      perModel: eco.perModel || null, measured:true,
       signals:sig };
   }
   const msgs=MSG_MID[a.messages];
   return { provider:prov, messages_per_day:msgs,
-    input_tokens_per_day:Math.round(msgs*avg*0.4), output_tokens_per_day:Math.round(msgs*avg*0.6),
-    models_used: a.frontier==='default'?[pm.free]:[pm.top], perModel:null, signals:sig };
+    input_tokens_per_day:Math.round(msgs*arc.in), output_tokens_per_day:Math.round(msgs*arc.out),
+    models_used: assumed, perModel:null, measured:false, signals:sig };
 }
 function recommend(pf,sig){
   const tiers=PLANS[pf.provider].slice().sort((x,y)=>x.price-y.price);
@@ -374,6 +498,13 @@ function recommend(pf,sig){
     const t=hybrid.tier, labels=hybrid.missing.map(labelModel).join(', ');
     why.push(`Your everyday volume fits ${t.price===0?`the free ${NAME[pf.provider]} tier`:t.m} — you only reach for ${labels} occasionally.`);
     why.push(`Pay per-use via the API for those (~${money(hybrid.apiExtra)}/mo)${t.price>0?` — about ${money(hybrid.total)}/mo all in`:''} versus ${fit.m} at ${money(fit.price)}/mo; you pay only for what you actually run.`);
+    // The API is a floor on value, not the product. Saying "it's cheaper" without
+    // this is upsell copy in reverse — it sells a worse experience on price alone.
+    why.push(`The API isn’t the app: no chat interface, memory, file handling or support, and you wire it up yourself.`);
+    // Our conversation-size assumption is the biggest lever on that API figure. When
+    // the two options land close together it is the assumption deciding, not the maths.
+    if(!pf.measured && Math.abs(hybrid.total-fit.price) < fit.price*0.25)
+      why.push(`Close call — within the margin of our assumption about conversation length. Connect an EcoMeter export to settle it with your real numbers.`);
     if(cur && cur.price>hybrid.total) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-hybrid.total)}/mo</b> (${money((cur.price-hybrid.total)*12)}/yr).`});
     else if(cur && cur.price>0) why.push({save:true, html:`Cheaper than your ${cur.plan} (${money(cur.price)}/mo).`});
     return { head: t.price===0 ? `Drop to free ${NAME[pf.provider]} + pay-as-you-go.`
@@ -382,19 +513,51 @@ function recommend(pf,sig){
 
   let head, cost;
   if(fit.price===0){ head=`Stay on the free ${NAME[pf.provider]} tier.`; cost=0;
-    why.push(`Free covers you — about ${fit.cap} messages/day, and it includes the models you use.`);
+    why.push(capLine(free, `Free covers you`) + ` and it includes the models you use.`);
   } else {
     cost=fit.price;
     why.push(missingFromFree.length ? `Cheapest tier that unlocks ${missingFromFree.map(labelModel).join(', ')} at your volume.`
-                                    : `Cheapest tier above the free tier’s ~${free.cap}/day cap for your volume.`);
+                                    : capLine(free, `More volume than the free tier carries`) + ` so this is the cheapest step up.`);
     head=`${fit.m} — ${money(fit.price)}/mo.`;
+    // Whenever VOLUME pushed you past the cheapest tier that already covers your
+    // models, the number doing the pushing is one nobody publishes. Say so, and
+    // name the tier worth trying first — otherwise we're spending someone's money
+    // on the strength of our own estimate. This fires for the free-tier step up
+    // AND for the far more expensive Pro -> Max style jumps.
+    const modelFit=tiers.find(t=>gating.every(m=>t.models.includes(m)) && !(sig.team && t.seats<2));
+    if(modelFit && modelFit.price<fit.price && fit.capSource!=='disclosed')
+      why.push(`Worth knowing: ${NAME[pf.provider]} doesn’t publish the limits that separate these tiers, so it’s our estimate of your volume — not their figure — putting you above ${modelFit.m}. ${modelFit.price===0?`The free tier already has the models you use`:`${modelFit.m} at ${money(modelFit.price)}/mo already has them`}, so start there and move up only if you actually hit walls — a saving of ${money(fit.price-modelFit.price)}/mo if it holds.`);
   }
   if(cur && cur.price>cost) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — switching saves <b>${money(cur.price-cost)}/mo</b> (${money((cur.price-cost)*12)}/yr).`});
   else if(cur && cur.price<cost) why.push(`You’re on ${cur.plan} (${money(cur.price)}) — below what your usage needs.`);
-  if(sig.media_generation && !(fit.features.includes('image-gen')||fit.features.includes('video-gen')))
+  // Only send someone elsewhere for media if THIS provider genuinely can't do it
+  // at any tier — otherwise we were telling ChatGPT users to go get ChatGPT.
+  const providerDoesMedia = PLANS[pf.provider].some(t=>t.features.includes('image-gen')||t.features.includes('video-gen'));
+  if(sig.media_generation && !providerDoesMedia)
     why.push(`For the images/video you make, add a ChatGPT or Gemini plan — ${NAME[pf.provider]} doesn’t generate them.`);
+  else if(sig.media==='regular' && fit.price>0 && !free.features.includes('image-gen'))
+    why.push(`Part of what you’re paying for is image generation — the free tier throttles it.`);
   if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo` + (fit.price>0 && api<fit.price ? ` — cheaper, if you’re fine without the app.` : `.`));
+  else if(LEGACY_ONLY.has(pf.provider)) why.push(`No API comparison here: Copilot runs on OpenAI models but Microsoft publishes no per-token rate to price it against.`);
+  // DeepSeek has said in writing that a "significant" price rise is coming with no
+  // date attached, and it's the cheapest thing we track by a wide margin — so any
+  // advice that leans on it is leaning on a number its owner has told us will move.
+  if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek says on its own pricing page that it plans to raise prices “significantly”, with no date given. It’s the cheapest provider we track by a wide margin, so that’s the number most likely to move under you.`);
   return { head, why };
+}
+
+/* Message caps are almost never published. Say which kind of number this is
+   rather than presenting all of them as if the provider had told us. */
+function capLine(tier, lead){
+  if(tier.cap==null) return `${lead} — ${tier.capSource==='disclosed'
+    ? `the provider advertises no message limit for normal use`
+    : `no usage figure is published for this tier`} —`;
+  const how = { disclosed:'the provider’s own published figure',
+                third_party:'an outside estimate — the provider publishes nothing',
+                derived:'derived from a published cap and multiplier',
+                estimate:'our estimate — the provider publishes nothing',
+                not_disclosed:'a multiplier against a base nobody publishes' }[tier.capSource] || 'an estimate';
+  return `${lead} — roughly ${tier.cap} messages/day (${how}) —`;
 }
 
 function currentPlans(a){
@@ -452,7 +615,7 @@ function render(){
 
 function finish(){
   const a=state.answers, {level}=classify(a);
-  const sig={ hits_limits:a.limits, media_generation:a.media!=='no', team:a.team==='team',
+  const sig={ hits_limits:a.limits, media:a.media, media_generation:a.media!=='no', team:a.team==='team',
     current_plans:currentPlans(a), priority:a.priority };
   const provs=(a.tools||[]).filter(t=>t!=='other' && PLANS[t]);
   const cards=provs.map(prov=>{
@@ -460,7 +623,12 @@ function finish(){
     const items=r.why.map(w=> typeof w==='string'?`<li>${w}</li>`:`<li class="save">${w.html}</li>`).join('');
     return `<div class="rec"><div class="rec-prov">${NAME[prov]}</div><div class="rec-head">${r.head}</div><ul>${items}</ul></div>`;
   }).join('');
-  const other=(a.tools||[]).includes('other') ? `<p class="disclaimer">We currently audit ChatGPT, Claude, Gemini and Copilot — more tools coming.</p>` : '';
+  const other=(a.tools||[]).includes('other') ? `<p class="disclaimer">We currently audit ChatGPT, Claude, Gemini, Copilot and DeepSeek — more tools coming.</p>` : '';
+  // A connected export replaces the assumed conversation sizes with measured
+  // billed-input tokens, so say which of the two the reader is looking at.
+  const measuredNote = (a._eco && Object.keys(a._eco).length)
+    ? ` — except where your EcoMeter export measured them, which it did here`
+    : ` (connect an EcoMeter export to replace it with your real numbers)`;
   quizEl.classList.add('hidden');
   resultsEl.classList.remove('hidden');
   resultsEl.innerHTML=`
@@ -471,7 +639,7 @@ function finish(){
     </div>
     ${cards || '<p class="level-blurb">Pick at least one tool to get a recommendation.</p>'}
     ${other}
-    <p class="disclaimer">These are estimates from list prices and approximate plan limits, applied to each tool you use — if you split time across tools, your per-tool need is lower. Always confirm current limits on the provider’s site. Nothing you entered left your browser.</p>
+    <p class="disclaimer">Prices are list prices, checked against each provider’s own pricing page. Most message limits are <em>not</em> published — where we show one, we say whether it’s the provider’s figure, an outside estimate, or ours. API comparisons assume typical conversation sizes, which is an assumption, not a measurement, and the biggest lever on every dollar here${measuredNote}. Figures are applied per tool, so if you split time across tools your per-tool need is lower. Confirm current limits on the provider’s site. Nothing you entered left your browser.</p>
     <div class="center"><button class="btn" id="restart">Start over</button></div>`;
   resultsEl.querySelector('#restart').addEventListener('click',()=>{
     state.i=0; state.answers={}; resultsEl.classList.add('hidden'); resultsEl.innerHTML='';
@@ -522,6 +690,7 @@ function applyEcometer(log){
       ? p.model_usage.filter(x=>x&&x.key).map(x=>({key:x.key,
           inTok:billedIn(x)||0, outTok:x.output_tokens_per_day||0}))
       : null }; });
+  const ADVANCED=advancedModels();
   const usesAdvanced=pf.some(p=>(p.models_used||[]).some(m=>ADVANCED.has(m)));
   state.answers.frontier=usesAdvanced?'always':'default';
   state.i=1;               // tools + volume prefilled; continue at frequency

@@ -1,7 +1,7 @@
 {
   "_meta": {
     "comment": "Per-plan usage limits and the assumptions behind the 'break even at' and 'ceiling' columns on pricing.html. Joins to extension/prices.json 'subscriptions' on p + m (exact string match). Rates are NOT stored here — they are read live from prices.json.api at render time, so these figures re-price themselves when API prices change.",
-    "last_verified": "2026-07-28",
+    "last_verified": "2026-08-08",
     "month_days": 30,
     "provenance_legend": {
       "disclosed": "The provider publishes this figure about its own product.",
@@ -9,7 +9,8 @@
       "third_party": "Measured or reported by someone other than the provider. Treat as indicative.",
       "not_disclosed": "The provider does not publish a usable figure."
     },
-    "finding": "As of July 2026, exactly one absolute consumer usage cap is published by any major provider about its own product: OpenAI's 160 GPT-5.5 Instant messages per 3 hours — and it is identical on Go at $8 and Plus at $20, so it does not distinguish the tiers you are choosing between. Every other tier is sold on a relative multiplier against a base nobody quantifies: OpenAI's Pro tiers as '5x/20x higher usage than Plus' (what it multiplies is unstated), Anthropic's Max as '5x/20x more usage than Pro', Google's tiers as '2x/4x/20x higher than standard limits'. Anthropic, Google and OpenAI have all moved to metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' The pattern is consistent: disclosure gets worse as the price goes up.",
+    "finding": "As of August 2026, exactly one absolute consumer usage figure is published by any major provider about its own product, and it is a feature sub-limit rather than a general allowance: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' Nothing else is quantified anywhere. Every tier is sold on a relative multiplier against a base nobody quantifies: OpenAI's Pro tiers as '5x or 20x more usage' than Plus (what it multiplies is unstated), Anthropic's Max as '5x/20x more usage than Pro', Google's tiers as '2x/4x/20x higher than standard limits' — Google's own footnote clarifying the base as 'non-AI subscribers'. Anthropic, Google and OpenAI have all moved to metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' The pattern is consistent: disclosure gets worse as the price goes up.",
+    "disclosure_is_getting_worse": "Between the 2026-07-28 and 2026-08-08 checks, OpenAI DELETED the only general absolute cap anyone published — '160 GPT-5.5 Instant messages per 3 hours', which had applied identically to Go at $8 and Plus at $20. The replacement language is that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind. This is worth re-checking every time this file is verified: the trend is one-directional, and a figure being here today is not evidence it will be next quarter.",
     "archetypes": {
       "comment": "Tokens per message exchange. 'input' covers re-sent conversation history plus the platform's hidden system prompt; 'output' is the reply. THESE ARE ASSUMPTIONS, not measurements — round numbers chosen to be legible, not derived from data. They are the largest single lever on every figure on the page. The intended fix is to anchor them to real EcoMeter usage exports (per-platform input/output tokens per message, which the extension already tracks per model); until that lands, do not describe them as measured. For scale, EcoMeter's own modelled system-prompt overhead alone is 1,500-8,000 tokens per turn depending on platform (PLATFORM_OVERHEAD_TOKENS in extension/sidepanel.js), which is itself an estimate.",
       "light":    { "input": 1500,  "output": 300,  "label": "Short exchanges, little history" },
@@ -37,36 +38,33 @@
     {
       "p": "openai", "m": "ChatGPT Free",
       "provenance": "not_disclosed",
-      "stated": "As of 2026-08-02 the plans page advertises 'Unlimited text chats with GPT-5.6 Luna' — 'subject to abuse guardrails' — alongside limited messages, uploads, image generation and voice. So the headline is now unlimited-on-the-cheapest-model rather than a capped allowance on the default one; the help centre separately describes 'limited GPT-5.5 Instant access within a 5-hour window', with limits that 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. No absolute figure either way.",
+      "stated": "The plans page advertises 'Unlimited text chats with GPT-5.6 Luna' — 'subject to abuse guardrails' — alongside limited messages, uploads, image generation and voice. So the headline is now unlimited-on-the-cheapest-model rather than a capped allowance on the default one. Luna is mid-rollout as the Free/Go default, replacing GPT-5.5 Instant, which stays available under 'limited GPT-5.5 Instant access within a 5-hour window' with limits that 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. No absolute figure either way. Free gets no GPT-5.6 Sol at any reasoning level; its Think button runs Luna.",
       "value_models": { "low": "gpt-5.6-luna", "high": "gpt-5.5" },
       "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-08"
     },
     {
       "p": "openai", "m": "ChatGPT Go",
       "provenance": "disclosed",
       "caps": [
-        { "n": 160, "unit": "messages", "window": "3h", "scope": "GPT-5.5 Instant", "soft": true,
-          "note": "Not a hard stop — chats switch to GPT-5.5 Instant mini until the limit resets." },
-        { "n": 10, "unit": "messages", "window": "5h", "scope": "Thinking", "soft": false }
+        { "n": 10, "unit": "messages", "window": "5h", "scope": "Thinking", "soft": false, "scope_limited": true,
+          "note": "Enabled via + then Thinking. Explicitly does NOT use GPT-5.6 Sol. scope_limited: this bounds ONE FEATURE, not the plan — ordinary Go chat is advertised as unlimited on Luna, so a ceiling computed from this figure would sit far below what Go is actually worth. Consumers must refuse it the same way they refuse an undisclosed multiplier base." }
       ],
-      "binding": "3h",
+      "binding": "5h",
+      "stated": "The only absolute figure OpenAI still publishes for a consumer tier: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' Everything else is 'more messages' than Free. Go also now carries ads.",
       "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.5" },
       "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-08",
+      "note": "REMOVED 2026-08-08: a '160 GPT-5.5 Instant messages / 3h' cap, previously recorded here as disclosed for both Go and Plus. OpenAI's help article no longer states any absolute Instant figure — it now says only that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. It was the single disclosed absolute this whole file rested on, and it is gone."
     },
     {
       "p": "openai", "m": "ChatGPT Plus",
-      "provenance": "disclosed",
-      "caps": [
-        { "n": 160, "unit": "messages", "window": "3h", "scope": "GPT-5.5 Instant", "soft": true,
-          "note": "Not a hard stop — chats switch to GPT-5.5 Instant mini until the limit resets." }
-      ],
-      "binding": "3h",
+      "provenance": "not_disclosed",
+      "stated": "'Expanded messages and uploads' over Go, and 'Limits apply'. No absolute figure. The '160 GPT-5.5 Instant messages / 3h' cap recorded here until 2026-08-08 is no longer published — see the note on ChatGPT Go. Plus is now the most expensive consumer tier of any provider with no published usage figure of any kind.",
       "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.6-sol" },
-      "note": "Plus includes GPT-5.6 Sol at Medium and High reasoning but not Extra High or Pro, which are Pro-only. Free and Go get no Sol access at all.",
+      "note": "Plus includes GPT-5.6 Sol at Medium and High reasoning but not Extra High or Pro, which are Pro-only. Free and Go get no Sol access at all, at any reasoning level. If a Sol reasoning limit is reached, ChatGPT falls back to GPT-5.4 Thinking mini rather than stopping.",
       "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-08"
     },
     {
       "p": "openai", "m": "ChatGPT Pro",
