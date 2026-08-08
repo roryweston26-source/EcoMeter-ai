@@ -2,7 +2,7 @@
   "_meta": {
     "comment": "What each provider actually offers students and teachers, and how well it is disclosed. Read by audit.html when the user says they're a student or teacher. Joins to extension/prices.json 'subscriptions' on 'p'. Same standard as plan-limits.json: 'not offered' is a finding, and an unverifiable claim is recorded as unverifiable rather than repeated.",
     "last_verified": "2026-08-08",
-    "finding": "Almost none of the “AI student discounts” you'll read about are offers you can actually sign up for. Of the eight providers we track, exactly one publishes a student price on its own pricing page — Mistral, at $5.99/mo. Two of the biggest, OpenAI and Anthropic, offer individual students nothing; what they have is institutional, bought by your university, and invisible to you unless someone tells you. So the highest-value thing you can do isn't comparing plans at all. It's asking your own university IT desk or library whether the school already pays for one of these. That question is free, takes a minute, and routinely goes unasked.",
+    "finding": "Almost none of the “AI student discounts” you'll read about are offers you can actually sign up for. Of the eight providers we track, exactly one publishes a student price on its own pricing page — Mistral, at $5.99/mo. OpenAI and Anthropic offer individual students nothing; what they have is institutional, bought by your university and invisible to you unless someone tells you. And Google's famous free year for students closed on 30 April 2026, which almost nothing on the internet has noticed — search results still describe it as if you can claim it today. So the highest-value thing you can do isn't comparing plans at all. It's asking your own university IT desk or library whether the school already pays for one of these. That question is free, takes a minute, and routinely goes unasked.",
     "why_no_partner_directory": "We deliberately do NOT ship a list of partner universities presented as complete, because no provider publishes one. Anthropic's higher-education page shows nine institution logos with no terms, no directory and no way to check membership; Syracuse's own announcement describes itself as 'one of the first universities', so the set is growing and any snapshot is stale on arrival. A partial list rendered as authoritative would tell a student whose school is absent that they cannot get access — the opposite of true, and the exact failure this project exists to prevent. The named institutions below are labelled as examples and must never be rendered as a lookup.",
     "provenance_legend": {
       "disclosed": "The provider publishes this on its own site. Safe to state as fact.",
@@ -13,6 +13,7 @@
     },
     "caveats": [
       "Verified from provider-owned pages only. Third-party 'student discount' blogs were checked and rejected: several quote Google AI Pro at $28.99/mo when Google's own page says $19.99, and every site claiming a Claude coupon code is selling something.",
+      "EXPIRED OFFERS OUTLIVE THEMSELVES, and this is the main way a page like this goes wrong. Google's free 12-month student trial closed on 2026-04-30, yet search results, AI summaries and the entire discount-blog genre still describe it in the present tense — it is the single most confidently-repeated false claim in this area. When re-verifying, do not ask 'does an offer exist'; ask 'what is the redemption deadline, and has it passed'. A snippet with no date attached is worthless here.",
       "Offers are regional and change without notice. Everything here carries an as_of date; treat anything older than a month or two as needing a re-check.",
       "Absence of a route here means we could not verify one, not that none can possibly exist — particularly for institutional programmes, which are announced per-campus and not centrally listed."
     ]
@@ -40,11 +41,11 @@
     },
     {
       "p": "google",
-      "provenance": "unverified",
-      "headline": "A student rate is widely reported — we could not confirm it.",
-      "detail": "Google's student offer page requires signing in, so we could not read the terms on a Google-owned page. The third-party write-ups describing it disagree with Google's own pricing page on the basic price, which makes them unreliable on the discount too. We are not going to repeat a number we cannot check.",
-      "action": "Sign in to Google's student page yourself with your .edu address and read the actual terms. If a rate exists it is likely the best value here, since AI Plus is already only $4.99/mo.",
-      "source": "https://one.google.com/join/students",
+      "provenance": "none",
+      "headline": "The famous free student year has expired — you'll still be told it exists.",
+      "detail": "Google ran a 12-month Google AI Pro trial at no cost for SheerID-verified students, and it is the offer nearly every “student discount” article still describes. Google's own terms pages give its deadlines: 9 December 2025 for the international offer, and 30 April 2026 for the US one. Both have passed. Google's current AI plans page and its current “Get a Google AI Pro membership” help page mention no student offer at all. We could not confirm any replacement rate on a Google-owned page — Google's student landing page sits behind a sign-in.",
+      "action": "Don't spend time hunting for the free year. If you want to be certain, sign in at one.google.com/ai-student with your student address — that's the only page that shows what, if anything, you're currently offered. Note AI Plus is $4.99/mo anyway, which is cheaper than most student rates elsewhere.",
+      "source": "https://one.google.com/offer/studentoffer6",
       "as_of": "2026-08-08"
     },
     {
