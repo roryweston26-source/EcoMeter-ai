@@ -81,8 +81,40 @@ const chk = (k, i, o) => {
 for (const m of up.matchAll(/'([\w.\-]+)':\s*\{ input: perM\(([\d.]+)\),\s*output: perM\(([\d.]+)\)/g)) chk(m[1], +m[2], +m[3]);
 for (const m of up.matchAll(/\['([\w.\-]+)',\s*([\d.]+),\s*([\d.]+)\]/g)) chk(m[1], +m[2], +m[3]);
 
+// 7. Promotional rates must not outlive their expiry.
+//
+//    Sonnet 5 nearly taught this the expensive way: an introductory rate with a
+//    published end date sat in `caveats` as prose, so nothing could check it, and
+//    the only thing standing between us and a wrong price on 1 September was a
+//    human remembering. Google then put two Flash models on a dated promo three
+//    weeks later, so this is a recurring shape, not a one-off.
+//
+//    A promoted model carries { until, standard:{input,output} }. Past `until`,
+//    this fails and tells you the number to write — no going back to the provider
+//    to find out what the rate reverts to, which is how the data rots.
+const today = new Date().toISOString().slice(0, 10);
+let promos = 0;
+for (const [prov, m] of Object.entries(p.api)) {
+  for (const [k, v] of Object.entries(m)) {
+    if (!v.promo) continue;
+    promos++;
+    const { until, standard } = v.promo;
+    if (!until || !standard || standard.input == null || standard.output == null) {
+      fail('promo block on ' + k + ' must carry { until, standard:{input,output} }');
+      continue;
+    }
+    if (Math.abs(standard.input - v.input) < 1e-12 && Math.abs(standard.output - v.output) < 1e-12)
+      fail('promo on ' + k + ' matches the standard rate — it is not a promotion');
+    if (until < today)
+      fail('PROMO EXPIRED ' + until + ': ' + k + ' must revert to $' +
+           standard.input * 1e6 + '/$' + standard.output * 1e6 + ' per 1M (currently $' +
+           v.input * 1e6 + '/$' + v.output * 1e6 + '), and the promo block removed');
+  }
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)'
-  : '\nALL CHECKS PASS — ' + Object.keys(all).length + ' models priced, ' + shown.length +
+  : '\nALL CHECKS PASS — ' + Object.keys(all).length + ' models priced, ' + promos +
+    ' on promotional rates, ' + shown.length +
     ' shown, ' + Object.values(all).filter(x => x.long).length + ' with long-context tiers, ' + L.plans.length + ' plans');
 process.exit(bad ? 1 : 0);

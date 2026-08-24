@@ -53,7 +53,7 @@ async function fetchGoogle() {
     // Verified 2026-07-28 against ai.google.dev + cloud.google.com/vertex-ai.
     // These are SHORT-CONTEXT rates; 3.1 Pro and 2.5 Pro roughly double above
     // 200k prompt tokens (see _meta.caveats._short_context_only in prices.json).
-    ['gemini-3.6-flash',        1.50,   7.50],
+    ['gemini-3.6-flash',        0.75,   3.75],
     ['gemini-3.5-flash',        1.50,   9.00],
     ['gemini-3.5-flash-lite',   0.30,   2.50],
     ['gemini-3-flash-preview',  0.50,   3.00],
@@ -91,8 +91,10 @@ async function fetchAnthropic() {
   const prices = {
     'claude-haiku-4-5-20251001': { input: perM(1.00),  output: perM(5.00)  },
     'claude-haiku':              { input: perM(1.00),  output: perM(5.00)  },
-    // Sonnet 5 is on Anthropic's introductory rate ($2/$10) through 2026-08-31;
-    // it reverts to $3/$15 after that — re-check this line then.
+    // Sonnet 5 launched at an introductory $2/$10 listed through 2026-08-31.
+    // Anthropic has since made that the STANDARD rate and cancelled the scheduled
+    // 2026-09-01 rise to $3/$15 (its pricing page, checked 2026-08-24). Nothing to
+    // re-check here — the date passing is no longer an event.
     'claude-sonnet-5':           { input: perM(2.00),  output: perM(10.00) },
     'claude-sonnet-4-6':         { input: perM(3.00),  output: perM(15.00) },
     'claude-sonnet-4-5':         { input: perM(3.00),  output: perM(15.00) },
@@ -134,7 +136,7 @@ async function fetchOpenAI() {
   // SHORT-CONTEXT rates — the long-context column is roughly double and applies
   // to every token in the request (see _meta.caveats._short_context_only).
   const prices = {
-    'gpt-5.6-sol':  { input: perM(5.00),   output: perM(30.00)  },
+    'gpt-5.6-sol':  { input: perM(4.00),   output: perM(20.00)  },
     'gpt-5.6-terra':{ input: perM(2.00),   output: perM(12.00)  },
     'gpt-5.6-luna': { input: perM(0.20),   output: perM(1.20)   },
     'gpt-5.5':     { input: perM(5.00),   output: perM(30.00)  },

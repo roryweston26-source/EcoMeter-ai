@@ -69,6 +69,7 @@
   },
 
   "google": {
+    "gemini-3.7-flash":      { "tier": "medium" },
     "gemini-3.6-flash":      { "tier": "medium" },
     "gemini-3.5-flash":      { "tier": "medium" },
     "gemini-3.5-flash-lite": { "tier": "tiny"   },
@@ -82,6 +83,7 @@
 
   "xai": {
     "grok-4":      { "tier": "large"  },
+    "grok-4.6":    { "tier": "large"  },
     "grok-4.5":    { "tier": "large"  },
     "grok-4.3":    { "tier": "large"  },
     "grok-4.20":   { "tier": "large"  },

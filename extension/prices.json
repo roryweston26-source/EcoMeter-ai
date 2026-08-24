@@ -1,17 +1,19 @@
 {
   "_meta": {
     "comment": "Shared data for the EcoMeter extension and the Legerly pricing page. 'api' = per-token USD (input/output). 'subscriptions' = consumer plan $/month. 'free_tiers' = which models each platform's FREE plan exposes (drives the extension model picker). To update prices, edit the numbers here.",
-    "last_updated": "2026-08-02",
+    "last_updated": "2026-08-24",
     "version": "6.12",
     "source": "Official provider pricing pages + free-tier availability",
-    "verified": "2026-08-02 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com/docs/pricing, ai.google.dev/gemini-api/docs/pricing, docs.x.ai/docs/models, api-docs.deepseek.com/quick_start/pricing, mistral.ai/pricing/api, docs.perplexity.ai/getting-started/pricing. Only OpenAI had moved since 2026-07-28: gpt-5.6-terra $2.50/$15 -> $2/$12 and gpt-5.6-luna $1/$6 -> $0.20/$1.20, with long-context rates cut in step. Anthropic, Google, xAI, DeepSeek, Mistral and Perplexity were unchanged.",
+    "verified": "2026-08-24 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com/docs/pricing, ai.google.dev/gemini-api/docs/pricing, docs.x.ai/docs/models, api-docs.deepseek.com/quick_start/pricing, mistral.ai/pricing, docs.perplexity.ai/getting-started/pricing, plus the consumer plan pages openai.com/chatgpt/pricing, claude.com/pricing, gemini.google/subscriptions and x.ai/pricing. FOUR providers had moved since 2026-08-02. OpenAI cut gpt-5.6-sol $5/$30 -> $4/$20 (long $10/$45 -> $8/$30). Google put 3.6 Flash and the new 3.7 Flash on a half-price promotional rate through 2026-12-31. DeepSeek's warned increase LANDED: v4-flash and v4-pro are now 3x-4.5x their previous rates and are metered peak/off-peak by clock time. Anthropic made Sonnet 5's introductory $2/$10 permanent. xAI shipped Grok 4.6 and a new SuperGrok Plus tier. Mistral, Perplexity and Microsoft were unchanged.",
     "caveats": {
-      "claude-sonnet-5": "$2/$10 per 1M is Anthropic's introductory rate, listed through 2026-08-31. Standard rate is $3/$15 — re-check after that date.",
+      "claude-sonnet-5": "$2/$10 per 1M is now the STANDARD rate. It launched as an introductory rate through 2026-08-31, and Anthropic's pricing page states the scheduled 2026-09-01 rise to $3/$15 will not occur. Resolved 2026-08-24 — no action needed at the end of August.",
       "_long_context": "'input'/'output' are the SHORT-CONTEXT rates. Where a provider charges more past a context threshold, the optional 'long' block holds { over, input, output }: 'over' is the INPUT-token count at which the higher rate starts, and that rate then applies to ALL tokens in the request, not just the excess. Thresholds are OpenAI >272k (per the tooltip on developers.openai.com/docs/pricing), Google >200k, xAI >=200k. Anthropic does not tier this way and has no 'long' block. A consumer that ignores 'long' silently undercounts long conversations by roughly 2x — which is the OPPOSITE direction to the unmodelled prompt-caching discount, so the two do not cancel out.",
       "_perplexity_request_fees": "Sonar token rates are correct but they are not the whole bill. Perplexity also charges $5-$14 per 1,000 requests depending on model and search-context size. For chat-shaped usage that per-request fee typically exceeds the token cost, so any Perplexity figure derived from this file is a substantial UNDERCOUNT.",
       "_claude_tokenizer": "Anthropic states that Claude 4.7 and later (Opus 4.7/4.8/5, Sonnet 5, Fable 5, Mythos 5) use a newer tokenizer producing approximately 30% more tokens for the same text than Sonnet 4.6 and earlier. Identical text is therefore NOT an identical token count across providers or across Claude generations. Any cross-model cost comparison built on a fixed token count understates these models by roughly a third.",
       "_legacy_keys": "grok-4 / grok-3 / grok-3-mini, deepseek-v3 / deepseek-r1, mistral-medium-3 / mistral-small-3 and the o1 / gpt-4 / gpt-4-turbo family are no longer listed on their providers' current pricing pages. They are retained at last-known rates because they remain selectable in the extension's model picker; treat those numbers as historical, not current.",
-      "_deepseek_increase_warned": "DeepSeek's own pricing page states (as of 2026-08-02): 'We plan to raise the overall pricing for DeepSeek API services in the near future, with a significant increase expected.' No date or figures given. DeepSeek is currently the cheapest provider tracked here by a wide margin, so anything that leans on that — the Auditor's downgrade advice especially — should be re-checked when it lands.",
+      "_deepseek_increase_landed": "The increase DeepSeek warned about has HAPPENED, found 2026-08-24. v4-flash went $0.14/$0.28 -> $0.44/$1.32 and v4-pro $0.435/$0.87 -> $1.32/$3.96 (peak rates): roughly 3x on input and 4.5x on output. DeepSeek is still the cheapest provider tracked, but by a far narrower margin, and the Auditor's downgrade advice leaned on the old numbers hardest.",
+      "_deepseek_peak_offpeak": "DeepSeek now meters by CLOCK TIME, which no other provider here does. Peak hours are 01:00-04:00 and 06:00-10:00 UTC Monday-Friday; every other hour is off-peak at half price. The rates stored above are the PEAK (undiscounted) rates, deliberately: off-peak is a discount you only get if your usage happens to fall outside a window you do not control, and quoting the cheap rate would understate the cost of the exact advice this project is most likely to give — 'drop your paid plan and pay per token'. Off-peak is exactly half of every figure stored.",
+      "_promotional_rates": "Some rates above are time-limited promotions, not standing prices, and they carry a machine-readable 'promo' block: { until, standard: { input, output } }. scripts/check-prices.js fails once 'until' is in the past, so an expired promo cannot quietly become a wrong price the way it nearly did with Sonnet 5. Currently: gemini-3.7-flash and gemini-3.6-flash are half price through 2026-12-31, reverting to $1.50/$7.50. Record the standard rate at the time you record the promo — going back to find it after expiry is how this data rots.",
       "_anthropic_fast_mode": "Anthropic added a Fast mode (research preview) billing Opus 5 / Opus 4.8 at $10/$50 per 1M instead of $5/$25. Not modelled: it is an opt-in API service tier, like batch or caching, not the default rate a consumer pays. OpenAI renamed its equivalent 'priority' tier to 'Fast mode' on 2026-07-30; also not modelled.",
       "deepseek-reasoner": "DeepSeek's API aliases (deepseek-chat, deepseek-reasoner) track whichever model is current rather than a fixed version. Priced here as v4-flash and v4-pro respectively, which is an inference from DeepSeek's current lineup, not a published mapping."
     }
@@ -39,7 +41,7 @@
       "gpt-4.1": { "input": 2e-06, "output": 8e-06 },
       "gpt-4.1-mini": { "input": 4e-07, "output": 1.6e-06 },
       "gpt-4.1-nano": { "input": 1e-07, "output": 4e-07 },
-      "gpt-5.6-sol": { "input": 5e-06, "output": 3e-05, "long": { "over": 272000, "input": 0.00001, "output": 0.000045 } },
+      "gpt-5.6-sol": { "input": 4e-06, "output": 2e-05, "long": { "over": 272000, "input": 0.000008, "output": 0.00003 } },
       "gpt-5.6-terra": { "input": 2e-06, "output": 1.2e-05, "long": { "over": 272000, "input": 0.000004, "output": 0.000018 } },
       "gpt-5.6-luna": { "input": 2e-07, "output": 1.2e-06, "long": { "over": 272000, "input": 4e-07, "output": 0.0000018 } },
       "gpt-5.5": { "input": 5e-06, "output": 3e-05, "long": { "over": 272000, "input": 0.00001, "output": 0.000045 } },
@@ -56,7 +58,8 @@
       "gpt-4": { "input": 3e-05, "output": 6e-05 }
     },
     "google": {
-      "gemini-3.6-flash": { "input": 1.5e-06, "output": 7.5e-06 },
+      "gemini-3.7-flash": { "input": 7.5e-07, "output": 3.75e-06, "promo": { "until": "2026-12-31", "standard": { "input": 1.5e-06, "output": 7.5e-06 } } },
+      "gemini-3.6-flash": { "input": 7.5e-07, "output": 3.75e-06, "promo": { "until": "2026-12-31", "standard": { "input": 1.5e-06, "output": 7.5e-06 } } },
       "gemini-3.5-flash": { "input": 1.5e-06, "output": 9e-06 },
       "gemini-3.5-flash-lite": { "input": 3e-07, "output": 2.5e-06 },
       "gemini-3-flash-preview": { "input": 5e-07, "output": 3e-06 },
@@ -67,6 +70,7 @@
       "gemini-2.5-flash-lite": { "input": 1e-07, "output": 4e-07 }
     },
     "xai": {
+      "grok-4.6": { "input": 2e-06, "output": 6e-06, "long": { "over": 200000, "input": 0.000004, "output": 0.000012 } },
       "grok-4.5": { "input": 2e-06, "output": 6e-06, "long": { "over": 200000, "input": 0.000004, "output": 0.000012 } },
       "grok-4.3": { "input": 1.25e-06, "output": 2.5e-06, "long": { "over": 200000, "input": 0.0000025, "output": 0.000005 } },
       "grok-4.20": { "input": 1.25e-06, "output": 2.5e-06, "long": { "over": 200000, "input": 0.0000025, "output": 0.000005 } },
@@ -90,8 +94,8 @@
       "sonar-reasoning-pro": { "input": 2e-06, "output": 8e-06 }
     },
     "deepseek": {
-      "deepseek-v4-flash": { "input": 1.4e-07, "output": 2.8e-07 },
-      "deepseek-v4-pro": { "input": 4.35e-07, "output": 8.7e-07 },
+      "deepseek-v4-flash": { "input": 4.4e-07, "output": 1.32e-06 },
+      "deepseek-v4-pro": { "input": 1.32e-06, "output": 3.96e-06 },
       "deepseek-v3": { "input": 1.4e-07, "output": 2.8e-07 },
       "deepseek-r1": { "input": 5.5e-07, "output": 2.19e-06 },
       "deepseek-chat": { "input": 1.4e-07, "output": 2.8e-07 },
@@ -113,12 +117,13 @@
     { "p": "google", "m": "Gemini (Free)", "price": 0 },
     { "p": "google", "m": "Google AI Plus", "price": 4.99 },
     { "p": "google", "m": "Google AI Pro", "price": 19.99 },
-    { "p": "google", "m": "Google AI Ultra", "price": 99.99, "note": "5× Pro limits" },
-    { "p": "google", "m": "Google AI Ultra (20×)", "price": 200 },
+    { "p": "google", "m": "Google AI Ultra", "price": 99.99, "note": "5× Pro limits — stated on gemini.google/subscriptions" },
+    { "p": "google", "m": "Google AI Ultra (20×)", "price": 199.99 },
 
     { "p": "xai", "m": "Grok (Free)", "price": 0 },
     { "p": "xai", "m": "SuperGrok Lite", "price": 10 },
     { "p": "xai", "m": "SuperGrok", "price": 30, "note": "X Premium+ bundle: $40/mo" },
+    { "p": "xai", "m": "SuperGrok Plus", "price": 100, "note": "New tier, live on x.ai/pricing by 2026-08-24" },
     { "p": "xai", "m": "SuperGrok Heavy", "price": 300 },
 
     { "p": "perplexity", "m": "Perplexity Free", "price": 0 },
@@ -129,7 +134,7 @@
     { "p": "microsoft", "m": "Microsoft 365 Premium", "price": 19.99, "note": "Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
 
     { "p": "mistral", "m": "Le Chat Free", "price": 0 },
-    { "p": "mistral", "m": "Le Chat Pro", "price": 14.99, "note": "$5.99/mo for students" },
+    { "p": "mistral", "m": "Le Chat Pro", "price": 14.99, "note": "$5.99/mo for students. Mistral now brands the product \"Vibe\" — plan key kept as the cross-file join." },
 
     { "p": "deepseek", "m": "DeepSeek (Free)", "price": 0, "note": "No paid consumer tier — chat is free" }
   ],
@@ -145,26 +150,25 @@
     },
     "openai": {
       "label": "ChatGPT",
-      "note": "Free plan: unlimited text chats on GPT-5.6 Luna (subject to abuse guardrails), which is replacing GPT-5.5 Instant as the default mid-rollout; GPT-5.5 Instant access stays limited within a 5-hour window. Free and Go get NO GPT-5.6 Sol at any reasoning level — stated three times in OpenAI's own help article. Verified 2026-08-08 against openai.com/chatgpt/pricing and help.openai.com article 11909943.",
+      "note": "Free plan: unlimited text chats on GPT-5.6 Luna (subject to abuse guardrails), plus Thinking Mini. GPT-5.5 has now FINISHED leaving the free tier — openai.com/chatgpt/pricing files it under \"Legacy models\" (Free: No, Go: No) and the Free Tier FAQ, updated 2026-08-13, lists only Luna. On 2026-08-08 that rollout was still in progress; it has completed. Free and Go get NO GPT-5.6 Sol at any reasoning level, and Terra only inside Work/Codex on desktop. Verified 2026-08-24.",
       "models": [
         { "key": "gpt-5.6-luna", "name": "GPT-5.6 Luna", "note": "default, unlimited*" },
-        { "key": "gpt-5.5", "name": "GPT-5.5 Instant", "note": "limited, 5h window" },
-        { "key": "gpt-5.4-mini", "name": "GPT-5.4 Thinking mini", "note": "Think" }
+        { "key": "gpt-5.4-mini", "name": "GPT-5 Thinking Mini", "note": "Think" }
       ]
     },
     "google": {
       "label": "Gemini",
-      "note": "Free app: Gemini 3.5 Flash default, limited daily Gemini 3 Pro.",
+      "note": "Free app: Gemini 3.6 Flash default, varying access to Gemini 3.1 Pro. Verified 2026-08-24 on gemini.google/subscriptions.",
       "models": [
-        { "key": "gemini-3.5-flash", "name": "Gemini 3.5 Flash", "note": "default" },
+        { "key": "gemini-3.6-flash", "name": "Gemini 3.6 Flash", "note": "default" },
         { "key": "gemini-3.1-pro-preview", "name": "Gemini 3 Pro", "note": "limited daily" }
       ]
     },
     "xai": {
       "label": "Grok",
-      "note": "Free serves a capped lighter Grok variant; priced here at flagship Grok 4.3 (upper bound).",
+      "note": "Free app runs Grok 4.6 — x.ai/pricing ticks Grok 4.6 in every column including Free, so xAI gates on rate limits, not model access. Verified 2026-08-24.",
       "models": [
-        { "key": "grok-4.3", "name": "Grok 4.3", "note": "flagship rate" }
+        { "key": "grok-4.6", "name": "Grok 4.6", "note": "rate-limited" }
       ]
     },
     "mistral": {
@@ -193,9 +197,9 @@
     },
     "microsoft": {
       "label": "Copilot",
-      "note": "Copilot resells OpenAI — free tier runs GPT-5.5.",
+      "note": "Copilot resells OpenAI, but Microsoft publishes no model mapping for any consumer tier. Priced against GPT-5.5 as a stand-in only — not a disclosed mapping, and no API-equivalent cost is quoted for Copilot anywhere in the product.",
       "models": [
-        { "key": "gpt-5.5", "name": "Copilot (GPT-5.5)" }
+        { "key": "gpt-5.5", "name": "Copilot (model not disclosed)" }
       ]
     }
   }
