@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "comment": "What each provider actually offers students and teachers, and how well it is disclosed. Read by audit.html when the user says they're a student or teacher. Joins to extension/prices.json 'subscriptions' on 'p'. Same standard as plan-limits.json: 'not offered' is a finding, and an unverifiable claim is recorded as unverifiable rather than repeated.",
+    "last_verified": "2026-08-08",
+    "finding": "Almost none of the “AI student discounts” you'll read about are offers you can actually sign up for. Of the eight providers we track, exactly one publishes a student price on its own pricing page — Mistral, at $5.99/mo. OpenAI and Anthropic offer individual students nothing; what they have is institutional, bought by your university and invisible to you unless someone tells you. And Google's famous free year for students closed on 30 April 2026, which almost nothing on the internet has noticed — search results still describe it as if you can claim it today. So the highest-value thing you can do isn't comparing plans at all. It's asking your own university IT desk or library whether the school already pays for one of these. That question is free, takes a minute, and routinely goes unasked.",
+    "why_no_partner_directory": "We deliberately do NOT ship a list of partner universities presented as complete, because no provider publishes one. Anthropic's higher-education page shows nine institution logos with no terms, no directory and no way to check membership; Syracuse's own announcement describes itself as 'one of the first universities', so the set is growing and any snapshot is stale on arrival. A partial list rendered as authoritative would tell a student whose school is absent that they cannot get access — the opposite of true, and the exact failure this project exists to prevent. The named institutions below are labelled as examples and must never be rendered as a lookup.",
+    "provenance_legend": {
+      "disclosed": "The provider publishes this on its own site. Safe to state as fact.",
+      "institutional": "Real, but bought by an institution — an individual cannot purchase or claim it.",
+      "unverified": "Widely reported, but we could not confirm it on a provider-owned page. Never state as fact.",
+      "paused": "Existed and is currently not being granted.",
+      "none": "We checked and there is no offer. This is a finding, not a gap."
+    },
+    "caveats": [
+      "Verified from provider-owned pages only. Third-party 'student discount' blogs were checked and rejected: several quote Google AI Pro at $28.99/mo when Google's own page says $19.99, and every site claiming a Claude coupon code is selling something.",
+      "EXPIRED OFFERS OUTLIVE THEMSELVES, and this is the main way a page like this goes wrong. Google's free 12-month student trial closed on 2026-04-30, yet search results, AI summaries and the entire discount-blog genre still describe it in the present tense — it is the single most confidently-repeated false claim in this area. When re-verifying, do not ask 'does an offer exist'; ask 'what is the redemption deadline, and has it passed'. A snippet with no date attached is worthless here.",
+      "Offers are regional and change without notice. Everything here carries an as_of date; treat anything older than a month or two as needing a re-check.",
+      "Absence of a route here means we could not verify one, not that none can possibly exist — particularly for institutional programmes, which are announced per-campus and not centrally listed."
+    ]
+  },
+
+  "routes": [
+    {
+      "p": "openai",
+      "provenance": "none",
+      "teacher_offer": true,
+      "headline": "No student discount for individuals.",
+      "detail": "OpenAI's pricing FAQ names only two education programmes and neither is a consumer discount: ChatGPT for Teachers, free for verified U.S. K-12 educators through June 2027, and ChatGPT Edu, which universities buy for their campus. There is no reduced individual rate on Go, Plus or Pro.",
+      "action": "If your university has bought ChatGPT Edu you may already have access through your student account — worth checking with IT before paying for Plus.",
+      "source": "https://openai.com/chatgpt/pricing/",
+      "as_of": "2026-08-08"
+    },
+    {
+      "p": "anthropic",
+      "provenance": "institutional",
+      "headline": "Nothing for individuals; free Pro-level access at partner universities.",
+      "detail": "Claude for Education gives students and staff at partner institutions access their university has arranged. It cannot be bought or claimed individually, and Anthropic publishes no directory of participating schools — only a handful of logos. Claude Pro is $20/mo, or $17/mo billed annually, for everyone else.",
+      "action": "Ask your university IT or library whether they have Claude for Education. It is the only way to find out, and it costs nothing to ask.",
+      "source": "https://claude.com/solutions/education",
+      "as_of": "2026-08-08"
+    },
+    {
+      "p": "google",
+      "provenance": "none",
+      "headline": "The famous free student year has expired — you'll still be told it exists.",
+      "detail": "Google ran a 12-month Google AI Pro trial at no cost for SheerID-verified students, and it is the offer nearly every “student discount” article still describes. Google's own terms pages give its deadlines: 9 December 2025 for the international offer, and 30 April 2026 for the US one. Both have passed. Google's current AI plans page and its current “Get a Google AI Pro membership” help page mention no student offer at all. We could not confirm any replacement rate on a Google-owned page — Google's student landing page sits behind a sign-in.",
+      "action": "Don't spend time hunting for the free year. If you want to be certain, sign in at one.google.com/ai-student with your student address — that's the only page that shows what, if anything, you're currently offered. Note AI Plus is $4.99/mo anyway, which is cheaper than most student rates elsewhere.",
+      "source": "https://one.google.com/offer/studentoffer6",
+      "as_of": "2026-08-08"
+    },
+    {
+      "p": "microsoft",
+      "provenance": "paused",
+      "headline": "Copilot via the GitHub Student Pack — currently paused.",
+      "detail": "The GitHub Student Developer Pack has historically included GitHub Copilot for verified students. As of this check new sign-ups are 'temporarily paused', and the included tier is standard Copilot rather than Copilot Pro.",
+      "action": "Worth re-checking if you code — verification is free and the pack carries a lot besides Copilot. Many universities also include Microsoft 365 for students at no cost.",
+      "source": "https://education.github.com/pack",
+      "as_of": "2026-08-08"
+    },
+    {
+      "p": "deepseek",
+      "provenance": "none",
+      "headline": "No student discount, because there's nothing to discount.",
+      "detail": "DeepSeek has no paid consumer tier — the web chat is free for everyone, with fair-use throttling. Note DeepSeek has said it plans to raise prices significantly, though that concerns its API rather than the free chat.",
+      "action": "Nothing to do. If cost is your main constraint this is already the cheapest capable option available to you.",
+      "as_of": "2026-08-08"
+    },
+    {
+      "p": "mistral",
+      "provenance": "disclosed",
+      "not_audited": true,
+      "headline": "$5.99/mo for students — the only student price published on any provider's own pricing page.",
+      "detail": "Le Chat Pro is $14.99/mo normally and Mistral states a student rate of $5.99/mo directly on its pricing page. We don't yet audit Mistral, so we can't tell you whether it fits your usage — but it is the one verified student discount among everything we track.",
+      "action": "If you're paying $20/mo elsewhere mainly for general chat, this is worth twenty minutes of your time to try.",
+      "source": "https://mistral.ai/pricing",
+      "as_of": "2026-08-08"
+    }
+  ],
+
+  "partner_institutions": {
+    "not_exhaustive": true,
+    "note": "These are institutions named publicly in connection with Claude for Education. Anthropic publishes no complete list, schools are added over time, and terms differ per campus. Your school being absent from this list means nothing at all — ask them.",
+    "named": [
+      "University of San Francisco",
+      "London School of Economics",
+      "Northeastern University",
+      "Champlain College",
+      "Northumbria University",
+      "Syracuse University",
+      "Dartmouth College",
+      "University of Virginia",
+      "University of Pittsburgh"
+    ],
+    "also": "Anthropic has a separate partnership with CodePath, which reaches students at community colleges, state schools and HBCUs.",
+    "source": "https://claude.com/solutions/education",
+    "as_of": "2026-08-08"
+  }
+}

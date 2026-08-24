@@ -145,10 +145,11 @@
     },
     "openai": {
       "label": "ChatGPT",
-      "note": "Free plan: GPT-5.5 default, GPT-5.4 mini via Thinking.",
+      "note": "Free plan: unlimited text chats on GPT-5.6 Luna (subject to abuse guardrails), which is replacing GPT-5.5 Instant as the default mid-rollout; GPT-5.5 Instant access stays limited within a 5-hour window. Free and Go get NO GPT-5.6 Sol at any reasoning level — stated three times in OpenAI's own help article. Verified 2026-08-08 against openai.com/chatgpt/pricing and help.openai.com article 11909943.",
       "models": [
-        { "key": "gpt-5.5", "name": "GPT-5.5", "note": "default" },
-        { "key": "gpt-5.4-mini", "name": "GPT-5.4 mini", "note": "Thinking" }
+        { "key": "gpt-5.6-luna", "name": "GPT-5.6 Luna", "note": "default, unlimited*" },
+        { "key": "gpt-5.5", "name": "GPT-5.5 Instant", "note": "limited, 5h window" },
+        { "key": "gpt-5.4-mini", "name": "GPT-5.4 Thinking mini", "note": "Think" }
       ]
     },
     "google": {

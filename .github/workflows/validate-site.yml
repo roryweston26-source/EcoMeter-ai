@@ -12,6 +12,8 @@ on:
       - '**.html'
       - '**.json'
       - 'scripts/validate-site.js'
+      - 'scripts/check-auditor.js'
+      - 'scripts/test-auditor.js'
       - '.github/workflows/validate-site.yml'
   push:
     branches: [main]        # backstop: also verify what actually landed
@@ -31,3 +33,13 @@ jobs:
 
       - name: Validate the static site
         run: node scripts/validate-site.js
+
+      # The Auditor's data lives in six files that must agree, and its engine
+      # recommends what people should pay for. Both are gated here: check-auditor
+      # catches price/plan drift between the files, test-auditor sweeps every
+      # answer combination and the EcoMeter import for broken recommendations.
+      - name: Check Auditor data consistency
+        run: node scripts/check-auditor.js
+
+      - name: Test Auditor recommendations
+        run: node scripts/test-auditor.js
