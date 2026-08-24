@@ -1,12 +1,13 @@
 # Legerly — Project Context
 
-_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-08-08._
+_A handoff/context reference for the Legerly project (website + EcoMeter AI extension). Last updated 2026-08-24._
 
 > Read **CLAUDE.md** first (mission, principles, voice — auto-loaded). This is the deep dive.
+> For anything that goes stale — prices, caps, student offers, clock anchors, selectors, store state — see **[`FRESHNESS.md`](FRESHNESS.md)**, which is the executable checklist version of the open threads below.
 
 ---
 
-## 0. Working state (read this first) — as of 2026-08-08
+## 0. Working state (read this first) — as of 2026-08-24
 
 ### ⚠️ The single most important thing
 
@@ -34,6 +35,26 @@ Also worth asking: **did the submission use the old description?** If pasted fro
 - **v6.12 was REJECTED 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Listing copy only; code and permissions were never at issue. Fixed, with a standing rule at the top of `STORE-LISTING.md`.
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
+
+### 2026-08-24 — price re-verification against every provider's own pages
+
+A full re-check of every price, model and plan, asked for as "make sure the Auditor is the best it can be". **Four of the eight providers had moved in sixteen days**, and the errors did not point the same way — two overstated cost, one understated it badly.
+
+- **DeepSeek's warned price rise landed, and it is the big one.** v4-flash went $0.14/$0.28 → **$0.44/$1.32** and v4-pro $0.435/$0.87 → **$1.32/$3.96**: roughly 3× input, 4.5× output. This is the error that mattered most, because DeepSeek is the provider the Auditor's *downgrade* advice leans on hardest — "cancel your plan and pay per token" was being priced at a quarter of the real rate. **Understating an API rate is the dangerous direction** for a should-I-pay tool: it argues people out of subscriptions that were actually the cheaper option.
+- **DeepSeek now meters by the clock**, which nothing else here does: peak is 01:00–04:00 and 06:00–10:00 UTC on weekdays, everything else is half price. Stored rates are the **peak** rates deliberately — off-peak is a discount you only get if your usage happens to miss a window you don't control, and the cheap number would flatter exactly the advice most likely to hurt someone.
+- **OpenAI cut GPT-5.6 Sol** $5/$30 → **$4/$20** (long $10/$45 → $8/$30). Sol is what ChatGPT Plus unlocks, so this sits directly under the most common paid recommendation the Auditor makes.
+- **Google put 3.6 Flash on a half-price promo** ($1.50/$7.50 → **$0.75/$3.75**) through 2026-12-31, and shipped **Gemini 3.7 Flash** at the same rate. We had been carrying the post-promo number as if it were current — 2× too high.
+- **Anthropic made Sonnet 5's $2/$10 permanent.** The scheduled 2026-09-01 rise to $3/$15 **will not happen**. This had been the nearest-term dated task in this file; it is closed, and `pricing.html` had been telling readers the price would rise in a week, which was about to become false.
+- **GPT-5.5 has finished leaving ChatGPT Free and Go.** On 2026-08-08 the honest read was that it stayed (mid-rollout); both OpenAI surfaces now agree it has gone — the plan table's single "Legacy models" row reads No/No/Yes/Yes, and the Free Tier FAQ (updated 2026-08-13) lists only Luna.
+- **Google's free default moved 3.5 Flash → 3.6 Flash**; **xAI's free tier runs Grok 4.6**, its current flagship (x.ai ticks 4.6 in *every* column, so xAI joins the gate-on-quota-not-models group in fact if not yet in `TOP_IS_FREE`); **Le Chat is now branded "Vibe"** (confirmed, plan keys kept as the cross-file join); **SuperGrok Plus at $100/mo** is a new tier.
+
+**A methodology bug found on the way, worth more than any single price.** `advancedModels()` derives "this person needs frontier models" from "this model sits behind a paywall". Those came apart: OpenAI moved GPT-5.5 into its Legacy bucket, so 5.5 became paid-only **by getting old, not by getting better** — and the engine would have read someone still on 5.5 as someone who needs Sol, and pushed them up a tier for it. `LEGACY_MODELS` is now subtracted explicitly, and `check-auditor.js` asserts every entry actually enters the advanced set (it caught a no-op entry of mine on the first run, and the subtler point that GPT-5.5 is simultaneously free on Copilot and paywalled on OpenAI).
+
+**New guard — promotional rates now expire loudly.** Sonnet 5 nearly taught this the expensive way: a dated introductory rate lived in `caveats` as prose, checkable only by a human remembering. Google then did the same thing three weeks later, so it is a recurring shape. Promoted models carry `promo: { until, standard:{input,output} }`, and `check-prices.js` **fails once `until` is past, naming the exact number to revert to** — so the revert doesn't require going back to the provider to find out what it was. Both new guards were verified by injecting the fault.
+
+**A disclosure counter-example, recorded deliberately.** `plan-limits.json`'s thesis is that disclosure is one-directional and getting worse. OpenAI has now **added** a per-plan context window for every consumer tier (Instant 27K/54K/54K/128K, Reasoning Varies/256K/256K/400K) — the first figure any provider has published rather than withdrawn in the period this file covers. It doesn't overturn the finding (a context window bounds one conversation, not how many you get) but "nobody discloses anything" would now be false, and the honest claim is narrower: **nobody discloses an allowance**. It's in `_meta.context_windows_are_now_disclosed`, because a file that only collects evidence for its own thesis isn't evidence.
+
+**The lesson this time:** the 2026-08-08 entry says to prefer the help centre over the marketing table. That held, but the sharper rule is **prefer whichever source is more recent and check both** — here the plan table and the help article *agreed* that 5.5 had gone, and the previous check's conclusion was correct when made and wrong sixteen days later. Nothing was misread; the world moved. **A verified number has a shelf life, and sixteen days was enough for four providers.**
 
 ### 2026-08-08 — Subscription Auditor audit (ahead of a student-facing launch)
 
@@ -102,7 +123,7 @@ Started as "add a value column to the pricing page" and became an audit, because
 ### Six scripts now guard this — run them, they have already caught real regressions
 
 ```bash
-node scripts/check-prices.js      # 5 files must agree on every price
+node scripts/check-prices.js      # 5 files must agree on every price; fails on an EXPIRED promo rate
 node scripts/check-auditor.js     # audit.html + pricing.html fallback vs prices.json / plan-limits / student-access
 node scripts/test-auditor.js      # sweeps all 56,250 answer combos + the EcoMeter import
 node scripts/test-cost-model.js   # 44 assertions: billed input, image tokens, tiers, export v2
@@ -110,7 +131,9 @@ node scripts/calibrate-tokenizer.js  # measures the estimator; fails if the UI b
 node scripts/validate-site.js     # pre-deploy HTML/JSON gate
 ```
 `validate-site.yml` now runs the first, second and third of these on every PR — `check-auditor.js` and `test-auditor.js` were added to CI 2026-08-08.
-`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **`test-auditor.js` found a live bug on its first run:** the volume-aware downgrade kept its own copy of "does this tier clear your needs" that never received the image-generation gate, so **450 of 56,250 combinations told people who generate images regularly to drop to a free tier that throttles it**. The two definitions are now one function (`clearsNonModelNeeds`). **All six pass on `main` as of 2026-08-08.**
+`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **`test-auditor.js` found a live bug on its first run:** the volume-aware downgrade kept its own copy of "does this tier clear your needs" that never received the image-generation gate, so **450 of 56,250 combinations told people who generate images regularly to drop to a free tier that throttles it**. The two definitions are now one function (`clearsNonModelNeeds`). **All six pass on `main` as of 2026-08-24.**
+
+**Two guards added 2026-08-24, both verified by injecting the fault.** `check-prices.js` now fails when a `promo.until` date passes and names the standard rate to revert to — Sonnet 5 nearly cost us a wrong price because its expiry lived in prose that nothing could check, and Google put two models on a dated promo three weeks later. `check-auditor.js` now validates `LEGACY_MODELS`, the set subtracted from the frontier signal, asserting every entry genuinely enters the advanced set; it immediately caught a no-op entry and forced the realisation that GPT-5.5 is free on Copilot *and* paywalled on OpenAI at the same time.
 
 **Data checks and behaviour checks catch different things, and the Auditor needed both.** `check-auditor.js` would never have found the downgrade bug — every file was internally consistent. Sweeping the answer space did, in seconds. When a change touches what the engine *decides* rather than what the data *says*, `test-auditor.js` is the one that matters.
 
@@ -124,8 +147,8 @@ Note that **none of the others would have caught the clock errors** in PR #22 �
 2. **Rory's EcoMeter export.** The `pricing.html` tokens-per-message archetypes are still round-number *assumptions*, and they are the largest lever on every figure in the Break even column. Export v2 exists to fix this but needs a shipped build first. `billed_input_tokens_per_day ÷ user_turns_per_day` is the number to anchor to.
 3. **A screenshot showing supported platforms.** The store description now points at one ("The screenshots below show the full list of supported platforms"). If it isn't uploaded, that's its own metadata problem — arguably worse than the original rejection.
 4. **A human read of the store description.** It was rewritten across four commits (opening, a moved sentence, a changed bullet, markdown stripped). Each diff is sound; the flow has never had a human's eyes.
-5. **Mistral may have rebranded Le Chat → "Vibe."** Their pricing page copy says "Test out Vibe's capabilities". Not renamed, because those plan strings are the join key across `prices.json`, `plan-limits.json` and `audit.html`. Confirm before touching.
-6. **`grok-build-0.1`** ($1/$2) exists and isn't tracked — a specialist build/agent model, and adding it means inventing a `water.json` tier. Flagged, not guessed.
+5. **RESOLVED 2026-08-24 — Mistral has rebranded Le Chat → "Vibe."** Confirmed on mistral.ai/pricing, which now lists Free / Pro $14.99 / Student Pro $5.99 / Team $24.99 under the Vibe name. Plan keys deliberately **not** renamed: they are the join key across `prices.json`, `plan-limits.json` and `audit.html`, and `check-prices.js` fails on a broken join. The rebrand is recorded in the plan's `note` instead. If it ever *is* renamed, all three files must change in one commit.
+6. **`grok-build-0.1`** — rates now confirmed on docs.x.ai (2026-08-24): **$1/$2 short, $2/$4 above 200k**, 256k context. Still untracked, still a specialist build/agent model, and adding it still means inventing a `water.json` tier — but the rate is no longer a guess if we decide to. Same call as before: decide, don't default.
 7. **`tiktoken-approx` / `sp-estimated` bands are still unmeasured guesses.** Validating needs the relevant tokenizer bundled. Don't quote them as measured.
 8. **Consider wiring `check-prices.js` into `validate-site.yml`** so price drift can't come back. Left undecided because it changes CI behaviour on every PR.
 9. **No guard on clock plausibility.** PR #22 found capex overstated 35% and tokens understated ~2×, both of which passed `validate-site.js`. A `check-clock.js` could assert each scenario's implied calendar-year total against a figure recorded in `_meta.sources` and fail on a large divergence. The hard part is that most counters have no single authoritative total — capex and energy do, the rest don't, so it may only be worth building for those two.
@@ -453,15 +476,15 @@ Full summary in §0. The short version:
 
 - **⚠️ The store build is materially wrong and the fix is unshipped — see §0.** A pre-2026-08-02 build was submitted, carrying the ~2× billed-input and ~51× image-token bugs and the false ±8% band. Get the store status before doing anything else.
 - **v6.12 was rejected 2026-07-29 for listing copy, not code** (excessive keywords — the nine-platform list). Copy is fixed; **re-upload is unblocked**. When resubmitting: it still adds the `generativelanguage.googleapis.com` host permission, so expect permission re-review and a user-facing notice regardless. **Name supported platforms at most once, in prose, and never in the short description** — the standing rule is at the top of `extension/STORE-LISTING.md`.
-- **Sonnet 5's intro rate expires in 29 days (2026-08-31)** — see the line below; this is the nearest-term dated task.
+- **Sonnet 5's intro rate is now PERMANENT** — Anthropic cancelled the 2026-09-01 rise to $3/$15 and $2/$10 is the standard price (its pricing page, 2026-08-24). This was the nearest-term dated task in this file; there is nothing to do on 31 August.
 - **`grok-build-0.1`, Sonar Deep Research, Magistral / Devstral / Ministral and Codex are deliberately untracked** — specialist or non-consumer-chat models. Adding any means inventing a `water.json` tier, so decide rather than default.
-- **Mistral may have rebranded Le Chat → "Vibe"** (their pricing copy says "Test out Vibe's capabilities"). Plan names are the join key across `prices.json`, `plan-limits.json` and `audit.html` — confirm before renaming.
-- **Google AI Ultra's "5× Pro limits" note is unsourced.** Google says "From $99.99/mo" with "up to 20× access" — a range, not two fixed tiers. Doesn't affect a computed number (the row is `not_disclosed`), but the note reads more confident than the evidence.
+- **Mistral HAS rebranded Le Chat → "Vibe"** (confirmed 2026-08-24). Plan keys deliberately unchanged — they are the join key across `prices.json`, `plan-limits.json` and `audit.html`; the rebrand lives in the plan `note`. Renaming means changing all three in one commit.
+- **Google AI Ultra's "5× Pro limits" note is now sourced** — gemini.google/subscriptions states the $99.99 tier at 5× and the $199.99 tier at up to 20×, so the note matches the evidence. The 20× tier's price was also corrected $200 → $199.99.
 - **The AI Clock's `frontier` counter is unverifiable and now says so.** No 2026 record training run is publicly confirmed; it's projected from Grok 4 (mid-2025) at 4.5×/yr. Epoch's central rate estimate is 5× (CI 4–6×), left unchanged as it's within the interval. Don't quote the frontier level as sourced.
 - **`clock.json` levels have no plausibility guard** — see §0 open thread 9.
 - **Fast mode is unmodelled on purpose** — Anthropic bills Opus 5 / 4.8 at $10/$50 under it, OpenAI renamed "priority" to Fast mode 2026-07-30. Opt-in API service tiers like batch or caching, not the default consumer rate.
-- **DeepSeek has warned it will raise prices "significantly"**, no date. It is by far the cheapest provider tracked, so the Auditor's downgrade advice leans on it hardest. Re-check when it lands.
-- **Sonnet 5's introductory API rate expires 2026-08-31** ($2/$10 → $3/$15). `prices.json`, `pricing.html` and `update-prices.js` all need the new numbers then; the caveat text should be removed at the same time.
+- **DeepSeek's price rise LANDED** (found 2026-08-24): ~3× input, ~4.5× output, plus peak/off-peak metering by UTC clock time — the only provider here that bills by when you use it. Stored rates are the **peak** ones on purpose; see §0. Still the cheapest provider tracked, by a much narrower margin, with no indication that's the end of it. **The Auditor's downgrade advice leans on DeepSeek hardest, so this is the number to re-check first each time.**
+- **Time-limited promotional rates are now machine-checked**, not prose. A promoted model carries `promo: { until, standard:{input,output} }` in `prices.json`, and `check-prices.js` fails once `until` passes, naming the rate to revert to. Live on `gemini-3.7-flash` and `gemini-3.6-flash` (half price to 2026-12-31). Add the block whenever a provider quotes a rate with an end date — that is the whole point of it.
 - **Transparency Index:** env-only; pricing/data axes are ⚪. The two-scale design is intentional — don't "reconcile" xAI's 🟡-vs-🔴 by mistake (documented in `_meta.detail.note`). Colo landlords not scored yet; a couple of `power_mw` values are third-party estimates (don't change a badge).
 - **Auditor caveats:** plan caps are approximate (rolling-window/compute-based limits); the per-model API cost skips models not in `prices.json.api` (undercount risk); API ≠ the product (no app/limits/features).
 - **`update-prices.js` is not a real scraper** — hardcoded values, only Anthropic/OpenAI/Google; other providers change by hand.

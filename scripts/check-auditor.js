@@ -238,6 +238,41 @@ const audit_ns = /not a directory/i.test(html) || /examples, not a directory/i.t
 if (S.partner_institutions && !audit_ns)
   fail('audit.html renders partner_institutions without saying it is not a directory');
 
+/* 11b. LEGACY_MODELS is subtracted from the "does this person need frontier
+        models" signal, because a model can be paid-only for being OLD rather than
+        good — OpenAI's single "Legacy models" row (Free: No, Go: No) is exactly
+        that. The risk of the list is the opposite one: park a genuinely frontier
+        model in here and the engine stops noticing that its user wants frontier
+        capability. So every entry must (a) be a real priced model and (b) actually
+        be gated behind a paid tier — if it is on a free tier, it was never in the
+        advanced set and listing it here is misleading noise. */
+const legacyBlock = html.match(/const LEGACY_MODELS = new Set\(\[([^\]]*)\]\)/);
+if (!legacyBlock) fail('cannot locate LEGACY_MODELS in audit.html (anchor moved?)');
+else {
+  const keys = [...legacyBlock[1].matchAll(/'([^']+)'/g)].map(m => m[1]);
+  if (!keys.length) fail('LEGACY_MODELS is empty — remove it or populate it');
+
+  // Rebuild the set advancedModels() derives BEFORE the subtraction, by the same
+  // rule: per-provider free tier, but one shared output set. That sharing matters
+  // here — GPT-5.5 is on Copilot's free tier and still lands in the advanced set
+  // because OpenAI gates it, so "is it free somewhere" is the wrong question. The
+  // only question worth asking is whether the subtraction actually removes it.
+  const preSubtraction = new Set();
+  for (const tiers of Object.values(PLANS)) {
+    const sorted = tiers.slice().sort((a, b) => a.price - b.price);
+    const free = new Set(sorted[0].price === 0 ? sorted[0].models : []);
+    sorted.forEach(t => { if (t.price > 0) t.models.forEach(m => { if (!free.has(m)) preSubtraction.add(m); }); });
+  }
+  const extras = html.match(/\n\s*\[([^\]]*)\]\.forEach\(m=>s\.add\(m\)\)/);
+  if (extras) for (const m of extras[1].matchAll(/'([^']+)'/g)) preSubtraction.add(m[1]);
+
+  for (const k of keys) {
+    if (!all[k]) { fail('LEGACY_MODELS names a model with no API rate: ' + k); continue; }
+    if (!preSubtraction.has(k))
+      fail('LEGACY_MODELS lists ' + k + ', which never enters the advanced set — the subtraction is a no-op, so remove it');
+  }
+}
+
 /* 11. Anything the extension can put in an export must be understood here. A
        catalog key the auditor cannot price is a model a real user ran that the
        recommendation quietly ignores. */

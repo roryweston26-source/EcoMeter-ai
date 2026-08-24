@@ -105,6 +105,7 @@ const MODEL_CATALOG = [
     { key:'o4-mini', name:'o4-mini' },
   ]},
   { label:'Gemini', models:[
+    { key:'gemini-3.7-flash', name:'Gemini 3.7 Flash' },
     { key:'gemini-3.6-flash', name:'Gemini 3.6 Flash' },
     { key:'gemini-3.5-flash', name:'Gemini 3.5 Flash' },
     { key:'gemini-3.5-flash-lite', name:'Gemini 3.5 Flash-Lite' },
@@ -115,6 +116,7 @@ const MODEL_CATALOG = [
     { key:'gemini-2.5-flash-lite', name:'Gemini 2.5 Flash-Lite' },
   ]},
   { label:'Grok', models:[
+    { key:'grok-4.6', name:'Grok 4.6' },
     { key:'grok-4.5', name:'Grok 4.5' },
     { key:'grok-4.3', name:'Grok 4.3' },
     { key:'grok-4.20', name:'Grok 4.20' },
