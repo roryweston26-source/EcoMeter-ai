@@ -14,6 +14,7 @@ on:
       - 'scripts/validate-site.js'
       - 'scripts/check-auditor.js'
       - 'scripts/test-auditor.js'
+      - 'scripts/check-clock.js'
       - '.github/workflows/validate-site.yml'
   push:
     branches: [main]        # backstop: also verify what actually landed
@@ -43,3 +44,11 @@ jobs:
 
       - name: Test Auditor recommendations
         run: node scripts/test-auditor.js
+
+      # The clock's levels are the one thing no other script judges. validate-site
+      # was perfectly happy with a capex level 35% above what four companies had
+      # publicly guided, for a whole quarter. This asserts the scenarios still
+      # bracket the published totals, that ai-clock.html's fallback copy hasn't
+      # drifted, and that the anchor date isn't hardcoded in the prose again.
+      - name: Check AI Clock plausibility
+        run: node scripts/check-clock.js
