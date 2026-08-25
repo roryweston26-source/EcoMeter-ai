@@ -8,7 +8,8 @@ each thing lives, what to check it against, and which script proves the fix.
 written to be executed, not just read.
 
 _Last full pass: **2026-08-24** — A, B, C, D, F verified current; E partially (1 of
-12 datacenter sites; Transparency Index re-checked with one open question); G, H
+12 datacenter sites; Transparency Index re-checked — its open question was then
+resolved and produced this index's first grade movement, see E1); G, H
 blocked on things only Rory could do — **H closed the same day, when v6.13 went to
 the store.** I, J done. Two guards added. Update this line when a pass completes._
 
@@ -539,19 +540,30 @@ data sitting next to it.
 
 ## E1. `transparency-index.json`
 
-**Re-checked 2026-08-24; `last_verified` now says so. One open question came out
-of it, and it is the biggest single item on this index:**
+**Re-checked 2026-08-24, and the open question it raised was resolved the same day.
+It produced the first grade movement this index has ever recorded:**
 
-> **Does Microsoft now publish per-campus water and power?** Third-party coverage
-> (July 2026) says its full 2026 Environmental Sustainability Report breaks both
-> out by named campus. **We could not confirm it on a Microsoft-owned page** — the
-> datacenter efficiency page still gives global and regional PUE/WUE only, and the
-> report PDF was not machine-readable in our tooling. Left `red` and recorded as
-> `open_question` on the row rather than acted on, because a 🟢 requires the
-> company disclosing it itself and "widely reported" is not that. **If true, it is
-> the first grade movement this index has ever recorded** and makes Microsoft the
-> second per-site discloser after Google. Opening that PDF properly is the highest-
-> value task here.
+> **Microsoft does publish location-level water and power — itself.** Not in the
+> flagship report, which is where the last pass looked, but in the companion
+> **2026 Environmental Data Fact Sheet, Table 15, "FY25 Datacenter water and
+> electricity use by location"**: electricity (MWh), water withdrawal (ML),
+> non-potable share and replenishment volume for **29 named locations**.
+> `site_level` 🔴→🟢, `replenishment` 🔴→🟡. **The blocker last time was tooling,
+> not disclosure** — `pdftotext -layout` reads both PDFs fine; the Read tool cannot
+> (this box has no `pdftoppm`). Reach for `pdftotext` first on any provider PDF.
+
+**Four limits are recorded in the cell, and none should be smoothed away:**
+metro-area/regional-cluster granularity, not per-building · **withdrawal, not
+consumption** (consumption stays global/regional in Table 14) · Microsoft-*owned*
+sites under its own operational control only, so leased colo is excluded · and
+**Table 15 is in Section 2, which the fact sheet states was outside Deloitte's
+limited-assurance review** — Microsoft's most granular figures are its least
+assured.
+
+**What to re-check next year:** whether consumption joins withdrawal per location,
+and whether Section 2 ever comes into assurance scope. Look in the **fact sheet,
+not the report**. URL pattern:
+`cdn-dynmedia-1.microsoft.com/.../CSR/<YEAR>-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf`
 
 **Contains:** page copy (`_meta`: lede, methodology, caveats), the disclosure
 matrix (`columns`, `rows` — 7 providers), and the three axes.
@@ -578,7 +590,15 @@ change when a watchdog or a utility publishes something the company won't.
 > checking one site would claim a verification that didn't happen. Read the
 > per-site `as_of`, which is the honest granularity and exists for this reason.
 > Rationale is in `_meta.partial_verification`. **The other 11 sites are the
-> largest single block of stale data in the repo.**
+> largest single block of stale data in the repo — and now the highest-value task
+> on this file, since the Microsoft question that used to hold that slot is
+> closed.**
+>
+> **Microsoft's new per-location table does NOT move anything here, deliberately.**
+> Table 15 covers Microsoft-**owned** datacenters under its own operational control
+> for **FY25, ended 2025-06-30**. Fairwater Atlanta is QTS-leased *and* was not
+> operational in FY25; there is no Mount Pleasant row at all. Both `water_note`s
+> now say so, to stop a future pass "correcting" a grade that is already right.
 
 **Rules:**
 - A few `power_mw` values are third-party estimates. **Don't move a badge on an estimate.**
