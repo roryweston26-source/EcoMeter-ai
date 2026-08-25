@@ -670,22 +670,45 @@ change when a watchdog or a utility publishes something the company won't.
 **Per site:** `power_mw`, `power_mw_planned`, `water_grade`, `water_note`,
 `sources[]`, `as_of`. Currently 12 sites across 7 providers.
 
-> **Status after the 2026-08-24 pass: 1 of 12 sites re-verified** (xAI Colossus 1 —
-> its Memphis reuse plant now has a TDEC permit effective 2026-02-01 but
-> construction still hasn't started; a permit is not a plant). **The file-level
-> `last_updated` was deliberately left at 2026-07-13**, because bumping it after
-> checking one site would claim a verification that didn't happen. Read the
-> per-site `as_of`, which is the honest granularity and exists for this reason.
-> Rationale is in `_meta.partial_verification`. **The other 11 sites are the
-> largest single block of stale data in the repo — and now the highest-value task
-> on this file, since the Microsoft question that used to hold that slot is
-> closed.**
+> **FULL PASS 2026-08-25: all 12 sites re-verified, backlog cleared.**
+> `last_updated` moved off 2026-07-13 for the first time, because the file-level
+> claim is finally earned. Every `as_of` now reads `2026-08`. Rationale is in
+> `_meta.verification_status` (renamed from `partial_verification`, which was
+> spent). **No provider badge moved** — the two changes that could have move
+> nothing on their own and are flagged below.
 >
-> **Microsoft's new per-location table does NOT move anything here, deliberately.**
-> Table 15 covers Microsoft-**owned** datacenters under its own operational control
-> for **FY25, ended 2025-06-30**. Fairwater Atlanta is QTS-leased *and* was not
-> operational in FY25; there is no Mount Pleasant row at all. Both `water_note`s
-> now say so, to stop a future pass "correcting" a grade that is already right.
+> **Microsoft's per-location table does NOT reach either Fairwater site.** Table 15
+> covers Microsoft-**owned** datacenters under its own operational control for
+> **FY25, ended 2025-06-30**. Fairwater Atlanta is QTS-leased *and* was not
+> operational in FY25; there is no Mount Pleasant row at all.
+
+### The two flagged grading calls — decide these deliberately or leave them
+
+Both are genuinely ambiguous, both were left at the grade they already had, and
+neither should be flipped as a side effect of some other change.
+
+1. **`google-the-dalles` — partial, but arguably transparent now.** Google's 2026
+   report publishes it in the same table and format as Council Bluffs (654.3 Mgal
+   withdrawn / 185.3 discharged / 469.0 consumed, 2025). By the stated rule —
+   *transparent means the company discloses it itself* — that is transparent. It is
+   held **partial** to preserve the lede's other promise, *"who had to surface it"*:
+   here, a newspaper and a lawsuit. **Grading it transparent erases the litigation
+   history; grading it partial treats an identical disclosure differently from
+   Council Bluffs.** No MW is published, so the choice does not move any badge.
+
+2. **`aws-anthropic-new-carlisle` — partial, but arguably opaque.** There is **no
+   operational water figure from anyone**; Indiana does not require reporting. By the
+   Fairwater-Atlanta rule (*closed-loop site with no published number is opaque*)
+   this is opaque. By the Abilene precedent (*a one-time initial-fill figure was
+   enough for partial*) the county's 31M gal/day construction dewatering permit
+   supports partial. **This one has teeth: at 1,100 MW, flipping it takes
+   Amazon/Anthropic from 🟡 to 🔴** — the weighted score goes 2.00 → ~1.24.
+
+**Site notes are PUBLIC copy.** They render on the page inside "show the math".
+Write them for a reader: no maintainer instructions, no names, no "don't change
+this". Maintainer guidance goes in `_meta.verification_status` (which does *not*
+render) or here. A note shipped in the Microsoft PR saying "Do not flip this grade"
+went live before this was caught — grep the notes before merging.
 
 **Rules:**
 - A few `power_mw` values are third-party estimates. **Don't move a badge on an estimate.**
