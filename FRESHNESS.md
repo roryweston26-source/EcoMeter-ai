@@ -1,0 +1,922 @@
+# FRESHNESS.md — everything here that rots
+
+This repo publishes numbers about other people's products. Those products change
+and we don't get told. This file is the complete list of what goes stale, where
+each thing lives, what to check it against, and which script proves the fix.
+
+**It exists so one prompt can re-verify the whole project.** Everything below is
+written to be executed, not just read.
+
+_Last full pass: **2026-08-24** — A, B, C, D, F verified current; E partially (1 of
+12 datacenter sites; Transparency Index re-checked with one open question); G, H
+blocked on things only Rory can do; I, J done. Two guards added. Update this line
+when a pass completes._
+
+---
+
+## The one prompt
+
+```
+Work through FRESHNESS.md. Re-verify every entry, fix what has drifted,
+and report per entry: current / fixed / needs Rory. Run the verification
+suite at the end and don't stop until it passes.
+```
+
+Narrower runs are fine and cheaper — the section letters are the handles:
+
+```
+Work through FRESHNESS.md sections A and B (prices and plan limits) only.
+```
+
+```
+Work through the FRESHNESS.md dated calendar. Anything due or overdue.
+```
+
+---
+
+## Rules that apply to every entry
+
+These are not style notes. Each one exists because breaking it has already put a
+wrong number in front of a user.
+
+1. **Verify against a provider-owned page, and prefer the help centre to the
+   pricing table.** The pricing table is written to sell; the help article is
+   written for people already paying. On 2026-08-08 the table implied GPT-5.5 was
+   paid-only while the help article said it was still the default. The help
+   article was right.
+2. **Ask "has the deadline passed", never "does an offer exist".** Expired offers
+   outlive themselves. Google's free student year closed 2026-04-30 and search
+   results, AI summaries and every discount blog still describe it in the present
+   tense. It is the most confidently repeated false claim in this area.
+3. **"Not disclosed" is a finding. Never fill a gap with a plausible number.** If
+   a provider withdraws a figure, record the withdrawal — don't fall back to the
+   old one and don't invent a replacement.
+4. **Where a file carries both a number and a sentence describing it, check them
+   against each other.** Divergence between the two is the cheapest reliable
+   smell in this repo. The capex level was 35% high while the prose beside it
+   quoted the correct guidance, and that survived a full quarter.
+5. **A figure can pass every script and still be wrong.** The scripts check form
+   and internal agreement, not plausibility. Nothing here validates a level
+   against the outside world.
+6. **Plan-name strings are join keys** across `prices.json`, `plan-limits.json`
+   and `audit.html`. Renaming one orphans rows in the other two. If a provider
+   rebrands, confirm first, then change all three in one commit.
+7. **Update the provenance, not just the value.** `last_verified` / `as_of` /
+   `_meta.verified` should say *what you checked and what had moved*, the way
+   `prices.json._meta.verified` does. A bumped date with unchanged prose is a
+   claim you didn't make.
+8. **Never upgrade an estimate by editing it.** `capSource`, `provenance` and the
+   accuracy bands are the honesty layer. A number moving from `estimate` to
+   `disclosed` requires a provider page saying so.
+9. **A file nothing checks is a file that is wrong.** If you add a data file, or a
+   seventh copy of an existing one, add it to a guard script in the same commit.
+
+---
+
+## Dated calendar — hard deadlines
+
+| Date | What | Entry |
+|---|---|---|
+| **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
+| **2026-12-31** | **Google's promotional rate on `gemini-3.7-flash` and `gemini-3.6-flash` expires** — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
+| Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
+| 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
+| Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
+| June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
+| Daily, by clock | **DeepSeek meters peak/off-peak by UTC time** — the only provider here that does. We store peak rates deliberately. | [A5](#a5-dated-price-events) |
+| ~~2026-08-31~~ | ~~Sonnet 5 intro rate ends~~ — **resolved 2026-08-24.** Anthropic made $2/$10 permanent; the rise to $3/$15 will not occur. | [A5](#a5-dated-price-events) |
+| ~~No date~~ | ~~DeepSeek's warned price rise~~ — **landed 2026-08-24**, ~3× input / ~4.5× output. | [A5](#a5-dated-price-events) |
+| ~~No date~~ | ~~Mistral "Vibe" rename~~ — **confirmed 2026-08-24.** Product is branded Vibe; the `Le Chat Pro` plan key is kept as the cross-file join. | [A2](#a2-consumer-subscription-prices) |
+
+---
+
+---
+
+## Don't trust a "current state" list — including this one
+
+This section deliberately doesn't enumerate what's broken today, because that list
+rots faster than anything it would describe. **While this file was being written,
+the working tree changed three times**: a price refresh landed, `audit.html` fell
+five checks behind it, and a promo-expiry guard was built into `check-prices.js`
+that made a paragraph here wrong within minutes.
+
+**So: get the live answer, don't read it.**
+
+```bash
+node scripts/check-prices.js && node scripts/check-auditor.js
+```
+
+The one durable observation from that episode, because it has now happened three
+times (2026-08-02, 2026-08-08, 2026-08-24): **`audit.html` is updated last, or not
+at all.** It's the sixth copy of the price table, `check-prices.js` never opens it,
+and the DeepSeek rows are the ones that bite — the Auditor priced pay-per-token at
+a third of the real rate for the provider its downgrade advice leans on hardest.
+**After any change to section A, run `check-auditor.js` before you believe you're
+done.**
+
+---
+
+## Order of operations
+
+Some entries feed others. Run them in this order or you'll verify a copy against
+a source you're about to change.
+
+1. **A** — prices and models (`prices.json` is upstream of five other files)
+2. **B** — plan limits and caps
+3. **C** — student access
+4. **F** — water tiers (needs A's final model list)
+5. **D**, **E** — clock, transparency index (independent of the above)
+6. **G**, **H** — extension and store (needs A and B settled)
+7. **I**, **J** — copy, docs, hygiene (they describe everything above)
+8. **Verification suite** — last, all six
+
+---
+
+# A. Prices and models
+
+## A1. Per-token API prices
+
+**Goes stale:** constantly. OpenAI cut two models ~5× overnight on 2026-08-02.
+
+**Source of truth:** `extension/prices.json` → `api` (7 providers, ~50 models).
+
+**Copies that must follow — all four drift silently:**
+- `pricing.html` → `FALLBACK_PRICES`
+- `audit.html` → `API`
+- `extension/sidepanel.js` → `FALLBACK_API`
+- `scripts/update-prices.js` → hardcoded values (Anthropic / OpenAI / Google only; every other provider is by hand)
+
+A drift here only shows when the live fetch *fails*, which is exactly why it rots
+unnoticed. `gemini-3.5-flash` sat at a third of its real rate in `audit.html` for
+ten days, biasing advice toward "drop your plan and pay per token".
+
+**Verify against** (the list `_meta.verified` already names):
+platform.claude.com/docs/en/about-claude/pricing · developers.openai.com/docs/pricing ·
+ai.google.dev/gemini-api/docs/pricing · docs.x.ai/docs/models ·
+api-docs.deepseek.com/quick_start/pricing · mistral.ai/pricing/api ·
+docs.perplexity.ai/getting-started/pricing
+
+**Also check the `long` block** (context-threshold rates). Thresholds today are
+OpenAI >272k, Google >200k, xAI ≥200k; Anthropic doesn't tier this way. Ignoring
+`long` undercounts long conversations by roughly 2×, in the *opposite* direction
+to the unmodelled prompt-caching discount — they do not cancel out.
+
+**Then rewrite `_meta.last_updated` and `_meta.verified`** — the prose should name
+what moved and what didn't.
+
+**Guard:** `check-prices.js`, `check-auditor.js`
+
+## A2. Consumer subscription prices
+
+**Goes stale:** less often, but sharply. Google AI Plus went $7.99 → $4.99;
+Copilot Pro finished retiring 1 Aug 2026.
+
+**Source of truth:** `extension/prices.json` → `subscriptions` (26 plans).
+
+**Copies:** `plan-limits.json` → `plans` (joins on `p` + `m`) · `audit.html` →
+`PLANS[].price`
+
+**Watch:** plan names are the join key (rule 6). **The Mistral case is now
+settled and is the worked example:** Mistral does brand the product "Vibe"
+(confirmed 2026-08-24), and the plan key stayed `Le Chat Pro` anyway, with the
+rename recorded in the row's `note`. A display name changing is not a reason to
+change a join key.
+
+**Recent movement (2026-08-24):** xAI added a **SuperGrok Plus** tier at $100;
+Google AI Ultra (20×) corrected $200 → $199.99. A new tier means a new
+`plan-limits.json` row and a new `audit.html` entry, or `check-prices.js` fails on
+"subscription with no plan-limits entry".
+
+**Guard:** `check-prices.js`, `check-auditor.js`
+
+## A3. The model line-up
+
+**Goes stale:** a new flagship every few weeks; old keys quietly vanish from
+provider pages.
+
+**Everywhere a model name lives — all seven must agree:**
+- `extension/prices.json` → `api` (the rate)
+- `extension/water.json` (a tier, or the water figure silently renders as nothing)
+- `pricing.html` → `MODEL_REGISTRY` (display + order)
+- `extension/sidepanel.js` → `MODEL_CATALOG` (the picker)
+- `audit.html` → `PLANS[].models`, `MODELS`, and the `API` fallback
+- `extension/prices.json` → `free_tiers`
+- `plan-limits.json` → `value_models`
+
+**Retiring a model:** don't delete the key. Models no longer on a provider's
+current page are retained at last-known rates because they stay selectable in the
+picker — record them in `_meta.caveats._legacy_keys` and treat those numbers as
+historical, not current.
+
+**Deliberately untracked** — decide, don't default: `grok-build-0.1` ($1/$2),
+Sonar Deep Research, Magistral / Devstral / Ministral, Codex. They're specialist
+or non-consumer-chat models, and adding any means inventing a `water.json` tier.
+
+**Added 2026-08-24:** `gemini-3.7-flash` (promotional — see A6) and `grok-4.6`,
+both with `water.json` tiers in the same commit, which is the pattern to copy. 68
+models priced, 47 shown, 13 with long-context tiers, 27 plans as of that refresh —
+those counts come from `check-prices.js` output and are worth pasting into a pass
+report, since a change in them is the fastest signal that structure moved.
+
+**Guard:** `check-prices.js` (water parity + "shown on page but unpriced"),
+`check-auditor.js`
+
+## A4. What the free tiers include
+
+**Goes stale faster than prices, and it moves the Auditor's whole answer.**
+ChatGPT Free became unlimited text chat; Gemini's free app already has the 3.1 Pro
+flagship.
+
+**Source of truth:** `extension/prices.json` → `free_tiers` (drives the extension
+picker) and `audit.html` → the price-0 row of each `PLANS` provider.
+
+**Why it matters more than it looks:** `advancedModels()` derives itself from the
+free rows, so a wrong free tier misreads a paying frontier user as a free-tier
+one. And `TOP_IS_FREE` (`google`, `microsoft`, `deepseek`) encodes *"paying buys
+quota and features, never smarter output"* — if one of those providers starts
+gating its best model behind a paywall, that set is wrong and the Auditor will
+stop recommending an upgrade that has become justified.
+
+**The failure mode to hunt for:** a free tier capped in our data but advertised as
+unlimited pushes a user to pay for volume that now costs nothing. That was the
+single most expensive error found on 2026-08-08, and it pointed at the user's
+wallet.
+
+**Moved on 2026-08-24 — all four are the kind of change that silently invalidates
+a recommendation:**
+- **GPT-5.5 has finished leaving ChatGPT Free.** On 2026-08-08 that rollout was mid-flight and the honest record was "still there, limited". It has now completed: OpenAI files GPT-5.5 under "Legacy models" (Free: No, Go: No). Free is Luna + Thinking Mini only.
+- **Gemini's free default is now 3.6 Flash**, not 3.5.
+- **xAI's free app runs Grok 4.6** — x.ai ticks 4.6 in every column including Free, so **xAI gates on rate limits, not model access.** If xAI is ever added to the Auditor it belongs in `TOP_IS_FREE`.
+- **Copilot's model mapping is now recorded as not disclosed.** Microsoft publishes no mapping for any consumer tier; GPT-5.5 is a stand-in for pricing only. Don't present it as Copilot's model.
+
+**Guard:** `check-auditor.js`, `test-auditor.js` (sweeps all 56,250 combinations)
+
+## A5. Dated price events
+
+**Two long-standing items closed on 2026-08-24. Both closed the opposite way to
+the obvious guess, which is the argument for checking rather than assuming.**
+
+- **Sonnet 5's introductory rate did not expire.** $2/$10 per 1M was listed
+  "through 2026-08-31" and every plan assumed a rise to $3/$15 on 1 September.
+  Anthropic made the introductory rate permanent instead. `_meta.caveats
+  ['claude-sonnet-5']` now records the resolution. **No action at the end of
+  August** — and note that the doomed assumption here was ours, not a provider's
+  claim.
+- **DeepSeek's warned increase landed.** `deepseek-v4-flash` went
+  $0.14/$0.28 → $0.44/$1.32 and `v4-pro` $0.435/$0.87 → $1.32/$3.96 — roughly 3×
+  input and 4.5× output. It is still the cheapest provider tracked but by a far
+  narrower margin, and **the Auditor's "drop your plan and pay per token" advice
+  leaned on the old numbers hardest.** Re-check every downgrade recommendation
+  that reaches DeepSeek.
+
+**DeepSeek now meters by clock time, which nothing else here does.** Peak is
+01:00–04:00 and 06:00–10:00 UTC Monday–Friday; every other hour is half price.
+**The stored rates are the peak (undiscounted) ones, deliberately** — off-peak is
+a discount you only get if your usage happens to fall outside a window you don't
+control, and quoting the cheap rate would understate the cost of the exact advice
+this project is most likely to give. Off-peak is exactly half of every stored
+figure. Don't "correct" this to a blended rate.
+
+**Deliberately unmodelled:** Fast mode / priority service tiers (Anthropic bills
+Opus 5 / 4.8 at $10/$50 under it; OpenAI renamed priority → Fast mode 2026-07-30).
+These are opt-in service tiers like batch or caching, not the default consumer
+rate. Leave them out — and don't quietly start modelling them.
+
+## A6. Promotional rates
+
+**A new class of time bomb, added 2026-08-24.** Some stored rates are time-limited
+promotions rather than standing prices. They carry a machine-readable block:
+
+```json
+"promo": { "until": "2026-12-31", "standard": { "input": 1.5e-06, "output": 7.5e-06 } }
+```
+
+**Currently promotional:** `gemini-3.7-flash` and `gemini-3.6-flash`, both at half
+price through **2026-12-31**, reverting to $1.50/$7.50.
+
+**Record the standard rate at the moment you record the promo.** Going back to
+find what a price *was* after the promo expires is how this data rots — and it's
+why the `standard` sub-object exists rather than a bare date.
+
+**Guard:** `check-prices.js` — it walks `api`, rejects a malformed `promo` block,
+rejects a "promo" equal to its own standard rate, and **fails once `until` is in
+the past**, naming the standard rate to restore. Its pass line reports the count
+(`68 models priced, 2 on promotional rates, …`), so a promo silently disappearing
+is visible too.
+
+This is the one entry in this file that **cannot** go stale unnoticed, and it's
+the model for the rest: a dated figure with a machine-readable expiry and a script
+that fails on it beats a calendar entry and a human remembering. Where another
+entry here relies on someone reading this document on time, that's a gap worth
+closing the same way.
+
+---
+
+# B. Plan limits, caps and disclosure
+
+## B1. The caps themselves
+
+**Goes stale in one direction:** providers are *withdrawing* figures, not adding
+them. Between 2026-07-28 and 2026-08-08 OpenAI deleted the only general absolute
+cap anyone published.
+
+**Source of truth:** `plan-limits.json` → `plans[]`, each carrying a provenance:
+`disclosed` / `derived` / `third_party` / `not_disclosed`.
+
+**Copies:**
+- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 26 rows, all diffed by `check-auditor.js`
+- `audit.html` → `PLANS[].cap` + `.capSource` — uses `estimate` where `plan-limits.json` says `not_disclosed`, because the Auditor needs a working number. **Only `disclosed` may be shown to a user as fact.**
+
+**Verify:** help centre first (rule 1). A figure being here today is not evidence
+it will be next quarter — check each surviving figure is *still on the page*, not
+just that you once found it.
+
+**When a cap disappears:** move the row to `not_disclosed`, append the deletion to
+`_meta.disclosure_is_getting_worse`, and then grep for prose asserting the deleted
+number. Both the `pricing.html` callout and the lede had to be rewritten last
+time, because they stated the withdrawn cap in words.
+
+**Scope trap:** Go's "10 Thinking messages / 5h" is a *feature* sub-limit, not a
+general allowance. It carries `scope_limited: true` and `capPerDay()` refuses it.
+Pricing a plan off a feature sub-limit while ordinary chat is unlimited puts the
+ceiling far below the plan's real worth. Don't "fix" that refusal.
+
+**Guard:** `check-auditor.js`
+
+## B2. The disclosure findings (prose)
+
+**Goes stale silently**, because it's prose and no script reads English.
+
+- `plan-limits.json` → `_meta.finding` — currently claims *exactly one* absolute
+  consumer figure is published anywhere. **Re-derive it from the rows every pass.**
+  Count the `disclosed` rows and make the sentence match; don't carry it forward.
+- `plan-limits.json` → `_meta.disclosure_is_getting_worse` — append-only history
+  of what was withdrawn and when.
+- `student-access.json` → `_meta.finding` — same treatment (see C1).
+- `pricing.html` → the Break even / Ceiling callout and lede copy.
+
+## B3. Tokens-per-message archetypes
+
+**These are assumptions, not measurements**, and they are the largest single lever
+on every figure in the Break even column.
+
+**Where:** `plan-limits.json` → `_meta.archetypes`. Round numbers chosen to be
+legible. `audit.html` maps onto the same three archetypes so both tools tell one
+story — they disagreed ~6× before 2026-08-08, and the dollar totals happened to
+land close through offsetting errors, which is luck, not correctness.
+
+**The fix, when it's available:** anchor to a real EcoMeter usage export (v2,
+which carries billed input). The number to use is
+`billed_input_tokens_per_day ÷ user_turns_per_day`. **Blocked on a shipped build**
+— see H4.
+
+**Until then:** never describe them as measured. Each pass should confirm the
+"THESE ARE ASSUMPTIONS" comment is still in the file and still true.
+
+## B4. Does the Ceiling column still earn its place
+
+**As of 2026-08-08 it computes for zero plans.** That's deliberate — an empty
+column *is* the finding, and the copy says so.
+
+**Check each pass:** if a re-verify finds the third-party-corroborated figures
+have gone too, the column becomes 26 identical cells and should probably become a
+single sentence instead. Flag it; it's a scope call, not a fix.
+
+---
+
+# C. Student and teacher access
+
+## C1. The routes
+
+**Goes stale regionally and without notice.** Every route carries its own `as_of`;
+anything older than a month or two needs a re-check.
+
+**Source of truth:** `student-access.json` → `routes[]`, provenance one of
+`disclosed` / `institutional` / `unverified` / `paused` / `none`.
+
+**Read by:** `audit.html`, when the user says they're a student or teacher.
+
+**Rule 2 matters more here than anywhere else in the repo.** Ask what the
+redemption deadline was and whether it has passed. Do not ask whether an offer
+exists — the internet will tell you yes for offers that closed months ago.
+
+**Third-party sources are rejected on principle:** several quote Google AI Pro at
+$28.99/mo when Google's own page says $19.99, and every site claiming a Claude
+coupon code is selling something.
+
+**Guard:** `check-auditor.js` (joins on `p`)
+
+## C2. Known dated offers
+
+_All six re-verified 2026-08-24. Two changed, both in the direction that had been costing students money._
+
+| Provider | State | Re-check |
+|---|---|---|
+| Google | **RELAUNCHED.** 12 months AI Pro free (US) / AI Plus (140+ markets), SheerID, **claim by 2026-12-31**. Status `none` → `disclosed`. | Does a *discounted* rate exist for after the free year? Landing page is behind a sign-in — **needs Rory signed in.** |
+| GitHub / Microsoft | **PAUSE ENDED.** Free for verified students again, confirmed on github.com/education/students. Status `paused` → `disclosed`. | It is not Copilot Pro — auto model selection only, credit-metered chat. Re-check whether those limits move. |
+| OpenAI | No individual student discount. ChatGPT for Teachers free for verified US K-12 educators **through June 2027**; ChatGPT Edu is institutional. Re-confirmed on openai.com. | Confirm the 2027 date each pass — the only forward-dated offer we carry. |
+| Anthropic | Nothing for individuals; institutional only, and the institution list is not published. Re-confirmed on claude.com. | — |
+| Mistral | $5.99/mo student rate, published on its own pricing page. Product now branded **Vibe**; plan key kept as the join. | Flagged `not_audited` (Mistral isn't in the Auditor yet). |
+| DeepSeek | Free anyway; nothing to discount. | — |
+
+> **The lesson this section exists to teach has an inverse, and the inverse is what bit us.** The file has warned since 2026-08-08 that *expired offers outlive themselves*. True — and it did not help, because the failure ran the other way. We checked Google carefully, correctly found the offer dead, wrote it down with sources, and the fact rotted anyway when Google relaunched. **A verified absence expires too.** A false negative is the worse direction here: it costs the reader money and it is invisible, because nobody publishes a correction when a discount quietly comes back. **Re-check the `none` and `paused` rows as hard as the live ones** — on this pass they were the only two that had changed.
+
+## C3. Partner institutions
+
+`student-access.json` → `partner_institutions` is **labelled examples and must
+never be rendered as a lookup.** No provider publishes a complete list; Anthropic
+shows nine logos with no terms and no directory, and Syracuse's own announcement
+calls itself "one of the first", so the set is growing and any snapshot is stale
+on arrival.
+
+A partial list rendered as authoritative tells a student whose school is absent
+that they can't get access — the opposite of true, and the exact failure this
+project exists to prevent. `_meta.why_no_partner_directory` records the reasoning.
+Don't "complete" the list.
+
+**The highest-value advice on this page is not a plan comparison:** ask your own
+university IT desk or library whether the school already pays for one of these.
+It's free, takes a minute, and routinely goes unasked. Confirm that framing
+survives any rewrite.
+
+---
+
+# D. The AI Clock
+
+## D1. `clock.json` anchor, levels and rates
+
+**Goes stale by design** — it's a projection, re-anchored quarterly.
+
+**Source of truth:** `clock.json` → `_meta.anchor`, `scenarios`, `rates`.
+
+**Copy:** `ai-clock.html` → the `SCENARIOS` and `RATES` fallback block. Keep it in
+sync when you re-anchor, so a failed fetch degrades to the same numbers rather
+than to a silently stale year.
+
+**Automation:** `roll-clock.yml`, 09:00 UTC on 1 Jan / Apr / Jul / Oct. **Rolling
+is not re-anchoring.** The workflow advances the anchor and slides levels along
+their own growth curves — mechanical, and it adds no new real-world data. The PR
+body carries the checklist, and that checklist is the actual work:
+
+- Tokens — latest Google / Microsoft / OpenAI disclosures
+- Prompts — ChatGPT WAU × messages/day
+- Electricity — latest IEA AI-specific TWh
+- Capex — latest hyperscaler guidance
+- Installed compute — latest Epoch AI H100e estimate
+- Frontier training run — latest Epoch record FLOP
+- Users — ChatGPT WAU / Gemini MAU
+- Growth rates — trim any multiplier reality has undershot
+
+**Then update `_meta.reanchor_log` and `_meta.open_questions`.** They carry the
+reasoning between cycles and are the only reason the last re-anchor was cheap.
+
+## D2. Plausibility — now guarded
+
+**Fixed 2026-08-24: `scripts/check-clock.js`.** This was the repo's oldest known
+hole — `validate-site.js` checks that `clock.json` is well-formed, not that its
+numbers are possible, and a capex level 35% above what four companies had
+publicly guided passed cleanly for a quarter.
+
+```bash
+node scripts/check-clock.js
+```
+
+It asserts three things: `ai-clock.html`'s fallback matches `clock.json`; the
+scenarios bracket the published totals recorded in `_meta.plausibility`; and no
+single company's own disclosure is an absurd share of our world total. It was
+validated by replaying the real bug — the pre-2026-08-08 levels fail it at capex
+34.9% off and Google at 80% of all tokens on Earth. It's in CI.
+
+**It covers capex and energy only, deliberately.** Those are the two counters with
+a single authoritative worldwide total. Adding invented targets for tokens,
+prompts, water, CO₂, users, compute or frontier would launder a guess into a
+passing test — worse than no test. `_meta.plausibility.comment` says so, so nobody
+"helpfully" completes the set.
+
+**Still do this by hand:** the share bound is a floor, not a substitute for
+judgement. Ask whether any single disclosed component takes an implausible share
+of a total — that heuristic is what exposed the tokens error, and it generalises
+to counters the script can't check.
+
+**When the script fails, it can't tell you which side is wrong** — only that the
+levels and the published figure disagree. Either reality moved (re-anchor) or the
+levels are wrong (fix them). Resolve that by reading the source it names, never by
+widening the tolerance.
+
+**Maintaining the anchors:** at each re-anchor, update `_meta.plausibility.checks`
+alongside the levels — a tolerance that passes because the target drifted with the
+error is no test at all.
+
+## D3. Page prose vs page numbers
+
+`ai-clock.html` carries a dated narrative for every counter. Rule 4 applies hard
+here — three of the four errors in the last re-anchor were prose contradicting the
+data sitting next to it.
+
+**Standing traps:**
+- **The anchor date renders from `_meta.anchor` into `#anchor-date`. Never hardcode it again.** It was hardcoded as "Jan 1, 2026" and stale for a full quarter.
+- Every `<dd>` names sources with dates. Re-read them against the current levels.
+- The CO₂ copy must keep saying grid intensity is *part of what the scenarios bracket* — the levels imply 230/309/433 g CO₂/kWh, not a flat "~395–400".
+- The fleet-size (">10 GW" vs Epoch's ~30 GW) and user-growth ("~2×/yr" vs ~1.3×) claims were both wrong in prose while `clock.json`'s own `_meta` had them right.
+
+## D4. The counters that can't be verified
+
+- **`frontier`** — no 2026 record training run is publicly confirmed; labs stopped
+  disclosing training compute. Projected from Grok 4 (mid-2025) at 4.5×/yr and
+  labelled on the page as the weakest number. **Don't quote it as sourced.**
+- **`tokens` rate (5×/yr)** — near-term observation supports it (Google disclosed
+  7× YoY at I/O 2026); forecasts to 2030 imply ~2.2×/yr. If the next anchor still
+  shows 5× diverging from reality, that's the counter to cut.
+- **No `unitCost` field, deliberately.** Epoch's ~40×/yr decline measures price at
+  *fixed capability*; the per-unit panel measures blended spend per token — a
+  different quantity, derived as spend ÷ tokens. `_meta.why_no_unit_cost_field`
+  records this so it doesn't get re-added.
+
+---
+
+# E. Transparency Index and datacenters
+
+## E1. `transparency-index.json`
+
+**Re-checked 2026-08-24; `last_verified` now says so. One open question came out
+of it, and it is the biggest single item on this index:**
+
+> **Does Microsoft now publish per-campus water and power?** Third-party coverage
+> (July 2026) says its full 2026 Environmental Sustainability Report breaks both
+> out by named campus. **We could not confirm it on a Microsoft-owned page** — the
+> datacenter efficiency page still gives global and regional PUE/WUE only, and the
+> report PDF was not machine-readable in our tooling. Left `red` and recorded as
+> `open_question` on the row rather than acted on, because a 🟢 requires the
+> company disclosing it itself and "widely reported" is not that. **If true, it is
+> the first grade movement this index has ever recorded** and makes Microsoft the
+> second per-site discloser after Google. Opening that PDF properly is the highest-
+> value task here.
+
+**Contains:** page copy (`_meta`: lede, methodology, caveats), the disclosure
+matrix (`columns`, `rows` — 7 providers), and the three axes.
+
+**Axes state:** environmental is `scored`; pricing and data practices are `pending`
+("criteria not yet defined"). ⚪ is not the same as 🔴 and the copy must keep
+saying so.
+
+**Copy:** `transparency-index.html` → `FALLBACK` is deliberately minimal — it
+renders an *error state*, not stale data. That's correct. Leave it.
+
+## E2. `datacenters.json`
+
+**Goes stale fast** — campuses get announced, capacity comes online, and grades
+change when a watchdog or a utility publishes something the company won't.
+
+**Per site:** `power_mw`, `power_mw_planned`, `water_grade`, `water_note`,
+`sources[]`, `as_of`. Currently 12 sites across 7 providers.
+
+> **Status after the 2026-08-24 pass: 1 of 12 sites re-verified** (xAI Colossus 1 —
+> its Memphis reuse plant now has a TDEC permit effective 2026-02-01 but
+> construction still hasn't started; a permit is not a plant). **The file-level
+> `last_updated` was deliberately left at 2026-07-13**, because bumping it after
+> checking one site would claim a verification that didn't happen. Read the
+> per-site `as_of`, which is the honest granularity and exists for this reason.
+> Rationale is in `_meta.partial_verification`. **The other 11 sites are the
+> largest single block of stale data in the repo.**
+
+**Rules:**
+- A few `power_mw` values are third-party estimates. **Don't move a badge on an estimate.**
+- Early-stage campuses with no meaningful operating capacity are tracked but carry no capacity weight until they're running.
+- Colocation landlords (Equinix, NTT, CyrusOne) aren't scored — they publish fleet-wide efficiency rather than per-AI-site figures, and need their own treatment. Adding them is a decision, not a gap to fill.
+- Grades roll up **capacity-weighted**, so adding a large opaque site moves a provider's grade. Expect that, and re-read the provider row afterwards.
+
+## E3. Hardcoded coverage counts
+
+Adding or removing a site means editing prose in at least two places:
+- `transparency-index.json` → `_meta.caveats` — "12 sites across 7 providers"
+- `PROJECT-CONTEXT.md` §7 — "**12 sites / 7 providers**" plus the per-provider grade list
+
+Same trap elsewhere: "5 of the 8 providers" (Auditor coverage), "26 plans", "all
+56,250 answer combinations". Grep for digits in prose after any structural change.
+
+## E4. The two scales are deliberate
+
+The page grades **public knowability** on a 4-state scale and nests the older
+**disclosure matrix** beneath it. They are different questions and they will
+disagree. **Don't "reconcile" xAI's 🟡-vs-🔴** — it's documented in
+`_meta.detail.note`.
+
+---
+
+# F. Water intensity
+
+## F1. `extension/water.json`
+
+**Two dates now, and the split matters.** Until 2026-08-24 this file had one
+`_last_updated`, which moved every time a tier was added for a new model — so
+routine model additions made the ml-per-token estimates look freshly verified when
+they hadn't been re-read since Dec 2025. Now:
+
+- **`_last_updated`** — when the file last changed (usually a new model's tier).
+- **`_tiers_last_sourced`** — when the intensity figures were last checked against primary research. Currently `2025-12`.
+
+The anchors remain Google's 0.26 ml per median Gemini text prompt (Aug 2025) and
+Altman's 0.32 ml per ChatGPT query (Jun 2025). **No provider has published a newer
+per-token figure**, and a 2026 peer-reviewed comparison found none reports an
+AI-specific water metric at all — so "not disclosed" is still the finding here.
+
+**The silent failure:** a model priced in `prices.json` with no `water.json` tier
+renders **no water figure at all**, with no error. That gap had accumulated across
+nine models before it was caught.
+
+**Tiers:** `large` / `medium` / `small` / `tiny`, each with a conservative and an
+academic ml-per-token figure. Adding an untracked model means **choosing** a tier —
+that's a judgement about the model's size, and it's part of why some models are
+deliberately untracked (A3).
+
+**Goes stale when:** a provider publishes real per-token water data (nobody has
+yet), or the underlying academic estimates are revised. Check `_sources` and
+`_methodology` still describe what the numbers actually are.
+
+**Guard:** `check-prices.js` — "priced, no water tier" is its first check.
+
+---
+
+# G. Extension mechanics
+
+## G1. Platform DOM selectors — the biggest unguarded risk
+
+**`extension/content.js` → `PLATFORMS`**, 11 hosts, each with CSS selectors for
+user and assistant messages.
+
+**Nothing tests these.** When a platform ships a redesign the selectors stop
+matching and EcoMeter silently counts nothing — no error, no zero, just a panel
+that stops moving. No script can catch this; it needs a human or a browser.
+
+| Host | Anchored on |
+|---|---|
+| claude.ai | `[data-testid="user-message"]`, `.prose`, plus a special scraper |
+| chatgpt.com / chat.openai.com | `[data-message-author-role]` |
+| gemini.google.com | `user-query` / `model-response` custom elements |
+| grok.com | plus an `x.com` path guard and programmatic injection |
+| chat.mistral.ai · perplexity.ai · copilot.microsoft.com · poe.com · chat.deepseek.com | per-platform selectors |
+
+**Check:** open each platform, send a message, confirm the side panel's count
+moves. `.prose` and the Gemini custom elements are the most fragile — a generic
+class name and framework-specific tags respectively.
+
+> **Not checked on the 2026-08-24 pass — needs Rory.** Verifying these requires
+> being logged in to eleven consumer AI products and sending a real message in
+> each. No script can substitute, and no agent can do it without your sessions.
+> **This is the single largest unguarded risk in the repo**: the failure is
+> silent, and the extension shows a panel that has simply stopped counting.
+
+## G2. Host permissions
+
+`extension/manifest.json` → `host_permissions` + `content_scripts[].matches` must
+stay in step with `PLATFORMS` and with reality (domain moves, new platforms).
+
+**Adding a host is not free:** it triggers store permission re-review and a
+user-facing permission notice on update. The pending build already adds
+`generativelanguage.googleapis.com` for the opt-in Gemini token count, so expect
+that regardless.
+
+**Knock-on:** any change here changes `STORE-SUBMISSION.md` (per-permission
+justifications), `STORE-LISTING.md` (the platform list — see H1), and possibly
+`privacy-policy.html`.
+
+## G3. Tokenizer accuracy bands
+
+`extension/sidepanel.js` → `METHOD_ACCURACY`. These are user-facing claims about
+how wrong we might be, so an optimistic band is a transparency failure, not a
+rounding issue.
+
+| Method | Band | State |
+|---|---|---|
+| `api-visible`, `exact-local`, `tiktoken-exact` | 0% | exact |
+| `estimated` | ±11% | **measured** by `calibrate-tokenizer.js` |
+| `tiktoken-approx`, `sp-estimated` | ±10% | **unmeasured guesses** — don't quote as measured |
+
+**A "±8%" claim sat in a comment for months and was false** — measured 12.9% MAE
+with a −9.4% systematic undercount.
+
+**Re-measure when a provider changes tokenizer.** Anthropic already has: Claude 4.7
+and later produce ~30% more tokens for the same text than 4.6 and earlier, so
+identical text is *not* an identical token count across generations, let alone
+across providers. Any cross-model comparison built on a fixed token count
+understates those models by roughly a third.
+
+**Guard:** `calibrate-tokenizer.js` — fails if the UI band is optimistic.
+
+**Open:** validating the two guessed bands needs the relevant tokenizers bundled.
+
+## G4. Bundled tokenizers
+
+`tokenizer_cl100k.js` / `tokenizer_o200k.js` (tiktoken, lazy-loaded),
+`tokenizer_hf.js` (exact-local byte-BPE, self-verifying — DeepSeek), and the
+`tokenizers/` assets staged by `fetch-tokenizers.js` at publish time.
+
+**Goes stale when** a provider ships a new encoding. Symptom: a model routes to the
+wrong encoder and its error band is silently wrong. (GPT-5 routing to the wrong
+encoding was a real bug.) Re-check the model→encoding map after any A3 change.
+
+## G5. Extension version
+
+Three numbers that should agree: `extension/manifest.json` → `version` ·
+`extension/prices.json` → `_meta.version` · what's actually in the store.
+
+**Reactive versioning:** `publish.yml` bumps only when the store rejects the
+current version as a duplicate, so manual bumps are respected and never
+double-bumped. Don't pre-emptively bump.
+
+---
+
+# H. Store listing and policy
+
+## H1. `extension/STORE-LISTING.md`
+
+**Standing rule, at the top of the file:** name supported platforms **at most once,
+in prose, and never in the short description.** v6.12 was rejected 2026-07-29 under
+*Spam and Placement in the Store* (ref **Yellow Argon**) for "excessive keywords",
+quoting the nine-platform list. Code and permissions were never at issue.
+
+**Goes stale when** G2 changes the platform list, or when the copy is edited. The
+current description points at a screenshot ("The screenshots below show the full
+list of supported platforms") — **if that screenshot isn't uploaded, that's its own
+metadata problem, arguably worse than the original rejection.**
+
+## H2. `extension/STORE-SUBMISSION.md`
+
+Paste-ready answers: single purpose, per-permission justifications, the remote-code
+answer, the data-usage disclosure (submitted as **"Website content" only**, with
+reasoning in its §3), and the explanation that the Auditor export is a local file
+save, not an upload.
+
+**Must match the current manifest exactly.** A permission in the manifest with no
+justification here is a rejection.
+
+## H3. `extension/privacy-policy.html`
+
+**Effective date: July 27, 2026.**
+
+Must describe the actual data flows, which today are: nothing leaves the device
+except the two **opt-in, off-by-default, key-gated** provider token-count calls
+(Anthropic for Claude, Google for Gemini), sending only the user's own message
+text to that provider's token-count endpoint.
+
+**Redeploy the hosted policy in the same release as the zip** — the store checks
+the URL resolves and that the policy matches the permissions requested.
+
+If G2 or the token-count behaviour changes, this file and its effective date
+change with it.
+
+## H4. The shipped build vs `main`
+
+**This is a freshness item because what users have is not what this repo says.**
+
+The Chrome Web Store carries a pre-2026-08-02 build with: billed input charged
+~2×, Claude image tokens ~51×, a false "±8%" band, stale prices, no GPT-5.6
+family, export v1. All of it is fixed on `main`. **Nothing has shipped.**
+
+**Every pass should re-ask:** what's the store status (dashboard → the item →
+status + version), and has the fix gone up?
+
+> **Still unanswered as of 2026-08-24 — needs Rory.** This has been the top item
+> since 2026-08-08 and nothing about it can be checked from here: it needs the
+> Chrome Web Store dashboard. Meanwhile `main` has gained another two weeks of
+> corrections the shipped build doesn't have, including today's price refresh, so
+> **the gap between what users run and what this repo says is still widening.**
+> Local state: `manifest.json` and `prices.json._meta.version` agree at 6.12.
+
+| Status | Action |
+|---|---|
+| Pending review | Store blocks new uploads. Wait it out, then upload immediately. |
+| Published | Upload now — needs a bump to 6.13 (6.12 would be a duplicate). |
+| Rejected | Upload unblocked. If it was Yellow Argon again, the fixed copy is already in `STORE-LISTING.md`. |
+
+Also worth asking: did the submission use the **old** description? If it was pasted
+from the dashboard's existing text rather than `STORE-LISTING.md`, it carries the
+nine-platform list and another rejection is near-certain regardless of code.
+
+**Windows build traps are in `PROJECT-CONTEXT.md` §11** — there are two, and the
+dangerous one *uploads successfully* and just ships broken icons and fonts.
+
+---
+
+# I. Copy and docs
+
+## I1. `PROJECT-CONTEXT.md`
+
+§0 is titled "as of `<date>`" and carries ship status, the last three sessions'
+work, and 13 numbered open threads. **It is the file most likely to describe a
+state that no longer exists.** Every pass: update §0's date, correct the ship
+status, and close or re-rank the open threads.
+
+## I2. `README.md`
+
+Known stale and extension-focused. Doesn't describe the website, the four site
+tools, or the guard scripts.
+
+## I3. Comments that describe the code wrongly
+
+Rule 4 applies to code as much as data.
+
+**Worked example, fixed 2026-08-24:** `pricing.html`'s header comment said
+*"Subscription prices are NOT in prices.json, so the SUBSCRIPTIONS array below is
+still maintained by hand. Verified June 2026"* — while the fetch handler further
+down assigns `SUBSCRIPTIONS = data.subscriptions` from `prices.json`. Two facts out
+of date, and the kind of thing that sends the next person editing the wrong file.
+Now corrected, with a line recording what it used to claim.
+
+The 2× billed-input and 51× image-token bugs both sat in **well-commented functions
+whose comments confidently described the wrong behaviour.** Treat a confident
+comment as a claim to check, not as documentation.
+
+## I4. `index.html`
+
+Tool cards, claims, and the EcoMeter store link. Check the store link resolves, and
+that each card's copy still matches what the tool does — the Auditor gained student
+routes and a break-even figure since those cards were written.
+
+## I5. Google Fonts
+
+Site pages load fonts from `fonts.googleapis.com`. **This is the one privacy wart**,
+and it's an open item to fix, not a precedent to extend. `pricing.html` already has
+commented-out self-hosted `@font-face` blocks and the extension already ships its
+own fonts in `extension/fonts/` — the pattern exists, it just hasn't been applied
+site-wide. Don't add a second remote asset.
+
+---
+
+# J. Repo hygiene
+
+## J1. Stale branches
+
+Confirm before deleting — this is the check, not a formality:
+
+```bash
+git branch --merged main
+```
+
+**As of 2026-08-24, 16 branches are provably merged into `main`** and can go:
+`chore/clock-reanchor-2026-q3`, `chore/price-refresh-2026-08-02`,
+`ci/validate-site`, `docs/project-context-refresh`, `feat/auditor-per-model-cost`,
+`feat/ecometer-per-model-export`, `feat/ecometer-tokenizer-accuracy`,
+`feat/opus-5-and-auditor-panel`, `feat/plan-value-columns`,
+`feat/shared-data-free-tier`, `feat/transparency-index`,
+`feat/transparency-site-depth`, `fix/ai-clock-model`,
+`fix/auditor-accuracy-2026-08`, `fix/homepage-store-links`,
+`fix/weekly-publish-workflow`.
+
+**Two are NOT merged and must not be deleted blind:** `docs/project-context-2026-07`
+and `feat/subscription-auditor`. The doc previously listed the first of these as
+"superseded, deletable" — it isn't merged, so deleting it would lose whatever is on
+it. Check before believing a list like this, including this one.
+
+**Not deleted on the 2026-08-24 pass, deliberately:** a second session was working
+in this tree at the time, and deleting branches under a concurrent session is a
+bad trade for tidiness. Left for Rory.
+
+## J2. Committed build artifacts
+
+`ecometer-ai-v6.12.zip` sits at the repo root (1.7 MB). `.gitignore` has `*.zip` and
+`git ls-files` shows nothing tracked, so it's an untracked local leftover — safe to
+delete locally. Just don't commit one.
+
+---
+
+# Verification suite — run all seven, last
+
+```bash
+node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/test-auditor.js && node scripts/check-clock.js && node scripts/test-cost-model.js && node scripts/calibrate-tokenizer.js && node scripts/validate-site.js
+```
+
+| Script | Covers | Doesn't cover |
+|---|---|---|
+| `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models | **Never opens `audit.html`** |
+| `check-auditor.js` | `audit.html` + `pricing.html`'s `FALLBACK_LIMITS`, against `prices.json` / `plan-limits.json` / `student-access.json` | `pricing.html` prices — that's `check-prices.js` |
+| `test-auditor.js` | Sweeps all 56,250 answer combinations + the EcoMeter import | Whether the underlying data is *true* |
+| `check-clock.js` | Clock fallback parity; capex/energy levels vs published totals; one-company share bound; hardcoded anchor date | Counters with no authoritative total — by design, not omission |
+| `test-cost-model.js` | 44 assertions: billed input, image tokens, long-context tiers, export v2 | — |
+| `calibrate-tokenizer.js` | Measures the estimator; fails if the UI band is optimistic | The two guessed bands (G3) |
+| `validate-site.js` | HTML/JSON well-formedness, page references | **Plausibility of any number** |
+
+**In CI** (`validate-site.yml`, on PRs into `main` and pushes to `main`):
+`validate-site.js`, `check-auditor.js`, `test-auditor.js`, `check-clock.js`. The
+other three are manual — running them is part of a freshness pass.
+
+**Data checks and behaviour checks catch different things.** `check-auditor.js`
+would never have found the downgrade bug that told 450 of 56,250 answer
+combinations to drop to a free tier that throttles image generation — every file
+was internally consistent. Sweeping the answer space found it in seconds. When a
+change touches what the engine *decides* rather than what the data *says*,
+`test-auditor.js` is the one that matters.
+
+---
+
+# What a pass should report
+
+Per entry, one line: **current** / **fixed (what changed)** / **needs Rory (why)**.
+
+"Needs Rory" is the right answer for anything requiring a login (Google's student
+page), a browser (G1 selectors), the store dashboard (H4), an EcoMeter export (B3),
+or a scope judgement (B4, E2 colo landlords). Don't guess past a blocker — flag it
+and finish everything else.
+
+End with: the six scripts' output, and a one-line update to the **Last full pass**
+date at the top of this file.

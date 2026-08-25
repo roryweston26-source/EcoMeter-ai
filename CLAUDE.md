@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file is auto-loaded into every session. It states the mission and the rules that don't change. **Read [`PROJECT-CONTEXT.md`](PROJECT-CONTEXT.md) next** for architecture, data flow, and how to ship — it's the deep dive; this is the compass.
+This file is auto-loaded into every session. It states the mission and the rules that don't change. **Read [`PROJECT-CONTEXT.md`](PROJECT-CONTEXT.md) next** for architecture, data flow, and how to ship — it's the deep dive; this is the compass. **[`FRESHNESS.md`](FRESHNESS.md)** is the third: every number and claim here that goes stale, where its copies live, and what to check it against — reference it to re-verify the project in one pass.
 
 ## Mission
 
@@ -39,6 +39,7 @@ Honest, plain, **zero bullshit**. No marketing gloss, no false certainty, no cla
 ## Working notes
 
 - **Solo project.** Rory builds this alone; there's no team audience to write around. Optimize for his continuity across sessions, not onboarding a crowd.
+- **Anything time-sensitive goes in [`FRESHNESS.md`](FRESHNESS.md).** If a change adds a figure that will expire, a claim that needs re-verifying, or a seventh copy of existing data, add its entry there in the same commit — otherwise it rots unwatched.
 - **Shipping:** website auto-deploys on merge to `main`; the extension is a manual/store flow. Full detail in `PROJECT-CONTEXT.md` §10.
 - **PRs:** `gh` CLI is installed and authenticated — use it to open/merge PRs.
 - When the mission, a principle, or a rule shifts in conversation, update **this file** (or `PROJECT-CONTEXT.md`) so it survives the session — don't let it live only in chat.
