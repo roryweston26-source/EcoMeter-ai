@@ -17,8 +17,13 @@
   - To add/remove/rename a model or change its order: edit MODEL_REGISTRY.
   - FALLBACK_PRICES is only a safety net shown if the live fetch ever fails.
 
-  Subscription prices are NOT in prices.json, so the SUBSCRIPTIONS array below
-  is still maintained by hand. Verified June 2026.
+  Subscription prices come from prices.json too — the SUBSCRIPTIONS array below
+  is a FALLBACK, overwritten by data.subscriptions on a successful fetch. Edit
+  the numbers in prices.json, not here; keep this block in step so a failed
+  fetch degrades to the same figures rather than to silently stale ones.
+  (This comment used to say subscriptions were hand-maintained and "Verified
+  June 2026" — untrue on both counts since the shared-data change. A confident
+  comment is a claim to check, not documentation.)
 
   Self-hosted fonts: drop your Syne / DM Mono files into the site and fill in the
   @font-face blocks below. Until then it falls back cleanly to system fonts.

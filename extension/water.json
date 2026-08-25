@@ -1,6 +1,8 @@
 {
   "_comment": "Water estimates in milliliters per token. Two scopes: conservative (company-reported, on-site cooling only) and academic (full lifecycle including electricity generation water). Update as new research emerges.",
-  "_last_updated": "2026-07-27",
+  "_last_updated": "2026-08-24",
+  "_tiers_last_sourced": "2025-12",
+  "_date_fields_note": "_last_updated is when this FILE last changed, which is usually just adding a tier for a newly-priced model. _tiers_last_sourced is when the underlying ml-per-token figures were last checked against primary research — a different and much slower-moving thing. These were one field until 2026-08-24, which let routine model additions make the intensity estimates look freshly verified when they had not been re-read since Dec 2025. The anchors remain Google's 0.26ml per median Gemini text prompt (Aug 2025) and Altman's 0.32ml per ChatGPT query (Jun 2025); no provider has published a newer per-token figure, and a 2026 peer-reviewed comparison found that no company reports any AI-specific water metric at all.",
   "_sources": [
     "Li et al. 2023 - Making AI Less Thirsty (UC Riverside / UT Arlington) - arxiv.org/abs/2304.03271",
     "Google official disclosure - Measuring the environmental impact of AI inference - cloud.google.com/blog - Aug 2025",
