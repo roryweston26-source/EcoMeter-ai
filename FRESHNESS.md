@@ -575,6 +575,49 @@ saying so.
 **Copy:** `transparency-index.html` → `FALLBACK` is deliberately minimal — it
 renders an *error state*, not stale data. That's correct. Leave it.
 
+## E1b. The annual provider-report re-read — do this every August
+
+**Added 2026-08-25 after Google and Meta turned out to be a full reporting cycle
+stale.** The Microsoft find made us check the others, and both were out of date:
+we were citing Google's *2024* Environmental Report and Meta's *2024*
+Sustainability Report while the 2026 and 2025 editions had shipped.
+
+**The naming trap — this is what makes staleness invisible.** A provider's report
+title is not its data year, and the offset is different per provider:
+
+| Document | Title year | Data year |
+|---|---|---|
+| Google Environmental Report | 2026 | FY2025 |
+| Microsoft Environmental Sustainability Report + Data Fact Sheet | 2026 | FY25 (to 2025-06-30) |
+| Meta Sustainability Report + Environmental Data Index | 2025 | CY2024 |
+
+So "Meta 2025" is **older data** than "Google 2026" by a year, and a row citing
+"Meta 2024 Sustainability Report" is two cycles behind, not one. **Never compare
+providers on title year.** Meta's comparability cell records this explicitly.
+
+**The companion data document is where the granular tables live** — the flagship
+report is narrative. This is the single most useful lesson from this pass:
+
+- Google — **2026 Environmental Report**, "Water use by data center location"
+  (withdrawal + discharge + consumption, 36 named locations, 8 countries, inside
+  assurance scope). <https://sustainability.google/reports/google-2026-environmental-report/>
+- Microsoft — **Environmental Data Fact Sheet**, Table 15 (withdrawal only,
+  29 locations, **outside** assurance scope). Not the flagship report.
+- Meta — **Environmental Data Index**, §2.1 per-facility electricity and §1.1
+  per-facility emissions; **no per-facility water** (§3.1–3.4 are aggregate).
+  <https://sustainability.atmeta.com/asset/2025-environmental-data-index/>
+
+**Run it with `curl` + `pdftotext`,** not WebFetch — see the note in E1. Google's
+report is 98 pages / 23MB; WebFetch will not read it.
+
+**What moved on 2026-08-25:** Google `site_level` note corrected (24 → 36
+locations, and it publishes consumption, which we had not recorded); `energy_source`
+64% → 65% CFE and emissions ~51% → **62%** above the 2019 base year;
+`replenishment` gained the 78%-of-consumption figure. Meta `site_level` rewritten
+— it now reports **per-facility electricity and emissions**, which our note denied;
+held 🟡 only because per-site *water* is still missing. No grade letter changed for
+either provider, but four notes were materially wrong.
+
 ## E2. `datacenters.json`
 
 **Goes stale fast** — campuses get announced, capacity comes online, and grades
