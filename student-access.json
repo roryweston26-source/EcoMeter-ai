@@ -1,8 +1,8 @@
 {
   "_meta": {
     "comment": "What each provider actually offers students and teachers, and how well it is disclosed. Read by audit.html when the user says they're a student or teacher. Joins to extension/prices.json 'subscriptions' on 'p'. Same standard as plan-limits.json: 'not offered' is a finding, and an unverifiable claim is recorded as unverifiable rather than repeated.",
-    "last_verified": "2026-08-08",
-    "finding": "Almost none of the “AI student discounts” you'll read about are offers you can actually sign up for. Of the eight providers we track, exactly one publishes a student price on its own pricing page — Mistral, at $5.99/mo. OpenAI and Anthropic offer individual students nothing; what they have is institutional, bought by your university and invisible to you unless someone tells you. And Google's famous free year for students closed on 30 April 2026, which almost nothing on the internet has noticed — search results still describe it as if you can claim it today. So the highest-value thing you can do isn't comparing plans at all. It's asking your own university IT desk or library whether the school already pays for one of these. That question is free, takes a minute, and routinely goes unasked.",
+    "last_verified": "2026-08-24",
+    "finding": "This changed sharply between our 2026-08-08 and 2026-08-24 checks, and it changed in students' favour. Three of the providers we track now have a student route you can actually claim yourself: Google is again giving 12 months of AI Pro free in the US (AI Plus in 140+ other markets), redeemable until 31 December 2026; GitHub's free Copilot for verified students is being granted again after a pause; and Mistral publishes a $5.99/mo student rate. OpenAI and Anthropic still offer individual students nothing — what they have is institutional, bought by your university and invisible to you unless someone tells you. DeepSeek is free for everyone anyway. Two warnings that matter more than the list: the Google year requires a payment method up front and converts to $19.99/mo automatically when it ends, so it is only free if you diarise the cancellation; and whatever you do, ask your own university IT desk or library whether the school already pays for one of these before you pay for anything. That question is free, takes a minute, and routinely goes unasked.",
     "why_no_partner_directory": "We deliberately do NOT ship a list of partner universities presented as complete, because no provider publishes one. Anthropic's higher-education page shows nine institution logos with no terms, no directory and no way to check membership; Syracuse's own announcement describes itself as 'one of the first universities', so the set is growing and any snapshot is stale on arrival. A partial list rendered as authoritative would tell a student whose school is absent that they cannot get access — the opposite of true, and the exact failure this project exists to prevent. The named institutions below are labelled as examples and must never be rendered as a lookup.",
     "provenance_legend": {
       "disclosed": "The provider publishes this on its own site. Safe to state as fact.",
@@ -13,7 +13,8 @@
     },
     "caveats": [
       "Verified from provider-owned pages only. Third-party 'student discount' blogs were checked and rejected: several quote Google AI Pro at $28.99/mo when Google's own page says $19.99, and every site claiming a Claude coupon code is selling something.",
-      "EXPIRED OFFERS OUTLIVE THEMSELVES, and this is the main way a page like this goes wrong. Google's free 12-month student trial closed on 2026-04-30, yet search results, AI summaries and the entire discount-blog genre still describe it in the present tense — it is the single most confidently-repeated false claim in this area. When re-verifying, do not ask 'does an offer exist'; ask 'what is the redemption deadline, and has it passed'. A snippet with no date attached is worthless here.",
+      "EXPIRED OFFERS OUTLIVE THEMSELVES. Google's previous free 12-month student trial closed on 2026-04-30, yet search results, AI summaries and the entire discount-blog genre went on describing it in the present tense for months. When re-verifying, do not ask 'does an offer exist'; ask 'what is the redemption deadline, and has it passed'. A snippet with no date attached is worthless here.",
+      "AND A VERIFIED ABSENCE EXPIRES TOO — this is the inverse of the rule above, and we got caught by it. On 2026-08-08 we checked carefully, found Google's student offer genuinely dead, and recorded 'none' with sources. By 2026-08-24 Google had relaunched it and we were telling students there was nothing to claim while a free year worth about $240 sat on Google's own site. A false negative here is worse than a false positive: it costs the reader money and it is invisible, because nobody writes an article correcting a discount that quietly came back. So re-check the 'none' and 'paused' rows as hard as the live ones. The rule is not 'beware stale offers' — it is 'a status of any kind has a shelf life, including one you were right about'.",
       "Offers are regional and change without notice. Everything here carries an as_of date; treat anything older than a month or two as needing a re-check.",
       "Absence of a route here means we could not verify one, not that none can possibly exist — particularly for institutional programmes, which are announced per-campus and not centrally listed."
     ]
@@ -28,7 +29,7 @@
       "detail": "OpenAI's pricing FAQ names only two education programmes and neither is a consumer discount: ChatGPT for Teachers, free for verified U.S. K-12 educators through June 2027, and ChatGPT Edu, which universities buy for their campus. There is no reduced individual rate on Go, Plus or Pro.",
       "action": "If your university has bought ChatGPT Edu you may already have access through your student account — worth checking with IT before paying for Plus.",
       "source": "https://openai.com/chatgpt/pricing/",
-      "as_of": "2026-08-08"
+      "as_of": "2026-08-24"
     },
     {
       "p": "anthropic",
@@ -37,43 +38,44 @@
       "detail": "Claude for Education gives students and staff at partner institutions access their university has arranged. It cannot be bought or claimed individually, and Anthropic publishes no directory of participating schools — only a handful of logos. Claude Pro is $20/mo, or $17/mo billed annually, for everyone else.",
       "action": "Ask your university IT or library whether they have Claude for Education. It is the only way to find out, and it costs nothing to ask.",
       "source": "https://claude.com/solutions/education",
-      "as_of": "2026-08-08"
+      "as_of": "2026-08-24"
     },
     {
       "p": "google",
-      "provenance": "none",
-      "headline": "The famous free student year has expired — you'll still be told it exists.",
-      "detail": "Google ran a 12-month Google AI Pro trial at no cost for SheerID-verified students, and it is the offer nearly every “student discount” article still describes. Google's own terms pages give its deadlines: 9 December 2025 for the international offer, and 30 April 2026 for the US one. Both have passed. Google's current AI plans page and its current “Get a Google AI Pro membership” help page mention no student offer at all. We could not confirm any replacement rate on a Google-owned page — Google's student landing page sits behind a sign-in.",
-      "action": "Don't spend time hunting for the free year. If you want to be certain, sign in at one.google.com/ai-student with your student address — that's the only page that shows what, if anything, you're currently offered. Note AI Plus is $4.99/mo anyway, which is cheaper than most student rates elsewhere.",
-      "source": "https://one.google.com/offer/studentoffer6",
-      "as_of": "2026-08-08"
+      "provenance": "disclosed",
+      "headline": "The free student year is back — 12 months of Google AI Pro, claim by 31 Dec 2026.",
+      "detail": "Google relaunched the offer we recorded as dead. US college students get 12 months of Google AI Pro (normally $19.99/mo) at no cost; students in 140+ other markets get 12 months of Google AI Plus (normally $4.99/mo). Verification is via SheerID with a school email address. The redemption deadline is 31 December 2026. Excluded from the US offer: Bolivia, Albania, Canada, Macau, Hong Kong and Tunisia. This is the largest single saving available to a student anywhere in what we track — about $240 over the year.",
+      "action": "Claim it at one.google.com/ai-student or gemini.google.com/students before 31 Dec 2026. Two things to know before you do: a valid payment method is required at sign-up, and it converts automatically to $19.99/mo when the year ends unless you cancel first. Put a reminder in your calendar for month 11 — the auto-conversion is where this offer stops being free.",
+      "source": "https://blog.google/innovation-and-ai/products/gemini-app/student-offer-google-ai/",
+      "history": "Recorded as 'none' on 2026-08-08 and that was correct at the time: the previous run of this offer closed 2026-04-30 (US) and 2025-12-09 (international), and Google's plans and help pages then mentioned no student offer. It was relaunched some time before 2026-08-24. See _meta.caveats on why a verified absence expires too.",
+      "as_of": "2026-08-24"
     },
     {
       "p": "microsoft",
-      "provenance": "paused",
-      "headline": "Copilot via the GitHub Student Pack — currently paused.",
-      "detail": "The GitHub Student Developer Pack has historically included GitHub Copilot for verified students. As of this check new sign-ups are 'temporarily paused', and the included tier is standard Copilot rather than Copilot Pro.",
-      "action": "Worth re-checking if you code — verification is free and the pack carries a lot besides Copilot. Many universities also include Microsoft 365 for students at no cost.",
-      "source": "https://education.github.com/pack",
-      "as_of": "2026-08-08"
+      "provenance": "disclosed",
+      "headline": "Copilot is free again for verified students — the pause is over.",
+      "detail": "GitHub's education page states Copilot Student is \"available for free to verified students, teachers, and open-source maintainers\". The sign-up pause we recorded on 2026-08-08 has ended. The free student plan is not Copilot Pro: it runs on automatic model selection only, so the premium models cannot be hand-picked, and chat and agent use draw on a monthly AI-credit allowance rather than being unlimited. Code completion is unlimited.",
+      "action": "Verify through GitHub Education if you code — it's free, and the Student Pack carries a lot besides Copilot. Many universities also include Microsoft 365 for students at no cost. Note this is a GitHub route: it does not give you the Copilot consumer app that Microsoft 365 Premium includes.",
+      "source": "https://github.com/education/students",
+      "as_of": "2026-08-24"
     },
     {
       "p": "deepseek",
       "provenance": "none",
       "headline": "No student discount, because there's nothing to discount.",
-      "detail": "DeepSeek has no paid consumer tier — the web chat is free for everyone, with fair-use throttling. Note DeepSeek has said it plans to raise prices significantly, though that concerns its API rather than the free chat.",
+      "detail": "DeepSeek has no paid consumer tier — the web chat is free for everyone, with fair-use throttling. The price rise DeepSeek had been warning about landed in August 2026 (roughly 3x input, 4.5x output), but that applies to its API, not the free chat, so nothing changes for you as a student using the app.",
       "action": "Nothing to do. If cost is your main constraint this is already the cheapest capable option available to you.",
-      "as_of": "2026-08-08"
+      "as_of": "2026-08-24"
     },
     {
       "p": "mistral",
       "provenance": "disclosed",
       "not_audited": true,
-      "headline": "$5.99/mo for students — the only student price published on any provider's own pricing page.",
-      "detail": "Le Chat Pro is $14.99/mo normally and Mistral states a student rate of $5.99/mo directly on its pricing page. We don't yet audit Mistral, so we can't tell you whether it fits your usage — but it is the one verified student discount among everything we track.",
-      "action": "If you're paying $20/mo elsewhere mainly for general chat, this is worth twenty minutes of your time to try.",
+      "headline": "$5.99/mo for students — a published student price, no verification maze.",
+      "detail": "Mistral's pricing page states: \"Verified students can get Mistral Pro for $5.99 / month (normally $14.99).\" Note the product is now branded Vibe (formerly Le Chat) and the plan is listed simply as Pro; we keep the plan key 'Le Chat Pro' because it is the join across our price and limit files, not because that is still the display name. We don't yet audit Mistral, so we can't tell you whether it fits your usage.",
+      "action": "Cheaper per month than Google's offer is after year one, and it doesn't lapse into a $19.99 charge. If you mainly want general chat and dislike auto-renewing trials, compare it against the Google year rather than assuming free wins.",
       "source": "https://mistral.ai/pricing",
-      "as_of": "2026-08-08"
+      "as_of": "2026-08-24"
     }
   ],
 
@@ -93,6 +95,6 @@
     ],
     "also": "Anthropic has a separate partnership with CodePath, which reaches students at community colleges, state schools and HBCUs.",
     "source": "https://claude.com/solutions/education",
-    "as_of": "2026-08-08"
+    "as_of": "2026-08-24"
   }
 }
