@@ -618,6 +618,50 @@ locations, and it publishes consumption, which we had not recorded); `energy_sou
 held 🟡 only because per-site *water* is still missing. No grade letter changed for
 either provider, but four notes were materially wrong.
 
+## E1c. The four rows finished on 2026-08-25
+
+**Amazon was wrong in both directions.** Our note said "no site-level and no
+historical tables"; AWS publishes a **public per-Region table** — PUE 2022–2025,
+WUE 2024–2025, by named Region — and the report carries a five-year global WUE
+series (0.25 → 0.12). Moved 🔴→🟡 on four cells. **The distinction that matters
+and must not be lost:** what is public is *efficiency ratios*; absolute volumes
+exist only as one global total (2.5B gal, 2025) or at Region/service/account
+granularity **inside a paying customer's AWS Sustainability Console**. Granular
+data that only customers can see is not public disclosure — that gap is the whole
+reason this project exists, and the cell says so.
+
+**xAI / OpenAI / Anthropic: re-verified, not assumed.** All three stay 🔴 across
+all six dimensions, but the finding now rests on Aug 2026 reporting rather than
+the Dec 2025 trackers. **A verified absence expires too** — same lesson as the
+Google student offer (§C). Anthropic's Transparency Hub is linked directly so the
+absence is checkable rather than asserted.
+
+> **The date to watch: November 2026.** California's SB 253 requires Scope 1 and 2
+> reporting from large companies operating in the state. If OpenAI and Anthropic
+> comply, these rows move for the first time. Both may classify the bulk as
+> Scope 3 and delay to **2027**; EU requirements follow by 2029. Re-check in
+> November, not next August.
+
+**Conflicting figures were shown as ranges, not picks,** per the standing rule:
+xAI's Memphis aquifer draw is cited as ~1.3M–5M gal/day depending on source,
+facility and period, and reported turbine counts differ across sources, so no
+count is stated.
+
+## E1d. `source_url` is 42/42 — keep it there
+
+`_meta.methodology` says "Every grade links to its sources." Until 2026-08-25
+that was **false** — 36 of 42 cells rendered as plain text. It is now true, and all
+12 distinct URLs were HTTP-checked.
+
+**If you add a provider or a dimension, add the link in the same commit.** The page
+makes a promise about itself; breaking it is the exact failure this index grades
+others for.
+
+**Two sources 403 a bare `curl` but load fine in a browser** (Fortune, CNBC) — that
+is bot-blocking, not a dead link. Where it happened the cell links to a reachable
+equivalent: the syndicated Insurance Journal copy, and SELC's own page. Don't
+"fix" those by swapping in the paywalled original.
+
 ## E2. `datacenters.json`
 
 **Goes stale fast** — campuses get announced, capacity comes online, and grades
