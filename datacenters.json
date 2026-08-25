@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "last_updated": "2026-07-13",
-    "partial_verification": "On 2026-08-24 a freshness pass re-verified ONE site (xai-colossus-1) and deliberately did NOT bump last_updated: claiming a file-level verification after checking 1 of 12 sites would be exactly the kind of unearned confidence this project exists to call out. Per-site as_of is the honest granularity — read those. The 11 sites still carrying their original as_of are the backlog, and they are the largest single block of stale data in the repo. RESOLVED 2026-08-24: the Microsoft per-campus question is answered. Microsoft does publish location-level water and electricity itself — 2026 Environmental Data Fact Sheet, Table 15, 29 named locations — so site_level in transparency-index.json moved opaque to transparent. NO grade in this file changed, deliberately: Table 15 covers Microsoft-OWNED datacenters under its own operational control for FY25 (ended 2025-06-30), which excludes the QTS-leased Fairwater Atlanta and contains no Mount Pleasant row. Both site notes now record that, so the finding is not re-litigated. The 11 stale sites remain the backlog and are now the highest-value thing to check next on this file.",
+    "last_updated": "2026-08-25",
+    "verification_status": "FULL PASS 2026-08-25: all 12 sites re-verified, and last_updated is bumped for the first time since 2026-07-13 because the file-level claim is finally earned. The previous entry recorded a 1-of-12 partial pass and warned that the other 11 were the largest block of stale data in the repo; that backlog is cleared. Per-site as_of is still the honest granularity — read those. TWO GRADING CALLS ARE FLAGGED RATHER THAN RESOLVED, and both are deliberate: (1) google-the-dalles is published by Google itself in the 2026 report, which by the stated rule would make it transparent, but is held partial to preserve the 'who had to surface it' reading in the page lede; (2) aws-anthropic-new-carlisle has no operational water figure from anyone, which by the Fairwater-Atlanta rule would make it opaque, but is held partial on the Abilene precedent — flipping it would move Amazon/Anthropic's provider badge from partial to opaque on that site's 1,100 MW weight alone. Neither was changed silently. Both are Rory's call.",
     "methodology_note": "Environmental-impact grades are a capacity-weighted average across each provider's known AI data center sites. See 'How we grade this' for full methodology."
   },
   "sites": [
@@ -13,7 +13,7 @@
       "power_mw": 631,
       "power_mw_planned": 854,
       "water_grade": "opaque",
-      "water_note": "Still no Meta-specific figure after a deeper look. Water is supplied wholesale by the City of Columbus and only a park-level aggregate is public — ~8M gal/day peak across all New Albany International Business Park tenants (Meta, Google, others) as of Apr 2026, against 16M gal/day contracted capacity. Per-operator contractual caps exist but aren't broken out, so Meta's own draw isn't attributable, and the closed-loop systems return effluent to monitored sewers. A local watchdog (Stop Ohio Data Centers) is pressing Ohio EPA on exactly this opacity.",
+      "water_note": "Re-verified 2026-08-25; water grade unchanged and still no Meta-specific figure. Water is supplied wholesale by the City of Columbus and only a park-level aggregate is public — peak draw across ALL New Albany International Business Park tenants (Meta, Google, others) runs about 8M gal/day against 16M gal/day of contracted capacity, concentrated in roughly 5–6 peak days a year when on-site tanks refill. Per-operator contractual caps exist but aren't broken out, so Meta's own draw still isn't attributable; closed-loop systems return effluent to monitored sewers. A local watchdog (Stop Ohio Data Centers) is pressing Ohio EPA on exactly this opacity. WORTH NOTING FOR CONTRAST: Meta's own 2025 Environmental Data Index does now publish per-facility ELECTRICITY for New Albany (OH). So at this campus energy is disclosed by the company and water is not — the split is Meta's choice, not a data limitation.",
       "sources": [
         {"name": "Measured AI — Meta Prometheus & Google Ohio primer",
          "url": "https://measuredai.substack.com/p/meta-prometheus-google-ohio"},
@@ -22,7 +22,7 @@
         {"name": "Stop Ohio Data Centers — data center water usage in Ohio",
          "url": "https://stopohiodatacenters.org/data-center-water-usage-ohio"}
       ],
-      "as_of": "2026-04"
+      "as_of": "2026-08"
     },
     {
       "id": "xai-colossus-1",
@@ -53,12 +53,12 @@
       "location": "South Memphis, TN, USA",
       "power_mw": null,
       "water_grade": "partial",
-      "water_note": "MLGW (the public utility, not xAI) has stated the facility is expected to use up to 1,000,000 gal/day once fully operational. The company has not itself disclosed a figure.",
+      "water_note": "Re-verified 2026-08-25 — this was the stalest entry in the file, last checked 2025-07, and the site has changed substantially since. The first major GPU cluster came online around January 2026; by mid-2026 reporting put it in the range of 300,000–350,000+ GPUs and several hundred MW of IT load, within a wider Colossus complex targeted at ~2 GW. Capacity is deliberately left null: third-party estimates disagree (roughly 450–500 MW is the commonly cited mid-2026 range, against an earlier 140 MW phase figure), and the file's rule is to show conflicting figures as a range rather than pick one — so it displays without a capacity weight. On water, nothing has changed where it matters: MLGW, the public utility, put expected use at up to 1,000,000 gal/day once fully operational, and later reporting cites higher draws still, but every figure comes from the utility, regulators or environmental groups. xAI has disclosed nothing itself, which is why this is partial and not transparent.",
       "sources": [
         {"name": "Inside Climate News — Colossus 2 permitting coverage",
          "url": "https://insideclimatenews.org/news/17072025/elon-musk-xai-data-center-gas-turbines-memphis/"}
       ],
-      "as_of": "2025-07"
+      "as_of": "2026-08"
     },
     {
       "id": "aws-anthropic-new-carlisle",
@@ -68,7 +68,7 @@
       "power_mw": 1100,
       "power_mw_planned": 2250,
       "water_grade": "partial",
-      "water_note": "More voluntary disclosure than most, but no confirmed absolute operational figure. AWS has publicly described its cooling methodology (outside-air cooling most of the year; water used only a few hours/day April–September, none Oct–March) and cited an industry LBNL water-efficiency benchmark. A company rep separately told local news the site draws from a capped regional pool (24M gal/day cap for all regional industrial users) and expects to use water only ~2% of operating hours. Separately — and not the same figure — the county approved a construction-phase dewatering discharge permit for up to 31M gal/day; that's a one-time construction impact, not ongoing operations. Local reporting has documented well and pond depletion attributed to the dewatering phase.",
+      "water_note": "Still no absolute operational water figure for this site, from anyone. AWS has described its cooling methodology — outside-air cooling most of the year, water used only a few hours a day from April to September and none from October to March — and says it expects to withdraw water less than 2% of the year, about a week's worth. But Indiana does not require data centers to report water use, and neither AWS nor any regulator has published an operating volume. What is public is a county-approved construction-phase dewatering permit for up to 31M gal/day — a real, site-specific figure surfaced by a regulator, with well and pond depletion locally documented and attributed to it — plus a company reference to a 24M gal/day cap shared across all regional industrial users, which is not AWS's own draw. This one sits right on the line: a site with no published operating number would normally score opaque here, while the regulator-surfaced construction figure argues for partial. We grade it partial and flag the ambiguity rather than resolving it quietly, because on this campus's 1,100 MW the choice moves Amazon/Anthropic's overall grade.",
       "sources": [
         {"name": "AWS — Project Rainier announcement",
          "url": "https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster"},
@@ -79,7 +79,7 @@
         {"name": "Sierra Club Indiana — Hoosier Data Center blog series",
          "url": "https://www.sierraclub.org/indiana/blog/2025/12/wait-i-use-ai-every-day-i-didn-t-know-hoosier-data-center-industry-blog-0"}
       ],
-      "as_of": "2026-05"
+      "as_of": "2026-08"
     },
     {
       "id": "microsoft-fairwater-wi",
@@ -98,7 +98,7 @@
         {"name": "Tom's Hardware — Nadella 'restaurant' claim, unaudited",
          "url": "https://www.tomshardware.com/tech-industry/big-tech/microsoft-ceo-says-new-ai-data-centers-use-as-little-water-annually-as-a-restaurant-closed-loop-cooling-system-aims-to-slash-consumption-from-millions-of-gallons-as-ai-infrastructure-faces-mounting-environmental-scrutiny"}
       ],
-      "as_of": "2026-06"
+      "as_of": "2026-08"
     },
     {
       "id": "google-council-bluffs",
@@ -107,7 +107,7 @@
       "location": "Council Bluffs, IA, USA",
       "power_mw": 350,
       "water_grade": "transparent",
-      "water_note": "Google is the only major operator to self-report water per data center — its 2024 Environmental Report breaks out ~24 US/Canada sites. Council Bluffs is its thirstiest: ~1.3B gallons of potable water in 2024 (roughly 2.8M gal/day consumed, 3.9M gal/day withdrawn), on evaporative cooling. Figures vary by source and metric (~1.0B consumed / 1.3B potable / 1.4B withdrawn). The disclosure comes from the company itself. (Site power ~350 MW is a third-party estimate — Google does not publish per-site MW.)",
+      "water_note": "Google is the only major operator to self-report water per data center, and the 2026 Environmental Report widened that to 36 named locations across eight countries — no longer the ~24 US/Canada sites we recorded. Council Bluffs remains its thirstiest site, and the 2025 figures come from Google itself: 1,746.4 million gallons withdrawn, 400.4 discharged, 1,346.0 consumed, on evaporative cooling. That is a company disclosure of withdrawal, discharge AND consumption, which no other provider matches, and it sits inside Google's third-party limited-assurance scope. Earlier years vary by source and metric (2024 ≈ 1.0B consumed / 1.3B potable / 1.4B withdrawn), which is why we show ranges for prior years rather than picking. (Site power ~350 MW is a third-party estimate — Google does not publish per-site MW.)",
       "sources": [
         {"name": "Google — Iowa data center location & stewardship",
          "url": "https://datacenters.google/locations/iowa/"},
@@ -116,7 +116,7 @@
         {"name": "DC Hub — Google Council Bluffs facility (power estimate)",
          "url": "https://dchub.cloud/facilities/google-google-council-bluffs-data-center-e6a28ba0"}
       ],
-      "as_of": "2025-06"
+      "as_of": "2026-08"
     },
     {
       "id": "oracle-openai-abilene",
@@ -126,7 +126,7 @@
       "power_mw": 300,
       "power_mw_planned": 1200,
       "water_grade": "partial",
-      "water_note": "One physical facility, listed once to avoid double-counting: Oracle operates it, Crusoe built it, and OpenAI is the AI tenant. Cooling is one-time-fill closed-loop (non-evaporative), and here there are real numbers — from the operator and the city, not the AI tenant: an ~8M-gallon initial fill, then roughly 12,000 gallons per year per building (eight buildings) as top-up, with the mayor putting annual use at about half of what Abilene draws in a single day. That's genuine water disclosure, and closed-loop keeps the actual draw low, so this is a solid partial. The sharper controversy at this site is energy, not water: its on-site gas turbines are permitted to emit ~1.6M tons/year of greenhouse gases, cleared through minor-permit loopholes with little public input (Public Citizen; Texas Tribune). Powered by on-site natural gas plus grid, including some wind.",
+      "water_note": "Re-verified 2026-08-25. One physical facility, listed once to avoid double-counting: Oracle operates it, Crusoe built it, and OpenAI is the AI tenant. Capacity reporting conflicts and we do not pick — Epoch AI, which we track, still puts roughly 0.3 GW operational with about half the eight buildings live, while other coverage describes the campus as heading to or reaching 1.2 GW; the 300 MW weight here follows Epoch's conservative operational figure, not the headline. Cooling is one-time-fill closed-loop (non-evaporative) and the water numbers are real, but they come from the operator and the city rather than the AI tenant: an ~8M-gallon initial fill, then roughly 12,000 gallons per year per building as top-up, with the mayor putting annual use at about half what Abilene draws in a single day. That is genuine disclosure and closed-loop keeps the draw low, so this is a solid partial. The sharper controversy remains energy, not water: on-site gas turbines — five in place and more under construction — are permitted to emit ~1.6M tons/year of greenhouse gases, cleared through minor-permit loopholes with little public input (Public Citizen; Texas Tribune). Powered by on-site natural gas plus grid, including some wind.",
       "sources": [
         {"name": "Oracle — Abilene data center",
          "url": "https://www.oracle.com/data-centers/abilene/"},
@@ -137,7 +137,7 @@
         {"name": "Texas Tribune — Planned Texas data centers' emissions (turbine permits)",
          "url": "https://www.texastribune.org/2026/07/09/texas-data-centers-ai-power-plants-pollution-state-permits/"}
       ],
-      "as_of": "2026-06"
+      "as_of": "2026-08"
     },
     {
       "id": "coreweave-polaris-forge",
@@ -146,7 +146,7 @@
       "location": "Ellendale, ND, USA",
       "power_mw": null,
       "water_grade": "opaque",
-      "water_note": "CoreWeave is an AI-specialist cloud that mostly leases capacity (~850 MW active across ~41 sites at end-2025) rather than owning it, so site-level attribution is murky. Its flagship campus — Polaris Forge 1 in Ellendale, ND — is built by Applied Digital and leased by CoreWeave (250 MW, plus a further 150 MW). The operator describes a closed-loop, waterless, direct-to-chip design — coolant trucked in, a WUE 'near zero' — but that's a design claim, not a measured figure; neither CoreWeave nor Applied Digital publishes actual water numbers, and no utility or watchdog has surfaced one. Per the page's rule (a closed-loop site with no published number is opaque), it stays red — genuinely low water use, but not a knowable figure. Capacity is leased and shown without a weight.",
+      "water_note": "Re-verified 2026-08-25; still opaque, and the reason is unchanged. CoreWeave is an AI-specialist cloud that mostly leases capacity rather than owning it, so site-level attribution is murky. Polaris Forge 1 in Ellendale, ND is built and owned by Applied Digital and leased by CoreWeave, now across three lease agreements totalling ~400 MW of critical IT capacity; the first 100 MW building is fully energised and a 150 MW second building was due mid-2026. The operator describes a closed-loop, waterless, direct-to-chip design with a projected PUE of 1.18 and a WUE 'near zero' — but those remain DESIGN PROJECTIONS, not measured figures, and a year on neither CoreWeave nor Applied Digital publishes an actual water number, nor has any utility or watchdog surfaced one. Per the page's rule (a closed-loop site with no published number is opaque), it stays red — genuinely low water use is likely, but it is not a knowable figure. Capacity is leased and shown without a weight.",
       "sources": [
         {"name": "CoreWeave — AI Data Centers",
          "url": "https://www.coreweave.com/ai-data-centers"},
@@ -157,7 +157,7 @@
         {"name": "CoreWeave 10-K (FY2025), SEC EDGAR",
          "url": "https://www.sec.gov/Archives/edgar/data/1769628/000176962826000104/crwv-20251231.htm"}
       ],
-      "as_of": "2025-12"
+      "as_of": "2026-08"
     },
     {
       "id": "meta-hyperion",
@@ -167,7 +167,7 @@
       "power_mw": null,
       "power_mw_planned": 5000,
       "water_grade": "partial",
-      "water_note": "Meta's largest campus yet — a $50B+ build ramping to ~2 GW by 2030 and ~5 GW at full buildout (~2036), so little is operational today. Meta hasn't put this in an environmental report, but real numbers are public via state water-registration records and Meta's own projections (reported by nola.com and WBRZ): up to ~23M gal/day is registered as the maximum, while Meta projects ~1.5M gal/day — 500–600M gal/year — in normal operation once running in 2028, cycled through a closed-loop system and drawn from the Mississippi River Alluvial Aquifer. Critics note sustained pumping near the 23M/day maximum could drop local groundwater 65+ feet. Graded partial: the figures reach the public through state records and local reporting, not a Meta disclosure. Shown for scale; excluded from the weighted average until it has meaningful operating capacity.",
+      "water_note": "Re-verified 2026-08-25; unchanged. Meta's largest campus yet — a $50B+ build ramping to ~2 GW by 2030 and ~5 GW at full buildout (~2036), so little is operational today, and Meta's own 2025 Environmental Data Index (CY2024 data) carries no Louisiana row at all, which is consistent with that rather than evidence of concealment. Meta hasn't put this in an environmental report, but real numbers are public via state water-registration records and Meta's own projections (reported by nola.com and WBRZ): up to ~23M gal/day is registered as the maximum, while Meta projects ~1.5M gal/day — 500–600M gal/year — in normal operation once running in 2028, cycled through a closed-loop system and drawn from the Mississippi River Alluvial Aquifer. Critics note sustained pumping near the 23M/day maximum could drop local groundwater 65+ feet. Graded partial: the figures reach the public through state records and local reporting, not a Meta disclosure. Shown for scale; excluded from the weighted average until it has meaningful operating capacity.",
       "sources": [
         {"name": "Meta — Richland Parish data center (company page)",
          "url": "https://datacenters.atmeta.com/richland-parish-data-center/"},
@@ -178,7 +178,7 @@
         {"name": "Sierra Club — In rural Louisiana, Meta's data center at what cost",
          "url": "https://www.sierraclub.org/sierra/rural-louisiana-meta-s-new-data-center-promises-growth-what-cost"}
       ],
-      "as_of": "2026-07"
+      "as_of": "2026-08"
     },
     {
       "id": "microsoft-fairwater-atlanta",
@@ -187,7 +187,7 @@
       "location": "Atlanta, GA, USA",
       "power_mw": 636,
       "water_grade": "opaque",
-      "water_note": "Microsoft's second Fairwater site — built by QTS with Microsoft as the tenant (a colocation arrangement), wired to the Wisconsin campus as one 'AI superfactory'; ~636 MW of IT capacity operational per Epoch AI, ramping past 700 by end-2026. Microsoft describes a closed-loop liquid-cooling design and cites fleet-wide WUE, but no verifiable water figure is published for this specific site — Epoch's facility record lists none, and neither Microsoft nor QTS has released one; all that exists is Microsoft's qualitative 'closed-loop uses about as much water as a restaurant per year' line. That's less than even the Abilene site, which at least has an ~8M-gal initial-fill number, so on the page's own rule (a closed-loop site with no published number scores opaque) Atlanta is opaque. Re-checked 2026-08-24 against Microsoft's 2026 Environmental Data Fact Sheet: Table 15 does carry an 'Atlanta (GA)' row, and it does NOT cover this site — the table's scope is Microsoft-owned datacenters under Microsoft's own operational control (Fairwater Atlanta is leased from QTS), and it reports FY25, which ended 2025-06-30, before this campus was operational. Do not flip this grade on the strength of that row. Because Atlanta (636 MW) is larger than Mount Pleasant (400 MW), capacity-weighting pulls Microsoft's overall grade to opaque — and with Atlanta verified above 400 MW that flip is robust, not a knife-edge.",
+      "water_note": "Microsoft's second Fairwater site — built by QTS with Microsoft as the tenant (a colocation arrangement), wired to the Wisconsin campus as one 'AI superfactory'; ~636 MW of IT capacity operational per Epoch AI, ramping past 700 by end-2026. Microsoft describes a closed-loop liquid-cooling design and cites fleet-wide WUE, but no verifiable water figure is published for this specific site — Epoch's facility record lists none, and neither Microsoft nor QTS has released one; all that exists is Microsoft's qualitative 'closed-loop uses about as much water as a restaurant per year' line. That's less than even the Abilene site, which at least has an ~8M-gal initial-fill number, so on the page's own rule (a closed-loop site with no published number scores opaque) Atlanta is opaque. Re-checked 2026-08-24 against Microsoft's 2026 Environmental Data Fact Sheet: Table 15 does carry an 'Atlanta (GA)' row, and it does NOT cover this site — the table's scope is Microsoft-owned datacenters under Microsoft's own operational control (Fairwater Atlanta is leased from QTS), and it reports FY25, which ended 2025-06-30, before this campus was operational. So the new table, welcome as it is, does not reach this site, and the grade is unchanged. Because Atlanta (636 MW) is larger than Mount Pleasant (400 MW), capacity-weighting pulls Microsoft's overall grade to opaque — and with Atlanta verified above 400 MW that flip is robust, not a knife-edge.",
       "sources": [
         {"name": "Epoch AI — Microsoft Fairwater Atlanta (facility record; QTS-built, 636 MW)",
          "url": "https://epoch.ai/data/ai-data-centers/directory/microsoft-fairwater-atlanta"},
@@ -198,7 +198,7 @@
         {"name": "Measured AI — Fairwater Atlanta (grid-only gigawatt)",
          "url": "https://measuredai.substack.com/p/microsoft-fairwater-atlanta-data-center"}
       ],
-      "as_of": "2026-06"
+      "as_of": "2026-08"
     },
     {
       "id": "aws-anthropic-canton-ms",
@@ -208,7 +208,7 @@
       "power_mw": 350,
       "power_mw_planned": 1000,
       "water_grade": "partial",
-      "water_note": "The Mississippi half of Project Rainier — the other Anthropic-dedicated Trainium2 build: >350 MW of IT capacity today, ramping past 1 GW, powered by Entergy Mississippi plus new solar farms. Here Amazon has actually put numbers out (via local reporting): the Canton campus is projected to use ~83M gallons/year, drawn from Canton Municipal Utilities and set to shift entirely to recycled wastewater (Madison County Wastewater Authority, with Veolia) by 2027, paired with an aquifer-replenishment program targeting ~150M gal/year of offsets. More disclosure than most — but still a forward projection surfaced largely through local outlets rather than an audited company environmental report, so partial rather than transparent.",
+      "water_note": "Re-verified 2026-08-25; unchanged. The Mississippi half of Project Rainier — the other Anthropic-dedicated Trainium2 build: >350 MW of IT capacity today, ramping past 1 GW, powered by Entergy Mississippi plus new solar farms. Here Amazon has actually put numbers out (via local reporting): the Canton campus is projected to use ~83M gallons/year, drawn from Canton Municipal Utilities and set to shift entirely to recycled wastewater (Madison County Wastewater Authority, with Veolia) by 2027, paired with an aquifer-replenishment program targeting ~150M gal/year of offsets. That shift is a 2027 commitment and has not happened yet — re-check it then. More disclosure than most, but still a forward projection surfaced largely through local outlets rather than an audited company environmental report, so partial rather than transparent. Note the contrast with New Carlisle above: the same programme, the same company, and only one of the two campuses has a published number.",
       "sources": [
         {"name": "Amazon — $25B Mississippi investment (addresses water usage)",
          "url": "https://www.aboutamazon.com/news/company-news/amazon-25-billion-mississippi-data-centers"},
@@ -219,7 +219,7 @@
         {"name": "Semafor — AWS' multi-state AI data center powering Claude",
          "url": "https://www.semafor.com/article/10/29/2025/aws-massive-multi-state-ai-data-center-is-powering-anthropics-claude"}
       ],
-      "as_of": "2026-06"
+      "as_of": "2026-08"
     },
     {
       "id": "google-the-dalles",
@@ -228,7 +228,7 @@
       "location": "The Dalles, OR, USA",
       "power_mw": null,
       "water_grade": "partial",
-      "water_note": "The textbook 'pried loose' case: The Dalles's water figures became public only after The Oregonian sued the city and, following a multi-year fight Google helped resist, a settlement forced annual disclosure. The numbers are real and trending — 461.1M gal withdrawn / 361.4M gal consumed in 2024, ~550M gal in 2025 (~40% of the city's total supply). Google now also reports per-site water in its own environmental report (which is why its flagship Council Bluffs scores transparent); The Dalles is graded partial to reflect that here the figure was surfaced by litigation, not volunteered. No per-site MW is published, so it is shown but not capacity-weighted.",
+      "water_note": "The textbook 'pried loose' case, and now a genuine grading question. The Dalles's water figures first became public only after The Oregonian sued the city and a settlement forced annual disclosure, following a multi-year fight Google helped resist. Google's 2026 Environmental Report now publishes The Dalles itself, in the same table and the same format as Council Bluffs: 654.3 million gallons withdrawn, 185.3 discharged and 469.0 consumed in 2025. We grade it partial rather than transparent, and we would rather show our working than hide the tension: by the rule at the top of this page — transparent means the company discloses it itself — this would be transparent today. We hold it at partial because this index also tracks who had to surface a figure in the first place, and here that was a newspaper and a lawsuit. Reasonable people would grade this differently. No per-site MW is published, so it is shown but not capacity-weighted.",
       "sources": [
         {"name": "Latitude Media — data-center water 'black box,' Google",
          "url": "https://www.latitudemedia.com/news/data-center-water-use-black-box-google-trying-to-change/"},
@@ -237,7 +237,7 @@
         {"name": "The Register — Google, The Dalles water use",
          "url": "https://www.theregister.com/2022/12/19/google_datacenters_dalles/"}
       ],
-      "as_of": "2025-06"
+      "as_of": "2026-08"
     }
   ]
 }

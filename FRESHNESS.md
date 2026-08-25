@@ -575,6 +575,93 @@ saying so.
 **Copy:** `transparency-index.html` → `FALLBACK` is deliberately minimal — it
 renders an *error state*, not stale data. That's correct. Leave it.
 
+## E1b. The annual provider-report re-read — do this every August
+
+**Added 2026-08-25 after Google and Meta turned out to be a full reporting cycle
+stale.** The Microsoft find made us check the others, and both were out of date:
+we were citing Google's *2024* Environmental Report and Meta's *2024*
+Sustainability Report while the 2026 and 2025 editions had shipped.
+
+**The naming trap — this is what makes staleness invisible.** A provider's report
+title is not its data year, and the offset is different per provider:
+
+| Document | Title year | Data year |
+|---|---|---|
+| Google Environmental Report | 2026 | FY2025 |
+| Microsoft Environmental Sustainability Report + Data Fact Sheet | 2026 | FY25 (to 2025-06-30) |
+| Meta Sustainability Report + Environmental Data Index | 2025 | CY2024 |
+
+So "Meta 2025" is **older data** than "Google 2026" by a year, and a row citing
+"Meta 2024 Sustainability Report" is two cycles behind, not one. **Never compare
+providers on title year.** Meta's comparability cell records this explicitly.
+
+**The companion data document is where the granular tables live** — the flagship
+report is narrative. This is the single most useful lesson from this pass:
+
+- Google — **2026 Environmental Report**, "Water use by data center location"
+  (withdrawal + discharge + consumption, 36 named locations, 8 countries, inside
+  assurance scope). <https://sustainability.google/reports/google-2026-environmental-report/>
+- Microsoft — **Environmental Data Fact Sheet**, Table 15 (withdrawal only,
+  29 locations, **outside** assurance scope). Not the flagship report.
+- Meta — **Environmental Data Index**, §2.1 per-facility electricity and §1.1
+  per-facility emissions; **no per-facility water** (§3.1–3.4 are aggregate).
+  <https://sustainability.atmeta.com/asset/2025-environmental-data-index/>
+
+**Run it with `curl` + `pdftotext`,** not WebFetch — see the note in E1. Google's
+report is 98 pages / 23MB; WebFetch will not read it.
+
+**What moved on 2026-08-25:** Google `site_level` note corrected (24 → 36
+locations, and it publishes consumption, which we had not recorded); `energy_source`
+64% → 65% CFE and emissions ~51% → **62%** above the 2019 base year;
+`replenishment` gained the 78%-of-consumption figure. Meta `site_level` rewritten
+— it now reports **per-facility electricity and emissions**, which our note denied;
+held 🟡 only because per-site *water* is still missing. No grade letter changed for
+either provider, but four notes were materially wrong.
+
+## E1c. The four rows finished on 2026-08-25
+
+**Amazon was wrong in both directions.** Our note said "no site-level and no
+historical tables"; AWS publishes a **public per-Region table** — PUE 2022–2025,
+WUE 2024–2025, by named Region — and the report carries a five-year global WUE
+series (0.25 → 0.12). Moved 🔴→🟡 on four cells. **The distinction that matters
+and must not be lost:** what is public is *efficiency ratios*; absolute volumes
+exist only as one global total (2.5B gal, 2025) or at Region/service/account
+granularity **inside a paying customer's AWS Sustainability Console**. Granular
+data that only customers can see is not public disclosure — that gap is the whole
+reason this project exists, and the cell says so.
+
+**xAI / OpenAI / Anthropic: re-verified, not assumed.** All three stay 🔴 across
+all six dimensions, but the finding now rests on Aug 2026 reporting rather than
+the Dec 2025 trackers. **A verified absence expires too** — same lesson as the
+Google student offer (§C). Anthropic's Transparency Hub is linked directly so the
+absence is checkable rather than asserted.
+
+> **The date to watch: November 2026.** California's SB 253 requires Scope 1 and 2
+> reporting from large companies operating in the state. If OpenAI and Anthropic
+> comply, these rows move for the first time. Both may classify the bulk as
+> Scope 3 and delay to **2027**; EU requirements follow by 2029. Re-check in
+> November, not next August.
+
+**Conflicting figures were shown as ranges, not picks,** per the standing rule:
+xAI's Memphis aquifer draw is cited as ~1.3M–5M gal/day depending on source,
+facility and period, and reported turbine counts differ across sources, so no
+count is stated.
+
+## E1d. `source_url` is 42/42 — keep it there
+
+`_meta.methodology` says "Every grade links to its sources." Until 2026-08-25
+that was **false** — 36 of 42 cells rendered as plain text. It is now true, and all
+12 distinct URLs were HTTP-checked.
+
+**If you add a provider or a dimension, add the link in the same commit.** The page
+makes a promise about itself; breaking it is the exact failure this index grades
+others for.
+
+**Two sources 403 a bare `curl` but load fine in a browser** (Fortune, CNBC) — that
+is bot-blocking, not a dead link. Where it happened the cell links to a reachable
+equivalent: the syndicated Insurance Journal copy, and SELC's own page. Don't
+"fix" those by swapping in the paywalled original.
+
 ## E2. `datacenters.json`
 
 **Goes stale fast** — campuses get announced, capacity comes online, and grades
@@ -583,22 +670,45 @@ change when a watchdog or a utility publishes something the company won't.
 **Per site:** `power_mw`, `power_mw_planned`, `water_grade`, `water_note`,
 `sources[]`, `as_of`. Currently 12 sites across 7 providers.
 
-> **Status after the 2026-08-24 pass: 1 of 12 sites re-verified** (xAI Colossus 1 —
-> its Memphis reuse plant now has a TDEC permit effective 2026-02-01 but
-> construction still hasn't started; a permit is not a plant). **The file-level
-> `last_updated` was deliberately left at 2026-07-13**, because bumping it after
-> checking one site would claim a verification that didn't happen. Read the
-> per-site `as_of`, which is the honest granularity and exists for this reason.
-> Rationale is in `_meta.partial_verification`. **The other 11 sites are the
-> largest single block of stale data in the repo — and now the highest-value task
-> on this file, since the Microsoft question that used to hold that slot is
-> closed.**
+> **FULL PASS 2026-08-25: all 12 sites re-verified, backlog cleared.**
+> `last_updated` moved off 2026-07-13 for the first time, because the file-level
+> claim is finally earned. Every `as_of` now reads `2026-08`. Rationale is in
+> `_meta.verification_status` (renamed from `partial_verification`, which was
+> spent). **No provider badge moved** — the two changes that could have move
+> nothing on their own and are flagged below.
 >
-> **Microsoft's new per-location table does NOT move anything here, deliberately.**
-> Table 15 covers Microsoft-**owned** datacenters under its own operational control
-> for **FY25, ended 2025-06-30**. Fairwater Atlanta is QTS-leased *and* was not
-> operational in FY25; there is no Mount Pleasant row at all. Both `water_note`s
-> now say so, to stop a future pass "correcting" a grade that is already right.
+> **Microsoft's per-location table does NOT reach either Fairwater site.** Table 15
+> covers Microsoft-**owned** datacenters under its own operational control for
+> **FY25, ended 2025-06-30**. Fairwater Atlanta is QTS-leased *and* was not
+> operational in FY25; there is no Mount Pleasant row at all.
+
+### The two flagged grading calls — decide these deliberately or leave them
+
+Both are genuinely ambiguous, both were left at the grade they already had, and
+neither should be flipped as a side effect of some other change.
+
+1. **`google-the-dalles` — partial, but arguably transparent now.** Google's 2026
+   report publishes it in the same table and format as Council Bluffs (654.3 Mgal
+   withdrawn / 185.3 discharged / 469.0 consumed, 2025). By the stated rule —
+   *transparent means the company discloses it itself* — that is transparent. It is
+   held **partial** to preserve the lede's other promise, *"who had to surface it"*:
+   here, a newspaper and a lawsuit. **Grading it transparent erases the litigation
+   history; grading it partial treats an identical disclosure differently from
+   Council Bluffs.** No MW is published, so the choice does not move any badge.
+
+2. **`aws-anthropic-new-carlisle` — partial, but arguably opaque.** There is **no
+   operational water figure from anyone**; Indiana does not require reporting. By the
+   Fairwater-Atlanta rule (*closed-loop site with no published number is opaque*)
+   this is opaque. By the Abilene precedent (*a one-time initial-fill figure was
+   enough for partial*) the county's 31M gal/day construction dewatering permit
+   supports partial. **This one has teeth: at 1,100 MW, flipping it takes
+   Amazon/Anthropic from 🟡 to 🔴** — the weighted score goes 2.00 → ~1.24.
+
+**Site notes are PUBLIC copy.** They render on the page inside "show the math".
+Write them for a reader: no maintainer instructions, no names, no "don't change
+this". Maintainer guidance goes in `_meta.verification_status` (which does *not*
+render) or here. A note shipped in the Microsoft PR saying "Do not flip this grade"
+went live before this was caught — grep the notes before merging.
 
 **Rules:**
 - A few `power_mw` values are third-party estimates. **Don't move a badge on an estimate.**
