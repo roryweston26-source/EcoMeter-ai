@@ -9,8 +9,8 @@ written to be executed, not just read.
 
 _Last full pass: **2026-08-24** — A, B, C, D, F verified current; E partially (1 of
 12 datacenter sites; Transparency Index re-checked with one open question); G, H
-blocked on things only Rory can do; I, J done. Two guards added. Update this line
-when a pass completes._
+blocked on things only Rory could do — **H closed the same day, when v6.13 went to
+the store.** I, J done. Two guards added. Update this line when a pass completes._
 
 ---
 
@@ -44,10 +44,12 @@ wrong number in front of a user.
    written for people already paying. On 2026-08-08 the table implied GPT-5.5 was
    paid-only while the help article said it was still the default. The help
    article was right.
-2. **Ask "has the deadline passed", never "does an offer exist".** Expired offers
-   outlive themselves. Google's free student year closed 2026-04-30 and search
-   results, AI summaries and every discount blog still describe it in the present
-   tense. It is the most confidently repeated false claim in this area.
+2. **Ask "what is the status right now, and when was it last true" —** not "does an
+   offer exist", and not "has it expired" either. Google's student year closed
+   2026-04-30 while the whole internet went on describing it as live, then
+   relaunched before 2026-08-24 while *we* went on describing it as dead. Both
+   directions rot, and the second one is the one that costs the reader money. See
+   C1.
 3. **"Not disclosed" is a finding. Never fill a gap with a plausible number.** If
    a provider withdraws a figure, record the withdrawal — don't fall back to the
    old one and don't invent a replacement.
@@ -87,8 +89,7 @@ wrong number in front of a user.
 | ~~2026-08-31~~ | ~~Sonnet 5 intro rate ends~~ — **resolved 2026-08-24.** Anthropic made $2/$10 permanent; the rise to $3/$15 will not occur. | [A5](#a5-dated-price-events) |
 | ~~No date~~ | ~~DeepSeek's warned price rise~~ — **landed 2026-08-24**, ~3× input / ~4.5× output. | [A5](#a5-dated-price-events) |
 | ~~No date~~ | ~~Mistral "Vibe" rename~~ — **confirmed 2026-08-24.** Product is branded Vibe; the `Le Chat Pro` plan key is kept as the cross-file join. | [A2](#a2-consumer-subscription-prices) |
-
----
+| ~~Blocking~~ | ~~Store build materially wrong, fix unshipped~~ — **v6.13 uploaded 2026-08-24**, awaiting review. Top item since 2026-08-02. | [H4](#h4-the-shipped-build-vs-main) |
 
 ---
 
@@ -128,7 +129,7 @@ a source you're about to change.
 5. **D**, **E** — clock, transparency index (independent of the above)
 6. **G**, **H** — extension and store (needs A and B settled)
 7. **I**, **J** — copy, docs, hygiene (they describe everything above)
-8. **Verification suite** — last, all six
+8. **Verification suite** — last, all seven
 
 ---
 
@@ -769,32 +770,50 @@ change with it.
 
 **This is a freshness item because what users have is not what this repo says.**
 
-The Chrome Web Store carries a pre-2026-08-02 build with: billed input charged
-~2×, Claude image tokens ~51×, a false "±8%" band, stale prices, no GPT-5.6
-family, export v1. All of it is fixed on `main`. **Nothing has shipped.**
+**Closed 2026-08-24: v6.13 uploaded**, built from `main` at `35359ec` and verified
+before upload (22 entries, manifest at root, no backslash separators, fonts and
+icons present, version confirmed inside the zip). It is the first build carrying
+the corrected cost model. **Awaiting review** — watch for a repeat of the Yellow
+Argon listing rejection, and expect permission re-review for
+`generativelanguage.googleapis.com` regardless.
+
+For the record, the store had been serving a pre-2026-08-02 build with billed
+input charged ~2×, Claude image tokens ~51×, a false "±8%" band, stale prices, no
+GPT-5.6 family, and export v1.
+
+> ⚠️ **A shipped build freezes its prices, so this entry does not stay closed.**
+> The extension reads `chrome.runtime.getURL('prices.json')` — the bundled copy —
+> and never fetches remotely. Whatever shipped is what users see until the next
+> upload. **`gemini-3.6-flash` and `gemini-3.7-flash` are on a promotional rate
+> until 2026-12-31** (A6); if 6.13 is still live in January it understates Gemini
+> cost by 2×, which is the harmful direction. `check-prices.js` catches this in the
+> repo and cannot catch it in the store. **The real fix is exercising the weekly
+> `publish.yml` cadence rather than shipping once every few months.**
 
 **Every pass should re-ask:** what's the store status (dashboard → the item →
 status + version), and has the fix gone up?
 
-> **Still unanswered as of 2026-08-24 — needs Rory.** This has been the top item
-> since 2026-08-08 and nothing about it can be checked from here: it needs the
-> Chrome Web Store dashboard. Meanwhile `main` has gained another two weeks of
-> corrections the shipped build doesn't have, including today's price refresh, so
-> **the gap between what users run and what this repo says is still widening.**
-> Local state: `manifest.json` and `prices.json._meta.version` agree at 6.12.
+**Local state:** `manifest.json` and `prices.json._meta.version` agree at **6.13**
+(`check-prices.js` enforces the match — bump both or neither).
 
-| Status | Action |
+**What a future pass should ask here**, in order:
+
+| Question | Why it matters |
 |---|---|
-| Pending review | Store blocks new uploads. Wait it out, then upload immediately. |
-| Published | Upload now — needs a bump to 6.13 (6.12 would be a duplicate). |
-| Rejected | Upload unblocked. If it was Yellow Argon again, the fixed copy is already in `STORE-LISTING.md`. |
+| Did 6.13 clear review? | If rejected on listing copy again, the fixed text is already in `STORE-LISTING.md` — don't recompose it. |
+| Is it *submitted*, or a saved draft? | A draft sits in the dashboard forever and never reaches review. |
+| How old are the shipped prices? | They're frozen at build time. Compare the live build's version against `prices.json._meta.last_updated`. |
 
-Also worth asking: did the submission use the **old** description? If it was pasted
-from the dashboard's existing text rather than `STORE-LISTING.md`, it carries the
-nine-platform list and another rejection is near-certain regardless of code.
+Also worth asking after any submission: did it use the **old** description? If
+pasted from the dashboard's existing text rather than `STORE-LISTING.md`, it
+carries the nine-platform list and another Yellow Argon rejection is near-certain
+regardless of code.
 
 **Windows build traps are in `PROJECT-CONTEXT.md` §11** — there are two, and the
-dangerous one *uploads successfully* and just ships broken icons and fonts.
+dangerous one *uploads successfully* and just ships broken icons and fonts. The
+verified 6.13 build checked: 22 entries, manifest at root, no backslash
+separators, `fonts/` (5) and `icons/` (4) present, store docs excluded, and the
+version read back from *inside* the zip. Repeat all five next time.
 
 ---
 
@@ -874,7 +893,7 @@ bad trade for tidiness. Left for Rory.
 
 ## J2. Committed build artifacts
 
-`ecometer-ai-v6.12.zip` sits at the repo root (1.7 MB). `.gitignore` has `*.zip` and
+`ecometer-ai-v6.13.zip` sits at the repo root (1.7 MB) — the build uploaded on 2026-08-24. The stale v6.12 artifact was deleted the same day, because two similarly-named zips in the upload dialog is how the wrong one gets shipped. `.gitignore` has `*.zip` and
 `git ls-files` shows nothing tracked, so it's an untracked local leftover — safe to
 delete locally. Just don't commit one.
 
@@ -918,5 +937,5 @@ page), a browser (G1 selectors), the store dashboard (H4), an EcoMeter export (B
 or a scope judgement (B4, E2 colo landlords). Don't guess past a blocker — flag it
 and finish everything else.
 
-End with: the six scripts' output, and a one-line update to the **Last full pass**
+End with: the seven scripts' output, and a one-line update to the **Last full pass**
 date at the top of this file.

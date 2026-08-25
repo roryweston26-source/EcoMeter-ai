@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "EcoMeter AI \u2014 Resource Tracker",
-  "version": "6.12",
+  "version": "6.13",
   "description": "See what your AI chats really cost \u2014 tokens, money and water \u2014 computed on your device. By Legerly.",
   "permissions": [
     "storage",

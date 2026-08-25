@@ -2,7 +2,7 @@
   "_meta": {
     "comment": "Shared data for the EcoMeter extension and the Legerly pricing page. 'api' = per-token USD (input/output). 'subscriptions' = consumer plan $/month. 'free_tiers' = which models each platform's FREE plan exposes (drives the extension model picker). To update prices, edit the numbers here.",
     "last_updated": "2026-08-24",
-    "version": "6.12",
+    "version": "6.13",
     "source": "Official provider pricing pages + free-tier availability",
     "verified": "2026-08-24 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com/docs/pricing, ai.google.dev/gemini-api/docs/pricing, docs.x.ai/docs/models, api-docs.deepseek.com/quick_start/pricing, mistral.ai/pricing, docs.perplexity.ai/getting-started/pricing, plus the consumer plan pages openai.com/chatgpt/pricing, claude.com/pricing, gemini.google/subscriptions and x.ai/pricing. FOUR providers had moved since 2026-08-02. OpenAI cut gpt-5.6-sol $5/$30 -> $4/$20 (long $10/$45 -> $8/$30). Google put 3.6 Flash and the new 3.7 Flash on a half-price promotional rate through 2026-12-31. DeepSeek's warned increase LANDED: v4-flash and v4-pro are now 3x-4.5x their previous rates and are metered peak/off-peak by clock time. Anthropic made Sonnet 5's introductory $2/$10 permanent. xAI shipped Grok 4.6 and a new SuperGrok Plus tier. Mistral, Perplexity and Microsoft were unchanged.",
     "caveats": {
