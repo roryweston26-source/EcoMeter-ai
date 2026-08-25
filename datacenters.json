@@ -1,6 +1,7 @@
 {
   "_meta": {
     "last_updated": "2026-07-13",
+    "partial_verification": "On 2026-08-24 a freshness pass re-verified ONE site (xai-colossus-1) and deliberately did NOT bump last_updated: claiming a file-level verification after checking 1 of 12 sites would be exactly the kind of unearned confidence this project exists to call out. Per-site as_of is the honest granularity — read those. The 11 sites still carrying their original as_of are the backlog, and they are the largest single block of stale data in the repo. Also open from that pass: third-party coverage says Microsoft now breaks out power and water by named campus in its full 2026 Environmental Sustainability Report. If true, Microsoft moves from opaque to transparent on the site_level axis in transparency-index.json and several entries here need rewriting. We could not confirm it on a Microsoft-owned page — the report PDF was not machine-readable in our tooling. That is the highest-value thing to check next on this file.",
     "methodology_note": "Environmental-impact grades are a capacity-weighted average across each provider's known AI data center sites. See 'How we grade this' for full methodology."
   },
   "sites": [
@@ -30,7 +31,7 @@
       "location": "Memphis, TN, USA",
       "power_mw": 300,
       "water_grade": "partial",
-      "water_note": "Real, trending figures exist — but only because a local watchdog (Protect Our Aquifer) pulled MLGW utility data, not because xAI disclosed anything. Municipal purchases roughly doubled in nine months, from 381,000 gal/day (Aug 2025) to 812,502 gal/day (May 2026); MLGW agreed to supply up to 1.3M gal/day of drinking water until a reuse plant is built. POA puts xAI's total peak demand higher still — municipal supply plus the on-site aquifer wells xAI drilled push it into the millions of gallons a day. The promised water-recycling plant that would offset much of the drinking-water draw has stalled (work sidelined as an xAI IPO looms; a 2027 restart is tentative).",
+      "water_note": "Real, trending figures exist — but only because a local watchdog (Protect Our Aquifer) pulled MLGW utility data, not because xAI disclosed anything. Municipal purchases roughly doubled in nine months, from 381,000 gal/day (Aug 2025) to 812,502 gal/day (May 2026); MLGW agreed to supply up to 1.3M gal/day of drinking water until a reuse plant is built. POA puts xAI's total peak demand higher still — municipal supply plus the on-site aquifer wells xAI drilled push it into the millions of gallons a day. The promised water-recycling plant that would offset much of the drinking-water draw has stalled (work sidelined as an xAI IPO looms; a 2027 restart is tentative). Re-checked 2026-08-24: the reuse plant now HAS its state permit — TDEC issued a water-reclamation permit effective 2026-02-01, and the facility would spare up to 13M gal/day of aquifer water — but construction still has not started, with Musk stating the priority is finishing Colossus 2 first. A permit is not a plant: the drinking-water draw continues meanwhile, and a permit is exactly the kind of fact that reads like progress while changing nothing on the ground.",
       "sources": [
         {"name": "Memphis Flyer — Protect Our Aquifer MLGW analysis",
          "url": "https://www.memphisflyer.com/protect-our-aquifer-xai-bought-25m-gallons-of-water-from-mlgw-projects-increases/"},
@@ -39,9 +40,11 @@
         {"name": "E&E News / POLITICO — xAI sidelines water-reuse project",
          "url": "https://www.eenews.net/articles/xai-sidelines-major-water-reuse-project-as-ipo-looms/"},
         {"name": "Daily Memphian — xAI/MLGW bill analysis",
-         "url": "https://dailymemphian.com/article/58474/analyzing-xai-mlgw-bills"}
+         "url": "https://dailymemphian.com/article/58474/analyzing-xai-mlgw-bills"},
+        {"name": "Memphis Flyer — TDEC operating permit for the Colossus water plant",
+         "url": "https://www.memphisflyer.com/state-issues-operating-permit-for-colossus-water-plant/"}
       ],
-      "as_of": "2026-05"
+      "as_of": "2026-08"
     },
     {
       "id": "xai-colossus-2",

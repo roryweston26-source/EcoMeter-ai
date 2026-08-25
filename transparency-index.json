@@ -2,7 +2,7 @@
   "_meta": {
     "title": "AI Transparency Index",
     "lede": "How openly the major AI providers let the public see what their AI costs — in dollars, in data, and in water and energy. We grade transparency, not the underlying footprint: whether a real figure is findable at all, and who had to surface it. 'Not disclosed' is a finding, not a gap to paper over.",
-    "last_verified": "2026-07-13",
+    "last_verified": "2026-08-24",
     "status": "ok",
     "status_note": "",
     "axes": [
@@ -66,7 +66,7 @@
       "verification":  { "grade": "yellow", "note": "Independent assurance over selected sustainability metrics.", "source": "Amazon 2024 Sustainability Report", "source_url": "", "source_date": "Jul 2025" }
     } },
     { "provider": "Microsoft", "cells": {
-      "site_level":    { "grade": "red", "note": "Reports company-wide water only; no data-center or site-level consumption, though gives some regional recycled-water percentages (Quincy 74%, Singapore 99%).", "source": "DCD", "source_url": "", "source_date": "Jun 2026" },
+      "site_level":    { "grade": "red", "note": "Re-checked 2026-08-24; grade UNCHANGED but with an open question. Microsoft's own datacenter efficiency page still publishes global and regional PUE/WUE only, and its sustainability report summary gives fleet aggregates plus one narrative example (Phoenix WUE -23% YoY FY25) — no per-campus consumption. However, third-party coverage from July 2026 reports that the FULL 2026 Environmental Sustainability Report does break out power and water by named campus. We could not confirm that on a Microsoft-owned page (the report PDF was not machine-readable in our tooling), so it is recorded as unverified rather than repeated — a green here requires the company disclosing it itself. If true, this row becomes green and Microsoft is the second provider after Google to disclose per-site.", "source": "Microsoft datacenter efficiency page (checked directly)", "source_url": "https://datacenters.microsoft.com/sustainability/efficiency/", "source_date": "Aug 24 2026", "open_question": "Does the full 2026 Environmental Sustainability Report PDF contain a per-campus power/water table? If yes -> green. Highest-value item on this index." },
       "ai_split":      { "grade": "red", "note": "No AI-vs-total split; global operational aggregate.", "source": "Microsoft FY25 disclosure", "source_url": "", "source_date": "Jun 2026" },
       "comparability": { "grade": "yellow", "note": "Reports WUE consistently (0.27 L/kWh, 2025; down from 2.3 historically) but declares 'water positive' without publishing full data-center consumption.", "source": "Trellis / Microsoft blog", "source_url": "", "source_date": "Jun 24 2026" },
       "replenishment": { "grade": "red", "note": "Claims fleet-wide 'water positive' in FY25 via replenishment offsets, many in different watersheds than those consumed.", "source": "Microsoft blog", "source_url": "", "source_date": "Jun 24 2026" },

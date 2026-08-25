@@ -36,7 +36,40 @@
         "for": "installed compute growth (3.4x/yr) & datacenter power (~30 GW at Q4 2025)",
         "url": "https://epoch.ai/data-insights/ai-datacenter-power"
       }
-    ]
+    ],
+    "plausibility": {
+      "comment": "Machine-readable anchors for scripts/check-clock.js. A level here is only worth asserting where a single authoritative worldwide total actually exists — that is capex and energy, and nothing else. Each entry names the field, the published total the scenarios must bracket, and the source that total came from. If a scenario range stops containing the published figure, either reality moved (re-anchor) or we made an arithmetic error; the script cannot tell you which, only that the two disagree. Do NOT add entries for counters with no authoritative total (tokens, prompts, water, co2, users, compute, frontier) — a made-up target would launder a guess into a passing test, which is worse than no test.",
+      "checks": [
+        {
+          "field": "capexPerYear",
+          "label": "hyperscaler buildout capex, calendar 2026",
+          "published": 725000000000,
+          "unit": "USD/yr",
+          "tolerance_pct": 20,
+          "source": "https://www.cnbc.com/2026/07/28/hyperscalers-face-higher-capex-scrutiny-after-alphabet-report-panned.html",
+          "note": "Big-four guided ~$725B for calendar 2026. This is the check that would have caught the 2026-08-08 error, where the levels implied $978B — 35% high and passing every other script."
+        },
+        {
+          "field": "twhPerYear",
+          "label": "AI-specific electricity, 2026",
+          "published": 175,
+          "unit": "TWh/yr",
+          "tolerance_pct": 25,
+          "source": "https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary",
+          "note": "IEA: AI-optimised servers ~31% of a 565 TWh datacentre total in 2026 = ~175 TWh."
+        }
+      ],
+      "share_checks": [
+        {
+          "field": "tokensPerYear",
+          "label": "Google disclosed tokens as a share of the world total",
+          "disclosed": 38400000000000000,
+          "max_share": 0.5,
+          "source": "https://blog.google/innovation-and-ai/sundar-pichai-io-2026/",
+          "note": "Google disclosed 3.2 quadrillion tokens/month = 38.4e15/yr at I/O May 2026. One company cannot plausibly be most of the world total. Under the pre-2026-08-08 level this sat at ~78%, which is what exposed the error. No authoritative worldwide total exists, so this is a sanity bound, not a target."
+        }
+      ]
+    }
   },
   "scenarios": {
     "conservative": {
