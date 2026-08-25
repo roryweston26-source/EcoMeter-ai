@@ -662,6 +662,46 @@ is bot-blocking, not a dead link. Where it happened the cell links to a reachabl
 equivalent: the syndicated Insurance Journal copy, and SELC's own page. Don't
 "fix" those by swapping in the paywalled original.
 
+## E1e. The pricing axis (added 2026-08-25)
+
+**Where it lives:** top-level `pricing` key in `transparency-index.json` — NOT
+`_meta.detail`, which is the environmental matrix. The section auto-hides if the
+key is missing.
+
+**What rots here, in order of speed:**
+
+1. **`allowance` — fastest-moving thing on the page.** It is 🔴 × 8 today because
+   26 of 27 plans publish nothing. That count comes from `plan-limits.json`, so
+   **re-count it whenever that file is verified** rather than trusting the prose.
+   The trend is one-directional and hostile: OpenAI *deleted* its only general cap
+   between two checks. A 🔴 here is not safe to assume permanent in either
+   direction.
+2. **`rate_card`** — tracks `prices.json`. Four providers moved prices in the 22
+   days before 2026-08-24. If `check-prices.js` fires, this column may need a look.
+3. **`context_window`** — OpenAI is currently alone. If a second provider adds it,
+   that is a real story, not a footnote.
+4. **`price_change` / `model_retirement`** — slowest. These are contract terms and
+   docs pages; annual is fine.
+
+**The 11 ⚪ cells are the backlog.** `price_change` and `model_retirement` were
+verified on primary documents for OpenAI, Anthropic and Google only. The other
+five providers need a direct read. **Do not turn them 🔴 on a failed search** —
+that is the exact error this index exists to call out in others.
+
+**Verified 2026-08-25 on primary documents (quote-level):**
+- OpenAI consumer ToU — "at least 30 days' notice … take effect on your next renewal so that you can cancel"
+- OpenAI Services Agreement (business/dev only) — "Price changes on the Pricing Page will be effective fourteen days after they are posted"
+- Anthropic Commercial Terms — "the earlier of 30 days after the updates are posted … or Customer otherwise receives Notice"; explicitly **not** consumer
+- Anthropic Consumer Terms — 30 days, no change during a current term, increase applies at renewal
+- OpenAI deprecations — ≥6 months GA, ≥3 months specialized variants
+- Anthropic deprecations — ≥60 days, plus forward "not sooner than" dates for every active model
+- Google deprecations — **no quantified commitment**; "earliest possible dates" only
+
+**Two counter-findings are load-bearing — do not quietly drop them.** Consumers get
+*more* price-change notice than developers (30 vs 14 days at OpenAI), and OpenAI's
+per-tier context window is the first absolute figure any provider has *added*.
+The axis is honest because it carries them.
+
 ## E2. `datacenters.json`
 
 **Goes stale fast** — campuses get announced, capacity comes online, and grades

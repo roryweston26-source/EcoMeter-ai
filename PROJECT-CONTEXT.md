@@ -181,7 +181,9 @@ The clock gap is now closed. **`check-clock.js` (added 2026-08-24) is the sanity
 12. **The Auditor covers 5 of the 8 providers in `prices.json`** — DeepSeek added 2026-08-08; still no xAI, Perplexity or Mistral. **Perplexity is the one students ask about**, and it's the awkward one: its Sonar rates exclude a $5–14 per 1,000 requests fee that for chat-shaped use exceeds the token cost, so any figure the Auditor derived would be a substantial undercount and would need surfacing in the result itself, not a footnote. **Mistral** is the only provider publishing a student price ($5.99/mo, already in `prices.json`) but may have rebranded Le Chat → "Vibe", and plan names are the join key across three files. Adding a provider is now guarded by `check-auditor.js`.
 13. **Revisit the tokens rate at the October re-anchor.** `5×/yr` matches near-term observation (Google disclosed 7× YoY at I/O 2026) but longer-range forecasts imply ~2.2×/yr. Kept at 5 because the model is re-anchored quarterly and explicitly isn't for multi-year extrapolation — but if the next anchor still shows 5× diverging from reality, that's the counter to cut. Full list of live judgement calls is in `clock.json` `_meta.open_questions`.
 14. **RESOLVED 2026-08-24 — Microsoft does publish location-level water and power, and this index has recorded its first grade movement.** The table is not in the flagship report but in the companion **2026 Environmental Data Fact Sheet, Table 15 — "FY25 Datacenter water and electricity use by location"**: electricity (MWh), water withdrawal (ML), non-potable share and replenishment volume for **29 named locations**. Read directly from Microsoft's own CDN with `pdftotext -layout`, which is the tool the last pass lacked. `site_level` moved 🔴→🟢; `replenishment` 🔴→🟡 (per-location volumes, with an asterisk marking priority locations that have delivered nothing yet). **Four limits are recorded in the cell rather than smoothed over:** the unit is a metro area/regional cluster, not a building; it is **withdrawal, not consumption** (consumption stays global/regional in Table 14); scope is Microsoft-*owned* sites under its own operational control, so leased colo is out; and **Table 15 sits in Section 2, which the fact sheet states was outside Deloitte's limited-assurance review** — the most granular figures Microsoft publishes are its least assured. **No grade in `datacenters.json` moved**, deliberately: FY25 ended 2025-06-30 (before Fairwater Atlanta was operational), Fairwater Atlanta is QTS-leased and thus out of scope, and there is no Mount Pleasant row at all. Both site notes now say so.
-16. **RESOLVED 2026-08-25 — `source_url` is now 42/42 and the methodology claim is true.** Every cell in the disclosure matrix links to a source, and all 12 distinct URLs were HTTP-checked. Two useful sources 403 a bare `curl` but load fine in a browser (Fortune, CNBC) — bot-blocking, not dead links; where that happened the cell links to a reachable equivalent (the syndicated Insurance Journal copy, SELC's own page). **Keep this at 42/42** — if a future pass adds a provider or a dimension, add the link in the same commit, because the methodology now promises it.
+18. **The pricing axis has 11 ⚪ cells and they are the work left.** `price_change` and `model_retirement` were verified on primary documents for **OpenAI, Anthropic and Google only**. xAI, Mistral, Perplexity, Microsoft and DeepSeek need a direct read of their terms and docs. **They are ⚪, not 🔴** — a failed web search is not a verified absence, and this project does not grade on that. Finishing them is a bounded, obvious next task.
+
+16. **RESOLVED 2026-08-25 — `source_url` is now 42/42 on the environmental matrix and the methodology claim is true.** Every cell in the disclosure matrix links to a source, and all 12 distinct URLs were HTTP-checked. Two useful sources 403 a bare `curl` but load fine in a browser (Fortune, CNBC) — bot-blocking, not dead links; where that happened the cell links to a reachable equivalent (the syndicated Insurance Journal copy, SELC's own page). **Keep this at 42/42** — if a future pass adds a provider or a dimension, add the link in the same commit, because the methodology now promises it.
 
 15. **RESOLVED 2026-08-25 — all 12 sites re-verified; `last_updated` is 2026-08-25 and the backlog is cleared.** Every `as_of` reads `2026-08`. **No provider badge moved.** Substantive changes: `xai-colossus-2` (the stalest entry, last checked 2025-07) came online ~Jan 2026 at several hundred MW — capacity left **null** because third-party estimates disagree (~450–500 MW vs an earlier 140 MW phase), per the show-a-range rule; `google-council-bluffs` and `google-the-dalles` now carry Google's own 2025 withdrawal/discharge/consumption figures; `coreweave-polaris-forge` is ~400 MW leased across three agreements but still publishes only *design* claims ("WUE near zero"), so it stays opaque. **Two grading calls are flagged, not resolved** — see FRESHNESS §E2: The Dalles (partial vs transparent, moves no badge) and New Carlisle (partial vs opaque, **would move Amazon/Anthropic 🟡→🔴** on its 1,100 MW weight).
 
@@ -432,9 +434,31 @@ Grades **how openly** providers let the public see what their AI costs — trans
 
 | Axis | Status |
 |---|---|
-| **Environmental impact** | **Scored** — per-site, capacity-weighted (below) |
-| Pricing | ⚪ Not yet scored |
-| Data practices | ⚪ Not yet scored |
+| **Environmental impact** | **Scored** — per-site, capacity-weighted |
+| **Pricing** | **Scored 2026-08-25** — 5 dimensions × 8 providers, never averaged |
+| Data practices | ⚪ Not yet scored — the only axis still unbuilt |
+
+### The pricing axis (added 2026-08-25)
+
+Lives in `transparency-index.json` under a **top-level `pricing` key** (`title`, `note`, `grade_legend`, `caveats`, `columns`, `rows`) — deliberately NOT under `_meta.detail`, which is the environmental matrix. `renderMatrix()` was generalised to `renderMatrix(data, headId, bodyId)` and `renderPricing()` drives a second section that **stays hidden if the `pricing` key is absent**, so removing the data removes the section cleanly.
+
+**Different provider set on purpose:** the 8 that sell AI directly to consumers or developers (OpenAI, Anthropic, Google, xAI, Perplexity, Microsoft, Mistral, DeepSeek). Amazon and Meta are in the environmental matrix and not here. That asymmetry is intentional and the axis note says so.
+
+| Provider | rate card | allowance | ctx window | price notice | retirement |
+|---|---|---|---|---|---|
+| OpenAI | 🟢 | 🔴 | 🟢 | 🟢 | 🟢 |
+| Anthropic | 🟢 | 🔴 | 🔴 | 🟢 | 🟢 |
+| Google | 🟢 | 🔴 | 🔴 | ⚪ | 🟡 |
+| DeepSeek | 🟢 | 🔴 | 🔴 | 🟡 | ⚪ |
+| xAI / Mistral | 🟢 | 🔴 | 🔴 | ⚪ | ⚪ |
+| Perplexity | 🟡 | 🔴 | 🔴 | ⚪ | ⚪ |
+| Microsoft | ⚪ | 🔴 | 🔴 | ⚪ | ⚪ |
+
+**The finding is the shape, not any single cell: `allowance` is 🔴 for all eight, and it is the only column that is.** Providers tell you the price and when it will change; almost none tell you what you get for it. Grounded in `plan-limits.json` — **26 of 27 consumer plans publish no allowance**, and the one exception is a feature sub-limit.
+
+**Two results that cut against the thesis, kept because a file that only collects supporting evidence is not evidence:** OpenAI and Anthropic both give consumers **30 days' notice** on price rises, effective at next renewal so you can cancel — *better* than the 14 days OpenAI gives developers. And OpenAI's per-tier **context window** is the first absolute product number any provider has ADDED rather than withdrawn.
+
+**Perplexity 🟡 on rate card is the sharpest single cell:** rates are published but exclude a $5–14 per 1,000 requests fee that for chat-shaped use exceeds the token cost. The number is disclosed; the cost is not.
 
 **Two coexisting scales — deliberate, don't "fix" it.** The page grades **public knowability** on a **4-state** scale: 🟢 Transparent (company discloses itself) · 🟡 Partial (a real figure is public but only via a regulator/utility/watchdog) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed. **Below** the summary is the older **"Disclosure quality by dimension"** matrix (7 providers × 6 dimensions) with its **own 3-state legend** (it grades a company's *own* self-reporting completeness). Same provider can read 🟡 up top and 🔴 in the matrix — the matrix's lead-in explains the different lens. **As of 2026-08-25 all seven rows have been re-read from primary documents** (see FRESHNESS §E1/§E1b); the matrix is no longer the un-revisited layer it was.
 
