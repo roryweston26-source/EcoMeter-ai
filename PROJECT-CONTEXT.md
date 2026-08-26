@@ -241,6 +241,11 @@ extension/                The Chrome extension (load THIS folder unpacked)
   tokenizers/               Staged exact-local assets + reference.json + README
   icons/ fonts/
 
+.claude/                  Dev tooling — committed, not part of the site
+  launch.json               preview_start {name: "site"} → static server on :8899
+  static-server.js          Zero-dep static server for local preview (never shipped)
+  settings.local.json       Per-machine permission allowlist — gitignored
+
 scripts/
   update-prices.js          Writes prices.json api section (hardcoded values)
   bump-version.js           Increments manifest version (reactive)

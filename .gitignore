@@ -14,3 +14,7 @@ npm-debug.log*
 .vscode/
 .idea/
 *.swp
+
+# Claude Code — shared config (.claude/launch.json, static-server.js) IS committed;
+# only the per-machine permission allowlist is local.
+.claude/settings.local.json
