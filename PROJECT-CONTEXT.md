@@ -7,7 +7,7 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ---
 
-## 0. Working state (read this first) — as of 2026-08-25
+## 0. Working state (read this first) — as of 2026-08-26
 
 ### ✅ v6.13 IS UPLOADED — the long-running store gap is closed
 
@@ -40,6 +40,14 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-26 — the student answer now reaches the recommendation
+
+Ahead of marketing the Auditor to new students (the reason for the 2026-08-08 audit below), two gaps in that exact path:
+
+- **Question 9 changed nothing about the recommendation.** `a.student` was read by one function, `studentPanel()`, which renders *below* the cards. So a student could be told "Google AI Pro — $19.99/mo" and then, separately and further down the page, that a free year of that same plan exists — with nothing joining the two. New `studentNote()` adds a line to the card itself, composed from `student-access.json`: only `disclosed` routes (an institutional programme is not an action this reader can take), students only (a student offer is not a teacher one), and no offer name or date typed in the page.
+- **The rendered page never re-checked the deadline.** `check-auditor.js` fails on a passed `claim_by`, but only when a build runs; the site is static and can be read months later, still saying "claim by 31 Dec 2026" in the present tense with a *published by the provider* tag. `offerLive()` is now the one place that comparison happens — it governs the help text, the route row (which flips to *deadline has passed* and drops the call to action) and the card line (which disappears). Eight new checks in `test-auditor.js`.
+
+This is the file's own caveat applied to our own rendering: don't ask whether an offer exists, ask whether the deadline has passed.
 ### 2026-08-25 — the Transparency Index was finished: all three axes scored
 
 **The index is complete.** Environmental (7 providers × 6), pricing (8 × 5) and data practices (8 × 4), all scored, never averaged. **114 of 114 cells link to a source** (42 / 40 / 32), every URL checked. `datacenters.json` is fully re-verified — `last_updated` 2026-08-25, **zero stale sites**, the first time the file-level date has been earned since 2026-07-13.
