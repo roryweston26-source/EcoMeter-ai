@@ -458,6 +458,15 @@ coupon code is selling something.
 
 _All six re-verified 2026-08-24. Two changed, both in the direction that had been costing students money._
 
+_**Re-verified again 2026-08-26** against provider-owned pages. No status changed — Google, GitHub and Mistral still `disclosed`, OpenAI and Anthropic still nothing for individuals — but three of our own lines were wrong and are fixed:_
+
+- _**Google's excluded-countries list was hung off the wrong offer.** Bolivia, Albania, Canada, Macau, Hong Kong and Tunisia are excluded from the **international AI Plus** offer (footnote 3), not the US one — and that footnote excludes the US too. Our version implied a Canadian student could claim the international year; they are eligible for neither. New caveat in the file._
+- _**SheerID was stated as fact for the main offer.** Footnotes 1 and 3 say only "Offer Terms apply"; SheerID is named in footnote 5, the YouTube bundle. Softened to "a school email address"._
+- _**"Code completion is unlimited" on Copilot Student is not disclosed.** GitHub's plans page puts the 2,000-completions-a-month cap on Copilot **Free** and states no figure for Student. Removed; the newly documented "excludes third-party agents" added._
+
+_Confirmed unchanged and verbatim: Google's 31 Dec 2026 deadline, payment method required, $19.99/$4.99 auto-conversion (blog.google, 19 Aug 2026); "Available for free to verified students, teachers, and open-source maintainers" (github.com/education/students); ChatGPT for Teachers free for verified U.S. K-12 educators through June 2027 (chatgpt.com/pricing FAQ); "Verified students can get Mistral Pro for $5.99 / month (normally $14.99)" (mistral.ai/pricing); still exactly nine institution logos on Anthropic's higher-education page, matching our named list. **DeepSeek was NOT re-checked — deepseek.com was blocked by browser navigation permission — so its row still says 2026-08-24.**_
+
+
 _Since 2026-08-25 a redemption deadline is a **field**, not just prose: `claim_by`
 (ISO) plus `claim_label` on the route. `check-auditor.js` **fails once the date
 passes**, the same way `check-prices.js` fails on an expired `promo.until` — so
