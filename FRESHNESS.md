@@ -662,6 +662,20 @@ is bot-blocking, not a dead link. Where it happened the cell links to a reachabl
 equivalent: the syndicated Insurance Journal copy, and SELC's own page. Don't
 "fix" those by swapping in the paywalled original.
 
+**Three URL patterns fail a link-checker while being perfectly good links.** Do not
+remove or "repair" these:
+- **Fortune, CNBC** — 403 to a bare `curl` (bot-blocking). Cells link to reachable
+  equivalents: the syndicated Insurance Journal copy, and SELC's own page.
+- **`ai.google.dev/gemini-api/docs/*`** — returns a 302 chain into Google's
+  silent-signin probe (`prompt=none&auto_signin=True`) that loops for a cookieless
+  client and ends in `error=interaction_required`. **The pages are live and load
+  normally in a browser.** Verified by reading their content directly.
+- **Perplexity, x.ai** — 403 to WebFetch but fine to `curl` with a normal
+  User-Agent. Reach for `curl -A "<browser UA>"` before concluding a page is gone.
+
+**Link-check rule: a non-200 from `curl` is a hypothesis, not a finding.** Confirm
+by loading the page before changing a cell.
+
 ## E1e. The pricing axis (added 2026-08-25)
 
 **Where it lives:** top-level `pricing` key in `transparency-index.json` — NOT
@@ -683,10 +697,16 @@ key is missing.
 4. **`price_change` / `model_retirement`** — slowest. These are contract terms and
    docs pages; annual is fine.
 
-**The 11 ⚪ cells are the backlog.** `price_change` and `model_retirement` were
-verified on primary documents for OpenAI, Anthropic and Google only. The other
-five providers need a direct read. **Do not turn them 🔴 on a failed search** —
-that is the exact error this index exists to call out in others.
+**Backlog cleared 2026-08-25 — all eight providers read from primary sources.**
+No cell on this axis rests on a secondary source. One ⚪ remains **by design**:
+Microsoft's API rate card, ungraded because Copilot is sold as a subscription with
+no per-token price to publish. That is a business-model difference, not a
+disclosure failure, and it should stay ⚪ rather than being "completed" to 🔴.
+
+**The rule that produced the good outcome here: do not turn a cell 🔴 on a failed
+web search.** Every ⚪ on this axis was resolved by reading the provider's own
+terms, and two of them came back GREEN — grading on the search would have been
+wrong in both directions.
 
 **Verified 2026-08-25 on primary documents (quote-level):**
 - OpenAI consumer ToU — "at least 30 days' notice … take effect on your next renewal so that you can cancel"
@@ -697,10 +717,25 @@ that is the exact error this index exists to call out in others.
 - Anthropic deprecations — ≥60 days, plus forward "not sooner than" dates for every active model
 - Google deprecations — **no quantified commitment**; "earliest possible dates" only
 
-**Two counter-findings are load-bearing — do not quietly drop them.** Consumers get
-*more* price-change notice than developers (30 vs 14 days at OpenAI), and OpenAI's
-per-tier context window is the first absolute figure any provider has *added*.
-The axis is honest because it carries them.
+**Four counter-findings are load-bearing — do not quietly drop them.** They are why
+the axis is credible rather than a thesis in search of evidence:
+1. Consumers get *more* price-change notice than developers — 30 days vs 14 at OpenAI.
+2. **Price-change notice is the industry's most standardised disclosure.** Five of
+   eight land on exactly **30 days** with a cancel-before-renewal right; Microsoft
+   commits 15. Only Perplexity ("reasonable notice") and DeepSeek lack a number.
+3. **Mistral, the smallest provider here, has among the best disclosure** — a
+   lifecycle policy quantified per stage (GA 6 months) that equals OpenAI's.
+4. **xAI is 🔴 on all six environmental dimensions and 🟢 on price-change notice.**
+   The clearest proof in the repo that the axes are independent and must never be
+   averaged into one "transparency score".
+
+**Also verified directly, 2026-08-25:** Google One "at least 30 days' prior notice
+of a price increase", plus a remedy clause for when it misses; xAI "30 days' notice
+… applies at your next renewal"; Mistral 30 days in both ROW and EU consumer terms;
+Microsoft Services Agreement §9.j 15 days; Perplexity only "reasonable notice";
+Mistral lifecycle GA 6 months; xAI retirement pages carry redirect targets AND
+billing impact; DeepSeek gave 3 months on its legacy model names; Perplexity and
+Microsoft publish no model-lifecycle policy at all.
 
 ## E2. `datacenters.json`
 
