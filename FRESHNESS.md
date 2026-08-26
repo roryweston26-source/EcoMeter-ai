@@ -236,8 +236,10 @@ because they have no tier model list. Two were wrong, both now fixed and re-date
   `value_models` now accepts a **`provider:model`** form for exactly this case.
   **Sonar is deliberately excluded**: the app model is branded Sonar 2 with no API
   rate published under that name, and the Sonar API adds a **per-request search fee**
-  ($5/1,000) on top of tokens that this cost model does not carry — counting it at
-  token rates alone would understate API cost and flatter the subscription.
+  ($5/1,000) on top of tokens that this cost model does not carry — pricing it at
+  token rates alone understates API cost, which pushes break-even **up** and makes
+  the plan look harder to justify than it is. (First written the other way round;
+  corrected 2026-08-26 along with the survey below.)
 - **Mistral** ✅ confirmed on `mistral.ai/pricing`, which names Mistral Medium 3.5 and
   Mistral Small 4 as its latest models — exactly our pair.
 - **DeepSeek** ✅ nothing to check: no paid consumer tier, so no break-even is computed.
@@ -366,6 +368,36 @@ entry here relies on someone reading this document on time, that's a gap worth
 closing the same way.
 
 ---
+
+### A7. Non-token fees — what break-even does not carry
+
+**Surveyed 2026-08-26 on provider-owned API pricing pages.** Our cost per message is
+input tokens + output tokens. Every provider we track except DeepSeek also charges
+per *call* for things a normal chat message can trigger — search above all.
+
+| Provider | Per-call fee on top of tokens | Source |
+|---|---|---|
+| OpenAI | Web search **$10 / 1k calls** (all models); **$25 / 1k** on the non-reasoning preview tool; Code Interpreter container from **$0.03 / 20-min session**; file search storage $0.10/GB/day | `platform.openai.com/docs/pricing` |
+| Anthropic | Web search **$10 / 1k searches**; code execution **$0.05 / container-hour** past 1,550 free hours (free when paired with web search/fetch); managed-agent session runtime $0.08/hr | `docs.claude.com` pricing |
+| Google | Grounding with Google Search: **5,000 free/month** shared across Gemini 3.x, then **$14 / 1k requests**. One user request may fire several search queries, each billed. Retrieved context is *not* charged as input tokens | `ai.google.dev/gemini-api/docs/pricing` |
+| xAI | `web_search` **$5 / 1k**, `x_search` **$5 / 1k**, file search $10 / 1k; image-view tools charge tokens only | `docs.x.ai/docs/pricing` |
+| Perplexity | **$5 / 1k requests** on Sonar / Sonar Pro / Sonar Reasoning Pro, plus the Search API at $5 / 1k | `docs.perplexity.ai` |
+| Mistral | "tool APIs are priced per call" — **no figure published** on the pricing page. Unverified, so nothing to quote | `mistral.ai/pricing` |
+| DeepSeek | **None.** Cache-hit pricing and the peak/off-peak clock only | `api-docs.deepseek.com` |
+
+**Which way the error runs:** omitting a real cost makes the API look cheaper, which
+pushes break-even **up** — we print a higher messages-per-day bar than the truth, so a
+plan looks *harder* to justify than it is. That is the conservative direction for a
+"should I pay?" tool, and it is still wrong. Prompt caching biases the opposite way
+(real API cost is lower than we model), so the two partly cancel — by an unknown amount.
+
+**Why it is not modelled:** we have no honest figure for how often a given person’s
+messages trigger a search. Inventing a rate would replace a stated gap with a number
+nobody can check, which is the thing this project exists not to do. If it ever is
+modelled, it needs to be a visible input the reader can set, like the archetype.
+
+**Re-verify:** these are prices and they move. Treat as A1-class — check with the
+per-token pass.
 
 # B. Plan limits, caps and disclosure
 

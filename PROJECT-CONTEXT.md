@@ -40,6 +40,16 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-26 — what break-even does not carry: every provider but DeepSeek charges for search
+
+Followed the Perplexity request-fee finding across the other providers. It is not a Perplexity quirk. Checked on each provider's own API pricing page: OpenAI web search $10/1k calls ($25/1k on the non-reasoning preview tool), Anthropic $10/1k searches, Google grounding 5,000 free/month then $14/1k, xAI $5/1k for web and X search, Perplexity $5/1k on the Sonar models. Mistral says tool APIs are per call but publishes no figure. **DeepSeek is the only one that charges nothing per request.**
+
+Our cost per message is tokens only, so none of that is in any break-even on the site. Recorded as `FRESHNESS.md` §A7 with the figures and sources, and as a caveat in `plan-limits.json`.
+
+**And a correction: I had the direction backwards yesterday.** The Perplexity note said omitting the request fee would "understate API cost and flatter the subscription". It does the opposite — understating API cost pushes break-even **up**, so we print a higher bar than the truth and the plan looks *harder* to justify than it is. Conservative for a "should I pay?" tool, still wrong. Fixed in all three places it was written. The Gemini entry below is unaffected: overstating API cost, which is what that bug did, genuinely does flatter the subscription.
+
+**Not modelled, deliberately.** There is no honest figure for how often someone's messages trigger a search, and inventing one would replace a stated gap with an uncheckable number. If it is ever modelled it should be a visible input like the archetype selector. Prompt caching already biases the other way, so the two partly cancel by an unknown amount — which is itself worth saying out loud rather than treating the numbers as tight.
+
 ### 2026-08-26 — the other four providers, and break-even can now cross rate cards
 
 Guard 9d only sees the five providers the Auditor audits. Checked the other four by hand against their own pages. Two were wrong:
@@ -50,7 +60,7 @@ Guard 9d only sees the five providers the Auditor audits. Checked the other four
 
 **New capability, and it is small:** `value_models` accepts a `provider:model` key (`anthropic:claude-opus-5`). Both `costPerMessage()` implementations resolve it, both label functions strip it, and `check-prices.js` and `check-auditor.js` understand it. It exists because a reseller's plan should be priced against what it actually serves.
 
-**Sonar is deliberately excluded from the Perplexity figure**, and this is the interesting bit: the app model is branded *Sonar 2* with no API rate published under that name, and the Sonar API charges a **per-request search fee ($5/1,000) on top of tokens** that our cost model does not carry. Counting it at token rates alone would understate API cost and flatter the subscription. Perplexity also states the Sonar chat API is supported only **until 2026-09-27** — now in the dated calendar.
+**Sonar is deliberately excluded from the Perplexity figure**, and this is the interesting bit: the app model is branded *Sonar 2* with no API rate published under that name, and the Sonar API charges a **per-request search fee ($5/1,000) on top of tokens** that our cost model does not carry. Pricing it at token rates alone understates API cost, which pushes break-even up and makes the plan look harder to justify — the conservative direction, but still wrong. (I first wrote that the other way round; see the survey entry above.) Perplexity also states the Sonar chat API is supported only **until 2026-09-27** — now in the dated calendar.
 
 **Guard 9e:** every `value_models` key in the file, audited or not, must resolve to a priced rate. That is the only automatic check the four unaudited providers get. Verified by injecting a bad model and a bad provider.
 
