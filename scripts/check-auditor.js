@@ -252,6 +252,26 @@ for (const plan of L.plans) {
   }
 }
 
+/* 9d. A BREAK-EVEN PRICED OFF A MODEL THE PLAN DOES NOT CARRY IS A WRONG NUMBER,
+       and until 2026-08-26 five of them were: every Gemini value_models pair still
+       named gemini-3.5-flash and two Flash-Lites, months after prices.json and the
+       tier model lists had moved to gemini-3.6-flash. The figures were internally
+       consistent and externally false — Google AI Pro read "break even at 47-63
+       messages a day" when on the models that plan actually serves it is 48-137,
+       and the error ran in the direction that flatters the subscription. The two
+       files are re-verified on different days, so nothing but this join notices.
+       Only checks audited providers: the others have no tier model list to join to. */
+for (const plan of L.plans) {
+  const tier = (PLANS[plan.p] || []).find(x => x.m === plan.m);
+  if (!tier || !plan.value_models) continue;
+  for (const k of ['low', 'high']) {
+    const key = plan.value_models[k];
+    if (key && !tier.models.includes(key))
+      fail('break-even for ' + plan.p + ' / ' + plan.m + ' is priced on ' + key
+         + ', which that tier does not carry (it has: ' + tier.models.join(', ') + ')');
+  }
+}
+
 /* 10. student-access.json. Every route makes a claim about a real company's
        offer, so each needs a provenance we recognise and a date it was checked.
        Anything stated as fact ('disclosed') must carry a provider-owned source —
@@ -288,11 +308,12 @@ if (S.partner_institutions && !audit_ns)
         served to students on 2026-08-24 while a free ~$240 sat on Google's own site.
         The claim_by guard below cannot catch that shape, because a route that says
         'no offer exists' has no deadline to expire. Age is the only signal there is.
-        Warn at 45 days, fail at 90 — the deadline rows fail hard because an expired
+        Warn at 30 days, fail at 60 — the deadline rows fail hard because an expired
         date is a fact, whereas "this is getting old" is a judgement, and a solo
-        project should not have its deploys blocked on day 46. */
+        project should not have its deploys blocked the day after the warning. A
+        verified absence rotted in 16 days once, so these are deliberately tight. */
 const DAY = 864e5, ageOf = d => Math.floor((Date.now() - new Date(d + 'T00:00:00Z').getTime()) / DAY);
-const STALE_WARN = 45, STALE_FAIL = 90;
+const STALE_WARN = 30, STALE_FAIL = 60;
 for (const r of S.routes) {
   const age = ageOf(r.as_of);
   const what = 'student route ' + r.p + ' was last verified ' + age + ' days ago (' + r.as_of + ')';

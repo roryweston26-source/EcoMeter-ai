@@ -40,6 +40,20 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-26 — every Gemini break-even was priced on models those plans don't carry
+
+Found while re-checking the break-even figures. `plan-limits.json` → `value_models` for all five Google rows still named `gemini-3.5-flash` and two Flash-Lites, months after `prices.json` and `PLANS[].models` moved to `gemini-3.6-flash`. Both files were internally consistent, re-verified on different days, and wrong together — only a join could see it.
+
+| Plan | Was | Now |
+|---|---|---|
+| Google AI Plus | 16–95 msgs/day | 12–34 |
+| Google AI Pro | 48–64 | 48–137 |
+| Google AI Ultra | 238–317 | 238–684 |
+
+The Pro and Ultra errors ran in the direction that flatters the subscription — we were telling a light Gemini user their $19.99 paid for itself at 64 messages a day when the honest figure on the plan's own models is 137. **Guard added** (`check-auditor.js` 9d): a `value_models` entry for an audited provider must appear in that tier's `models` list; verified by injecting the fault. Also caveated in `plan-limits.json`: these figures sit on a promotional Flash rate that ends 2026-12-31 and will move when it does.
+
+OpenAI, Anthropic and Microsoft rows all passed the same join. The four providers the Auditor doesn't audit (xAI, Perplexity, Mistral, DeepSeek) have no tier model list to check against — still a manual read.
+
 ### 2026-08-26 — the student answer now reaches the recommendation
 
 Ahead of marketing the Auditor to new students (the reason for the 2026-08-08 audit below), two gaps in that exact path:
