@@ -70,6 +70,7 @@
   .step-count{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-dim);margin-bottom:10px}
   .q{font-family:var(--display);font-weight:700;font-size:clamp(1.25rem,3.4vw,1.6rem);letter-spacing:-.01em;margin:0 0 6px}
   .q-help{font-size:.88rem;color:var(--muted);margin:0 0 20px}
+  .q-eco{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;color:var(--green);margin:-12px 0 18px}
   .options{display:grid;gap:10px}
   .opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;font-family:var(--body);font-size:1rem;color:var(--ink);
     background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px 17px;cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
@@ -152,11 +153,11 @@
     <div class="eco-ico">🌿</div>
     <div class="eco-txt">
       <b>Use EcoMeter AI?</b>
-      <p>Connect your usage export for an exact read — we'll skip the volume guesswork.</p>
+      <p>Connect your usage export for an exact read — measured tokens instead of our assumptions about conversation length.</p>
     </div>
     <button class="eco-btn" id="ecoBtn" type="button">Connect usage</button>
     <input type="file" id="ecoFile" accept="application/json,.json" class="hidden">
-    <p class="eco-note" id="ecoNote">In EcoMeter AI, click “⤓ Usage” in the panel to export, then drop the file here. It’s read locally and never uploaded.</p>
+    <p class="eco-note" id="ecoNote">In EcoMeter AI, open <b>“📊 Usage &amp; accuracy”</b>, switch on usage tracking, then click <b>“⤓ Export for Auditor”</b> — the button only appears once tracking is on. Drop the file here; it’s read locally and never uploaded.</p>
   </div>
 
   <div class="card" id="quiz"></div>
@@ -295,6 +296,28 @@ const MODELS = {
 const TOP_IS_FREE = new Set(['google','microsoft','deepseek']);
 // Providers that publish no comparable per-token rate — never quote API cost for them.
 const LEGACY_ONLY = new Set(['microsoft']);
+// What each `features` string means in words. Only image-gen and video-gen ever
+// gate a recommendation (see clearsNonModelNeeds); everything else here was
+// collected and never shown to anyone until the "what matters most" answer started
+// reading it. check-auditor.js asserts every feature string in PLANS has an entry,
+// so a new feature cannot quietly become inert metadata again.
+const FEATURE_LABELS = {
+  'image-gen':'image generation', 'video-gen':'video generation', 'voice':'advanced voice',
+  'projects':'projects', 'research':'deep research', 'deep-research':'deep research',
+  'extended-thinking':'extended thinking', 'priority':'priority access when it is busy',
+  'office':'the Office desktop apps', 'sol-pro':'GPT-5.6 Sol Pro', 'ads':'ads in the app',
+};
+// How many days a MONTH you actually use it. The quiz asks volume "on a busy day",
+// which is the right basis for CAP checks because a cap bites on your worst day —
+// but a monthly API bill and a break-even both need an average, and multiplying a
+// busy day by 30 overstated both for anyone who is not daily. `frequency` fed
+// nothing but the cosmetic level badge before this; this is what makes it matter.
+// manyDay and constant are both 30 deliberately: they describe intensity WITHIN a
+// day, which the messages question already measures — they are not more days.
+// An unknown answer falls back to 30, never lower. Understating an API bill is the
+// error that argues someone out of a subscription that was actually the cheaper one.
+const ACTIVE_DAYS = { rarely:4, fewWeek:12, mostDays:24, manyDay:30, constant:30 };
+const activeDays = a => ACTIVE_DAYS[a.frequency] != null ? ACTIVE_DAYS[a.frequency] : 30;
 // Models that require a PAID tier, derived from PLANS so it re-derives itself when
 // a provider changes what its free tier includes. Sets the "frontier" signal from
 // an EcoMeter export: a user who runs Sol daily must not be read as a free-tier user.
@@ -338,6 +361,25 @@ const money = n => { if(!n) return '$0'; const r=Math.round(n*100)/100; return '
    no user data sent. Absent file = the panel simply doesn't render. */
 let STUDENT = null;
 fetch('/student-access.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{ STUDENT=d; }).catch(()=>{});
+
+/* The data-practices axis of the Transparency Index, read only when someone tells us
+   privacy is what matters most to them. Fetched lazily on that answer: it is the
+   largest file on the site and most readers never need it. Same origin, no user data. */
+let PRACTICES = null, practicesReq = null;
+function loadPractices(){
+  if(practicesReq) return practicesReq;
+  practicesReq = fetch('/transparency-index.json',{cache:'no-store'})
+    .then(r=>r.ok?r.json():null)
+    .then(d=>{ PRACTICES = (d && d.data_practices) || null; })
+    .catch(()=>{});
+  return practicesReq;
+}
+// transparency-index.json keys its rows by COMPANY display name; everything else in
+// this repo joins on the provider key. NAME[] is no help — it holds the product
+// ("ChatGPT"), not the company ("OpenAI") — so the mapping is explicit, and
+// check-auditor.js asserts every entry resolves to a real row in that file.
+const PRACTICE_ROW = { openai:'OpenAI', anthropic:'Anthropic', google:'Google',
+                       microsoft:'Microsoft', deepseek:'DeepSeek' };
 
 /* Plan limits — the SAME file pricing.html uses for its "break even at" column, so
    the two pages give one answer rather than two. Joins on p + m (exact string).
@@ -406,38 +448,101 @@ const TOOLS = [
   {v:'google',label:'Gemini'},{v:'microsoft',label:'Copilot'},
   {v:'deepseek',label:'DeepSeek'},{v:'other',label:'Something else'}
 ];
+/* The examples named in the `frontier` question must be models that are actually
+   PAYWALLED somewhere. This used to name Gemini 3.1 Pro, which promised an upgrade
+   the engine is right to refuse: Google sits in TOP_IS_FREE because it gates on
+   quota, not model access, so "I always want the best" can never move a Google
+   recommendation. Derived from MODELS so it cannot drift when a flagship changes;
+   check-auditor.js asserts no TOP_IS_FREE provider's top model is named here. */
+const frontierExamples = () => Object.keys(MODELS).filter(p=>!TOP_IS_FREE.has(p))
+  .map(p=>labelModel(MODELS[p].top)).join(' or ');
+
+/* Where a provider renamed a plan, name the old one too: someone still thinking
+   "Copilot Pro" had no row to pick after Microsoft retired it on 1 Aug 2026, and a
+   plan you cannot select is a plan we cannot tell you you are overpaying for. */
+const PLAN_ALIAS = { 'Microsoft 365 Premium':'was Copilot Pro' };
+/* EVERY paid tier the engine models has to be selectable here. Four of them were not:
+   ChatGPT Go, Claude Max 20x, Google AI Plus and Google AI Ultra. The worst was
+   Max 20x — a $200/mo payer had to pick "Claude Max", which resolved to Max 5x at
+   $100, so the saving we quoted them was $100/mo too small. That is this tool's
+   headline number, wrong, on the largest overpayment it exists to catch.
+   Derived from PLANS rather than hand-listed, so a new tier cannot be added without
+   appearing here, and priced from the live prices.json rather than becoming yet
+   another copy of the price table. test-auditor.js asserts the coverage. */
+function payOptions(){
+  const out=[{v:'none',label:'Nothing',exclusive:true}];
+  for(const prov of Object.keys(PLANS))
+    for(const t of PLANS[prov].slice().sort((x,y)=>x.price-y.price))
+      if(t.price>0) out.push({ v:prov+'::'+t.m,
+        label:`${t.m} — ${money(t.price)}/mo${PLAN_ALIAS[t.m]?` (${PLAN_ALIAS[t.m]})`:''}` });
+  out.push({v:'api',label:'API / pay-as-you-go'});
+  return out;
+}
+
+/* Built from student-access.json, never hand-typed. This sentence used to read
+   "as of August 2026 three of them are ... claimed by 31 Dec 2026" — a month that
+   went stale on its own, a count hand-copied from the data, and a deadline that
+   would have gone on advertising an expired offer in the present tense, which is
+   the exact failure student-access.json's own caveats warn about. Now the count is
+   counted, and a deadline is only mentioned while it is still in the future.
+   check-auditor.js asserts no hardcoded month, count or year survives in here. */
+const fmtDay = iso => { const d=new Date(iso+'T00:00:00Z');
+  return isNaN(d) ? iso : d.getUTCDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+' '+d.getUTCFullYear(); };
+function studentHelp(){
+  const head='Most “AI student discounts” you’ll read about aren’t real consumer offers.';
+  const tail=' We’ll show you what each provider actually offers, the catch on each, and the one free question that’s often worth more than any of them.';
+  const routes=(STUDENT&&Array.isArray(STUDENT.routes))?STUDENT.routes:null;
+  if(!routes||!routes.length) return head+tail;
+  const claimable=routes.filter(r=>r.provenance==='disclosed');
+  if(!claimable.length) return head+` Of the ${routes.length} providers we checked, none has one an individual can claim right now.`+tail;
+  // Only surface a deadline that has not passed — an expired one reads as an offer.
+  const now=Date.now();
+  const dated=claimable.filter(r=>r.claim_by && r.claim_label && new Date(r.claim_by+'T23:59:59Z').getTime()>now)
+                       .sort((x,y)=> x.claim_by<y.claim_by?-1:1)[0];
+  const when=dated?` — including ${dated.claim_label}, which has to be claimed by ${fmtDay(dated.claim_by)}`:'';
+  return `${head} Of the ${routes.length} providers we checked, ${claimable.length} have one you can claim yourself${when}.`+tail;
+}
+
 const QUESTIONS = [
   {id:'tools',type:'multi',q:'Which AI tools do you use regularly?',help:'Pick all that apply.',options:TOOLS},
-  {id:'frequency',type:'single',q:'How often do you use AI?',options:[
+  {id:'frequency',type:'single',q:'How often do you use AI?',
+   help:'This sets how many days a month we bill you for — a busy day priced across all 30 overstates the cost for anyone who isn’t daily.',
+   options:[
     {v:'rarely',label:'Rarely'},{v:'fewWeek',label:'A few times a week'},{v:'mostDays',label:'Most days'},{v:'manyDay',label:'Many times a day'},{v:'constant',label:'Constantly, all day'}]},
-  {id:'messages',type:'single',q:'On a busy day, how many messages do you send?',options:[
+  {id:'messages',type:'single',q:'On a busy day, how many messages do you send?',
+   help:'Your busiest day, not your average one — message caps bite on your worst day, so that’s the number that decides whether a limit is a problem.',
+   options:[
     {v:'lt5',label:'Under 5'},{v:'5to20',label:'5–20'},{v:'20to50',label:'20–50'},{v:'50to150',label:'50–150'},{v:'150plus',label:'150+'}]},
   {id:'purpose',type:'single',q:'What do you mostly use it for?',options:[
     {v:'quick',label:'Quick questions'},{v:'writing',label:'Writing & everyday tasks'},{v:'research',label:'Research & analysis'},{v:'coding',label:'Coding & building'},{v:'agentic',label:'Agents & automation'}]},
   {id:'limits',type:'single',q:'Do you hit usage limits or “try again later” walls?',options:[
     {v:'never',label:'Never'},{v:'rarely',label:'Rarely'},{v:'sometimes',label:'Sometimes'},{v:'often',label:'Often'},{v:'constant',label:'Constantly'}]},
-  {id:'frontier',type:'single',q:'Do you need the smartest models (Claude Opus, GPT-5.6 Sol, Gemini 3.1 Pro), or is the fast default fine?',options:[
+  {id:'frontier',type:'single',q:'Do you need the smartest models ('+frontierExamples()+'), or is the fast default fine?',
+   help:'Only ChatGPT and Claude put their best model behind a paywall. Gemini, Copilot and DeepSeek run the same models on every tier and charge for volume instead, so this answer can’t move those recommendations — and we won’t pretend it does.',
+   options:[
     {v:'default',label:'The default is fine'},{v:'sometimes',label:'Sometimes I want the best'},{v:'always',label:'I always want the best'}]},
-  {id:'media',type:'single',q:'Do you generate images or video, or use voice / advanced features?',options:[
+  // Narrowed from "images or video, or voice / advanced features". Only image-gen and
+  // video-gen gate anything in this engine, so the old wording collected a "yes" from
+  // heavy VOICE users and spent it pushing them up a tier for image generation — and
+  // could tell them to go buy a plan for images they never make. Ask what we use.
+  {id:'media',type:'single',q:'Do you generate images or video?',
+   help:'Images and video only. It’s the one extra that can force you onto a paid tier by itself, which is why it gets its own question.',
+   options:[
     {v:'no',label:'No'},{v:'occ',label:'Occasionally'},{v:'regular',label:'Regularly'}]},
-  {id:'pays',type:'multi',q:'Which of these do you pay for today?',help:'Pick all that apply — or “Nothing”.',options:[
-    {v:'none',label:'Nothing',exclusive:true},
-    {v:'openai::ChatGPT Plus',label:'ChatGPT Plus'},
-    {v:'openai::ChatGPT Pro',label:'ChatGPT Pro'},
-    {v:'anthropic::Claude Pro',label:'Claude Pro'},
-    {v:'anthropic::Claude Max 5×',label:'Claude Max'},
-    {v:'google::Google AI Pro',label:'Gemini AI Pro'},
-    {v:'microsoft::Microsoft 365 Premium',label:'Copilot Premium'},
-    {v:'api',label:'API / pay-as-you-go'}]},
+  {id:'pays',type:'multi',q:'Which of these do you pay for today?',
+   help:'Pick all that apply — or “Nothing”. Prices are list price, so you can match yours.',
+   options:payOptions},
   {id:'student',type:'single',q:'Are you a student or a teacher?',
-   help:'Most “AI student discounts” you’ll read about aren’t real consumer offers — but as of August 2026 three of them are, including a free year of Google AI Pro that has to be claimed by 31 Dec 2026. We’ll show you those, the catch on each, and the one free question that’s often worth more than any of them.',
+   help:studentHelp,
    options:[
     {v:'student',label:'Yes — college or university student'},
     {v:'teacher',label:'Yes — teacher or faculty'},
     {v:'no',label:'No'}]},
   {id:'team',type:'single',q:'Is it just you, or a team?',options:[
     {v:'solo',label:'Just me'},{v:'team',label:'A team'}]},
-  {id:'priority',type:'single',q:'What matters most to you?',options:[
+  {id:'priority',type:'single',q:'What matters most to you?',
+   help:'Where two options land close enough that our own assumptions are deciding, this is the tie-break we use instead of inventing a spurious extra decimal place.',
+   options:[
     {v:'cost',label:'Lowest cost'},{v:'capability',label:'Best capability'},{v:'privacy',label:'Privacy'},{v:'feature',label:'A specific feature'}]},
 ];
 
@@ -503,7 +608,12 @@ function apiCostPerMonth(pf, only){
   if(LEGACY_ONLY.has(pf.provider)) return null;
   const list=tokenBuckets(pf, only).filter(m=>API[m.key]);
   if(!list.length) return null;
-  return list.reduce((s,m)=> s + (m.in*API[m.key].in + m.out*API[m.key].out)*30, 0);
+  // Token figures are per ACTIVE day. Multiplying them by a flat 30 billed a
+  // few-times-a-week user for a month of daily use and made every subscription
+  // look better than it was. Missing value falls back to 30 — the direction that
+  // never understates an API bill.
+  const days = pf.days_per_month || 30;
+  return list.reduce((s,m)=> s + (m.in*API[m.key].in + m.out*API[m.key].out)*days, 0);
 }
 // Everything a tier must clear that pay-as-you-go API access CANNOT substitute
 // for: volume, seats, and image generation. The downgrade path below offloads
@@ -531,28 +641,86 @@ function profileFor(prov,a,sig){
   const pm=MODELS[prov], arc=ARCHETYPE[PURPOSE_TOK[a.purpose]] || ARCHETYPE.standard;
   // "I always want the best" only forces a paid tier where the best model IS paid.
   const assumed = (a.frontier==='default' || TOP_IS_FREE.has(prov)) ? [pm.free] : [pm.top];
+  const days = activeDays(a);
   const eco=a._eco && a._eco[prov];   // measured usage from an EcoMeter export
+  // Did the reader CHANGE an answer we pre-filled from their export? Then theirs
+  // wins. Before this the quiz showed them the pre-filled answer, let them edit it,
+  // and then silently used the export's value anyway — the same fault as asking a
+  // question and discarding it, only harder to notice.
+  const ovr = k => !!(a._ecoOverride && a._ecoOverride[k]);
   if(eco){
-    const msgs = eco.messages!=null ? eco.messages : msgsPerDay(a);
-    const inTok  = eco.inTok!=null  ? eco.inTok  : Math.round(msgs*arc.in);
-    const outTok = eco.outTok!=null ? eco.outTok : Math.round(msgs*arc.out);
-    // Break-even needs a cost per MESSAGE. With an export we can divide real
-    // tokens by real messages instead of assuming an archetype — this is the
-    // anchoring the pricing page's archetypes are waiting on.
-    const measuredArc = (msgs>0 && eco.inTok!=null)
-      ? { in: inTok/msgs, out: outTok/msgs } : null;
+    // Per-message sizes MEASURED by the export: real tokens over real messages. This
+    // is the anchoring the pricing page's archetypes are waiting on, and it stays
+    // valid if the reader corrects the message count — it is a rate, not a total.
+    const ecoArc = (eco.messages>0 && eco.inTok!=null)
+      ? { in: eco.inTok/eco.messages, out: (eco.outTok||0)/eco.messages } : null;
+    const useOwn = ovr('messages') || eco.messages==null;
+    const msgs = useOwn ? msgsPerDay(a) : eco.messages;
+    const useArc = ecoArc || arc;
+    // Scale a per-model split to whatever message count we ended up with, so a
+    // corrected volume is priced consistently across every model they ran.
+    const k = (eco.messages>0) ? msgs/eco.messages : 1;
+    const perModel = (ovr('frontier') || !eco.perModel) ? null
+      : eco.perModel.map(m=>({ key:m.key, inTok:m.inTok*k, outTok:m.outTok*k }));
     return { provider:prov, messages_per_day:msgs,
-      input_tokens_per_day:inTok, output_tokens_per_day:outTok,
-      models_used: (eco.models && eco.models.length) ? eco.models : assumed,
-      perModel: eco.perModel || null, measured:true,
-      arc: measuredArc || arc, arcMeasured: !!measuredArc,
+      days_per_month:days, avg_messages_per_day: msgs*days/30,
+      input_tokens_per_day:Math.round(msgs*useArc.in), output_tokens_per_day:Math.round(msgs*useArc.out),
+      models_used: (eco.models && eco.models.length && !ovr('frontier')) ? eco.models : assumed,
+      perModel, measured: !useOwn,
+      arc: useArc, arcMeasured: !!ecoArc,
       signals:sig };
   }
   const msgs=msgsPerDay(a);
   return { provider:prov, messages_per_day:msgs,
+    days_per_month:days, avg_messages_per_day: msgs*days/30,
     input_tokens_per_day:Math.round(msgs*arc.in), output_tokens_per_day:Math.round(msgs*arc.out),
     models_used: assumed, perModel:null, measured:false,
     arc, arcMeasured:false, signals:sig };
+}
+
+/* ---------- what "what matters most to you" actually does ----------
+   Question 11 used to be collected into the signals object and read by nothing at
+   all: the last thing we asked before showing a result changed nothing about the
+   result. Two of the four answers now decide a genuine tie, and the other two add
+   information the reader specifically asked for. Nothing here invents a preference
+   the maths could have settled on its own — a tie-break only fires where our own
+   assumption, not the arithmetic, is what separates the options. */
+
+// Everything a paid tier adds over its provider's free tier, in words.
+function tierAdds(prov,t){
+  const free=PLANS[prov].slice().sort((x,y)=>x.price-y.price)[0];
+  const feats=t.features.filter(f=>!free.features.includes(f) && FEATURE_LABELS[f]).map(f=>FEATURE_LABELS[f]);
+  const models=t.models.filter(m=>!free.models.includes(m)).map(labelModel);
+  return { feats, models };
+}
+function featureLine(prov,t){
+  if(!t || t.price===0) return null;
+  const {feats,models}=tierAdds(prov,t);
+  if(!feats.length && !models.length) return null;
+  const bits=[];
+  if(models.length) bits.push(models.join(', '));
+  if(feats.length) bits.push(feats.join(', '));
+  return `You said a specific feature is what matters. Over the free tier, ${t.m} adds ${bits.join(' — plus ')}. If none of that is the thing you need, the free tier is doing the same job for nothing.`;
+}
+// What the provider DISCLOSES about training on your conversations, from the
+// Transparency Index. That axis grades disclosure, never conduct, and this copy has
+// to keep that distinction: a provider that plainly admits an unflattering practice
+// scores well here, and saying otherwise would be us grading behaviour we said we
+// would not grade.
+function privacyLine(prov){
+  const link='<a href="/transparency-index.html">Transparency Index</a>';
+  if(!PRACTICES || !Array.isArray(PRACTICES.rows))
+    return `You said privacy matters most. We grade what each provider discloses about training on your chats in the ${link} — worth reading before you pick.`;
+  const row=PRACTICES.rows.find(r=>r.provider===PRACTICE_ROW[prov]);
+  if(!row || !row.cells) return `You said privacy matters most. We haven't assessed ${NAME[prov]}'s data disclosures yet — see the ${link}.`;
+  const word={ green:'states it plainly', yellow:'states it, but hedged or hard to act on',
+               red:'does not state it', pending:'we have not assessed it' };
+  const g=k=>(row.cells[k]||{}).grade;
+  const bits=[];
+  if(word[g('training_default')]) bits.push(`whether it trains on your chats by default — ${word[g('training_default')]}`);
+  if(word[g('optout')]) bits.push(`how to opt out — ${word[g('optout')]}`);
+  if(!bits.length) return `You said privacy matters most. See the ${link} for what ${row.provider} discloses.`;
+  return `You said privacy matters most. On ${row.provider}'s own consumer documents: ${bits.join('; ')}. That grades what they DISCLOSE, not what they do — and note the pattern across this whole market: the paying business customer is opted out of training by default while the consumer is opted in and has to go find the toggle. Full detail in the ${link}.`;
 }
 function recommend(pf,sig){
   const tiers=PLANS[pf.provider].slice().sort((x,y)=>x.price-y.price);
@@ -586,6 +754,15 @@ function recommend(pf,sig){
     if(total<fit.price && (!hybrid || total<hybrid.total)) hybrid={tier:t, missing, apiExtra, total};
   }
 
+  // Within the margin of our own conversation-size assumption, the arithmetic cannot
+  // honestly separate "cheaper tier + API" from the all-inclusive tier. Rather than
+  // pretend an extra decimal place settles it, the reader's stated priority does —
+  // and we say out loud that that is what happened. Only fires on a genuine tie, and
+  // only when we are working from assumptions rather than a measured export.
+  const closeCall = !!hybrid && !pf.measured && Math.abs(hybrid.total-fit.price) < fit.price*0.25;
+  let suppressed = null;
+  if(closeCall && sig.priority==='capability'){ suppressed = hybrid; hybrid = null; }
+
   if(hybrid){
     const t=hybrid.tier, labels=hybrid.missing.map(labelModel).join(', ');
     why.push(`Your everyday volume fits ${t.price===0?`the free ${NAME[pf.provider]} tier`:t.m} — you only reach for ${labels} occasionally.`);
@@ -595,8 +772,9 @@ function recommend(pf,sig){
     why.push(`The API isn’t the app: no chat interface, memory, file handling or support, and you wire it up yourself.`);
     // Our conversation-size assumption is the biggest lever on that API figure. When
     // the two options land close together it is the assumption deciding, not the maths.
-    if(!pf.measured && Math.abs(hybrid.total-fit.price) < fit.price*0.25)
-      why.push(`Close call — within the margin of our assumption about conversation length. Connect an EcoMeter export to settle it with your real numbers.`);
+    if(closeCall) why.push(sig.priority==='cost'
+      ? `Close call — this is inside the margin of our assumption about conversation length, so it isn't clearly ahead of ${fit.m}. You told us lowest cost matters most, so we've pointed you at the cheaper one. Connect an EcoMeter export to settle it with your real numbers.`
+      : `Close call — within the margin of our assumption about conversation length. Connect an EcoMeter export to settle it with your real numbers.`);
     if(cur && cur.price>hybrid.total) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-hybrid.total)}/mo</b> (${money((cur.price-hybrid.total)*12)}/yr).`});
     else if(cur && cur.price>0) why.push({save:true, html:`Cheaper than your ${cur.plan} (${money(cur.price)}/mo).`});
     return { head: t.price===0 ? `Drop to free ${NAME[pf.provider]} + pay-as-you-go.`
@@ -604,6 +782,7 @@ function recommend(pf,sig){
   }
 
   let head, cost;
+  if(suppressed) why.push(`${suppressed.tier.price===0?`Dropping to free ${NAME[pf.provider]}`:suppressed.tier.m} plus pay-as-you-go would come to about ${money(suppressed.total)}/mo — close enough to ${fit.m} that our assumption about conversation length, not the arithmetic, is what separates them. You told us capability matters most, so we've stayed with the tier that just includes everything.`);
   if(fit.price===0){ head=`Stay on the free ${NAME[pf.provider]} tier.`; cost=0;
     why.push(capLine(free, `Free covers you`) + ` and it includes the models you use.`);
   } else {
@@ -634,12 +813,19 @@ function recommend(pf,sig){
   const be = fit.price>0 ? breakEven(pf.provider, fit, pf.arc) : null;
   if(be){
     why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.`);
-    const mpd=pf.messages_per_day, src=`${pf.measured?'Your measured':'Your estimated'} ${fmtMsgs(mpd)} messages/day`;
+    // Break-even is a per-day rate, so it has to be compared against an AVERAGE day.
+    // Comparing it to the busy-day figure cleared the bar for people who only use it
+    // twice a week, and told them a subscription was the cheaper option when it wasn't.
+    const mpd=pf.avg_messages_per_day!=null?pf.avg_messages_per_day:pf.messages_per_day;
+    const spread=(pf.days_per_month||30)<30?` (your ${fmtMsgs(pf.messages_per_day)} on a busy day, spread over the ${pf.days_per_month} days a month you said you use it)`:'';
+    const src=`${pf.measured?'Your measured':'Your estimated'} ${fmtMsgs(mpd)} messages/day${spread}`;
     if(mpd>=be.many) why.push(`${src} clears that on either model, so the plan is the cheaper of the two.`);
     else if(mpd>=be.few) why.push(`${src} clears it if you're mostly on ${labelModel(be.fewModel)}, but not if you're mostly on ${labelModel(be.manyModel)}.`);
     else why.push(`${src} is below break-even on both — so what you're buying here isn't volume, it's the models or features the cheaper tiers don't carry.`);
   }
-  if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo` + (fit.price>0 && api<fit.price ? ` — cheaper, if you’re fine without the app.` : `.`));
+  if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo`
+    + ((pf.days_per_month||30)<30 ? ` — billed across the ${pf.days_per_month} days a month you actually use it, not all 30` : '')
+    + (fit.price>0 && api<fit.price ? ` — cheaper, if you’re fine without the app.` : `.`));
   else if(LEGACY_ONLY.has(pf.provider)) why.push(`No API comparison here: Copilot runs on OpenAI models but Microsoft publishes no per-token rate to price it against.`);
   // DeepSeek has said in writing that a "significant" price rise is coming with no
   // date attached, and it's the cheapest thing we track by a wide margin — so any
@@ -648,6 +834,10 @@ function recommend(pf,sig){
   // checks: roughly 3x on input and 4.5x on output. Saying "a rise is coming" now
   // would understate a cost the user is already paying, on the provider this
   // engine's cheapest advice leans on hardest.
+  // Question 11 pays its way here. `cost` and `capability` have already decided a
+  // tie above; these two add what the reader told us they came for.
+  if(sig.priority==='privacy') why.push(privacyLine(pf.provider));
+  if(sig.priority==='feature'){ const fl=featureLine(pf.provider, fit); if(fl) why.push(fl); }
   if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier. It’s still the cheapest provider we track, but by a much narrower margin than before, and it has given no indication that’s the end of it. DeepSeek also now charges by the clock: the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price.`);
   return { head, why };
 }
@@ -775,10 +965,23 @@ function currentPlans(a){
 const quizEl=document.getElementById('quiz'), resultsEl=document.getElementById('results');
 const state={ i:0, answers:{} };
 
+// Options and help text can both be functions now: the pays list is derived from
+// PLANS so a new tier cannot go missing from it, and the student help is composed
+// from student-access.json so no count or deadline is ever hand-typed here.
+const optionsOf = q => typeof q.options==='function' ? q.options() : q.options;
+const helpOf    = q => typeof q.help==='function'    ? q.help()    : q.help;
+// Was this answer pre-filled from an export, and left as we filled it?
+const isEcoFilled = id => !!(state.answers._ecoFill && state.answers._ecoFill[id])
+                       && !((state.answers._ecoOverride||{})[id]);
+const sameAnswer = (x,y) => Array.isArray(x)||Array.isArray(y)
+  ? JSON.stringify(Array.isArray(x)?x.slice().sort():x)===JSON.stringify(Array.isArray(y)?y.slice().sort():y)
+  : x===y;
+
 function render(){
   const total=QUESTIONS.length, q=QUESTIONS[state.i];
   const sel=state.answers[q.id];
-  const opts=q.options.map(o=>{
+  const qOpts=optionsOf(q), qHelp=helpOf(q);
+  const opts=qOpts.map(o=>{
     const on = q.type==='multi' ? Array.isArray(sel)&&sel.includes(o.v) : sel===o.v;
     return `<button class="opt ${q.type==='single'?'radio':''} ${on?'sel':''}" data-v="${o.v}">
       <span class="tick">${on?(q.type==='multi'?'✓':'●'):''}</span><span>${o.label}</span></button>`;
@@ -788,7 +991,8 @@ function render(){
     <div class="progress"><div class="bar" style="width:${(state.i/total)*100}%"></div></div>
     <div class="step-count">Question ${state.i+1} of ${total}</div>
     <h2 class="q">${q.q}</h2>
-    ${q.help?`<p class="q-help">${q.help}</p>`:''}
+    ${qHelp?`<p class="q-help">${qHelp}</p>`:''}
+    ${isEcoFilled(q.id)?`<p class="q-eco">↳ FILLED IN FROM YOUR ECOMETER EXPORT — CHANGE IT IF IT LOOKS WRONG</p>`:''}
     <div class="options">${opts}</div>
     <div class="nav-row">
       <button class="btn" id="back" ${state.i===0?'disabled':''}>← Back</button>
@@ -796,19 +1000,31 @@ function render(){
     </div>`;
 
   quizEl.querySelectorAll('.opt').forEach(btn=>btn.addEventListener('click',()=>{
-    const v=btn.dataset.v;
+    const v=btn.dataset.v, before=state.answers[q.id];
     if(q.type==='multi'){
       let cur=Array.isArray(state.answers[q.id])?state.answers[q.id].slice():[];
-      const ex=q.options.find(o=>o.v===v&&o.exclusive);
+      const ex=qOpts.find(o=>o.v===v&&o.exclusive);
       if(ex){ cur=cur.includes(v)?[]:[v]; }
-      else { cur=cur.filter(x=>!(q.options.find(o=>o.v===x)||{}).exclusive);
+      else { cur=cur.filter(x=>!(qOpts.find(o=>o.v===x)||{}).exclusive);
              cur = cur.includes(v)?cur.filter(x=>x!==v):cur.concat(v); }
-      state.answers[q.id]=cur; render();
+      state.answers[q.id]=cur; noteOverride(q.id, before, cur); render();
     } else {
-      state.answers[q.id]=v;
+      state.answers[q.id]=v; noteOverride(q.id, before, v);
+      // The privacy answer is the only one needing a file we don't already have.
+      // Start fetching it now rather than on the results screen.
+      if(q.id==='priority' && v==='privacy') loadPractices();
       if(state.i<total-1){ state.i++; render(); } else render();
     }
   }));
+  // A pre-filled answer the reader actually CHANGED becomes theirs, and profileFor
+  // stops preferring the export's value for it. Clicking the same option again is
+  // not a change — that would swap a measured figure for a band midpoint.
+  function noteOverride(id, before, after){
+    if(!state.answers._ecoFill || !state.answers._ecoFill[id]) return;
+    if(sameAnswer(before, after)) return;
+    state.answers._ecoOverride = state.answers._ecoOverride || {};
+    state.answers._ecoOverride[id] = true;
+  }
   const nb=quizEl.querySelector('#next'), bb=quizEl.querySelector('#back');
   if(bb) bb.addEventListener('click',()=>{ if(state.i>0){state.i--;render();} });
   if(nb) nb.addEventListener('click',()=>{ if(!answered) return; if(state.i<total-1){state.i++;render();} else finish(); });
@@ -860,7 +1076,7 @@ ecoFile.addEventListener('change',()=>{
     try{
       const log=JSON.parse(reader.result);
       applyEcometer(log);
-      ecoNote.textContent='✓ Connected — we filled in your usage from EcoMeter. Just answer the rest.';
+      ecoNote.textContent='✓ Connected — we filled in your tools, volume and model use from the export, and marked those questions so you can see which answers are ours. Change any of them and yours wins.';
     }catch(e){ ecoNote.textContent='That file didn’t look like an EcoMeter export. You can still answer below.'; }
   };
   reader.readAsText(f);   // read locally; never uploaded
@@ -895,7 +1111,13 @@ function applyEcometer(log){
   const ADVANCED=advancedModels();
   const usesAdvanced=pf.some(p=>(p.models_used||[]).some(m=>ADVANCED.has(m)));
   state.answers.frontier=usesAdvanced?'always':'default';
-  state.i=1;               // tools + volume prefilled; continue at frequency
+  // Which answers are OURS rather than the reader's. render() labels them, and
+  // changing one hands that field back to the reader (see noteOverride).
+  state.answers._ecoFill={ tools:true, messages:true, frontier:true };
+  state.answers._ecoOverride={};
+  // Resume at the frequency question: the export measures volume per ACTIVE day but
+  // cannot know how many days a month that is, so that answer is still the reader's.
+  state.i=1;
   render();
   window.scrollTo({top:document.getElementById('quiz').offsetTop-20,behavior:'smooth'});
 }

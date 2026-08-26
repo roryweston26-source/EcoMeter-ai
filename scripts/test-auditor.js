@@ -42,7 +42,7 @@ function FileReaderStub() {}
 
 const EXPORTS = ['PLANS', 'API', 'MODELS', 'NAME', 'TOP_IS_FREE', 'LEGACY_ONLY', 'state',
   'recommend', 'profileFor', 'meetsNeeds', 'clearsNonModelNeeds', 'apiCostPerMonth',
-  'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels',
+  'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels', 'payOptions',
   'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK'];
 const A = new Function('document', 'window', 'fetch', 'FileReader',
   src + '\nreturn {' + EXPORTS.join(',') + '};')(documentStub, windowStub, fetchStub, FileReaderStub);
@@ -119,7 +119,8 @@ async function main() {
         FREQ = ['rarely', 'fewWeek', 'mostDays', 'manyDay', 'constant'],
         PUR = ['quick', 'writing', 'research', 'coding', 'agentic'],
         LIM = ['never', 'rarely', 'sometimes', 'often', 'constant'],
-        FRO = ['default', 'sometimes', 'always'], MED = ['no', 'occ', 'regular'], TEAM = ['solo', 'team'];
+        FRO = ['default', 'sometimes', 'always'], MED = ['no', 'occ', 'regular'], TEAM = ['solo', 'team'],
+        PRIO = ['cost', 'capability', 'privacy', 'feature'];
   const problems = {};
   const note = (t, extra) => { problems[t] = problems[t] || { n: 0, first: extra }; problems[t].n++; };
   let combos = 0;
@@ -127,9 +128,10 @@ async function main() {
   for (const prov of Object.keys(A.PLANS)) {
     const tiers = sorted(prov);
     for (const messages of MSG) for (const frequency of FREQ) for (const purpose of PUR)
-    for (const limits of LIM) for (const frontier of FRO) for (const media of MED) for (const team of TEAM) {
+    for (const limits of LIM) for (const frontier of FRO) for (const media of MED) for (const team of TEAM)
+    for (const priority of PRIO) {
       const a = { tools: [prov], messages, frequency, purpose, limits, frontier, media, team,
-                  pays: ['none'], priority: 'cost', student: 'no' };
+                  pays: ['none'], priority, student: 'no' };
       const sig = sigFor(a);
       combos++;
       let pf, r;
@@ -257,6 +259,89 @@ async function main() {
     ok('saving is priced off the real plan price', !!save && /\$20/.test(save.html), save && save.html);
   }
 
+  /* ---------- 2b. every paid tier is selectable ----------
+     Four of the ten were not, and the list was hand-written with no guard on the
+     completeness direction. The expensive one was Claude Max 20x: a $200/mo payer
+     had to pick "Claude Max", which resolved to Max 5x at $100, so the saving we
+     quoted them was $100/mo too small — this tool's headline number, wrong, on the
+     largest overpayment it exists to catch. */
+  {
+    const opts = A.payOptions(), vals = new Set(opts.map(o => o.v));
+    const missing = [];
+    for (const prov of Object.keys(A.PLANS)) for (const tier of A.PLANS[prov])
+      if (tier.price > 0 && !vals.has(prov + '::' + tier.m)) missing.push(prov + '::' + tier.m);
+    ok('every paid tier can be named in "what do you pay for today?"', missing.length === 0, missing);
+    ok('the pays list still offers "Nothing" and the API', vals.has('none') && vals.has('api'));
+
+    const a = { tools: ['anthropic'], messages: '5to20', frequency: 'mostDays', purpose: 'writing',
+                limits: 'never', frontier: 'default', media: 'no', team: 'solo',
+                pays: ['anthropic::Claude Max 20\u00d7'], priority: 'cost', student: 'no' };
+    const cp = A.currentPlans(a);
+    ok('Claude Max 20x resolves to its own $200 price', cp.length === 1 && cp[0].price === 200, cp);
+    const sig = sigFor(a);
+    const r = A.recommend(A.profileFor('anthropic', a, sig), sig);
+    const save = r.why.find(w => typeof w === 'object' && /saves/.test(w.html));
+    ok('and the over-payment is quoted against $200, not $100', !!save && /\$200/.test(save.html), save && save.html);
+  }
+
+  /* ---------- 2c. frequency moves the money ----------
+     It used to feed nothing but the cosmetic level badge, so a few-times-a-week
+     user was billed for a month of daily use and every subscription looked better
+     than it was. Volume for CAP checks still has to be the busy day. */
+  {
+    const base = { tools: ['openai'], messages: '20to50', purpose: 'writing', limits: 'never',
+                   frontier: 'always', media: 'no', team: 'solo', pays: ['none'], priority: 'cost', student: 'no' };
+    const daily = Object.assign({}, base, { frequency: 'constant' });
+    const weekly = Object.assign({}, base, { frequency: 'fewWeek' });
+    const pd = A.profileFor('openai', daily, sigFor(daily));
+    const pw = A.profileFor('openai', weekly, sigFor(weekly));
+    ok('a few-times-a-week user is billed for fewer days than a daily one',
+       pw.days_per_month < pd.days_per_month, { weekly: pw.days_per_month, daily: pd.days_per_month });
+    ok('and the API bill scales with exactly that',
+       Math.abs(A.apiCostPerMonth(pw) / A.apiCostPerMonth(pd) - pw.days_per_month / pd.days_per_month) < 1e-9,
+       { weekly: A.apiCostPerMonth(pw), daily: A.apiCostPerMonth(pd) });
+    ok('but the cap check still uses the busy day, not the average',
+       pw.messages_per_day === pd.messages_per_day, { pw: pw.messages_per_day, pd: pd.messages_per_day });
+    ok('while break-even compares the average day', pw.avg_messages_per_day < pw.messages_per_day,
+       { avg: pw.avg_messages_per_day, busy: pw.messages_per_day });
+    ok('an unknown frequency bills all 30 days — never understate an API bill',
+       A.profileFor('openai', Object.assign({}, base, { frequency: 'nonsense' }), sigFor(base)).days_per_month === 30);
+  }
+
+  /* ---------- 2d. "what matters most" is not dead ----------
+     It was collected into the signals object and read by nothing: the last question
+     before the result changed nothing about the result. The second assertion here is
+     the one that would have caught that. */
+  {
+    let worse = null, moved = 0;
+    for (const prov of Object.keys(A.PLANS))
+      for (const messages of MSG) for (const purpose of PUR) for (const frontier of FRO) for (const media of MED) {
+        const base = { tools: [prov], messages, frequency: 'mostDays', purpose, limits: 'never',
+                       frontier, media, team: 'solo', pays: ['none'], student: 'no' };
+        const c = Object.assign({}, base, { priority: 'cost' });
+        const k = Object.assign({}, base, { priority: 'capability' });
+        const rc = parse(prov, A.recommend(A.profileFor(prov, c, sigFor(c)), sigFor(c)));
+        const rk = parse(prov, A.recommend(A.profileFor(prov, k, sigFor(k)), sigFor(k)));
+        if (rc.cost > rk.cost + 1e-9 && !worse) worse = { prov, base, cost: rc.cost, capability: rk.cost };
+        if (Math.abs(rc.cost - rk.cost) > 1e-9) moved++;
+      }
+    ok('"lowest cost" never lands on a costlier answer than "best capability"', !worse, worse);
+    ok('and the tie-break actually fires somewhere — question 11 is wired to something', moved > 0, moved);
+
+    const a = { tools: ['openai'], messages: '50to150', frequency: 'mostDays', purpose: 'coding',
+                limits: 'never', frontier: 'always', media: 'no', team: 'solo', pays: ['none'],
+                priority: 'privacy', student: 'no' };
+    const rp = A.recommend(A.profileFor('openai', a, sigFor(a)), sigFor(a));
+    ok('the privacy answer gets an actual answer back',
+       rp.why.some(w => typeof w === 'string' && /privacy matters most/.test(w)), rp.why);
+    const b = Object.assign({}, a, { priority: 'feature' });
+    const rf = A.recommend(A.profileFor('openai', b, sigFor(b)), sigFor(b));
+    ok('the feature answer names what the tier actually adds',
+       rf.why.some(w => typeof w === 'string' && /specific feature is what matters/.test(w)), rf.why);
+    ok('and never leaks a raw feature key at the reader',
+       !rf.why.some(w => typeof w === 'string' && /sol-pro|image-gen|video-gen|extended-thinking/.test(w)), rf.why);
+  }
+
   /* ---------- 3. EcoMeter import ---------- */
   const load = log => { A.state.i = 0; A.state.answers = {}; A.applyEcometer(log); };
   const withRest = (o) => Object.assign(A.state.answers,
@@ -276,9 +361,10 @@ async function main() {
   ok('v2 carries the per-model split', pf.perModel && pf.perModel.length === 2);
   ok('v2 sets the frontier signal from a paid-tier model', A.state.answers.frontier === 'always', A.state.answers.frontier);
   const expected = (100000 * A.API['gpt-5.6-luna'].in + 12000 * A.API['gpt-5.6-luna'].out
-                  + 20000 * A.API['gpt-5.6-sol'].in + 3000 * A.API['gpt-5.6-sol'].out) * 30;
+                  + 20000 * A.API['gpt-5.6-sol'].in + 3000 * A.API['gpt-5.6-sol'].out) * pf.days_per_month;
   ok('each model is priced at its OWN rate', Math.abs(A.apiCostPerMonth(pf) - expected) < 1e-9,
      { got: A.apiCostPerMonth(pf), expected });
+  ok('and billed across the days actually used, not a flat 30', pf.days_per_month === 24, pf.days_per_month);
 
   load({ version: 1, platforms: [{ provider: 'anthropic', messages_per_day: 20,
     input_tokens_per_day: 9000, output_tokens_per_day: 7000, models_used: ['claude-sonnet-5'] }] });
@@ -323,6 +409,24 @@ async function main() {
   ok('the volume band uses total messages across platforms', A.state.answers.messages === '50to150', A.state.answers.messages);
   withRest();
   ok('but each provider is sized on ITS OWN volume', profile('anthropic').messages_per_day === 40);
+
+  /* ---------- 3b. a corrected pre-filled answer beats the export ----------
+     The quiz pre-filled these, showed them as answerable, let the reader change
+     them — and then used the export's value anyway. Asking a question and
+     discarding the answer, only harder to notice than the dead question 11. */
+  load({ version: 2, platforms: [{ provider: 'openai', messages_per_day: 30, input_tokens_per_day: 18000,
+    output_tokens_per_day: 15000, billed_input_tokens_per_day: 120000, models_used: ['gpt-5.6-luna'] }] });
+  withRest();
+  ok('the import records which answers it filled in', !!(A.state.answers._ecoFill || {}).messages,
+     A.state.answers._ecoFill);
+  ok('left alone, the measured volume is used', profile('openai').messages_per_day === 30);
+  A.state.answers.messages = 'lt5';
+  A.state.answers._ecoOverride = { messages: true };
+  const corrected = profile('openai');
+  ok('corrected, the reader own answer wins', corrected.messages_per_day === 3, corrected.messages_per_day);
+  ok('and we stop calling that volume measured', corrected.measured === false);
+  ok('but the measured per-message SIZE survives and rescales',
+     Math.abs(corrected.input_tokens_per_day - 3 * (120000 / 30)) < 1, corrected.input_tokens_per_day);
 
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'
                   : 'all auditor behaviour tests pass — ' + ran + ' checks, ' + combos + ' answer combinations swept');

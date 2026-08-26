@@ -379,6 +379,35 @@ which carries billed input). The number to use is
 **Until then:** never describe them as measured. Each pass should confirm the
 "THESE ARE ASSUMPTIONS" comment is still in the file and still true.
 
+## B5. Days-per-month (the Auditor's duty cycle)
+
+**Added 2026-08-25, and it is an assumption of ours, exactly like B3.**
+
+**Where:** `audit.html` → `ACTIVE_DAYS` — `rarely:4`, `fewWeek:12`, `mostDays:24`,
+`manyDay:30`, `constant:30`. Nowhere else; it has no copy in another file.
+
+**What it fixed:** the quiz asks volume "on a busy day", and the engine was
+multiplying that by a flat 30 to get a monthly API bill. For anyone who isn't
+daily that overstated the API side several-fold, which made every subscription
+look better than it was — and `frequency`, the question that knows the answer,
+fed nothing but the cosmetic level badge. Volume for **cap** checks is still the
+busy day (a cap bites on your worst day); only the monthly bill and the
+break-even comparison use the average.
+
+**The direction that matters:** an unknown or unanswered frequency falls back to
+**30, never lower**. Understating an API bill is the error that argues someone out
+of a subscription that was actually the cheaper option — the same asymmetry A1
+records for DeepSeek.
+
+**`manyDay` and `constant` are both 30 on purpose.** They describe intensity
+*within* a day, which the messages question already measures. If a future edit
+makes them differ, that is a real change of meaning, not a tidy-up.
+
+**The fix, when it's available:** the same one as B3 — a real EcoMeter export.
+The export averages **per active day** but cannot say how many active days a month
+there are, so this stays the reader's answer to give even on the connected path.
+That is why the import resumes the quiz at the frequency question.
+
 ## B4. Does the Ceiling column still earn its place
 
 **As of 2026-08-08 it computes for zero plans.** That's deliberate — an empty
@@ -416,9 +445,15 @@ coupon code is selling something.
 
 _All six re-verified 2026-08-24. Two changed, both in the direction that had been costing students money._
 
+_Since 2026-08-25 a redemption deadline is a **field**, not just prose: `claim_by`
+(ISO) plus `claim_label` on the route. `check-auditor.js` **fails once the date
+passes**, the same way `check-prices.js` fails on an expired `promo.until` — so
+the Auditor cannot go on advertising a dead offer, and its student copy composes
+the date rather than hand-typing it. Add both fields to any new dated route._
+
 | Provider | State | Re-check |
 |---|---|---|
-| Google | **RELAUNCHED.** 12 months AI Pro free (US) / AI Plus (140+ markets), SheerID, **claim by 2026-12-31**. Status `none` → `disclosed`. | Does a *discounted* rate exist for after the free year? Landing page is behind a sign-in — **needs Rory signed in.** |
+| Google | **RELAUNCHED.** 12 months AI Pro free (US) / AI Plus (140+ markets), SheerID, **claim by 2026-12-31** (now carried as `claim_by`, guarded). Status `none` → `disclosed`. | Does a *discounted* rate exist for after the free year? Landing page is behind a sign-in — **needs Rory signed in.** |
 | GitHub / Microsoft | **PAUSE ENDED.** Free for verified students again, confirmed on github.com/education/students. Status `paused` → `disclosed`. | It is not Copilot Pro — auto model selection only, credit-metered chat. Re-check whether those limits move. |
 | OpenAI | No individual student discount. ChatGPT for Teachers free for verified US K-12 educators **through June 2027**; ChatGPT Edu is institutional. Re-confirmed on openai.com. | Confirm the 2027 date each pass — the only forward-dated offer we carry. |
 | Anthropic | Nothing for individuals; institutional only, and the institution list is not published. Re-confirmed on claude.com. | — |
@@ -745,6 +780,16 @@ Microsoft publish no model-lifecycle policy at all.
 
 **Where it lives:** top-level `data_practices` key. Rendered by the shared
 `renderAxisMatrix(block, prefix)` — the same function that drives pricing.
+
+⚠️ **It has a second reader since 2026-08-25: the Subscription Auditor.** Answering
+"privacy" to *what matters most* renders this provider's `training_default` and
+`optout` grades straight into the recommendation. Two consequences. **(1) The join
+is by COMPANY DISPLAY NAME** — `data_practices.rows[].provider` has no `p` key,
+unlike every other file here — so `audit.html` carries an explicit `PRACTICE_ROW`
+map and `check-auditor.js` asserts both directions resolve. Renaming a row here
+orphans the Auditor's privacy answer. **(2) The grades are now consumer-facing
+advice, not just a table**, so this axis rotting has a second cost: the wording
+must keep saying it grades *disclosure*, never conduct.
 
 **This axis rots faster than the other two.** Defaults change with a policy update
 that nobody announces: Anthropic moved consumer chats into training with an opt-out
@@ -1150,7 +1195,7 @@ node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/te
 | Script | Covers | Doesn't cover |
 |---|---|---|
 | `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models | **Never opens `audit.html`** |
-| `check-auditor.js` | `audit.html` + `pricing.html`'s `FALLBACK_LIMITS`, against `prices.json` / `plan-limits.json` / `student-access.json` | `pricing.html` prices — that's `check-prices.js` |
+| `check-auditor.js` | `audit.html` + `pricing.html`'s `FALLBACK_LIMITS`, against `prices.json` / `plan-limits.json` / `student-access.json` / `transparency-index.json`; plus (2026-08-25) every paid tier being selectable, feature labels, the practices join, the frontier examples, no hand-typed dates in the student copy, expired `claim_by`, and the extension button names | `pricing.html` prices — that's `check-prices.js` |
 | `test-auditor.js` | Sweeps all 56,250 answer combinations + the EcoMeter import | Whether the underlying data is *true* |
 | `check-clock.js` | Clock fallback parity; capex/energy levels vs published totals; one-company share bound; hardcoded anchor date | Counters with no authoritative total — by design, not omission |
 | `test-cost-model.js` | 44 assertions: billed input, image tokens, long-context tiers, export v2 | — |

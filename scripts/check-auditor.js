@@ -144,12 +144,53 @@ for (const prov in MODELS) {
     fail(prov + ' is in TOP_IS_FREE but its top model is not on the free tier: ' + MODELS[prov].top);
 }
 
-/* 8. The "what do you pay for today?" options must resolve to real tiers, or
-      the over-payment comparison silently vanishes for that plan. */
-const pays = [...html.matchAll(/\{v:'(\w+)::([^']+)',label:/g)];
-if (!pays.length) fail('could not find any prov::plan options in the pays question');
-for (const [, prov, name] of pays)
-  if (!(PLANS[prov] || []).some(t => t.m === name)) fail('pays option matches no tier: ' + prov + '::' + name);
+/* 8. The "what do you pay for today?" options, both directions.
+      Resolving to a real tier was always checked. What was NOT checked was the
+      inverse — that every paid tier is actually offerable — and four of the ten
+      were missing: ChatGPT Go, Claude Max 20x, Google AI Plus and Google AI Ultra.
+      Max 20x was the expensive one: a $200/mo payer had to pick "Claude Max",
+      which resolved to Max 5x at $100, so the saving we quoted was $100/mo too
+      small. That is this tool's headline number, wrong, on the largest
+      overpayment it exists to catch.
+      The list is derived from PLANS now, so the completeness is structural — what
+      this guards is that nobody quietly goes back to hand-typing it. */
+const aliasSrc = html.match(/const PLAN_ALIAS = \{[^}]*\};/);
+const paySrc   = html.match(/function payOptions\(\)\{[\s\S]*?\n\}/);
+const moneySrc = html.match(/const money = n => \{[\s\S]*?\};/);
+let pays = [];
+if (!/options:payOptions/.test(html))
+  fail('the pays question no longer uses the derived payOptions list');
+if (/\{v:'\w+::[^']+',label:/.test(html))
+  fail('a hand-written prov::plan option is back in audit.html — derive it from PLANS instead');
+if (!aliasSrc || !paySrc || !moneySrc) fail('cannot locate payOptions / PLAN_ALIAS / money (anchors moved?)');
+else {
+  try {
+    pays = new Function('PLANS', moneySrc[0] + '\n' + aliasSrc[0] + '\n' + paySrc[0] + '\nreturn payOptions();')(PLANS);
+  } catch (e) { fail('cannot evaluate payOptions: ' + e.message); }
+}
+{
+  const vals = new Set(pays.map(o => o.v));
+  if (!vals.has('none')) fail('the pays question lost its "Nothing" option');
+  if (!vals.has('api'))  fail('the pays question lost its API / pay-as-you-go option');
+  for (const o of pays) {
+    if (o.v === 'none' || o.v === 'api') continue;
+    const [prov, name] = o.v.split('::');
+    if (!(PLANS[prov] || []).some(t => t.m === name)) fail('pays option matches no tier: ' + o.v);
+  }
+  for (const prov in PLANS) for (const t of PLANS[prov]) {
+    if (t.price <= 0) continue;
+    if (!vals.has(prov + '::' + t.m))
+      fail('paid tier is not selectable in "what do you pay for today?": ' + prov + '::' + t.m
+         + ' — anyone on it gets no over-payment comparison at all');
+    const opt = pays.find(o => o.v === prov + '::' + t.m);
+    if (opt && !opt.label.includes(String(t.price)))
+      fail('pays option does not show its price, so nobody can match their bill to it: ' + opt.v);
+  }
+  // A rename alias that names no real tier is a label pointing at nothing.
+  if (aliasSrc) for (const m of aliasSrc[0].matchAll(/'([^']+)':/g))
+    if (!Object.values(PLANS).some(ts => ts.some(t => t.m === m[1])))
+      fail('PLAN_ALIAS names a tier that does not exist: ' + m[1]);
+}
 
 /* 9. pricing.html carries its OWN inline snapshot of plan-limits.json, so the
       Break even / Ceiling columns can differ depending on whether the live fetch
@@ -279,6 +320,112 @@ else {
 const cat = side.slice(side.indexOf('const MODEL_CATALOG'), side.indexOf('for (const grp of MODEL_CATALOG'));
 for (const m of cat.matchAll(/key:'([^']+)'/g))
   if (!all[m[1]]) fail('extension can export a model the auditor cannot price: ' + m[1]);
+
+/* 12. Every `features` string must have a display label. These strings were inert
+       for months: only image-gen and video-gen gate a recommendation, so the rest
+       were collected and shown to nobody. The "a specific feature" answer renders
+       them now, and an unlabelled feature would either vanish from that answer or
+       leak a raw key like 'sol-pro' at the reader. */
+const FEATURE_LABELS = block('const FEATURE_LABELS = {', 'const ACTIVE_DAYS', 'FEATURE_LABELS');
+if (FEATURE_LABELS) for (const prov in PLANS) for (const t of PLANS[prov]) for (const f of t.features)
+  if (!FEATURE_LABELS[f]) fail('PLANS uses a feature with no FEATURE_LABELS entry: ' + f + ' (on ' + t.m + ')');
+
+/* 13. The privacy answer joins transparency-index.json by COMPANY display name,
+       because that file has no provider key. That is the join this repo keeps
+       getting burned by, so assert both directions resolve. */
+{
+  const TI = JSON.parse(fs.readFileSync(R + 'transparency-index.json', 'utf8'));
+  const rows = (TI.data_practices && TI.data_practices.rows) || [];
+  const PRACTICE_ROW = block('const PRACTICE_ROW = {', '/* Plan limits', 'PRACTICE_ROW');
+  if (!rows.length) fail('transparency-index.json has no data_practices rows for the privacy answer to read');
+  if (PRACTICE_ROW) {
+    for (const prov in PLANS)
+      if (!PRACTICE_ROW[prov]) fail('no PRACTICE_ROW mapping for audited provider: ' + prov);
+    for (const prov in PRACTICE_ROW)
+      if (!rows.some(r => r.provider === PRACTICE_ROW[prov]))
+        fail('PRACTICE_ROW points at a company with no data_practices row: ' + PRACTICE_ROW[prov]);
+    // The two cells the answer actually renders.
+    for (const prov in PRACTICE_ROW) {
+      const row = rows.find(r => r.provider === PRACTICE_ROW[prov]);
+      if (row) for (const k of ['training_default', 'optout'])
+        if (!row.cells || !row.cells[k]) fail('data_practices row ' + row.provider + ' is missing the ' + k + ' cell');
+    }
+  }
+}
+
+/* 14. The frontier question must not promise an upgrade the engine refuses. It
+       used to name Gemini 3.1 Pro as an example of a model worth paying for, while
+       TOP_IS_FREE deliberately makes that answer a no-op for Google. The examples
+       are derived now; the hand-written half is the help text listing which
+       providers gate on quota, and THAT can drift. */
+{
+  const TOP_IS_FREE = block('const TOP_IS_FREE = new Set(', 'const LEGACY_ONLY', 'TOP_IS_FREE');
+  const NAME = block('const NAME   = {', 'const MODELS', 'NAME');
+  const qm = html.match(/\{id:'frontier'[\s\S]*?\]\},/);
+  if (!qm) fail('cannot locate the frontier question in audit.html (anchor moved?)');
+  else if (TOP_IS_FREE && NAME) {
+    if (!/frontierExamples\(\)/.test(qm[0]))
+      fail('the frontier question hand-types its model examples again — derive them from MODELS');
+    const helpM = qm[0].match(/help:'([^']*)'/);
+    for (const prov in NAME) {
+      const named = helpM && helpM[1].includes(NAME[prov]);
+      if (TOP_IS_FREE.has(prov) && !named)
+        fail('frontier help does not tell the reader ' + NAME[prov] + ' gates on quota, so the answer looks like it does something there');
+      if (!TOP_IS_FREE.has(prov) && named && new RegExp(NAME[prov] + '[^.]*same models').test(helpM[1]))
+        fail('frontier help lists ' + NAME[prov] + ' as running the same models on every tier, but it is not in TOP_IS_FREE');
+    }
+  }
+}
+
+/* 15. The student help text must carry no hand-typed month, year or count. It used
+       to read "as of August 2026 three of them are ... claimed by 31 Dec 2026":
+       a month that expired by itself, a count copied out of the data, and a
+       deadline that would have gone on advertising a dead offer in the present
+       tense — the exact failure this file's own caveats warn about. */
+{
+  const sh = html.match(/function studentHelp\(\)\{[\s\S]*?\n\}/);
+  if (!sh) fail('cannot locate studentHelp() in audit.html (anchor moved?)');
+  else {
+    const months = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
+    if (months.test(sh[0])) fail('studentHelp() hand-types a month name — compose it from student-access.json');
+    if (/\b20\d\d\b/.test(sh[0])) fail('studentHelp() hand-types a year — compose it from student-access.json');
+    if (/\b(one|two|three|four|five|six|seven|eight)\b of the\b/i.test(sh[0]))
+      fail('studentHelp() hand-types a count of offers — count the routes instead');
+  }
+}
+
+/* 16. A claimable offer with a deadline must carry it as a FIELD, and the deadline
+       must not have passed. Same idea as check-prices.js on promo.until: a date
+       living only in prose is a date nothing can check, and student-access.json's
+       own rule is to ask "what is the redemption deadline, and has it passed". */
+for (const r of S.routes) {
+  if (r.claim_by == null && r.claim_label == null) continue;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(r.claim_by || ''))
+    fail('student route has a claim_label but no valid claim_by date: ' + r.p);
+  else if (new Date(r.claim_by + 'T23:59:59Z').getTime() < Date.now())
+    fail('student route ' + r.p + ' has a claim_by that has PASSED (' + r.claim_by
+       + ') — re-verify the offer and either update the date or drop the route to "none"');
+  if (!r.claim_label) fail('student route has a claim_by but no claim_label to name it: ' + r.p);
+}
+
+/* 17. The Auditor tells people which buttons to press in the extension. It named
+       a "Usage" control that has never existed: the real path is the "Usage &
+       accuracy" panel, then "Export for Auditor", and that button is hidden until
+       usage tracking is switched on. Read the labels out of the extension so the
+       instruction cannot drift from the product again. */
+{
+  const panel = fs.readFileSync(R + 'extension/sidepanel.html', 'utf8');
+  const btn = (panel.match(/id="export-btn"[^>]*>([^<]+)</) || [])[1];
+  const sum = (panel.match(/<details class="usage-panel"[\s\S]{0,200}?<summary>([^<]+)<\/summary>/) || [])[1];
+  if (!btn) fail('cannot find the export button label in extension/sidepanel.html (anchor moved?)');
+  else if (!html.includes(btn.trim()))
+    fail('audit.html does not name the real export button: extension says "' + btn.trim() + '"');
+  if (!sum) fail('cannot find the usage panel summary in extension/sidepanel.html (anchor moved?)');
+  else if (!html.includes(sum.trim()))
+    fail('audit.html does not name the real usage panel: extension says "' + sum.trim() + '"');
+  if (!/only appears once tracking is on|switch on usage tracking/i.test(html))
+    fail('audit.html does not tell the reader the export button is hidden until tracking is on');
+}
 
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)'
