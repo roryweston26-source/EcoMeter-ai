@@ -7,11 +7,15 @@ each thing lives, what to check it against, and which script proves the fix.
 **It exists so one prompt can re-verify the whole project.** Everything below is
 written to be executed, not just read.
 
-_Last full pass: **2026-08-24** — A, B, C, D, F verified current; E partially (1 of
-12 datacenter sites; Transparency Index re-checked — its open question was then
-resolved and produced this index's first grade movement, see E1); G, H
-blocked on things only Rory could do — **H closed the same day, when v6.13 went to
-the store.** I, J done. Two guards added. Update this line when a pass completes._
+_Last full pass: **2026-08-25** — A, B, C, D, F verified 2026-08-24 and current.
+**E is now fully verified**: all 12 datacenter sites re-checked (backlog cleared,
+`last_updated` earned for the first time since 2026-07-13), and the Transparency
+Index completed — Microsoft's per-site disclosure found in the fact sheet (the
+first grade movement this index has recorded), Google/Meta/Amazon re-read from
+current reports, and the **pricing and data-practices axes defined and scored**,
+so all three axes are live and 114/114 cells are sourced. G, H were blocked on
+things only Rory could do — **H closed 2026-08-24 when v6.13 went to the store.**
+I, J done. Two guards added 2026-08-24. Update this line when a pass completes._
 
 ---
 

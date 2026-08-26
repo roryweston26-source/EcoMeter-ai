@@ -7,7 +7,7 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ---
 
-## 0. Working state (read this first) — as of 2026-08-24
+## 0. Working state (read this first) — as of 2026-08-25
 
 ### ✅ v6.13 IS UPLOADED — the long-running store gap is closed
 
@@ -39,6 +39,22 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - **v6.12 was REJECTED 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Listing copy only; code and permissions were never at issue. Fixed, with a standing rule at the top of `STORE-LISTING.md`. **6.13 was bumped pre-emptively rather than reactively** (the convention is to bump only on a duplicate-version rejection) because 6.12 was already consumed by the rejected submission.
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
+
+### 2026-08-25 — the Transparency Index was finished: all three axes scored
+
+**The index is complete.** Environmental (7 providers × 6), pricing (8 × 5) and data practices (8 × 4), all scored, never averaged. **114 of 114 cells link to a source** (42 / 40 / 32), every URL checked. `datacenters.json` is fully re-verified — `last_updated` 2026-08-25, **zero stale sites**, the first time the file-level date has been earned since 2026-07-13.
+
+**What moved, and why it mattered:**
+- **Microsoft does publish per-site water and power** — in the companion *Data Fact Sheet*, Table 15, not the flagship report where the previous pass looked. `site_level` 🔴→🟢, `replenishment` 🔴→🟡. **The first grade movement this index has ever recorded.** The earlier blocker was tooling, not disclosure: `pdftotext -layout` reads the PDFs that WebFetch could not.
+- **Google and Meta were a reporting cycle stale** and four notes were materially wrong — Google publishes 36 named locations (not 24) with withdrawal, discharge *and* consumption, and its emissions are 62% above the 2019 base, not ~51%. Meta reports per-facility *electricity and emissions*, which our note denied.
+- **Amazon was wrong in both directions** — a public per-Region PUE/WUE table exists, but only as *ratios*; absolute volumes are a single global total or live inside a paying customer's console.
+- **xAI / OpenAI / Anthropic re-verified, not assumed** — still 🔴 across all six, now resting on Aug 2026 reporting rather than Dec 2025 trackers.
+
+**Two new axes.** Pricing: providers publish the price and when it changes (five converge on exactly 30 days' notice) and **26 of 27 consumer plans publish no usage allowance**. Data practices: at OpenAI, Anthropic and Mistral the paying *business* customer is opted **out** of model training by default while the *consumer* is opted **in** — documented by the providers themselves.
+
+**Two grading calls deliberately left open** (in `datacenters.json` `_meta.verification_status`): The Dalles 🟡-vs-🟢 (moves no badge) and New Carlisle 🟡-vs-🔴 (**would move Amazon/Anthropic 🟡→🔴** on its 1,100 MW weight). Neither should be flipped as a side effect of another change.
+
+**Also:** `.claude/launch.json` + `static-server.js` are now committed, so `preview_start {name: "site"}` works from a clone instead of every session hand-rolling a server. `settings.local.json` is gitignored.
 
 ### 2026-08-24 — price re-verification against every provider's own pages
 
@@ -155,7 +171,7 @@ node scripts/check-clock.js       # clock fallback parity + level plausibility v
 node scripts/validate-site.js     # pre-deploy HTML/JSON gate
 ```
 `validate-site.yml` now runs FOUR on every PR — `validate-site.js`, `check-auditor.js`, `test-auditor.js` (added 2026-08-08) and `check-clock.js` (added 2026-08-24). `check-prices.js`, `test-cost-model.js` and `calibrate-tokenizer.js` are still manual; running them is part of a `FRESHNESS.md` pass.
-`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **`test-auditor.js` found a live bug on its first run:** the volume-aware downgrade kept its own copy of "does this tier clear your needs" that never received the image-generation gate, so **450 of 56,250 combinations told people who generate images regularly to drop to a free tier that throttles it**. The two definitions are now one function (`clearsNonModelNeeds`). **All six pass on `main` as of 2026-08-24.**
+`check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **`test-auditor.js` found a live bug on its first run:** the volume-aware downgrade kept its own copy of "does this tier clear your needs" that never received the image-generation gate, so **450 of 56,250 combinations told people who generate images regularly to drop to a free tier that throttles it**. The two definitions are now one function (`clearsNonModelNeeds`). **All six pass/fail guards pass on `main` as of 2026-08-25** (`check-prices`, `check-auditor`, `check-clock`, `test-auditor`, `test-cost-model`, `validate-site`) — re-run, not assumed. The seventh script in the heading above, `calibrate-tokenizer.js`, is a **measurement** tool rather than a gate, which is why the count reads seven there and six here.
 
 **Two guards added 2026-08-24, both verified by injecting the fault.** `check-prices.js` now fails when a `promo.until` date passes and names the standard rate to revert to — Sonnet 5 nearly cost us a wrong price because its expiry lived in prose that nothing could check, and Google put two models on a dated promo three weeks later. `check-auditor.js` now validates `LEGACY_MODELS`, the set subtracted from the frontier signal, asserting every entry genuinely enters the advanced set; it immediately caught a no-op entry and forced the realisation that GPT-5.5 is free on Copilot *and* paywalled on OpenAI at the same time.
 
@@ -379,7 +395,16 @@ Added 2026-08-08 for the student-facing launch. Read by `audit.html` when the us
 - **There is deliberately no unit-cost decline rate in this file** (there was until 2026-08-08; nothing read it). The per-unit panel derives its own decline from `rates.spend / rates.tokens`. `_meta.why_no_unit_cost_field` explains why Epoch's ~40×/yr figure measures a different quantity and isn't used — read it before re-adding one.
 
 ### `transparency-index.json` — Transparency page copy + disclosure matrix
-`_meta` holds **page-level** copy (title, lede, `last_verified`, the 4-state `grade_legend`, `axes`, `methodology`, `caveats`) **plus** a nested `detail` block (its own 3-state legend/note) for the matrix. `columns`/`rows` = the 7-provider × 6-dimension **disclosure-quality matrix**. See §7.
+`_meta` holds **page-level** copy (title, lede, `last_verified`, the 4-state `grade_legend`, `axes`, `methodology`, `caveats`) **plus** a nested `detail` block (its own 3-state legend/note) for the environmental matrix.
+
+**Three matrices now live in this file, and they are separate on purpose:**
+- `columns` / `rows` — the 7-provider × 6-dimension **environmental disclosure matrix** (nested under the scored environmental axis).
+- `pricing` — top-level key: 8 providers × 5 dimensions. Own `title`, `note`, `grade_legend`, `caveats`, `columns`, `rows`.
+- `data_practices` — top-level key, same shape: 8 providers × 4 dimensions.
+
+**Different provider sets, deliberately.** The environmental matrix covers who runs the datacenters (Amazon, Meta included); the other two cover who sells AI to consumers and developers (Perplexity, Mistral, DeepSeek, Microsoft included). Not a bug — each axis note says so.
+
+`renderMatrix(data, headId, bodyId)` renders any of them; `renderAxisMatrix(block, prefix)` drives the two top-level ones. **A fourth axis is one `<section>`, one call and a data block** — and a block whose key is absent leaves its section hidden rather than rendering empty. See §7.
 
 ### `datacenters.json` — per-site AI-datacenter environmental data
 `{ _meta:{last_updated, methodology_note}, sites:[…] }`. Each site: `provider`, `name`, `location`, `power_mw` (+optional `power_mw_planned`), `water_grade` (transparent|partial|opaque), `water_note`, `sources[]`, `as_of`. `transparency-index.html` computes provider grades from this. See §7.
@@ -528,7 +553,7 @@ Top-level `data_practices` key, same shape as `pricing`. `renderPricing()` was g
 
 ---
 
-## 9. Recent work (this session, 2026-07-13)
+## 9. Work history — 2026-07-13 and earlier (current state is §0)
 
 - **AI Transparency Index — environmental axis:** built `datacenters.json` + the capacity-weighted `renderEnv()` engine + three-axis framing; adopted a public-knowability 4-state scale and nested the existing disclosure matrix beneath it; expanded to **12 sites / 7 providers** with a watchdog-then-primary sourcing pass that corrected several grades. *(merged)*
 - **EcoMeter tokenizer accuracy:** measured + recalibrated the estimators (32%→8%), fixed the GPT-5→o200k routing bug, added `METHOD_ACCURACY` error bands + a UI accuracy line, added **opt-in Google `countTokens`** (with privacy-policy + principle updates), and scaffolded the self-verifying **exact-local** tokenizer path + `fetch-tokenizers.js` + publish-time staging. *(merged, PR #17)*
