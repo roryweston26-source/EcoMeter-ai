@@ -17,6 +17,19 @@ so all three axes are live and 114/114 cells are sourced. G, H were blocked on
 things only Rory could do — **H closed 2026-08-24 when v6.13 went to the store.**
 I, J done. Two guards added 2026-08-24. Update this line when a pass completes._
 
+_**2026-08-26 — not a full pass; two targeted jobs.** (1) **The Subscription
+Auditor's question section was audited** and three of its eleven questions turned
+out to change nothing: `priority` was read by no code at all, `frequency` moved
+only a cosmetic badge, and `media` asked about voice while gating on images. Four
+stale facts went with them — an export instruction naming a button that never
+existed, four of ten paid tiers unselectable (a Max 20× payer was shown a saving
+$100/mo too small), a frontier example the engine deliberately ignores, and a
+hand-typed month/count/deadline in the student copy. Six new guards in
+`check-auditor.js`, each verified by injecting its fault; `test-auditor.js` now
+sweeps `priority` (225,000 combinations). **New entry B5** — the days-per-month
+assumption this created. PR #35. (2) **J1 cleared** — 25 remote and 24 local
+branches deleted, two unmerged ones kept and documented. **All six guards pass.**_
+
 ---
 
 ## The one prompt
@@ -1153,30 +1166,48 @@ site-wide. Don't add a second remote asset.
 
 ## J1. Stale branches
 
-Confirm before deleting — this is the check, not a formality:
+**Cleared 2026-08-26: 25 remote and 24 local branches deleted, all verified merged
+first.** The repo went from 27 remote branches to 2. Two survive, and they are the
+only part of this entry worth reading again.
+
+**Don't keep a list here — the list is what rots.** The 2026-08-24 pass named "16
+branches provably merged"; two days later it was 25, because every merged PR adds
+one. Run the check instead:
 
 ```bash
-git branch --merged main
+git branch --merged main                          # LOCAL only
+git rev-list --count origin/main..origin/<branch> # REMOTE — 0 means merged
 ```
 
-**As of 2026-08-24, 16 branches are provably merged into `main`** and can go:
-`chore/clock-reanchor-2026-q3`, `chore/price-refresh-2026-08-02`,
-`ci/validate-site`, `docs/project-context-refresh`, `feat/auditor-per-model-cost`,
-`feat/ecometer-per-model-export`, `feat/ecometer-tokenizer-accuracy`,
-`feat/opus-5-and-auditor-panel`, `feat/plan-value-columns`,
-`feat/shared-data-free-tier`, `feat/transparency-index`,
-`feat/transparency-site-depth`, `fix/ai-clock-model`,
-`fix/auditor-accuracy-2026-08`, `fix/homepage-store-links`,
-`fix/weekly-publish-workflow`.
+⚠️ **`git branch --merged` does not see remote branches**, which is how the remote
+list grew to 27 while the local check looked clean. Check both, and prefer
+`git branch -d` (it refuses to delete anything unmerged) over `-D`.
 
-**Two are NOT merged and must not be deleted blind:** `docs/project-context-2026-07`
-and `feat/subscription-auditor`. The doc previously listed the first of these as
-"superseded, deletable" — it isn't merged, so deleting it would lose whatever is on
-it. Check before believing a list like this, including this one.
+⚠️ **A zero-commit diff is not the same as zero commits.** `feat/pricing-axis`
+carried one commit not in `main` — a merge commit whose three-dot diff
+(`git diff main...branch`) was empty. Content already in main, topology not. Safe
+to delete, but only because the diff was checked, not the count.
 
-**Not deleted on the 2026-08-24 pass, deliberately:** a second session was working
-in this tree at the time, and deleting branches under a concurrent session is a
-bad trade for tidiness. Left for Rory.
+**The two that are NOT merged, and must not be deleted blind:**
+
+| Branch | Unmerged | What's on it |
+|---|---|---|
+| `feat/subscription-auditor` (remote + local) | 3 commits | "Add Meta Muse Spark 1.1 across pricing, auditor, and the model picker" · "Add the GPT-5.6 family (Sol / Terra / Luna)…" · "Improve Auditor cost logic…" |
+| `docs/project-context-2026-07` (local only) | 1 commit | "docs: refresh PROJECT-CONTEXT for the Transparency Index + validate-site" (+100/−55) |
+
+**The open question is Meta Muse Spark 1.1.** The GPT-5.6 family and the cost-logic
+work both reached `main` by other routes, so those two commits are redundant. Muse
+Spark did not: **it appears nowhere in `prices.json`, `audit.html` or the extension
+picker.** Either it was dropped deliberately or a provider addition got stranded on
+a branch — this file cannot tell which, and the answer decides whether the branch is
+deletable or a to-do. **Decide it, then delete the branch either way.**
+`docs/project-context-2026-07` is very probably superseded (PROJECT-CONTEXT has been
+rewritten several times since July) but it is unmerged, so the same rule applies:
+read it, then delete it.
+
+**Restoring a deleted branch** is trivial while the commit is still reachable —
+`git push origin <sha>:refs/heads/<name>`. For everything deleted on this pass there
+is nothing to recover: all of it is in `main`.
 
 ## J2. Committed build artifacts
 

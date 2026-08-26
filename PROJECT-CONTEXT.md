@@ -624,7 +624,7 @@ Full summary in §0. The short version:
 - **The AI Clock is a modeled projection** — re-anchor quarterly.
 - **`README.md`** is extension-focused and somewhat stale.
 - **Google Fonts** load from `fonts.googleapis.com` on site pages (the privacy wart) — consider self-hosting.
-- **Stale branches to delete:** `docs/project-context-2026-07` (superseded doc-rewrite attempt), `feat/opus-5-and-auditor-panel` (merged in PR #18), `feat/plan-value-columns` (merged in PR #20), `chore/price-refresh-2026-08-02` (merged in PR #21).
+- **Stale branches: cleared 2026-08-26** — 25 remote and 24 local deleted, all verified merged first; the remote went from 27 branches to 2. **This line used to name `docs/project-context-2026-07` as a superseded branch to delete, and that was wrong in the dangerous direction: it is not merged.** `FRESHNESS.md` J1 had already caught the error and said so; this copy never got the correction — a second list of the same fact, drifting, which is the failure this repo keeps paying for. **Keep no list here.** Two branches survive because they hold unmerged work — `feat/subscription-auditor` (3 commits, including "Meta Muse Spark 1.1", which appears nowhere in `main`) and `docs/project-context-2026-07` — and the open question on each is in FRESHNESS J1, which is the only place that tracks them.
 - **Prompt caching is unmodelled** in the cost estimate — we overestimate, increasingly with conversation length (§4). Disclosed rather than guessed; revisit only if a provider publishes hit rates.
 
 ---
