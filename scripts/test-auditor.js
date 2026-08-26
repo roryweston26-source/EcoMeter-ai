@@ -43,7 +43,7 @@ function FileReaderStub() {}
 const EXPORTS = ['PLANS', 'API', 'MODELS', 'NAME', 'TOP_IS_FREE', 'LEGACY_ONLY', 'state',
   'recommend', 'profileFor', 'meetsNeeds', 'clearsNonModelNeeds', 'apiCostPerMonth',
   'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels', 'payOptions',
-  'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK'];
+  'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK', 'studentNote', 'offerLive'];
 const A = new Function('document', 'window', 'fetch', 'FileReader',
   src + '\nreturn {' + EXPORTS.join(',') + '};')(documentStub, windowStub, fetchStub, FileReaderStub);
 
@@ -427,6 +427,26 @@ async function main() {
   ok('and we stop calling that volume measured', corrected.measured === false);
   ok('but the measured per-message SIZE survives and rescales',
      Math.abs(corrected.input_tokens_per_day - 3 * (120000 / 30)) < 1, corrected.input_tokens_per_day);
+
+  /* ---------- 4. the student answer has to reach the recommendation ----------
+     It didn't: the routes panel rendered below the cards, so a student could be told
+     to buy a plan while a free year of that same plan sat further down the page,
+     unconnected. These assert the join exists, stays inside 'claimable by this
+     reader', and dies with the deadline. */
+  const stu = o => Object.assign({ tools: ['google'], frequency: 'mostDays', messages: '20to50',
+    purpose: 'writing', limits: 'sometimes', frontier: 'default', media: 'no', team: 'solo',
+    pays: ['none'], priority: 'cost', student: 'student' }, o || {});
+  const gNote = A.studentNote('google', stu());
+  ok('a student picking Gemini is told about the claimable route', !!gNote, gNote);
+  ok('and the note names the offer from the data, not from prose here',
+     !!gNote && gNote.includes('Google'), gNote);
+  ok('a non-student gets no student note', A.studentNote('google', stu({ student: 'no' })) === null);
+  ok('a teacher is not sold a student offer', A.studentNote('google', stu({ student: 'teacher' })) === null);
+  ok('an institutional programme is not presented as claimable',
+     A.studentNote('anthropic', stu({ tools: ['anthropic'] })) === null);
+  ok('a deadline in the past is not a live offer', A.offerLive({ claim_by: '2020-01-01' }) === false);
+  ok('a deadline in the future is', A.offerLive({ claim_by: '2099-01-01' }) === true);
+  ok('and a route with no deadline is live', A.offerLive({}) === true);
 
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'
                   : 'all auditor behaviour tests pass — ' + ran + ' checks, ' + combos + ' answer combinations swept');

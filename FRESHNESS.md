@@ -464,6 +464,12 @@ passes**, the same way `check-prices.js` fails on an expired `promo.until` — s
 the Auditor cannot go on advertising a dead offer, and its student copy composes
 the date rather than hand-typing it. Add both fields to any new dated route._
 
+_Since 2026-08-26 the **rendered page re-checks it too**: `offerLive()` in `audit.html`
+is the single place the deadline is compared, and it governs the help text, the route
+row (which flips to a `deadline has passed` tag and drops the call to action) and the
+student line inside the recommendation card (which disappears). The CI guard only fires
+when a build runs; the site is static and can be read long after one._
+
 | Provider | State | Re-check |
 |---|---|---|
 | Google | **RELAUNCHED.** 12 months AI Pro free (US) / AI Plus (140+ markets), SheerID, **claim by 2026-12-31** (now carried as `claim_by`, guarded). Status `none` → `disclosed`. | Does a *discounted* rate exist for after the free year? Landing page is behind a sign-in — **needs Rory signed in.** |

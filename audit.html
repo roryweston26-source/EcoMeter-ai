@@ -118,6 +118,7 @@
   .student .sline{margin:0 0 6px;font-size:.92rem;color:var(--ink)}
   .student .sdetail{margin:0 0 8px;font-size:.86rem;color:var(--muted);line-height:1.6}
   .student .saction{margin:0 0 8px;font-size:.86rem;color:var(--green-2);line-height:1.6}
+  .student .saction.stale{color:var(--gold)}
   .student .ssrc{margin:0;font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;color:var(--muted-dim)}
   .student .ssrc a{color:var(--muted);text-decoration:underline}
   .student .ssrc a:hover{color:var(--green-2)}
@@ -488,6 +489,10 @@ function payOptions(){
    check-auditor.js asserts no hardcoded month, count or year survives in here. */
 const fmtDay = iso => { const d=new Date(iso+'T00:00:00Z');
   return isNaN(d) ? iso : d.getUTCDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]+' '+d.getUTCFullYear(); };
+/* Whether an offer is still claimable is decided in exactly one place: the help text,
+   the rendered row and the recommendation note all ask this, and three copies of a date
+   comparison is three chances to keep advertising a dead offer. */
+const offerLive = r => !r.claim_by || new Date(r.claim_by+'T23:59:59Z').getTime() > Date.now();
 function studentHelp(){
   const head='Most “AI student discounts” you’ll read about aren’t real consumer offers.';
   const tail=' We’ll show you what each provider actually offers, the catch on each, and the one free question that’s often worth more than any of them.';
@@ -496,8 +501,7 @@ function studentHelp(){
   const claimable=routes.filter(r=>r.provenance==='disclosed');
   if(!claimable.length) return head+` Of the ${routes.length} providers we checked, none has one an individual can claim right now.`+tail;
   // Only surface a deadline that has not passed — an expired one reads as an offer.
-  const now=Date.now();
-  const dated=claimable.filter(r=>r.claim_by && r.claim_label && new Date(r.claim_by+'T23:59:59Z').getTime()>now)
+  const dated=claimable.filter(r=>r.claim_by && r.claim_label && offerLive(r))
                        .sort((x,y)=> x.claim_by<y.claim_by?-1:1)[0];
   const when=dated?` — including ${dated.claim_label}, which has to be claimed by ${fmtDay(dated.claim_by)}`:'';
   return `${head} Of the ${routes.length} providers we checked, ${claimable.length} have one you can claim yourself${when}.`+tail;
@@ -927,13 +931,22 @@ function studentPanel(a){
   const elsewhere=routes.filter(r=>!picked.includes(r.p) &&
     (r.provenance==='disclosed' || (who==='teacher' && r.teacher_offer)));
   const row=r=>{
-    const tag=ROUTE_TAG[r.provenance]||{t:r.provenance,c:'warn'};
+    // A deadline that has passed turns a live offer into a false one, and this page is
+    // static: it can be read months after it was last verified. check-auditor.js already
+    // fails a passed claim_by, but only when a build actually runs — so the row re-checks
+    // it at render time too, the way studentHelp() does. student-access.json's own caveat
+    // is: don't ask whether an offer exists, ask whether the deadline has passed.
+    const expired = !!r.claim_by && !offerLive(r);
+    const tag = expired ? {t:'deadline has passed', c:'warn'}
+                        : (ROUTE_TAG[r.provenance]||{t:r.provenance,c:'warn'});
     const name=(NAME[r.p]|| (r.p.charAt(0).toUpperCase()+r.p.slice(1)));
     return `<div class="srow">
       <div class="shead"><b>${name}</b><span class="stag ${tag.c}">${tag.t}</span></div>
       <p class="sline">${r.headline}</p>
       <p class="sdetail">${r.detail}</p>
-      ${r.action?`<p class="saction">→ ${r.action}</p>`:''}
+      ${expired
+        ? `<p class="saction stale">→ The deadline on this (${fmtDay(r.claim_by)}) has passed, and we last checked on ${r.as_of}. Treat it as gone unless the provider’s own page still shows it — this row is overdue a re-check.</p>`
+        : (r.action?`<p class="saction">→ ${r.action}</p>`:'')}
       ${r.source?`<p class="ssrc"><a href="${r.source}" target="_blank" rel="noopener noreferrer">source</a> · checked ${r.as_of}</p>`:`<p class="ssrc">checked ${r.as_of}</p>`}
     </div>`;
   };
@@ -951,6 +964,26 @@ function studentPanel(a){
   </div>`;
 }
 
+/* The student answer used to change nothing about the recommendation itself. The panel
+   above sits BELOW the cards, so a student could be told “Google AI Pro — $19.99/mo” and
+   then, further down and unconnected, that a free year of exactly that plan exists. If a
+   route is claimable by the person reading, it belongs in the reasoning for the plan we
+   just told them to buy. Composed from student-access.json — no offer name or date is
+   typed here — and restricted to 'disclosed' routes that an individual can actually claim:
+   an institutional programme is not an action this reader can take. Students only, because
+   a student offer is not a teacher one and cross-selling it would be the same false
+   promise this file exists to stop. */
+function studentNote(prov, a){
+  if(a.student!=='student' || !STUDENT) return null;
+  const r=(STUDENT.routes||[]).find(x=>x.p===prov && x.provenance==='disclosed');
+  if(!r) return null;
+  // Same expiry rule as the panel: a passed deadline is not a recommendation.
+  if(!offerLive(r)) return null;
+  const what=(r.claim_label && r.claim_by)
+    ? `${NAME[prov]||prov} is currently offering ${r.claim_label}, and it has to be claimed by ${fmtDay(r.claim_by)}.`
+    : r.headline;
+  return `🎓 You said you’re a student, so read this before you spend anything here: ${what} There’s a catch on each of them — the student section below has this one, with the source and the date we checked it.`;
+}
 function currentPlans(a){
   const out=[];
   (a.pays||[]).forEach(v=>{
@@ -1037,7 +1070,10 @@ function finish(){
   const provs=(a.tools||[]).filter(t=>t!=='other' && PLANS[t]);
   const cards=provs.map(prov=>{
     const r=recommend(profileFor(prov,a,sig),sig);
-    const items=r.why.map(w=> typeof w==='string'?`<li>${w}</li>`:`<li class="save">${w.html}</li>`).join('');
+    const why=r.why.slice();
+    const sn=studentNote(prov,a);
+    if(sn) why.push(sn);
+    const items=why.map(w=> typeof w==='string'?`<li>${w}</li>`:`<li class="save">${w.html}</li>`).join('');
     return `<div class="rec"><div class="rec-prov">${NAME[prov]}</div><div class="rec-head">${r.head}</div><ul>${items}</ul></div>`;
   }).join('');
   const other=(a.tools||[]).includes('other') ? `<p class="disclaimer">We currently audit ChatGPT, Claude, Gemini, Copilot and DeepSeek — more tools coming.</p>` : '';
