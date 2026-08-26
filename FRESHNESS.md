@@ -452,7 +452,13 @@ exists — the internet will tell you yes for offers that closed months ago.
 $28.99/mo when Google's own page says $19.99, and every site claiming a Claude
 coupon code is selling something.
 
-**Guard:** `check-auditor.js` (joins on `p`)
+**Guard:** `check-auditor.js` (joins on `p`) — and since 2026-08-26 it also measures
+**how old each `as_of` is**: a warning at 45 days, a hard fail at 90, plus the same
+fail on `_meta.last_verified`. The "a month or two" rule had lived only in the file's
+own caveats, which is exactly how the Google year got missed — a route saying *no offer
+exists* has no `claim_by` to expire, so age is the only signal there is. Verified by
+injecting both faults.
+
 
 ## C2. Known dated offers
 
