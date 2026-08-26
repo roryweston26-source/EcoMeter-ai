@@ -32,6 +32,8 @@
       "Prompt caching is not modelled, consistent with EcoMeter. Cached input bills far less, so real API cost is lower than shown and break-even is correspondingly harder to reach.",
       "Where a cap is a soft fallback rather than a hard stop (OpenAI downgrades to mini rather than cutting you off), the ceiling understates total value and overstates top-model value.",
       "Every Gemini break-even is currently computed on gemini-3.6-flash, whose API rate is PROMOTIONAL until 2026-12-31 (half the standard rate). These figures will roughly halve in the number of messages they name when that promo ends — they re-price themselves from prices.json, so no edit is needed here, but a Gemini plan looks better value today than it will in January. check-prices.js fails on the promo date.",
+      "xAI publishes ONE model row on its plan comparison — Grok 4.6 — so every SuperGrok tier gets a single break-even figure rather than a range. We previously paired it with grok-4.3, which x.ai does not offer on any consumer plan.",
+      "Perplexity break-even is deliberately priced on THIRD-PARTY models, using the provider:model form (e.g. anthropic:claude-opus-5). Perplexity’s help centre publishes a per-plan model table and it is almost all frontier models from OpenAI, Anthropic, Google and xAI: Pro serves GPT-5.6 Terra, Gemini 3.1 Pro, Claude Sonnet 5 and Grok 4.5; Max adds GPT-5.6 Sol and Claude Opus 5. Sonar is excluded from the calculation on purpose, for two reasons: the app model is now branded Sonar 2 and carries no published API rate under that name, and the Sonar API adds a per-request search fee ($5 per 1,000 requests) on top of tokens that this cost model does not carry — including it at token rates alone would understate API cost and flatter the subscription. Perplexity also states the Sonar chat API is superseded by the Agent API and supported only until 2026-09-27.",
       "Microsoft plans have no break-even figure: Copilot runs on OpenAI models but Microsoft publishes no equivalent per-token rate to compare against."
     ]
   },
@@ -187,33 +189,33 @@
       "_comment": "x.ai/pricing ticks Grok 4.6 in EVERY column, Free included, so every xAI tier is valued on the same pair: what you buy is rate limit, never model access. The previous entries valued these tiers on grok-3 / grok-3-mini / grok-4, all of which had already left xAI's pricing page — the free tier was being valued on a two-generation-old model.",
       "p": "xai", "m": "Grok (Free)",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.3", "high": "grok-4.6" },
-      "as_of": "2026-08-24"
+      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "as_of": "2026-08-26"
     },
     {
       "p": "xai", "m": "SuperGrok Lite",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.3", "high": "grok-4.6" },
-      "as_of": "2026-08-24"
+      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "as_of": "2026-08-26"
     },
     {
       "p": "xai", "m": "SuperGrok",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.3", "high": "grok-4.6" },
-      "as_of": "2026-08-24"
+      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "as_of": "2026-08-26"
     },
     {
       "_comment": "New tier between SuperGrok and Heavy, found on x.ai/pricing 2026-08-24. xAI publishes no usage figure for it — the card says 'significantly higher usage' against a base it never quantifies.",
       "p": "xai", "m": "SuperGrok Plus",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.3", "high": "grok-4.6" },
-      "as_of": "2026-08-24"
+      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "as_of": "2026-08-26"
     },
     {
       "p": "xai", "m": "SuperGrok Heavy",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.3", "high": "grok-4.6" },
-      "as_of": "2026-08-24"
+      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "as_of": "2026-08-26"
     },
 
     {
@@ -225,8 +227,8 @@
           "source": "https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained",
           "why": "Sources disagree — some report 3 per day as of July 2026 rather than 5. Perplexity publishes no figure, so there is no way to settle it." }
       ],
-      "value_models": { "low": "sonar", "high": "sonar" },
-      "as_of": "2026-07-28"
+      "value_models": { "low": "openai:gpt-5.6-terra", "high": "anthropic:claude-sonnet-5" },
+      "as_of": "2026-08-26"
     },
     {
       "p": "perplexity", "m": "Perplexity Pro",
@@ -239,15 +241,15 @@
           "why": "Midpoint of the 100-150 per week that Pro users reported in May 2026 after limits were cut; standard Pro Search was unaffected. Weak for an unusual reason: Perplexity's own response was that 'some users are seeing different usage limits because their accounts are tied to promotional-code offers, and we've had to adjust enforcement due to fraud and unauthorized resale' — i.e. the provider confirms the limit differs between subscribers on the same plan. There may be no single true number to find.",
           "replaces": "An earlier 600 searches/day figure, dropped: it described unlimited Pro Search rather than the advanced-model allowance that actually binds." }
       ],
-      "value_models": { "low": "sonar", "high": "sonar-reasoning-pro" },
-      "as_of": "2026-07-28"
+      "value_models": { "low": "openai:gpt-5.6-terra", "high": "anthropic:claude-sonnet-5" },
+      "as_of": "2026-08-26"
     },
     {
       "p": "perplexity", "m": "Perplexity Max",
       "provenance": "not_disclosed",
       "stated": "Marketed as unlimited Pro searches with no daily or hourly cap; no figure published and 'unlimited' is not a number we can price.",
-      "value_models": { "low": "sonar-pro", "high": "sonar-reasoning-pro" },
-      "as_of": "2026-07-28"
+      "value_models": { "low": "openai:gpt-5.6-sol", "high": "anthropic:claude-opus-5" },
+      "as_of": "2026-08-26"
     },
 
     {

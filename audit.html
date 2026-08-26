@@ -355,7 +355,7 @@ const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus
   'claude-sonnet-5':'Claude Sonnet 5', 'claude-sonnet-4-6':'Claude Sonnet 4.6',
   'gemini-2.5-flash-lite':'Gemini 2.5 Flash-Lite', 'gemini-3.1-flash-lite':'Gemini 3.1 Flash-Lite',
   'gemini-2.5-pro':'Gemini 2.5 Pro', 'gpt-4o':'GPT-4o' };
-const labelModel = k => LABELS[k] || k;
+const labelModel = k => { const b=String(k).includes(':')?String(k).split(':')[1]:String(k); return LABELS[b] || b; };
 const money = n => { if(!n) return '$0'; const r=Math.round(n*100)/100; return '$'+(Number.isInteger(r)?r:r.toFixed(2)); };
 
 /* What each provider offers students/teachers, with provenance. Same-origin fetch,
@@ -852,7 +852,13 @@ function recommend(pf,sig){
    why pricing.html can show it for all 26 plans. scripts/test-auditor.js loads
    BOTH pages' implementations and asserts they return identical numbers, so this
    copy cannot drift from the table it's meant to match. */
+// A value_model may name ANOTHER provider's model as "provider:model". Perplexity's
+// consumer plans are mostly third-party frontier models, so pricing one of its plans
+// against Sonar answers a question nobody asked. API here is a flat map, so only the
+// prefix needs removing; pricing.html's rates are grouped, so it resolves the group.
+const bareModel = k => String(k).includes(':') ? String(k).split(':')[1] : String(k);
 function costPerMessage(prov, modelKey, arc){
+  modelKey=bareModel(modelKey);
   const r=API[modelKey];
   if(!r || typeof r.in!=='number' || typeof r.out!=='number') return null;
   // Long-context tier, where one exists, applies to EVERY token in the request.
