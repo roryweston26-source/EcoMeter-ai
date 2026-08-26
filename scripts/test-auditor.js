@@ -219,8 +219,12 @@ async function main() {
       P.state.arch = '__over';
       const mine = A.costPerMessage('openai', 'gpt-5.6-sol', big);
       const theirs = P.costPerMessage('openai', 'gpt-5.6-sol');
-      const shortRate = big.in * sol.input + big.out * sol.output;
-      const longRate  = big.in * sol.long.input + big.out * sol.long.output;
+      // gpt-5.6-sol reasons by default, so thinking tokens ride on the output side
+      // in both engines; the expectation has to include them or it tests the old model.
+      const rx = ((P.PLAN_LIMITS()._meta || {}).reasoning || {}).models || {};
+      const mult = (rx['gpt-5.6-sol'] || {}).mid || 1;
+      const shortRate = big.in * sol.input + big.out * mult * sol.output;
+      const longRate  = big.in * sol.long.input + big.out * mult * sol.long.output;
       ok('above the threshold the LONG rate is used, not the short one',
          Math.abs(mine - longRate) < 1e-9 && Math.abs(mine - shortRate) > 1e-9, { mine, longRate, shortRate });
       ok('and pricing.html does the same thing there', Math.abs(mine - theirs) < 1e-9, { mine, theirs });

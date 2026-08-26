@@ -196,7 +196,13 @@ async function main() {
           } else {
             console.log(`  + ${provider}/${model}: $${(prices.input*1e6).toFixed(2)}/$${(prices.output*1e6).toFixed(2)} per 1M (new)`);
           }
-          existing.api[provider][model] = prices;
+          // MERGE, do not replace. A model record can carry more than a rate pair:
+          // `long` (context-tier rates), `promo` ({ until, standard }) and `reasoning`
+          // (thinking-token multipliers) all live here and none of them are fetched.
+          // Assigning the fetched object wholesale silently deleted them on the next
+          // price change — which for a promo means losing the very rate the file exists
+          // to remember, on the model whose price is about to revert.
+          existing.api[provider][model] = { ...prev, ...prices };
           changed = true;
         }
       }

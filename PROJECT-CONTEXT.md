@@ -40,6 +40,25 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-26 — break-even: the archetypes are generated now, and thinking tokens are priced
+
+Asked to tighten the break-even numbers. Two of the three candidate levers were worth pulling; the third was not, and saying why matters as much as the change.
+
+**Thinking tokens are now priced (the big one).** A reasoning model bills hidden chain-of-thought at the output rate, and the archetype’s `output` is the visible reply only. That understated API cost by 30–45% on exactly the frontier models people pay for, which pushed break-even *up* — a higher bar than the truth. `plan-limits.json._meta.reasoning` now carries lo/hi/mid per model and both engines apply `mid`. ChatGPT Plus 26→16 msgs/day at the frontier end, Claude Pro 21→13, Google AI Pro 48→28. EcoMeter has modelled this since it shipped; the website never did.
+
+**Archetypes are generated.** `scripts/derive-archetypes.js` measures chars-per-token with the real cl100k tokenizer over this repo’s prose (3.911, 162 samples) and converts message lengths stated in *characters*. The assumption did not disappear — it moved to a unit a person can check against a real chat window. The numbers barely moved (standard 4,000/500 → 3,565/460), which is itself the finding: the old round numbers were reasonable, they just could not be checked.
+
+**Caching stays unmodelled, deliberately** — modelling it means assuming the reader would cache competently on the API, and most would not. It is caveated, and it pulls the opposite way to the search fees in §A7.
+
+**What NOT to import from EcoMeter:** its `PLATFORM_OVERHEAD_TOKENS` (1.5k–8k/turn of hidden system prompt). That is correct for measuring what a platform message costs to run, and wrong for break-even, which asks what *you* would pay on the API — where you write your own system prompt. Modelling it would have moved Claude Pro to ~9/day on a false premise. Recorded because it looks like an obvious next step and is not.
+
+**Two bugs found on the way:**
+
+- `update-prices.js` assigned `existing.api[p][m] = prices` wholesale, so any `long`, `promo` or (now) `reasoning` block was **destroyed the next time that model’s price changed** — including the `promo.standard` rate that exists precisely to survive until the revert date. Now merges.
+- `pricing.html`’s "show the math" panel recomputed cost itself instead of calling the engine, and looked rates up under the plan’s own provider — so it silently showed **no working at all** on every Perplexity row, and would have disagreed with the headline number as soon as reasoning landed. It calls `costPerMessage()` now.
+
+**Guards:** archetype drift across all three copies plus `CHARS_PER_TOKEN`; reasoning mirror drift, `mid` outside its lo/hi, multipliers for unpriced models, and site-vs-extension contradiction. Every one verified by injecting the fault. While testing one of them I found the site-vs-extension check had been silently scanning an empty string, because `PLATFORM_OVERHEAD_TOKENS` is referenced earlier in `sidepanel.js` than it is declared and the slice ran backwards — a guard that passes while checking nothing is worse than no guard.
+
 ### 2026-08-26 — what break-even does not carry: every provider but DeepSeek charges for search
 
 Followed the Perplexity request-fee finding across the other providers. It is not a Perplexity quirk. Checked on each provider's own API pricing page: OpenAI web search $10/1k calls ($25/1k on the non-reasoning preview tool), Anthropic $10/1k searches, Google grounding 5,000 free/month then $14/1k, xAI $5/1k for web and X search, Perplexity $5/1k on the Sonar models. Mistral says tool APIs are per call but publishes no figure. **DeepSeek is the only one that charges nothing per request.**

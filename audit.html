@@ -567,10 +567,14 @@ const MSG_MID={lt5:3,'5to20':12,'20to50':35,'50to150':100,'150plus':200};
    output. Pricing a chat off the visible text you typed understates the real API
    bill several-fold, and that error points exactly the wrong way here: it makes
    pay-per-token look cheaper than the subscription.
-   THESE ARE ASSUMPTIONS, not measurements — the single largest lever on every
-   dollar figure below. Connecting an EcoMeter export replaces them with measured
-   billed-input tokens; the fix for the quiz path is to anchor them to real exports. */
-const ARCHETYPE={ light:{in:1500,out:300}, standard:{in:4000,out:500}, heavy:{in:15000,out:1200} };
+   HALF ASSUMPTION, HALF MEASUREMENT, and the two must not be confused. The message
+   LENGTHS behind these (prompt/reply characters and how many turns of history ride
+   along) are judgement; the characters-to-tokens CONVERSION is measured with the real
+   cl100k tokenizer by scripts/derive-archetypes.js, which owns these numbers and
+   regenerates them. Still the single largest lever on every dollar figure below.
+   Connecting an EcoMeter export replaces them with measured billed-input tokens;
+   the fix for the quiz path is to anchor them to real exports. */
+const ARCHETYPE={ light:{in:628,out:230}, standard:{in:3565,out:460}, heavy:{in:14678,out:1074} };
 const PURPOSE_TOK={quick:'light',writing:'standard',research:'standard',coding:'heavy',agentic:'heavy'};
 
 function toolsCount(a){ return (a.tools||[]).filter(t=>t!=='other').length || 1; }
@@ -816,7 +820,8 @@ function recommend(pf,sig){
   // THIS user sits against it — which is the bit a table can't tell you.
   const be = fit.price>0 ? breakEven(pf.provider, fit, pf.arc) : null;
   if(be){
-    why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.`);
+    const thinks = reasoningMult(be.fewModel)>1 || reasoningMult(be.manyModel)>1;
+    why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.${thinks?` That includes the hidden thinking tokens a reasoning model bills at the output rate — our estimate of them, since no provider publishes the figure.`:``}`);
     // Break-even is a per-day rate, so it has to be compared against an AVERAGE day.
     // Comparing it to the busy-day figure cleared the bar for people who only use it
     // twice a week, and told them a subscription was the cheaper option when it wasn't.
@@ -865,7 +870,16 @@ function costPerMessage(prov, modelKey, arc){
   // No current archetype is near the threshold, but leaving it out would silently
   // halve the cost the day someone adds a document-sized one.
   const long=(RAW_LONG[modelKey] && arc.in>RAW_LONG[modelKey].over) ? RAW_LONG[modelKey] : null;
-  return long ? arc.in*long.input + arc.out*long.output : arc.in*r.in + arc.out*r.out;
+  // Thinking tokens bill at the output rate, and arc.out is the visible reply only.
+  const out=arc.out*reasoningMult(modelKey);
+  return long ? arc.in*long.input + out*long.output : arc.in*r.in + out*r.out;
+}
+// From plan-limits.json, so the site has one list. 1 when a model does not reason by
+// default or we have no figure for it — an invented multiplier is worse than none.
+function reasoningMult(modelKey){
+  const key=String(modelKey).split(':').pop();
+  const r=((LIMITS&&LIMITS._meta||{}).reasoning||{}).models||{};
+  return (r[key] && typeof r[key].mid==='number') ? r[key].mid : 1;
 }
 // Long-context blocks straight from prices.json, kept beside the flattened rates.
 let RAW_LONG = {};

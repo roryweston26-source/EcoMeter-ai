@@ -238,6 +238,84 @@ for (const [name, v] of Object.entries(L._meta.archetypes || {}))
   if (v && typeof v.input === 'number' && !arcSeen.has(name))
     fail('plan-limits.json archetype missing from audit.html fallback: ' + name);
 
+/* 9b-ii. The archetypes are now GENERATED (scripts/derive-archetypes.js measures
+       chars-per-token with the real cl100k tokenizer and converts message lengths
+       stated in characters). Generated numbers rot the moment someone hand-edits
+       them, so re-run the derivation and compare. Also covers pricing.html's
+       FALLBACK_LIMITS copy, which the audit.html check above never saw — it was
+       stale for exactly one commit, and the behaviour tests caught it only because
+       they load both pages. A guard is cheaper than that coincidence. */
+{
+  const derived = require('./derive-archetypes.js').archetypes;
+  for (const [name, d] of Object.entries(derived)) {
+    const ref = (L._meta.archetypes || {})[name];
+    if (!ref) { fail('derived archetype missing from plan-limits.json: ' + name); continue; }
+    if (ref.input !== d.input || ref.output !== d.output)
+      fail('archetype has been hand-edited: ' + name + ' is ' + ref.input + '/' + ref.output
+         + ' but derive-archetypes.js produces ' + d.input + '/' + d.output
+         + ' — run: node scripts/derive-archetypes.js --write');
+    for (const k of ['prompt_chars', 'reply_chars', 'history_turns'])
+      if (ref[k] !== d[k])
+        fail('archetype ' + name + ' ' + k + ' drifted from the derivation: ' + ref[k] + ' vs ' + d[k]);
+  }
+  const fb = pricing.slice(pricing.indexOf('var FALLBACK_LIMITS'), pricing.indexOf('plans: ['));
+  for (const m of fb.matchAll(/(\w+):\s*\{ input: (\d+),\s*output: (\d+)/g)) {
+    const [, name, i, o] = m, d = derived[name];
+    if (!d) { fail('pricing.html fallback has an archetype the derivation does not: ' + name); continue; }
+    if (+i !== d.input || +o !== d.output)
+      fail('pricing.html FALLBACK_LIMITS archetype drift: ' + name + ' = ' + i + '/' + o
+         + ' vs derived ' + d.input + '/' + d.output);
+  }
+}
+
+/* 9b-iii. Thinking tokens are now priced, from plan-limits.json _meta.reasoning.
+       Three copies of that list exist and all three must agree: the JSON (the source),
+       pricing.html's FALLBACK_LIMITS mirror (used whenever the fetch fails — a stale
+       mirror means a reasoning model is silently priced as if it did not reason,
+       online-only bug, the worst kind), and EcoMeter's own REASONING_RANGES, which
+       predates all of this and covers the o-series and R1. The extension is not
+       required to carry every model the site knows, but where both name a model they
+       must not contradict each other. Also pins the measured chars/token constant
+       pricing.html shows in "show the math" to what the derivation actually produces. */
+{
+  const der = require('./derive-archetypes.js');
+  const rx = ((L._meta || {}).reasoning || {}).models || {};
+  for (const [k, v] of Object.entries(rx)) {
+    if (!all[k]) fail('reasoning multiplier for a model with no API rate: ' + k);
+    if (!(v.mid > 0)) fail('reasoning entry needs a positive mid: ' + k);
+    if (v.lo != null && v.hi != null && !(v.lo <= v.mid && v.mid <= v.hi))
+      fail('reasoning mid outside its own range: ' + k + ' ' + v.lo + '/' + v.mid + '/' + v.hi);
+  }
+  const mirror = pricing.slice(pricing.indexOf('reasoning: { models: {'), pricing.indexOf('plans: [', pricing.indexOf('reasoning: { models: {')));
+  for (const m of mirror.matchAll(/"([\w.\-]+)":\s*\{ mid: ([\d.]+) \}/g)) {
+    const [, k, mid] = m;
+    if (!rx[k]) fail('pricing.html fallback has a reasoning model plan-limits.json does not: ' + k);
+    else if (Math.abs(+mid - rx[k].mid) > 1e-9)
+      fail('reasoning mirror drift: ' + k + ' pricing.html=' + mid + ' vs plan-limits.json=' + rx[k].mid);
+  }
+  for (const k of Object.keys(rx))
+    if (!mirror.includes('"' + k + '"'))
+      fail('reasoning model missing from pricing.html FALLBACK_LIMITS mirror: ' + k);
+
+  const ecoAt = side.indexOf('const REASONING_RANGES');
+  // PLATFORM_OVERHEAD_TOKENS is referenced earlier in the file than it is declared,
+  // so anchoring the end on that name sliced backwards and silently checked nothing.
+  const eco = ecoAt < 0 ? '' : side.slice(ecoAt, side.indexOf('};', ecoAt));
+  if (!eco) fail('cannot locate REASONING_RANGES in extension/sidepanel.js (anchor moved?)');
+  for (const m of eco.matchAll(/'([\w.\-]+)':\s*\{[^}]*mid:\s*([\d.]+)/g)) {
+    const [, k, mid] = m;
+    if (rx[k] && Math.abs(+mid - rx[k].mid) > 1e-9)
+      fail('EcoMeter and the site disagree on the reasoning multiplier for ' + k +
+           ': extension=' + mid + ' vs plan-limits.json=' + rx[k].mid);
+  }
+
+  const cpt = (pricing.match(/var CHARS_PER_TOKEN = ([\d.]+);/) || [])[1];
+  if (!cpt) fail('pricing.html no longer declares CHARS_PER_TOKEN (the math panel quotes it)');
+  else if (Math.abs(+cpt - der.CHARS_PER_TOKEN) > 0.005)
+    fail('pricing.html CHARS_PER_TOKEN is ' + cpt + ' but the derivation measures ' +
+         der.CHARS_PER_TOKEN.toFixed(3) + ' — run: node scripts/derive-archetypes.js');
+}
+
 /* 9c. Every value_model for an audited provider must have a display label, or its
        raw key ("claude-haiku-4-5-20251001") is shown to the reader in the
        break-even line. */
