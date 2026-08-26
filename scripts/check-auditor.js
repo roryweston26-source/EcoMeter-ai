@@ -243,10 +243,12 @@ for (const [name, v] of Object.entries(L._meta.archetypes || {}))
        break-even line. */
 const labelBlock = html.slice(html.indexOf('const LABELS = {'), html.indexOf('const labelModel'));
 const labelled = new Set([...labelBlock.matchAll(/'([\w.\-]+)'\s*:/g)].map(m => m[1]));
+const bareKey  = k => String(k).includes(':') ? String(k).split(':')[1] : String(k);
+const keyProv  = (k, fallback) => String(k).includes(':') ? String(k).split(':')[0] : fallback;
 for (const plan of L.plans) {
   if (!PLANS[plan.p] || !plan.value_models) continue;
   for (const k of ['low', 'high']) {
-    const key = plan.value_models[k];
+    const key = plan.value_models[k] && bareKey(plan.value_models[k]);
     if (key && !labelled.has(key))
       fail('value_model has no display label, so its raw key would be shown: ' + plan.m + ' -> ' + key);
   }
@@ -266,9 +268,31 @@ for (const plan of L.plans) {
   if (!tier || !plan.value_models) continue;
   for (const k of ['low', 'high']) {
     const key = plan.value_models[k];
-    if (key && !tier.models.includes(key))
+    if (key && !tier.models.includes(bareKey(key)))
       fail('break-even for ' + plan.p + ' / ' + plan.m + ' is priced on ' + key
          + ', which that tier does not carry (it has: ' + tier.models.join(', ') + ')');
+  }
+}
+
+/* 9e. A value_model must resolve to a rate that exists, for every plan in the file,
+       not just the five providers the Auditor audits. Those four are the ones with
+       no tier model list to join against, so this is the only thing standing between
+       them and a break-even column quietly rendering "no API rate" — or, worse, a
+       figure priced off a model the provider retired. Keys may name another
+       provider's model as "provider:model": Perplexity's plans are mostly frontier
+       models from OpenAI, Anthropic, Google and xAI, and pricing one of them against
+       Perplexity's own Sonar rates answers a question nobody asked. */
+for (const plan of L.plans) {
+  if (!plan.value_models) continue;
+  for (const k of ['low', 'high']) {
+    const raw = plan.value_models[k];
+    if (!raw) continue;
+    const prov = keyProv(raw, plan.p), key = bareKey(raw);
+    const group = p.api[prov];
+    if (!group) fail('value_model names a provider with no rate card: ' + plan.m + ' -> ' + raw);
+    else if (!group[key] || typeof group[key].input !== 'number')
+      fail('value_model has no priced rate, so this plan would show no break-even: '
+         + plan.p + ' / ' + plan.m + ' -> ' + raw);
   }
 }
 

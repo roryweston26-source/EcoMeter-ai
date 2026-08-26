@@ -40,6 +40,20 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-26 — the other four providers, and break-even can now cross rate cards
+
+Guard 9d only sees the five providers the Auditor audits. Checked the other four by hand against their own pages. Two were wrong:
+
+- **xAI**: `x.ai/pricing` publishes a single model row — **Grok 4.6** — across the consumer plans. We paired it with `grok-4.3`, which is not on that page at all, so every SuperGrok tier was showing an invented range. Now one figure each: Lite 30/day, SuperGrok 91, Plus 303, Heavy 909.
+- **Perplexity**: the help centre publishes a per-plan model table (updated 2026-07-29) and the plans are almost entirely **third-party frontier models** — Pro serves GPT-5.6 Terra, Gemini 3.1 Pro, Claude Sonnet 5 and Grok 4.5; Max adds GPT-5.6 Sol and Claude Opus 5. We were pricing both against Perplexity's own Sonar rates, which answers a question nobody asked. Pro was 56–148 msgs/day, now **48–51**; Max was 342–556, now **205–256**.
+- **Mistral** ✅ and **DeepSeek** ✅ — Mistral's own pricing page names Medium 3.5 and Small 4 as its latest models, exactly our pair; DeepSeek has no paid tier so no break-even exists.
+
+**New capability, and it is small:** `value_models` accepts a `provider:model` key (`anthropic:claude-opus-5`). Both `costPerMessage()` implementations resolve it, both label functions strip it, and `check-prices.js` and `check-auditor.js` understand it. It exists because a reseller's plan should be priced against what it actually serves.
+
+**Sonar is deliberately excluded from the Perplexity figure**, and this is the interesting bit: the app model is branded *Sonar 2* with no API rate published under that name, and the Sonar API charges a **per-request search fee ($5/1,000) on top of tokens** that our cost model does not carry. Counting it at token rates alone would understate API cost and flatter the subscription. Perplexity also states the Sonar chat API is supported only **until 2026-09-27** — now in the dated calendar.
+
+**Guard 9e:** every `value_models` key in the file, audited or not, must resolve to a priced rate. That is the only automatic check the four unaudited providers get. Verified by injecting a bad model and a bad provider.
+
 ### 2026-08-26 — every Gemini break-even was priced on models those plans don't carry
 
 Found while re-checking the break-even figures. `plan-limits.json` → `value_models` for all five Google rows still named `gemini-3.5-flash` and two Flash-Lites, months after `prices.json` and `PLANS[].models` moved to `gemini-3.6-flash`. Both files were internally consistent, re-verified on different days, and wrong together — only a join could see it.

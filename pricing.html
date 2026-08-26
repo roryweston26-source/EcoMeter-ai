@@ -721,8 +721,12 @@
 
   // What one message exchange costs at that model's published API rate.
   function costPerMessage(prov, modelKey) {
-    var group = RATES[prov];
-    var rec = group && group[modelKey];
+    // "provider:model" prices a plan against a model from someone else's rate card.
+    // Perplexity Pro and Max mostly serve third-party frontier models, and pricing
+    // them against Perplexity's own cheap Sonar rates answers the wrong question.
+    var bits = String(modelKey).split(":");
+    var group = RATES[bits.length > 1 ? bits[0] : prov];
+    var rec = group && group[bits.length > 1 ? bits[1] : modelKey];
     if (!rec || typeof rec.input !== "number" || typeof rec.output !== "number") return null;
     var a = archetype();
     // Long-context tier, where one exists: the higher rate applies to every token
@@ -1044,6 +1048,8 @@
 
   // Friendly model name from a prices.json key, via MODEL_REGISTRY where possible.
   function modelLabel(key) {
+    var bits = String(key).split(":");
+    if (bits.length > 1) key = bits[1];
     for (var i = 0; i < MODEL_REGISTRY.length; i++) {
       if (MODEL_REGISTRY[i].key === key) return MODEL_REGISTRY[i].m;
     }

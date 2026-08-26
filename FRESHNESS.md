@@ -100,6 +100,7 @@ wrong number in front of a user.
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
 | **2026-12-31** | **Google's promotional rate on `gemini-3.7-flash` and `gemini-3.6-flash` expires** — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
+| **2026-09-27** | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. | [A1](#a1-per-token-api-prices) |
 | 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
 | Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
 | June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
@@ -221,6 +222,29 @@ provider pages.
 - `audit.html` → `PLANS[].models`, `MODELS`, and the `API` fallback
 - `extension/prices.json` → `free_tiers`
 - `plan-limits.json` → `value_models`
+
+**Checked all four unaudited providers on 2026-08-26** — the ones guard 9d cannot see,
+because they have no tier model list. Two were wrong, both now fixed and re-dated:
+
+- **xAI**: `x.ai/pricing` publishes one model row, **Grok 4.6**, across the consumer
+  plans. We were pairing it with `grok-4.3`, which appears nowhere on that page, so
+  every SuperGrok tier now shows a single figure instead of an invented range.
+- **Perplexity**: its help centre (updated 2026-07-29) publishes a per-plan model
+  table, and the plans are almost all **third-party frontier models** — Pro serves
+  GPT-5.6 Terra, Gemini 3.1 Pro, Claude Sonnet 5 and Grok 4.5; Max adds GPT-5.6 Sol
+  and Claude Opus 5. We were pricing both against Perplexity’s own Sonar rates.
+  `value_models` now accepts a **`provider:model`** form for exactly this case.
+  **Sonar is deliberately excluded**: the app model is branded Sonar 2 with no API
+  rate published under that name, and the Sonar API adds a **per-request search fee**
+  ($5/1,000) on top of tokens that this cost model does not carry — counting it at
+  token rates alone would understate API cost and flatter the subscription.
+- **Mistral** ✅ confirmed on `mistral.ai/pricing`, which names Mistral Medium 3.5 and
+  Mistral Small 4 as its latest models — exactly our pair.
+- **DeepSeek** ✅ nothing to check: no paid consumer tier, so no break-even is computed.
+
+**Guard added 2026-08-26** (`check-auditor.js` 9e): every `value_models` key in the
+file, audited provider or not, must resolve to a priced rate — with the provider
+prefix honoured. Verified by injecting both a bad model and a bad provider.
 
 **The seventh place is the one that got missed, and it moved a published number.**
 When `gemini-3.6-flash` / `3.7-flash` were added, `PLANS[].models` was updated and

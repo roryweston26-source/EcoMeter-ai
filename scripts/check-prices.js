@@ -35,8 +35,16 @@ for (const [prov, m] of Object.entries(p.api)) {
 const subK = new Set(p.subscriptions.map(s => s.p + '|' + s.m));
 for (const s of L.plans) {
   if (!subK.has(s.p + '|' + s.m)) fail('plan-limits orphan: ' + s.m);
-  if (s.value_models) for (const k of ['low', 'high'])
-    if (!(p.api[s.p] || {})[s.value_models[k]]) fail('unresolved value_model: ' + s.m + ' -> ' + s.value_models[k]);
+  // A value_model may name another provider's model as "provider:model" — Perplexity's
+  // plans are mostly frontier models from OpenAI, Anthropic, Google and xAI, so pricing
+  // them against Perplexity's own Sonar rates answers the wrong question.
+  if (s.value_models) for (const k of ['low', 'high']) {
+    const raw = s.value_models[k];
+    if (!raw) continue;
+    const bits = String(raw).split(':');
+    const prov = bits.length > 1 ? bits[0] : s.p, key = bits.length > 1 ? bits[1] : raw;
+    if (!(p.api[prov] || {})[key]) fail('unresolved value_model: ' + s.m + ' -> ' + raw);
+  }
 }
 for (const s of p.subscriptions)
   if (!L.plans.some(x => x.p === s.p && x.m === s.m)) fail('subscription with no plan-limits entry: ' + s.m);
