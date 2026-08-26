@@ -31,6 +31,7 @@
       "Ceiling figures assume the cap is hit in every window, every day, for 30 days. Essentially nobody does this. It is an upper bound, not an expectation.",
       "Prompt caching is not modelled, consistent with EcoMeter. Cached input bills far less, so real API cost is lower than shown and break-even is correspondingly harder to reach.",
       "Where a cap is a soft fallback rather than a hard stop (OpenAI downgrades to mini rather than cutting you off), the ceiling understates total value and overstates top-model value.",
+      "Every Gemini break-even is currently computed on gemini-3.6-flash, whose API rate is PROMOTIONAL until 2026-12-31 (half the standard rate). These figures will roughly halve in the number of messages they name when that promo ends — they re-price themselves from prices.json, so no edit is needed here, but a Gemini plan looks better value today than it will in January. check-prices.js fails on the promo date.",
       "Microsoft plans have no break-even figure: Copilot runs on OpenAI models but Microsoft publishes no equivalent per-token rate to compare against."
     ]
   },
@@ -141,45 +142,45 @@
       "p": "google", "m": "Gemini (Free)",
       "provenance": "not_disclosed",
       "stated": "'Standard limits' — never quantified. Compute-based, refreshing every 5 hours up to a weekly limit.",
-      "value_models": { "low": "gemini-2.5-flash-lite", "high": "gemini-3.5-flash" },
+      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
       "source": "https://support.google.com/gemini/answer/16275805",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-26"
     },
     {
       "p": "google", "m": "Google AI Plus",
       "provenance": "not_disclosed",
       "stated": "'2x higher than standard limits' — a disclosed multiplier against an undisclosed base.",
       "multiplier": { "of": "Gemini (Free)", "x": 2, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.1-flash-lite", "high": "gemini-3.5-flash" },
+      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
       "source": "https://support.google.com/gemini/answer/16275805",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-26"
     },
     {
       "p": "google", "m": "Google AI Pro",
       "provenance": "not_disclosed",
       "stated": "'4x higher than standard limits' — a disclosed multiplier against an undisclosed base.",
       "multiplier": { "of": "Gemini (Free)", "x": 4, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.5-flash", "high": "gemini-3.1-pro-preview" },
+      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
       "source": "https://support.google.com/gemini/answer/16275805",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-26"
     },
     {
       "p": "google", "m": "Google AI Ultra",
       "provenance": "not_disclosed",
       "stated": "'5x higher than AI Pro limits.' Pay-as-you-go credits can be bought to continue past the limit.",
       "multiplier": { "of": "Google AI Pro", "x": 5, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.5-flash", "high": "gemini-3.1-pro-preview" },
+      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
       "source": "https://support.google.com/gemini/answer/16275805",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-26"
     },
     {
       "p": "google", "m": "Google AI Ultra (20×)",
       "provenance": "not_disclosed",
       "stated": "'20x higher than AI Pro limits.' Pay-as-you-go credits can be bought to continue past the limit.",
       "multiplier": { "of": "Google AI Pro", "x": 20, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.5-flash", "high": "gemini-3.1-pro-preview" },
+      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
       "source": "https://support.google.com/gemini/answer/16275805",
-      "as_of": "2026-07-28"
+      "as_of": "2026-08-26"
     },
 
     {

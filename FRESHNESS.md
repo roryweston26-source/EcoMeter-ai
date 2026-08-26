@@ -222,6 +222,18 @@ provider pages.
 - `extension/prices.json` → `free_tiers`
 - `plan-limits.json` → `value_models`
 
+**The seventh place is the one that got missed, and it moved a published number.**
+When `gemini-3.6-flash` / `3.7-flash` were added, `PLANS[].models` was updated and
+`plan-limits.json` → `value_models` was not, so for weeks every Gemini break-even was
+priced on `gemini-3.5-flash` and two Flash-Lites that no tier carries. Google AI Pro
+read "break even at 48–64 messages a day" when on the models that plan actually serves
+it is **48–137** — the error flattered the subscription, which is the harmful direction.
+Both files were internally consistent and re-verified on different days, so only a join
+could see it. **Guard added 2026-08-26** (`check-auditor.js` 9d): every `value_models`
+entry for an audited provider must appear in that tier's `models` list. Verified by
+injecting the fault. The four providers the Auditor does not audit have no tier model
+list to join against — those stay a manual read.
+
 **Retiring a model:** don't delete the key. Models no longer on a provider's
 current page are retained at last-known rates because they stay selectable in the
 picker — record them in `_meta.caveats._legacy_keys` and treat those numbers as
@@ -453,7 +465,7 @@ $28.99/mo when Google's own page says $19.99, and every site claiming a Claude
 coupon code is selling something.
 
 **Guard:** `check-auditor.js` (joins on `p`) — and since 2026-08-26 it also measures
-**how old each `as_of` is**: a warning at 45 days, a hard fail at 90, plus the same
+**how old each `as_of` is**: a warning at 30 days, a hard fail at 60, plus the same
 fail on `_meta.last_verified`. The "a month or two" rule had lived only in the file's
 own caveats, which is exactly how the Google year got missed — a route saying *no offer
 exists* has no `claim_by` to expire, so age is the only signal there is. Verified by
