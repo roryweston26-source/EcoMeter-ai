@@ -8,9 +8,9 @@
     "axes": [
       { "key": "environmental", "label": "Environmental impact", "state": "scored",  "note": "Capacity-weighted water & energy disclosure across known AI data center sites. Scored below." },
       { "key": "pricing",       "label": "Pricing",             "state": "scored",  "note": "Five dimensions of what a provider tells you about what you are buying, all read from primary sources. Scored below. Providers tell you the price and when it will change; none tells you what you get for it." },
-      { "key": "data",          "label": "Data practices",      "state": "pending", "note": "Criteria not yet defined — Not yet scored. The only axis still unbuilt." }
+      { "key": "data",          "label": "Data practices",      "state": "scored",  "note": "Four dimensions of what a provider tells you about what happens to your conversations. Scored below. Business customers are opted out of training by default; consumers are opted in and must find the toggle." }
     ],
-    "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources — 42 of 42 on the environmental matrix and 40 of 40 on the pricing one, every URL checked. The pricing axis was defined and scored on 2026-08-25 across five independent dimensions — API rate card, consumer allowance, consumer context window, price-change notice and model-retirement notice — graded separately and never averaged, on the same 4-state scale. Its provider set deliberately differs from the environmental one: it covers the eight companies selling AI directly to consumers or developers. Data-practices criteria aren't defined yet, so that axis is still marked 'Not yet scored.'",
+    "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources — 114 of 114 across all three matrices (42 environmental, 40 pricing, 32 data practices), every URL checked. The pricing axis was defined and scored on 2026-08-25 across five independent dimensions — API rate card, consumer allowance, consumer context window, price-change notice and model-retirement notice — graded separately and never averaged, on the same 4-state scale. Its provider set deliberately differs from the environmental one: it covers the eight companies selling AI directly to consumers or developers. The data-practices axis was defined and scored on 2026-08-25 across four dimensions — whether the training default is stated, whether an opt-out is documented, whether a retention period is published, and whether human review is disclosed — read from each provider's consumer-facing documents. All three axes are now scored, and all three remain separate: a provider can be open about billing and silent about water, and several are.",
     "grade_legend": [
       { "grade": "green",   "symbol": "🟢", "label": "Transparent — company discloses itself" },
       { "grade": "yellow",  "symbol": "🟡", "label": "Partial — public only via regulator, utility or watchdog" },
@@ -410,6 +410,322 @@
             "note": "Announces retirements with a forward date and reasonable lead time, but has no published policy. Its updates page carried “the two legacy API model names, deepseek-chat and deepseek-reasoner, will be discontinued in three months (2026-07-24)” — three months of warning, dated, on its own docs. Better lead time than its price-change behaviour, where a rise landed roughly ten days after a warning that named neither rate nor date. Held at 🟡 because one well-handled instance is not a commitment.",
             "source": "DeepSeek API docs updates page (read directly)",
             "source_url": "https://api-docs.deepseek.com/updates",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      }
+    ]
+  },
+  "data_practices": {
+    "title": "Data practices — by dimension",
+    "note": "What a provider tells you about what happens to your conversations. Same 4-state scale, four independent dimensions, never averaged. THE HEADLINE FINDING IS AN ASYMMETRY, AND THE PROVIDERS DOCUMENT IT THEMSELVES: at OpenAI, Anthropic and Mistral the paying business customer is opted OUT of model training by default while the consumer is opted IN and must find a toggle. OpenAI's own help page states both halves — consumer ChatGPT “improves by further training on the conversations people have with it, unless you opt out”, while “by default, we do not train on any inputs or outputs from our products for business users”. Anthropic's Commercial Terms say flatly that “Anthropic may not train models on Customer Content from Services”, against consumer terms that train unless you opt out. Same company, same models, opposite default — the difference is which customer had the leverage to negotiate. This axis grades DISCLOSURE, so a provider that states its practice plainly scores well even when the practice is unflattering; the asymmetry above is recorded here in the note rather than as a column, because grading it would mean grading conduct, which this index deliberately does not do.",
+    "grade_legend": [
+      {
+        "grade": "green",
+        "symbol": "🟢",
+        "label": "Stated plainly, in the consumer-facing policy"
+      },
+      {
+        "grade": "yellow",
+        "symbol": "🟡",
+        "label": "Stated but hedged, incomplete, or hard to act on"
+      },
+      {
+        "grade": "red",
+        "symbol": "🔴",
+        "label": "Not stated"
+      },
+      {
+        "grade": "pending",
+        "symbol": "⚪",
+        "label": "Not yet assessed"
+      }
+    ],
+    "caveats": [
+      "We grade what the CONSUMER-FACING documents say — the privacy policy a normal user would actually reach, plus each provider's own data-use FAQ where one exists. A practice disclosed only in an enterprise contract or a developer changelog does not count as telling the consumer.",
+      "A 🔴 on 'human review' means the consumer privacy policy does not disclose it, not that no human review happens. The absence of the disclosure is the finding; the underlying practice is not something we can observe.",
+      "Defaults change, and this axis rots faster than the environmental one. Anthropic moved consumer chats into training with an opt-out during 2025; any of these positions can move with a policy update that nobody announces.",
+      "Two ⚪ cells are honest gaps rather than findings: Perplexity's data-use FAQ would not render for us, and we did not locate a published retention period for OpenAI in the two documents we read. Neither is graded 🔴 on a failed fetch."
+    ],
+    "columns": [
+      {
+        "key": "training_default",
+        "label": "Training default stated"
+      },
+      {
+        "key": "optout",
+        "label": "Opt-out documented"
+      },
+      {
+        "key": "retention",
+        "label": "Retention period published"
+      },
+      {
+        "key": "human_review",
+        "label": "Human review disclosed"
+      }
+    ],
+    "rows": [
+      {
+        "provider": "OpenAI",
+        "cells": {
+          "training_default": {
+            "grade": "green",
+            "note": "States it plainly in its own data-use help page: ChatGPT “improves by further training on the conversations people have with it, unless you opt out.” No hedging, no ambiguity — you are training data by default and the page says so. Contrast the same page on business products: “by default, we do not train on any inputs or outputs from our products for business users, including ChatGPT Business, ChatGPT Enterprise, and the API.”",
+            "source": "OpenAI data-use help page + privacy policy (both read directly)",
+            "source_url": "https://help.openai.com/en/articles/5722486-how-your-data-is-used-to-improve-model-performance",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "green",
+            "note": "A documented, free opt-out: “you can opt out of training through our privacy portal by clicking on ‘do not train on my content’”, after which “new conversations will not be used to train our models.” Note the limit it states honestly — the opt-out is forward-looking only and does not reach conversations already used.",
+            "source": "OpenAI data-use help page (read directly)",
+            "source_url": "https://help.openai.com/en/articles/5722486-how-your-data-is-used-to-improve-model-performance",
+            "source_date": "Aug 25 2026"
+          },
+          "retention": {
+            "grade": "pending",
+            "note": "Not yet assessed. We read the consumer privacy policy and the data-use help page in full and neither states a retention period for conversations. OpenAI may publish one in a separate help article; we are not grading 🔴 on two documents when a third may exist.",
+            "source": "Checked: privacy policy + data-use help page",
+            "source_url": "https://openai.com/policies/privacy-policy/",
+            "source_date": "Not assessed"
+          },
+          "human_review": {
+            "grade": "red",
+            "note": "The consumer privacy policy contains no disclosure of human review of conversations — the word appears only in reference to California privacy rights and third-party policies. Whatever review happens, a consumer reading the policy would not learn of it.",
+            "source": "OpenAI privacy policy (read in full)",
+            "source_url": "https://openai.com/policies/privacy-policy/",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Anthropic",
+        "cells": {
+          "training_default": {
+            "grade": "green",
+            "note": "Stated in one sentence in the consumer privacy policy: “We may use your Inputs and Outputs to train and improve Anthropic AI models, unless you opt out through your account settings.” Worth knowing that this is a changed default — consumer chats were moved into training with an opt-out during 2025 — which is why this axis carries a caveat that positions move.",
+            "source": "Anthropic consumer privacy policy (read directly)",
+            "source_url": "https://www.anthropic.com/legal/privacy",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "green",
+            "note": "Opt-out is in account settings and free, and the policy says so in the same sentence that discloses the default rather than burying it in a separate document.",
+            "source": "Anthropic consumer privacy policy (read directly)",
+            "source_url": "https://www.anthropic.com/legal/privacy",
+            "source_date": "Aug 25 2026"
+          },
+          "retention": {
+            "grade": "green",
+            "note": "The most specific retention disclosure of the eight, with different periods for different states and all of them numbered: deleted conversations “removed immediately from your conversation history and automatically deleted from our back-end within 30 days”; if you allow training, data is kept de-identified “for up to 5 years in our model training pipelines”; feedback submissions retained 5 years. It also states the exceptions — legal, dispute, Usage Policy enforcement.",
+            "source": "Anthropic privacy centre, model-training article (read directly)",
+            "source_url": "https://privacy.anthropic.com/en/articles/10023548-how-do-you-use-personal-data-in-model-training",
+            "source_date": "Aug 25 2026"
+          },
+          "human_review": {
+            "grade": "red",
+            "note": "No disclosure of human review of conversations in the consumer privacy policy; “review” appears only in relation to third-party integrations and automated-decision rights.",
+            "source": "Anthropic consumer privacy policy (read in full)",
+            "source_url": "https://www.anthropic.com/legal/privacy",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Google",
+        "cells": {
+          "training_default": {
+            "grade": "green",
+            "note": "The Gemini Apps privacy notice is explicit that chats are used to improve models, and pairs it with a warning most providers do not print: “please don't enter confidential information that you wouldn't want a reviewer to see or Google to use to improve our services.” Telling users plainly not to trust the box with secrets is unusual and counts in its favour here.",
+            "source": "Gemini Apps privacy notice (read directly)",
+            "source_url": "https://support.google.com/gemini/answer/13594961",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "green",
+            "note": "Gemini Apps Activity is a documented consumer control, free, with the consequences spelled out. Google is also candid about the limit of the control, which most providers would omit: with Activity off, “Google still uses your chats to respond to you and help protect Google, our users, and the public, including with help from human reviewers.”",
+            "source": "Gemini Apps privacy notice (read directly)",
+            "source_url": "https://support.google.com/gemini/answer/13594961",
+            "source_date": "Aug 25 2026"
+          },
+          "retention": {
+            "grade": "green",
+            "note": "Numbers, defaults and options all published: Gemini Apps Activity auto-deletes on a default of 18 months, changeable to 3 months, 36 months or indefinite. Reviewed feedback and its associated conversations are “retained for up to 3 years, disconnected from your Google Account.” A consumer can work out how long their data lives.",
+            "source": "Gemini Apps privacy notice (read directly)",
+            "source_url": "https://support.google.com/gemini/answer/13594961",
+            "source_date": "Aug 25 2026"
+          },
+          "human_review": {
+            "grade": "green",
+            "note": "The only provider of the eight that tells consumers humans read some conversations: “human reviewers (including trained reviewers from our service providers) review some of the data we collect for these purposes.” And it discloses the part users would least expect — that review continues even with Activity turned off. Uncomfortable, specific, and disclosed; that is exactly what this column is for.",
+            "source": "Gemini Apps privacy notice (read directly)",
+            "source_url": "https://support.google.com/gemini/answer/13594961",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Mistral",
+        "cells": {
+          "training_default": {
+            "grade": "green",
+            "note": "The consumer privacy policy states that its models are trained on “your Input and Output, subject to your opt-out”, and separately carves out what it will not touch: “we do not use this Third-Party Content to train our models.” Plain enough that a consumer knows where they stand.",
+            "source": "Mistral privacy policy (read directly)",
+            "source_url": "https://legal.mistral.ai/terms/privacy-policy",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "green",
+            "note": "“You can opt-out of this processing at any time through your user preferences on your Mistral AI Account” — documented, free, and in the account rather than behind a support request.",
+            "source": "Mistral privacy policy (read directly)",
+            "source_url": "https://legal.mistral.ai/terms/privacy-policy",
+            "source_date": "Aug 25 2026"
+          },
+          "retention": {
+            "grade": "yellow",
+            "note": "Publishes real, numbered retention periods, but for the wrong things from a chat user's point of view: contracts and commercial licences for 5 years after termination, technical support data 5 years. No retention period for conversations. Graded 🟡 rather than 🔴 because the disclosure discipline is clearly there — it just has not been applied to the thing a consumer cares about.",
+            "source": "Mistral privacy policy (read directly)",
+            "source_url": "https://legal.mistral.ai/terms/privacy-policy",
+            "source_date": "Aug 25 2026"
+          },
+          "human_review": {
+            "grade": "yellow",
+            "note": "Does not disclose human review of conversations for model improvement, but is unusually specific about internal access generally: data kept for legal periods “will not be accessed or used by any member of our teams … except to fulfil our legal obligations or in case of dispute”, and access is limited to “authorised members of our teams who need to access your personal data, strictly to perform their jobs.” Adjacent to the question, not an answer to it.",
+            "source": "Mistral privacy policy (read directly)",
+            "source_url": "https://legal.mistral.ai/terms/privacy-policy",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Microsoft",
+        "cells": {
+          "training_default": {
+            "grade": "yellow",
+            "note": "Discloses the practice but hedges the one detail that decides whether it applies to you: “in some markets, this data can help train our AI models in Microsoft Copilot unless you opt out.” Which markets is not stated, so a consumer cannot tell their own position. It also discloses something no other provider on this table does — Copilot “uses prompts and related data to provide and improve services, including relevant advertising.” Consumer AI prompts feeding ad targeting is disclosed here and nowhere else in this set.",
+            "source": "Microsoft Privacy Statement (read directly)",
+            "source_url": "https://privacy.microsoft.com/en-us/privacystatement",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "yellow",
+            "note": "An opt-out is referenced in the same market-dependent sentence, but no mechanism is documented in the privacy statement itself and no indication is given of where a given user stands. There is a privacy dashboard for viewing and deleting Copilot activity, which is a different control from opting out of training.",
+            "source": "Microsoft Privacy Statement (read directly)",
+            "source_url": "https://privacy.microsoft.com/en-us/privacystatement",
+            "source_date": "Aug 25 2026"
+          },
+          "retention": {
+            "grade": "red",
+            "note": "No retention period for Copilot conversations. The statement lists the criteria it uses to decide retention and then says “actual retention periods can vary significantly” — a description of a process rather than a disclosure of an outcome. A consumer learns nothing about how long their chats live.",
+            "source": "Microsoft Privacy Statement (read directly)",
+            "source_url": "https://privacy.microsoft.com/en-us/privacystatement",
+            "source_date": "Aug 25 2026"
+          },
+          "human_review": {
+            "grade": "red",
+            "note": "No disclosure of human review of Copilot conversations in the privacy statement.",
+            "source": "Microsoft Privacy Statement (read in full)",
+            "source_url": "https://privacy.microsoft.com/en-us/privacystatement",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "DeepSeek",
+        "cells": {
+          "training_default": {
+            "grade": "yellow",
+            "note": "Asserts the right without stating the default. The policy tells you that you have “the right to opt-out of using your Personal Data for training our models or optimizing our technologies”, which implies you are opted in, but never says so. It is explicit only about the uncontroversial half — “we may obtain publicly available Personal Data via online sources to train our models.” An opt-out right disclosed without the default it reverses leaves the consumer guessing.",
+            "source": "DeepSeek privacy policy (read directly)",
+            "source_url": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "yellow",
+            "note": "The right is stated; the mechanism is not. No setting, portal or process is documented anywhere in the privacy policy, which makes it a right you would have to ask for rather than a control you can use.",
+            "source": "DeepSeek privacy policy (read directly)",
+            "source_url": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
+            "source_date": "Aug 25 2026"
+          },
+          "retention": {
+            "grade": "red",
+            "note": "Entirely qualitative. “We retain Personal Data for as long as necessary to provide our Services”, retention periods “will be different depending on the amount, type and sensitivity”, and data is kept “for as long as you have an account.” Not one number anywhere in the section.",
+            "source": "DeepSeek privacy policy (read directly)",
+            "source_url": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
+            "source_date": "Aug 25 2026"
+          },
+          "human_review": {
+            "grade": "red",
+            "note": "No disclosure of human review of conversations. The policy's only advice in this direction points the other way — it warns users to check content carefully before sharing conversations publicly.",
+            "source": "DeepSeek privacy policy (read in full)",
+            "source_url": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Perplexity",
+        "cells": {
+          "training_default": {
+            "grade": "yellow",
+            "note": "Never states the default for your chats. The privacy policy lists a purpose — “improve or create services and products, including our AI models” — which tells you your data may reach a model without telling you whether it does by default or whether you can stop it. Tellingly, it is precise where it wants to reassure: “we do not use the content of emails to create, train, improve, or fine-tune AI models.” The specificity available for email is not extended to conversations.",
+            "source": "Perplexity privacy policy (read directly)",
+            "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "pending",
+            "note": "Not yet assessed. The privacy policy documents an opt-out for targeted advertising but none for model training, and Perplexity's data-use FAQ would not render for us. Not graded 🔴 on a page we could not read.",
+            "source": "Checked: privacy policy; hub FAQ did not render",
+            "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
+            "source_date": "Not assessed"
+          },
+          "retention": {
+            "grade": "pending",
+            "note": "Not yet assessed — no retention period found in the privacy policy, and the FAQ that might carry one did not render.",
+            "source": "Checked: privacy policy",
+            "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
+            "source_date": "Not assessed"
+          },
+          "human_review": {
+            "grade": "red",
+            "note": "No disclosure of human review of conversations; “review” appears in the policy only in relation to third-party promotions and public comments.",
+            "source": "Perplexity privacy policy (read in full)",
+            "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "xAI",
+        "cells": {
+          "training_default": {
+            "grade": "red",
+            "note": "The clearest non-disclosure on this axis. We read both the consumer privacy policy and the consumer FAQ that the policy itself points to for “data controls”, and neither states whether your conversations with Grok are used to train its models. The policy is specific about training on public web data and about Private Chat, and silent on the question a user actually has. Third-party guides assert the default is on; xAI's own documents do not say either way, and the point of this index is that the company should.",
+            "source": "xAI privacy policy + consumer FAQ (both read in full)",
+            "source_url": "https://x.ai/legal/privacy-policy",
+            "source_date": "Aug 25 2026"
+          },
+          "optout": {
+            "grade": "yellow",
+            "note": "Data controls exist and are referenced — the policy directs users to “data controls … in our Consumer FAQs” and the product offers Private Chat — but no training opt-out is documented in either page. Private Chat is a retention control, not a training control, and the two are easy to confuse to the provider's advantage.",
+            "source": "xAI privacy policy + consumer FAQ (both read directly)",
+            "source_url": "https://x.ai/legal/faq",
+            "source_date": "Aug 25 2026"
+          },
+          "retention": {
+            "grade": "green",
+            "note": "Genuinely good, and worth crediting given the row above: “if you choose to delete any or all of your conversations or if you choose to delete your account, we will delete the data within 30 days”, with Private Chat conversations “deleted from SpaceXAI systems within 30 days.” A number, applied to a named control, with the legal and safety exceptions stated.",
+            "source": "xAI privacy policy (read directly)",
+            "source_url": "https://x.ai/legal/privacy-policy",
+            "source_date": "Aug 25 2026"
+          },
+          "human_review": {
+            "grade": "red",
+            "note": "No disclosure of human review of conversations in the consumer privacy policy or FAQ.",
+            "source": "xAI privacy policy + consumer FAQ (read in full)",
+            "source_url": "https://x.ai/legal/privacy-policy",
             "source_date": "Aug 25 2026"
           }
         }

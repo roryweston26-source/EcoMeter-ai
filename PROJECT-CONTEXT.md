@@ -441,7 +441,9 @@ Grades **how openly** providers let the public see what their AI costs — trans
 |---|---|
 | **Environmental impact** | **Scored** — per-site, capacity-weighted |
 | **Pricing** | **Scored 2026-08-25** — 5 dimensions × 8 providers, never averaged |
-| Data practices | ⚪ Not yet scored — the only axis still unbuilt |
+| **Data practices** | **Scored 2026-08-25** — 4 dimensions × 8 providers, never averaged |
+
+**All three axes are now scored.** They stay separate and are never combined: xAI is 🔴 across all six environmental dimensions, 🟢 on consumer price-change notice, and 🔴 on stating its training default. Averaging those into one "transparency score" would destroy the only information the index has.
 
 ### The pricing axis (added 2026-08-25)
 
@@ -464,6 +466,28 @@ Lives in `transparency-index.json` under a **top-level `pricing` key** (`title`,
 **Two results that cut against the thesis, kept because a file that only collects supporting evidence is not evidence:** OpenAI and Anthropic both give consumers **30 days' notice** on price rises, effective at next renewal so you can cancel — *better* than the 14 days OpenAI gives developers. And OpenAI's per-tier **context window** is the first absolute product number any provider has ADDED rather than withdrawn.
 
 **Perplexity 🟡 on rate card is the sharpest single cell:** rates are published but exclude a $5–14 per 1,000 requests fee that for chat-shaped use exceeds the token cost. The number is disclosed; the cost is not.
+
+### The data-practices axis (added 2026-08-25)
+
+Top-level `data_practices` key, same shape as `pricing`. `renderPricing()` was generalised into **`renderAxisMatrix(block, prefix)`**, so a fourth axis is now one `<section>`, one call, and a data block.
+
+| Provider | training default | opt-out | retention | human review |
+|---|---|---|---|---|
+| Google | 🟢 | 🟢 | 🟢 | 🟢 |
+| Anthropic | 🟢 | 🟢 | 🟢 | 🔴 |
+| OpenAI | 🟢 | 🟢 | ⚪ | 🔴 |
+| Mistral | 🟢 | 🟢 | 🟡 | 🟡 |
+| Microsoft | 🟡 | 🟡 | 🔴 | 🔴 |
+| DeepSeek | 🟡 | 🟡 | 🔴 | 🔴 |
+| Perplexity | 🟡 | ⚪ | ⚪ | 🔴 |
+| xAI | 🔴 | 🟡 | 🟢 | 🔴 |
+
+**THE FINDING IS AN ASYMMETRY THE PROVIDERS DOCUMENT THEMSELVES.** At OpenAI, Anthropic and Mistral the paying *business* customer is opted **out** of model training by default while the *consumer* is opted **in** and must find a toggle. OpenAI's own help page carries both halves; Anthropic's Commercial Terms say "Anthropic may not train models on Customer Content from Services" against consumer terms that train unless you opt out. **Same company, same models, opposite default — the difference is which customer had leverage.** Recorded in the axis note, deliberately **not** as a column: grading it would mean grading conduct, which this index does not do.
+
+**Three results worth keeping:**
+- **Google is the only provider that tells consumers humans read some conversations** — and the only one to disclose that review *continues when you turn Activity off*. The company most suspected of surveillance has the best disclosure on this axis.
+- **xAI never states its training default at all.** Both its privacy policy and the consumer FAQ its own policy points to for "data controls" are silent on whether your Grok conversations train the model. It is specific about public web data and about Private Chat — a *retention* control easily mistaken for a *training* control.
+- **Microsoft is the only one disclosing that consumer AI prompts feed advertising**, and hedges its training default with "in some markets", so a user cannot tell their own position.
 
 **Two coexisting scales — deliberate, don't "fix" it.** The page grades **public knowability** on a **4-state** scale: 🟢 Transparent (company discloses itself) · 🟡 Partial (a real figure is public but only via a regulator/utility/watchdog) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed. **Below** the summary is the older **"Disclosure quality by dimension"** matrix (7 providers × 6 dimensions) with its **own 3-state legend** (it grades a company's *own* self-reporting completeness). Same provider can read 🟡 up top and 🔴 in the matrix — the matrix's lead-in explains the different lens. **As of 2026-08-25 all seven rows have been re-read from primary documents** (see FRESHNESS §E1/§E1b); the matrix is no longer the un-revisited layer it was.
 
