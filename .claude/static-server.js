@@ -8,7 +8,8 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const PORT = Number(process.argv[2] || 8099);
+// PORT env first-class so two sessions can preview at once (preview_start assigns one).
+const PORT = Number(process.argv[2] || process.env.PORT || 8099);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
