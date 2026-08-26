@@ -222,6 +222,18 @@ provider pages.
 - `extension/prices.json` → `free_tiers`
 - `plan-limits.json` → `value_models`
 
+**The seventh place is the one that got missed, and it moved a published number.**
+When `gemini-3.6-flash` / `3.7-flash` were added, `PLANS[].models` was updated and
+`plan-limits.json` → `value_models` was not, so for weeks every Gemini break-even was
+priced on `gemini-3.5-flash` and two Flash-Lites that no tier carries. Google AI Pro
+read "break even at 48–64 messages a day" when on the models that plan actually serves
+it is **48–137** — the error flattered the subscription, which is the harmful direction.
+Both files were internally consistent and re-verified on different days, so only a join
+could see it. **Guard added 2026-08-26** (`check-auditor.js` 9d): every `value_models`
+entry for an audited provider must appear in that tier's `models` list. Verified by
+injecting the fault. The four providers the Auditor does not audit have no tier model
+list to join against — those stay a manual read.
+
 **Retiring a model:** don't delete the key. Models no longer on a provider's
 current page are retained at last-known rates because they stay selectable in the
 picker — record them in `_meta.caveats._legacy_keys` and treat those numbers as
@@ -452,11 +464,26 @@ exists — the internet will tell you yes for offers that closed months ago.
 $28.99/mo when Google's own page says $19.99, and every site claiming a Claude
 coupon code is selling something.
 
-**Guard:** `check-auditor.js` (joins on `p`)
+**Guard:** `check-auditor.js` (joins on `p`) — and since 2026-08-26 it also measures
+**how old each `as_of` is**: a warning at 30 days, a hard fail at 60, plus the same
+fail on `_meta.last_verified`. The "a month or two" rule had lived only in the file's
+own caveats, which is exactly how the Google year got missed — a route saying *no offer
+exists* has no `claim_by` to expire, so age is the only signal there is. Verified by
+injecting both faults.
+
 
 ## C2. Known dated offers
 
 _All six re-verified 2026-08-24. Two changed, both in the direction that had been costing students money._
+
+_**Re-verified again 2026-08-26** against provider-owned pages. No status changed — Google, GitHub and Mistral still `disclosed`, OpenAI and Anthropic still nothing for individuals — but three of our own lines were wrong and are fixed:_
+
+- _**Google's excluded-countries list was hung off the wrong offer.** Bolivia, Albania, Canada, Macau, Hong Kong and Tunisia are excluded from the **international AI Plus** offer (footnote 3), not the US one — and that footnote excludes the US too. Our version implied a Canadian student could claim the international year; they are eligible for neither. New caveat in the file._
+- _**SheerID was stated as fact for the main offer.** Footnotes 1 and 3 say only "Offer Terms apply"; SheerID is named in footnote 5, the YouTube bundle. Softened to "a school email address"._
+- _**"Code completion is unlimited" on Copilot Student is not disclosed.** GitHub's plans page puts the 2,000-completions-a-month cap on Copilot **Free** and states no figure for Student. Removed; the newly documented "excludes third-party agents" added._
+
+_Confirmed unchanged and verbatim: Google's 31 Dec 2026 deadline, payment method required, $19.99/$4.99 auto-conversion (blog.google, 19 Aug 2026); "Available for free to verified students, teachers, and open-source maintainers" (github.com/education/students); ChatGPT for Teachers free for verified U.S. K-12 educators through June 2027 (chatgpt.com/pricing FAQ); "Verified students can get Mistral Pro for $5.99 / month (normally $14.99)" (mistral.ai/pricing); still exactly nine institution logos on Anthropic's higher-education page, matching our named list. **DeepSeek was NOT re-checked — deepseek.com was blocked by browser navigation permission — so its row still says 2026-08-24.**_
+
 
 _Since 2026-08-25 a redemption deadline is a **field**, not just prose: `claim_by`
 (ISO) plus `claim_label` on the route. `check-auditor.js` **fails once the date

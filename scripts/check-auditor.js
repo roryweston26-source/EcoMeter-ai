@@ -26,6 +26,8 @@ const side = fs.readFileSync(R + 'extension/sidepanel.js', 'utf8');
 
 let bad = 0;
 const fail = s => { console.log('  X ' + s); bad++; };
+let warned = 0;
+const warn = s => { console.log('  ! ' + s); warned++; };
 
 /* Pull a declaration out of audit.html and evaluate it. Anchored on the
    declaration that follows it, so reordering that block breaks this loudly
@@ -250,6 +252,26 @@ for (const plan of L.plans) {
   }
 }
 
+/* 9d. A BREAK-EVEN PRICED OFF A MODEL THE PLAN DOES NOT CARRY IS A WRONG NUMBER,
+       and until 2026-08-26 five of them were: every Gemini value_models pair still
+       named gemini-3.5-flash and two Flash-Lites, months after prices.json and the
+       tier model lists had moved to gemini-3.6-flash. The figures were internally
+       consistent and externally false — Google AI Pro read "break even at 47-63
+       messages a day" when on the models that plan actually serves it is 48-137,
+       and the error ran in the direction that flatters the subscription. The two
+       files are re-verified on different days, so nothing but this join notices.
+       Only checks audited providers: the others have no tier model list to join to. */
+for (const plan of L.plans) {
+  const tier = (PLANS[plan.p] || []).find(x => x.m === plan.m);
+  if (!tier || !plan.value_models) continue;
+  for (const k of ['low', 'high']) {
+    const key = plan.value_models[k];
+    if (key && !tier.models.includes(key))
+      fail('break-even for ' + plan.p + ' / ' + plan.m + ' is priced on ' + key
+         + ', which that tier does not carry (it has: ' + tier.models.join(', ') + ')');
+  }
+}
+
 /* 10. student-access.json. Every route makes a claim about a real company's
        offer, so each needs a provenance we recognise and a date it was checked.
        Anything stated as fact ('disclosed') must carry a provider-owned source —
@@ -278,6 +300,28 @@ if (S.partner_institutions && S.partner_institutions.not_exhaustive !== true)
 const audit_ns = /not a directory/i.test(html) || /examples, not a directory/i.test(html);
 if (S.partner_institutions && !audit_ns)
   fail('audit.html renders partner_institutions without saying it is not a directory');
+
+/* 10b. A ROUTE'S as_of HAS A SHELF LIFE, and until now nothing measured it. The file
+        has said since 2026-08-08 to "treat anything older than a month or two as
+        needing a re-check", and that rule living only in prose is what cost us the
+        Google year: recorded 'none' on 2026-08-08, correct that day, still being
+        served to students on 2026-08-24 while a free ~$240 sat on Google's own site.
+        The claim_by guard below cannot catch that shape, because a route that says
+        'no offer exists' has no deadline to expire. Age is the only signal there is.
+        Warn at 30 days, fail at 60 — the deadline rows fail hard because an expired
+        date is a fact, whereas "this is getting old" is a judgement, and a solo
+        project should not have its deploys blocked the day after the warning. A
+        verified absence rotted in 16 days once, so these are deliberately tight. */
+const DAY = 864e5, ageOf = d => Math.floor((Date.now() - new Date(d + 'T00:00:00Z').getTime()) / DAY);
+const STALE_WARN = 30, STALE_FAIL = 60;
+for (const r of S.routes) {
+  const age = ageOf(r.as_of);
+  const what = 'student route ' + r.p + ' was last verified ' + age + ' days ago (' + r.as_of + ')';
+  if (age >= STALE_FAIL) fail(what + ' — re-verify it against the page it came from. A verified ABSENCE expires too: re-check the "none" and "paused" rows as hard as the live ones.');
+  else if (age >= STALE_WARN) warn(what + ' — due a re-check.');
+}
+if (S._meta && S._meta.last_verified && ageOf(S._meta.last_verified) >= STALE_FAIL)
+  fail('student-access.json _meta.last_verified is ' + ageOf(S._meta.last_verified) + ' days old');
 
 /* 11b. LEGACY_MODELS is subtracted from the "does this person need frontier
         models" signal, because a model can be paid-only for being OLD rather than
@@ -428,8 +472,8 @@ for (const r of S.routes) {
 }
 
 console.log(bad
-  ? '\n' + bad + ' PROBLEM(S)'
+  ? '\n' + bad + ' PROBLEM(S)' + (warned ? ' and ' + warned + ' warning(s)' : '')
   : 'AUDITOR CHECKS PASS — ' + Object.keys(PLANS).length + ' providers, ' +
     Object.values(PLANS).reduce((n, t) => n + t.length, 0) + ' tiers, ' +
-    Object.keys(API).length + ' fallback rates, ' + pays.length + ' current-plan options');
+    Object.keys(API).length + ' fallback rates, ' + pays.length + ' current-plan options' + (warned ? ' — with ' + warned + ' staleness warning(s) above' : ''));
 process.exit(bad ? 1 : 0);
