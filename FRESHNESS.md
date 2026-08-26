@@ -737,6 +737,39 @@ Mistral lifecycle GA 6 months; xAI retirement pages carry redirect targets AND
 billing impact; DeepSeek gave 3 months on its legacy model names; Perplexity and
 Microsoft publish no model-lifecycle policy at all.
 
+## E1f. The data-practices axis (added 2026-08-25)
+
+**Where it lives:** top-level `data_practices` key. Rendered by the shared
+`renderAxisMatrix(block, prefix)` — the same function that drives pricing.
+
+**This axis rots faster than the other two.** Defaults change with a policy update
+that nobody announces: Anthropic moved consumer chats into training with an opt-out
+during 2025. **Re-read the actual policies; do not trust these grades on sight.**
+
+**Scope rule that decides most grades:** we grade the **consumer-facing** documents
+— the privacy policy a normal user reaches, plus each provider's own data-use FAQ
+where one exists. A practice disclosed only in an enterprise contract or a
+developer changelog does **not** count as telling the consumer.
+
+**A 🔴 on human review means the policy does not disclose it**, not that no human
+review happens. We cannot observe the practice; we can observe the silence.
+
+**Verified 2026-08-25, quote-level, on each provider's own pages:**
+- OpenAI — consumer ChatGPT "improves by further training on the conversations people have with it, unless you opt out"; business "by default, we do not train on any inputs or outputs"
+- Anthropic — "unless you opt out through your account settings"; deleted chats gone from back-end within **30 days**; training data kept de-identified **up to 5 years**; Commercial Terms: "Anthropic may not train models on Customer Content from Services"
+- Google — human reviewers disclosed, and disclosed to continue **with Activity off**; auto-delete default **18 months** (3/36/indefinite options); feedback **3 years**
+- Mistral — "your Input and Output, subject to your opt-out"; commercial processing "excludes model training"
+- Microsoft — "in some markets, this data can help train our AI models … unless you opt out"; prompts used "including relevant advertising"; retention "can vary significantly" with no number
+- DeepSeek — opt-out right asserted, default never stated, retention entirely qualitative
+- xAI — **neither the privacy policy nor the consumer FAQ states the training default**; deletion within **30 days** is published
+- Perplexity — "improve or create services and products, including our AI models"; precise only where it reassures ("we do not use the content of emails to … train")
+
+**Three ⚪ cells, and they are honest gaps, not findings.** OpenAI retention (not in
+the two documents read; a separate help article may carry it) and Perplexity
+opt-out + retention (its data-use FAQ would not render). **Do not convert these to
+🔴** — same rule that paid off on the pricing axis, where two ⚪ cells came back
+green once the real terms were read.
+
 ## E2. `datacenters.json`
 
 **Goes stale fast** — campuses get announced, capacity comes online, and grades

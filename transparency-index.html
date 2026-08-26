@@ -232,6 +232,24 @@
     <ul class="caveats-inline" id="pricing-caveats"></ul>
   </section>
 
+  <!-- Scored "data practices" axis. Same shape as the pricing one; both are driven
+       by renderAxisMatrix() off a top-level key, so a fourth axis is a data edit
+       plus one <section> and one call. -->
+  <section class="detail" aria-labelledby="dp-h" id="dp-section" hidden>
+    <h2 id="dp-h" class="section-h">Data practices — by dimension</h2>
+    <p class="section-lede" id="dp-note"></p>
+    <div class="legend" id="dp-legend"></div>
+    <div class="tablewrap">
+      <div class="scroll">
+        <table id="dp-grid">
+          <thead id="dp-head"></thead>
+          <tbody id="dp-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <ul class="caveats-inline" id="dp-caveats"></ul>
+  </section>
+
   <section class="caveats" aria-labelledby="caveats-h">
     <h2 id="caveats-h">Caveats</h2>
     <ul id="caveats"></ul>
@@ -252,7 +270,7 @@ const FALLBACK = {
     status_note:"Couldn't load transparency-index.json.", methodology:"", axes:[],
     grade_legend:[{grade:"green",symbol:"🟢",label:"Transparent"},{grade:"yellow",symbol:"🟡",label:"Partial"},{grade:"red",symbol:"🔴",label:"Opaque"},{grade:"pending",symbol:"⚪",label:"Not yet assessed"}],
     caveats:[], detail:{} },
-  columns: [], rows: [], pricing: null
+  columns: [], rows: [], pricing: null, data_practices: null
 };
 
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -337,22 +355,23 @@ function renderMatrix(data, headId, bodyId){
   }).join("");
 }
 
-/* ---------- scored pricing axis (provider × dimension) ----------
-   Data-driven and independent of the environmental matrix: different providers,
-   different columns. If transparency-index.json carries no "pricing" key the
-   section stays hidden rather than rendering an empty table. */
-function renderPricing(data){
-  const p = data.pricing;
-  const section = document.getElementById("pricing-section");
-  if (!p || !(p.rows || []).length) { section.hidden = true; return; }
+/* ---------- scored non-environmental axes (provider × dimension) ----------
+   Each is driven by its own top-level key and its own provider set and columns —
+   they are NOT the environmental matrix and must not be merged with it. A block
+   whose key is absent leaves its section hidden rather than rendering an empty
+   table, so removing the data removes the section cleanly. */
+function renderAxisMatrix(block, prefix){
+  const section = document.getElementById(prefix + "-section");
+  if (!section) return;
+  if (!block || !(block.rows || []).length) { section.hidden = true; return; }
   section.hidden = false;
-  if (p.title) document.getElementById("pricing-h").textContent = p.title;
-  document.getElementById("pricing-note").textContent = p.note || "";
-  document.getElementById("pricing-legend").innerHTML =
-    (p.grade_legend || []).map(g => `<span class="chip">${g.symbol || ""} ${esc(g.label)}</span>`).join("");
-  document.getElementById("pricing-caveats").innerHTML =
-    (p.caveats || []).map(c => `<li>${esc(c)}</li>`).join("");
-  renderMatrix(p, "pricing-head", "pricing-body");
+  if (block.title) document.getElementById(prefix + "-h").textContent = block.title;
+  document.getElementById(prefix + "-note").textContent = block.note || "";
+  document.getElementById(prefix + "-legend").innerHTML =
+    (block.grade_legend || []).map(g => `<span class="chip">${g.symbol || ""} ${esc(g.label)}</span>`).join("");
+  document.getElementById(prefix + "-caveats").innerHTML =
+    (block.caveats || []).map(c => `<li>${esc(c)}</li>`).join("");
+  renderMatrix(block, prefix + "-head", prefix + "-body");
 }
 
 /* ---------- environmental impact: capacity-weighted per-provider grade (computed) ----------
@@ -463,8 +482,11 @@ function renderEnv(dc){
 // Page copy + nested matrix come from transparency-index.json …
 fetch("transparency-index.json", { cache: "no-store" })
   .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-  .then(data => { renderMeta(data); renderMatrix(data); renderPricing(data); })
-  .catch(() => { renderMeta(FALLBACK); renderMatrix(FALLBACK); renderPricing(FALLBACK); });
+  .then(data => { renderMeta(data); renderMatrix(data);
+                  renderAxisMatrix(data.pricing, "pricing");
+                  renderAxisMatrix(data.data_practices, "dp"); })
+  .catch(() => { renderMeta(FALLBACK); renderMatrix(FALLBACK);
+                 renderAxisMatrix(null, "pricing"); renderAxisMatrix(null, "dp"); });
 
 // … the scored environmental axis is computed from datacenters.json.
 fetch("datacenters.json", { cache: "no-store" })
