@@ -7,10 +7,10 @@
     "status_note": "",
     "axes": [
       { "key": "environmental", "label": "Environmental impact", "state": "scored",  "note": "Capacity-weighted water & energy disclosure across known AI data center sites. Scored below." },
-      { "key": "pricing",       "label": "Pricing",             "state": "pending", "note": "Criteria not yet defined — Not yet scored." },
-      { "key": "data",          "label": "Data practices",      "state": "pending", "note": "Criteria not yet defined — Not yet scored." }
+      { "key": "pricing",       "label": "Pricing",             "state": "scored",  "note": "Five dimensions of what a provider tells you about what you are buying, all read from primary sources. Scored below. Providers tell you the price and when it will change; none tells you what you get for it." },
+      { "key": "data",          "label": "Data practices",      "state": "pending", "note": "Criteria not yet defined — Not yet scored. The only axis still unbuilt." }
     ],
-    "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources. Pricing and data-practices criteria aren't defined yet, so those axes are marked 'Not yet scored.'",
+    "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources — 42 of 42 on the environmental matrix and 40 of 40 on the pricing one, every URL checked. The pricing axis was defined and scored on 2026-08-25 across five independent dimensions — API rate card, consumer allowance, consumer context window, price-change notice and model-retirement notice — graded separately and never averaged, on the same 4-state scale. Its provider set deliberately differs from the environmental one: it covers the eight companies selling AI directly to consumers or developers. Data-practices criteria aren't defined yet, so that axis is still marked 'Not yet scored.'",
     "grade_legend": [
       { "grade": "green",   "symbol": "🟢", "label": "Transparent — company discloses itself" },
       { "grade": "yellow",  "symbol": "🟡", "label": "Partial — public only via regulator, utility or watchdog" },
@@ -39,6 +39,382 @@
         "The xAI/OpenAI/Anthropic non-disclosure finding was re-verified on 2026-08-25 against reporting from Aug 2026, not left resting on the Dec 2025 trackers — a verified absence expires too. The underlying fact, that no company environmental report exists, is directly checkable from the absence of any such document. California's SB 253 requires Scope 1 and 2 reporting from large companies operating in the state starting November 2026, so these rows may finally move within a year; classifying the bulk as Scope 3 would delay most of it to 2027."
       ]
     }
+  },
+  "pricing": {
+    "title": "Pricing transparency — by dimension",
+    "note": "What a provider tells you about what you are buying. Same 4-state scale as the page above, applied to five independent dimensions and never averaged. THE HEADLINE FINDING: providers are good at telling you the price and when it will change, and almost uniformly silent on what you get for it. Six of eight commit to a quantified price-change notice and five of those land on exactly 30 days with a cancel-before-renewal right — this is the most standardised disclosure in the industry. Set against that, all eight publish no usage allowance at all. Of 27 consumer plans across 8 providers, 26 publish no usage allowance — and the one exception is a feature sub-limit, not a general allowance. Note the provider set differs from the environmental axis above: this table covers the eight companies that sell AI to consumers or developers directly, so Amazon and Meta are absent and Perplexity, Mistral, DeepSeek and Microsoft appear.",
+    "grade_legend": [
+      {
+        "grade": "green",
+        "symbol": "🟢",
+        "label": "Published by the provider, and usable"
+      },
+      {
+        "grade": "yellow",
+        "symbol": "🟡",
+        "label": "Published but incomplete, unquantified, or late"
+      },
+      {
+        "grade": "red",
+        "symbol": "🔴",
+        "label": "Not published"
+      },
+      {
+        "grade": "pending",
+        "symbol": "⚪",
+        "label": "Not yet assessed"
+      }
+    ],
+    "caveats": [
+      "This axis grades DISCLOSURE, not value for money. A plan can be excellent and still score 🔴 here for not saying what it includes, and a cheap plan gets no credit for being cheap.",
+      "Price-change and model-retirement notice have now been read directly on all eight providers' own terms and docs — no cell on this axis rests on a secondary source. The single remaining ⚪ is Microsoft's API rate card, which is not graded because Copilot is sold as a subscription with no per-token price to publish; that is a different business model, not a disclosure failure.",
+      "The allowance finding comes from Legerly's own plan-limits data, re-verified 2026-08-24, where every plan carries a provenance value and a source. It is a count, not an impression.",
+      "Price-change notice turned out BETTER than we expected when we started this axis, and it is recorded that way. Both OpenAI and Anthropic give consumers 30 days and make increases effective at next renewal so the subscription can be cancelled first. An axis that only found bad news would not be evidence."
+    ],
+    "columns": [
+      {
+        "key": "rate_card",
+        "label": "API rate card"
+      },
+      {
+        "key": "allowance",
+        "label": "Consumer allowance"
+      },
+      {
+        "key": "context_window",
+        "label": "Consumer context window"
+      },
+      {
+        "key": "price_change",
+        "label": "Price-change notice"
+      },
+      {
+        "key": "model_retirement",
+        "label": "Model-retirement notice"
+      }
+    ],
+    "rows": [
+      {
+        "provider": "OpenAI",
+        "cells": {
+          "rate_card": {
+            "grade": "green",
+            "note": "Per-token rates for every model published on its own developer pricing page; re-verified against that page on 2026-08-24, when gpt-5.6-sol had moved $5/$30 → $4/$20.",
+            "source": "developers.openai.com pricing (verified directly)",
+            "source_url": "https://developers.openai.com/docs/pricing",
+            "source_date": "Aug 24 2026"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "The only absolute consumer figure any provider publishes is OpenAI's, and it is a feature sub-limit rather than an allowance: Go users get 10 messages every 5 hours after enabling Thinking. Worse, between our 2026-07-28 and 2026-08-08 checks OpenAI DELETED the one general cap anyone published — '160 GPT-5.5 Instant messages per 3 hours' — replacing it with limits that 'can be dynamic and may vary'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind.",
+            "source": "openai.com/chatgpt/pricing; Legerly plan-limits.json",
+            "source_url": "https://openai.com/chatgpt/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "green",
+            "note": "The one thing that got BETTER. OpenAI's plan table now publishes a per-plan context window for every consumer tier — Instant 27K/54K/54K/128K and Reasoning Varies/256K/256K/400K across Free/Go/Plus/Pro. It is the first absolute product number any provider has ADDED rather than withdrawn in the period we have tracked. It bounds one conversation, not how many you get, so it does not close the allowance gap.",
+            "source": "openai.com/chatgpt/pricing (verified directly)",
+            "source_url": "https://openai.com/chatgpt/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "green",
+            "note": "Consumers do better than developers here. The consumer Terms of Use commit that 'if we increase our subscription prices, we will give you at least 30 days' notice and any price increase will take effect on your next renewal so that you can cancel'. The business/developer Services Agreement is shorter and blunter: 'Price changes on the Pricing Page will be effective fourteen days after they are posted.'",
+            "source": "OpenAI Terms of Use + Services Agreement (both read directly)",
+            "source_url": "https://openai.com/policies/terms-of-use/",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "green",
+            "note": "The strongest retirement commitment of any provider: a published deprecations page promising minimum notice of at least 6 months for generally available models and at least 3 months for specialized variants, with preview models explicitly carved out at around 2 weeks. Quantified, tiered, and stated as a floor.",
+            "source": "OpenAI deprecations page (read directly)",
+            "source_url": "https://developers.openai.com/api/docs/deprecations",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Anthropic",
+        "cells": {
+          "rate_card": {
+            "grade": "green",
+            "note": "Per-token rates published on its own pricing docs and re-verified there on 2026-08-24. Also handled an intro-rate expiry honestly: Sonnet 5's $2/$10 launched as an introductory rate, and rather than letting it lapse quietly the pricing page states the scheduled 2026-09-01 rise to $3/$15 will not occur.",
+            "source": "platform.claude.com pricing (verified directly)",
+            "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
+            "source_date": "Aug 24 2026"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. Anthropic's four consumer plans all sit in that 26. Max is sold as '5x/20x more usage than Pro' with Pro itself unquantified, and the Consumer Terms say plan limits are 'described in the order process' while the terms themselves specify none.",
+            "source": "claude.com/pricing; Anthropic Consumer Terms; Legerly plan-limits.json",
+            "source_url": "https://www.anthropic.com/legal/consumer-terms",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "red",
+            "note": "No per-plan context window published for consumer tiers — the figure exists for the API but not for what a Pro or Max subscriber actually gets. OpenAI is currently alone in publishing this.",
+            "source": "claude.com/pricing; Legerly plan-limits.json",
+            "source_url": "https://www.anthropic.com/legal/consumer-terms",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "green",
+            "note": "Quantified on both sides and read directly. Consumer Terms: fees will not change during a current term, and 'if these changes result in an increase in the fees payable by you, we will inform you at least 30 days in advance', with the increase applying at renewal so it can be cancelled first. Commercial Terms: updated rates take effect 'the earlier of 30 days after the updates are posted or Customer otherwise receives Notice'.",
+            "source": "Anthropic Consumer Terms + Commercial Terms (both read directly)",
+            "source_url": "https://www.anthropic.com/legal/consumer-terms",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "green",
+            "note": "A published lifecycle page committing to at least 60 days' notice before retirement for publicly released models — a shorter floor than OpenAI's, but paired with something no one else does: a forward 'not sooner than' retirement date for every ACTIVE model, most of them a year or more out, plus a complete deprecation history back to 2024. In practice that is more usable than the 60-day floor implies.",
+            "source": "Anthropic model deprecations page (read directly)",
+            "source_url": "https://platform.claude.com/docs/en/about-claude/model-deprecations",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Google",
+        "cells": {
+          "rate_card": {
+            "grade": "green",
+            "note": "Per-token rates published on its own Gemini API pricing page, re-verified 2026-08-24 — at which point 3.6 Flash and the new 3.7 Flash had been put on a half-price promotional rate with a stated end date of 2026-12-31. Dating the promo is the right behaviour; an undated promotional rate is a trap.",
+            "source": "ai.google.dev Gemini API pricing (verified directly)",
+            "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+            "source_date": "Aug 24 2026"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. Google's five consumer tiers are sold as '2x/4x/20x higher than standard limits', with its own footnote clarifying that the base is non-AI subscribers. It also reserves the right to change limits 'without notice, including due to capacity constraints'.",
+            "source": "gemini.google/subscriptions; Legerly plan-limits.json",
+            "source_url": "https://gemini.google/subscriptions",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "red",
+            "note": "No per-plan consumer context window published.",
+            "source": "gemini.google/subscriptions; Legerly plan-limits.json",
+            "source_url": "https://gemini.google/subscriptions",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "green",
+            "note": "Verified on Google's own Google One terms, which govern its AI subscriptions: “We will give you at least 30 days’ prior notice of a price increase before you are charged.” It also publishes the remedy if it misses that — “if you are given less than 30 days’ prior notice, the change will not apply until the payment after the next payment is due” — which is a stronger construction than most peers, because it says what happens when the commitment is broken rather than only stating the commitment.",
+            "source": "Google One Additional Terms of Service (read directly)",
+            "source_url": "https://one.google.com/terms-of-service",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "yellow",
+            "note": "A deprecations page exists, which puts Google ahead of five providers here, but it carries NO quantified commitment. Shutdown dates in the table are explicitly 'the earliest possible dates on which a model might be retired', with a promise only to 'communicate the exact shutdown date with advance notice' — advance notice of unspecified length. A date you cannot rely on and a notice period with no number.",
+            "source": "Gemini API deprecations page (read directly)",
+            "source_url": "https://ai.google.dev/gemini-api/docs/deprecations",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "xAI",
+        "cells": {
+          "rate_card": {
+            "grade": "green",
+            "note": "Per-token rates published on its own model docs and re-verified there 2026-08-24, including the higher above-200k-context tier.",
+            "source": "docs.x.ai models (verified directly)",
+            "source_url": "https://docs.x.ai/docs/models",
+            "source_date": "Aug 24 2026"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. All five xAI consumer tiers are in that count.",
+            "source": "x.ai/pricing; Legerly plan-limits.json",
+            "source_url": "https://x.ai/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "red",
+            "note": "No per-plan consumer context window published.",
+            "source": "x.ai/pricing; Legerly plan-limits.json",
+            "source_url": "https://x.ai/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "green",
+            "note": "Verified on xAI's own consumer Terms of Service: “If prices increase, we will provide 30 days’ notice, and the new price will apply at your next renewal, allowing you to cancel if you disagree with the change.” Worth noting against the environmental axis above, where xAI is 🔴 on all six dimensions: the axes are genuinely independent, and a company can be opaque about water while being straightforward about billing.",
+            "source": "xAI consumer Terms of Service (read directly)",
+            "source_url": "https://x.ai/legal/terms-of-service",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "yellow",
+            "note": "Publishes retirement events properly but commits to no notice period. Its May 15 2026 retirement page names every retired slug, the redirect target, the exact cut-off time, and — usefully, and more than most disclose — the pricing impact: requests to a retired slug after the date are billed at the replacement model's rate. That is real operational disclosure. What is missing is a policy: nothing states how much warning the next retirement will carry, so you cannot plan, only react.",
+            "source": "xAI model retirement migration guide (read directly)",
+            "source_url": "https://docs.x.ai/developers/migration/may-15-retirement",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Perplexity",
+        "cells": {
+          "rate_card": {
+            "grade": "yellow",
+            "note": "The clearest case on this table of a published price that is not the price. Perplexity publishes per-token Sonar rates — but they EXCLUDE a $5–14 per 1,000 requests fee which, for ordinary chat-shaped use, exceeds the token cost itself. A user pricing their usage off the published rate card would materially understate their bill. The number is disclosed; the cost is not.",
+            "source": "docs.perplexity.ai pricing (verified directly)",
+            "source_url": "https://docs.perplexity.ai/getting-started/pricing",
+            "source_date": "Aug 24 2026"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. Perplexity's three consumer tiers are in that count.",
+            "source": "perplexity.ai/pricing; Legerly plan-limits.json",
+            "source_url": "https://www.perplexity.ai/",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "red",
+            "note": "No per-plan consumer context window published.",
+            "source": "Legerly plan-limits.json",
+            "source_url": "https://docs.perplexity.ai/getting-started/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "yellow",
+            "note": "The only major provider whose price-change commitment carries no number. Its Terms of Service say only that “any price changes or changes to your subscription plan will take effect following reasonable notice to you.” Reasonable is not a period you can plan around, and it is unenforceable in any practical sense — the same unquantified-promise pattern that keeps Google's deprecation page at 🟡. Every other provider here except DeepSeek states a figure.",
+            "source": "Perplexity Terms of Service (read directly)",
+            "source_url": "https://www.perplexity.ai/hub/legal/terms-of-service",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "red",
+            "note": "No notice-period policy, no forward retirement dates, and no lifecycle page — retirements surface as changelog entries, in at least one case recorded as already having happened (“Gemini 3.1-flash-lite-preview has been retired”). A log of what was removed is not notice of what will be. There is a structural reason worth stating fairly: Perplexity resells other providers' models, so some retirements are forced on it upstream and outside its control. That explains the position; it does not make the user any better informed.",
+            "source": "Perplexity docs changelog (read directly); no lifecycle policy found",
+            "source_url": "https://docs.perplexity.ai/docs/resources/changelog",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Microsoft",
+        "cells": {
+          "rate_card": {
+            "grade": "pending",
+            "note": "Not applicable in the same form and therefore not graded: Copilot is sold as a subscription and Microsoft publishes no per-token consumer rate card of its own, reselling model access rather than pricing it directly. Grading this 🔴 would punish a different business model rather than measure disclosure.",
+            "source": "microsoft.com Copilot plans",
+            "source_url": "https://www.microsoft.com/en-us/microsoft-365/copilot/",
+            "source_date": "Not assessed"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. Both Microsoft consumer tiers are in that count.",
+            "source": "microsoft.com Copilot plans; Legerly plan-limits.json",
+            "source_url": "https://www.microsoft.com/en-us/microsoft-365/copilot/",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "red",
+            "note": "No per-plan consumer context window published.",
+            "source": "Legerly plan-limits.json",
+            "source_url": "https://www.microsoft.com/en-us/microsoft-365/copilot/",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "green",
+            "note": "Verified in the Microsoft Services Agreement §9.j: at least 15 days' notice by email or other reasonable manner before a price change, applied at the next renewal, with a cancel-before-it-takes-effect right, and fixed-term locked-in prices exempt. Graded 🟢 because it is published, quantified and usable — but it is half the 30 days five other providers commit to, and that difference is stated here rather than hidden behind the badge. This axis grades disclosure, not generosity.",
+            "source": "Microsoft Services Agreement §9.j (read directly)",
+            "source_url": "https://www.microsoft.com/en-us/servicesagreement",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "red",
+            "note": "Consumer Copilot does not expose or version the model you are talking to, and Microsoft publishes no model-retirement notice policy for it. What it does announce, ad hoc through blog and message-centre posts, is FEATURE retirement — Deep Research and Podcasts both retired in consumer Copilot on 2026-08-18. Graded 🔴 rather than ⚪ (unlike the rate-card cell, where per-token pricing genuinely does not exist for this product) because the gap here is real and consumer-affecting: the model underneath can change without the user being told, or being able to tell.",
+            "source": "Microsoft Copilot plans + retirement announcements; no model-lifecycle policy found",
+            "source_url": "https://www.microsoft.com/en-us/microsoft-365/copilot/",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "Mistral",
+        "cells": {
+          "rate_card": {
+            "grade": "green",
+            "note": "Per-token rates published on its own pricing page and re-verified 2026-08-24. Also the only provider here publishing a student price ($5.99/mo) rather than routing students through an eligibility wall.",
+            "source": "mistral.ai/pricing (verified directly)",
+            "source_url": "https://mistral.ai/pricing",
+            "source_date": "Aug 24 2026"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. Both Mistral consumer tiers are in that count.",
+            "source": "mistral.ai/pricing; Legerly plan-limits.json",
+            "source_url": "https://mistral.ai/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "red",
+            "note": "No per-plan consumer context window published.",
+            "source": "Legerly plan-limits.json",
+            "source_url": "https://mistral.ai/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "green",
+            "note": "Verified on Mistral's own consumer terms, and it commits the same 30 days as the majors in both its rest-of-world and EU versions: “If we increase our prices, we will give you at least thirty (30) days’ notice and any price increase will take effect the next time your subscription renews … so that you can cancel if you do not agree.” The EU version adds that notice is sent by email to the account address.",
+            "source": "Mistral ROW + EU consumer Terms of Service (both read directly)",
+            "source_url": "https://legal.mistral.ai/terms/row-consumer-terms",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "green",
+            "note": "The surprise of this axis. Mistral publishes a model lifecycle policy with a quantified notice period per stage — General Availability 6 months, Public Preview 1 month, Labs 1 month, third-party models 1 month — and states that the model stays accessible throughout the deprecation window. Its 6-month GA commitment equals OpenAI's and beats Anthropic's 60-day floor. It also maintains a dated deprecation table with retirement dates and named replacements. The smallest provider on this table has among the best disclosure on it.",
+            "source": "Mistral model lifecycle policy + deprecation table (read directly)",
+            "source_url": "https://docs.mistral.ai/inference/model-lifecycle",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      },
+      {
+        "provider": "DeepSeek",
+        "cells": {
+          "rate_card": {
+            "grade": "green",
+            "note": "Per-token rates published on its own API docs and re-verified 2026-08-24, including its peak/off-peak split.",
+            "source": "api-docs.deepseek.com pricing (verified directly)",
+            "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
+            "source_date": "Aug 24 2026"
+          },
+          "allowance": {
+            "grade": "red",
+            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. DeepSeek's consumer tier is in that count.",
+            "source": "deepseek.com; Legerly plan-limits.json",
+            "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "context_window": {
+            "grade": "red",
+            "note": "No per-plan consumer context window published.",
+            "source": "Legerly plan-limits.json",
+            "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "price_change": {
+            "grade": "yellow",
+            "note": "Warned, but barely. DeepSeek told developers on 2026-08-06 that a significant API price increase was coming, WITHOUT stating the new rate or the date; the increase landed on 2026-08-16, roughly ten days later, at 3–4.5× the previous rates. A warning with no number and no date is better than a silent change and materially worse than the 30 days OpenAI and Anthropic commit to. We had recorded the warning before it landed, and it landed as recorded.",
+            "source": "DeepSeek API docs + pricing announcement; Legerly prices.json history",
+            "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
+            "source_date": "Aug 25 2026"
+          },
+          "model_retirement": {
+            "grade": "yellow",
+            "note": "Announces retirements with a forward date and reasonable lead time, but has no published policy. Its updates page carried “the two legacy API model names, deepseek-chat and deepseek-reasoner, will be discontinued in three months (2026-07-24)” — three months of warning, dated, on its own docs. Better lead time than its price-change behaviour, where a rise landed roughly ten days after a warning that named neither rate nor date. Held at 🟡 because one well-handled instance is not a commitment.",
+            "source": "DeepSeek API docs updates page (read directly)",
+            "source_url": "https://api-docs.deepseek.com/updates",
+            "source_date": "Aug 25 2026"
+          }
+        }
+      }
+    ]
   },
   "columns": [
     { "key": "site_level",    "label": "Site-level disclosure" },
