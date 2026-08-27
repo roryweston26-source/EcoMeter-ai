@@ -415,13 +415,20 @@ It splits the old assumption in half and measures the half that can be measured:
   judgement — but stated in characters, which a person can check against a real chat
   window. "A 1,800-character reply" is falsifiable; "500 output tokens" is not.
 - **Characters → tokens** is measured with the real cl100k tokenizer over this repo’s
-  prose: **3.911 chars/token, 162 samples.** No folk 4-chars-per-token constant.
+  prose: **3.882 chars/token, 165 samples.** No folk 4-chars-per-token constant.
 
 | Archetype | prompt | reply | history | → input | output |
 |---|---|---|---|---|---|
-| light | 220 ch | 900 ch | 2 turns | 628 | 230 |
-| standard | 450 ch | 1,800 ch | 6 turns | 3,565 | 460 |
-| heavy | 1,400 ch | 4,200 ch | 10 turns | 14,678 | 1,074 |
+| light | 220 ch | 900 ch | 2 turns | 635 | 232 |
+| standard | 450 ch | 1,800 ch | 6 turns | 3,596 | 464 |
+| heavy | 1,400 ch | 4,200 ch | 10 turns | 14,791 | 1,082 |
+
+**Reproducibility:** the script normalises CRLF to LF before counting. Without
+that the measured ratio depends on the checkout — a Windows working copy and a Linux
+CI runner disagreed (3.911 vs 3.882) on the first CI run, and a measured constant that
+changes with the platform is not one. The guard also carries a **2% tolerance**,
+because the corpus includes docs that change most days; the two in-page copies are
+still compared exactly, since a copy has no excuse for differing.
 
 This is **not** a measurement of real chat traffic — there is no such corpus here, and
 the file says so in those words. The intended anchor is still real EcoMeter exports.

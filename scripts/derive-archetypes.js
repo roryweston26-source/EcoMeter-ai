@@ -41,7 +41,15 @@ eval(fs.readFileSync(path.join(ROOT, 'extension/tokenizer_cl100k.js'), 'utf8'));
 const tokens = t => cl100k.encode(t).length;
 
 // ── the measured half: characters per token, over this repo's prose ──
-const read = p => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return ''; } };
+// Line endings are normalised before anything is counted. Without this the measured
+// ratio depends on the CHECKOUT: a Windows working copy has CRLF, a Linux CI runner
+// has LF, and every stray \r is a character and sometimes a token. The first CI run
+// of this script disagreed with my machine — 3.882 vs 3.911 chars/token — and a
+// "measured" constant that changes with the platform it was measured on is not one.
+const read = p => {
+  try { return fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n'); }
+  catch { return ''; }
+};
 function chunk(text, size) {
   const out = [];
   for (let i = 0; i < text.length; i += size) {
