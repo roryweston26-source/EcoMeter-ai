@@ -390,7 +390,7 @@
     <p class="note-line" id="foot-token">API rates shown per 1,000,000 tokens · pulled live from prices.json</p>
     <p class="note-line" id="foot-free" style="display:none">Models each platform's free plan exposes · API list rates shown for reference · pulled live from prices.json</p>
     <p class="note-line">Subscription prices verified from official provider pages · June 2026 · USD/month</p>
-    <p class="note-line" id="foot-sub" style="display:none">Break even = what the same usage would cost at that provider's own API rates. It's an estimate built on an assumed message size — open "show the math" on any row to see every input. The API isn't the product, so treat it as a floor on value, not a full accounting. Two real costs sit outside it, pulling opposite ways: prompt caching isn’t modelled, which makes real API cost lower and break-even harder to reach, and neither is the per-search fee every provider here except DeepSeek charges on top of tokens ($5–$14 per 1,000 searches), which makes it higher and break-even easier. If your chat searches the web a lot, the true figure is below the one shown.</p>
+    <p class="note-line" id="foot-sub" style="display:none">Break even = what the same usage would cost at that provider's own API rates. It's an estimate built on an assumed message size and, for models that think before answering, an assumed amount of thinking — open "show the math" on any row to see every input. The API isn't the product, so treat it as a floor on value, not a full accounting. Two real costs sit outside it, pulling opposite ways: prompt caching isn’t modelled, which makes real API cost lower and break-even harder to reach, and neither is the per-search fee every provider here except DeepSeek charges on top of tokens ($5–$14 per 1,000 searches), which makes it higher and break-even easier. If your chat searches the web a lot, the true figure is below the one shown.</p>
     <p class="note-line">Prices change. We refresh weekly — spotted something stale? <a href="https://github.com/roryweston26-source/EcoMeter-ai/issues" target="_blank" rel="noopener">Open an issue.</a></p>
     <p class="manifesto">Markets work best when both sides have the same information. AI isn't there yet. We're here to bring that to you.</p>
   </footer>
@@ -637,15 +637,37 @@
 
   // Fallback snapshot — only the fields the columns need, so the table never renders bare.
   // The full record (sources, third-party figures, caveats) comes from the live file.
+  // Measured by scripts/derive-archetypes.js with the real cl100k tokenizer over this
+  // repo's prose, and shown in "show the math" so the conversion behind the archetypes
+  // is visible rather than asserted. check-auditor.js fails if it drifts.
+  var CHARS_PER_TOKEN = 3.882;
+
   var FALLBACK_LIMITS = {
     _meta: {
       month_days: 30,
       default_archetype: "standard",
       archetypes: {
-        light:    { input: 1500,  output: 300,  label: "Short exchanges, little history" },
-        standard: { input: 4000,  output: 500,  label: "Typical multi-turn chat" },
-        heavy:    { input: 15000, output: 1200, label: "Long context, documents, code" }
-      }
+        // Owned by scripts/derive-archetypes.js — regenerate, don't hand-edit.
+        light:    { input: 635,   output: 232,  label: "Short exchanges, little history" },
+        standard: { input: 3596,  output: 464,  label: "Typical multi-turn chat" },
+        heavy:    { input: 14791, output: 1082, label: "Long context, documents, code" }
+      },
+      // Mirrors plan-limits.json _meta.reasoning.models — mid only; that file carries
+      // the ranges and the basis. Thinking tokens bill at the output rate, so leaving
+      // this out of the fallback would price reasoning models as if they did not
+      // reason whenever the live fetch fails.
+      reasoning: { models: {
+        "gpt-5.6-sol":            { mid: 3.0 },
+        "gpt-5.6-terra":          { mid: 2.5 },
+        "claude-opus-5":          { mid: 3.0 },
+        "claude-sonnet-5":        { mid: 2.0 },
+        "gemini-3.1-pro-preview": { mid: 3.0 },
+        "o3":                     { mid: 4.0 },
+        "o4-mini":                { mid: 2.0 },
+        "deepseek-v4-pro":        { mid: 2.5 },
+        "deepseek-r1":            { mid: 2.5 },
+        "deepseek-reasoner":      { mid: 2.5 }
+      } }
     },
     plans: [
       { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-5.6-luna",  high:"gpt-5.5"} },
@@ -735,7 +757,17 @@
     // the moment someone adds a document-sized archetype, and silently halving the
     // cost then would be worse than the arithmetic being unused now.
     var rate = (rec.long && a.input > rec.long.over) ? rec.long : rec;
-    return a.input * rate.input + a.output * rate.output;
+    // Thinking tokens bill at the output rate. The archetype's "output" is the visible
+    // reply only, so a reasoning model costs more per message than the reply implies.
+    return a.input * rate.input + a.output * reasoningMult(modelKey) * rate.output;
+  }
+
+  // Multiplier for a model that reasons by default, from plan-limits.json. Returns 1
+  // when the model does not reason or we have no figure — never invent one per model.
+  function reasoningMult(modelKey) {
+    var key = String(modelKey).split(":").pop();
+    var r = ((PLAN_LIMITS._meta || {}).reasoning || {}).models || {};
+    return (r[key] && typeof r[key].mid === "number") ? r[key].mid : 1;
   }
 
   // Messages per day needed before the subscription beats per-token pricing.
@@ -1065,11 +1097,26 @@
     var a = archetype(), out = "";
 
     if (be) {
-      var hiRate = (RATES[sub.p] || {})[be.fewModel];
+      // Resolve the rate the way costPerMessage does. A value_model may name another
+      // provider's model ("anthropic:claude-opus-5"), and looking that up under sub.p
+      // returned undefined — silently dropping the rate and cost lines from this panel
+      // on every Perplexity row.
+      var mBits  = String(be.fewModel).split(":");
+      var hiRate = (RATES[mBits.length > 1 ? mBits[0] : sub.p] || {})[mBits.length > 1 ? mBits[1] : be.fewModel];
+      var mult   = reasoningMult(be.fewModel);
+      // Cost comes from the engine, not a second implementation of it. This panel
+      // exists to show the working; if it recomputed the number it could disagree with
+      // the one above it, which is worse than showing nothing.
+      var cpm    = costPerMessage(sub.p, be.fewModel);
       out += '<dl>' +
-             '<dt>Assumed per message</dt><dd>' + a.input.toLocaleString("en-US") + ' in + ' + a.output.toLocaleString("en-US") + ' out tokens</dd>' +
+             '<dt>Assumed per message</dt><dd>' + a.input.toLocaleString("en-US") + ' in + ' + a.output.toLocaleString("en-US") + ' out tokens' +
+             (a.prompt_chars ? ' <span class="why">(' + a.prompt_chars + '-char prompt, ' + a.reply_chars +
+               '-char reply, ' + a.history_turns + ' turns of history re-sent, converted at a measured ' +
+               CHARS_PER_TOKEN.toFixed(2) + ' chars/token)</span>' : "") + '</dd>' +
+             (mult > 1 ? '<dt>Thinking tokens</dt><dd>× ' + mult + ' on the output side. ' + esc(modelLabel(be.fewModel)) +
+               ' reasons before answering and bills that at the output rate. A midpoint estimate — no provider publishes this.</dd>' : "") +
              (hiRate ? '<dt>' + esc(modelLabel(be.fewModel)) + ' API rate</dt><dd>$' + (hiRate.input * 1e6).toFixed(2) + ' / $' + (hiRate.output * 1e6).toFixed(2) + ' per 1M</dd>' : "") +
-             (hiRate ? '<dt>Cost per message</dt><dd>$' + (a.input * hiRate.input + a.output * hiRate.output).toFixed(4) + '</dd>' : "") +
+             (cpm ? '<dt>Cost per message</dt><dd>$' + cpm.toFixed(4) + '</dd>' : "") +
              '<dt>Break even</dt><dd>$' + sub.price + ' ÷ cost ÷ ' + monthDays() + ' days = ' + fmtNum(be.few) + ' messages/day</dd>' +
              '<dt>As time</dt><dd>' + fmtTime(be.few) + '/day at ' + throughput().mpm + ' message/minute of active use</dd>' +
              '</dl>';

@@ -399,6 +399,77 @@ modelled, it needs to be a visible input the reader can set, like the archetype.
 **Re-verify:** these are prices and they move. Treat as A1-class — check with the
 per-token pass.
 
+## A8. Break-even inputs — archetypes and thinking tokens
+
+**Every break-even on the site is price ÷ cost-per-message ÷ 30, so cost-per-message
+is the whole game.** Two things feed it and both changed on 2026-08-26.
+
+### Archetypes — now generated, not hand-picked
+
+**Owner:** `scripts/derive-archetypes.js`. Run `--write` to regenerate; never hand-edit
+the numbers.
+
+It splits the old assumption in half and measures the half that can be measured:
+
+- **Message lengths** (`prompt_chars`, `reply_chars`, `history_turns`) are still
+  judgement — but stated in characters, which a person can check against a real chat
+  window. "A 1,800-character reply" is falsifiable; "500 output tokens" is not.
+- **Characters → tokens** is measured with the real cl100k tokenizer over this repo’s
+  prose: **3.882 chars/token, 165 samples.** No folk 4-chars-per-token constant.
+
+| Archetype | prompt | reply | history | → input | output |
+|---|---|---|---|---|---|
+| light | 220 ch | 900 ch | 2 turns | 635 | 232 |
+| standard | 450 ch | 1,800 ch | 6 turns | 3,596 | 464 |
+| heavy | 1,400 ch | 4,200 ch | 10 turns | 14,791 | 1,082 |
+
+**Reproducibility:** the script normalises CRLF to LF before counting. Without
+that the measured ratio depends on the checkout — a Windows working copy and a Linux
+CI runner disagreed (3.911 vs 3.882) on the first CI run, and a measured constant that
+changes with the platform is not one. The guard also carries a **2% tolerance**,
+because the corpus includes docs that change most days; the two in-page copies are
+still compared exactly, since a copy has no excuse for differing.
+
+This is **not** a measurement of real chat traffic — there is no such corpus here, and
+the file says so in those words. The intended anchor is still real EcoMeter exports.
+
+**Three copies:** `plan-limits.json._meta.archetypes`, `audit.html` `ARCHETYPE`,
+`pricing.html` `FALLBACK_LIMITS`. `check-auditor.js` re-runs the derivation and fails
+on any of the three drifting, plus on `pricing.html`’s `CHARS_PER_TOKEN`.
+
+### Thinking tokens — now priced
+
+**Source:** `plan-limits.json._meta.reasoning.models` (lo/hi/mid; `mid` is applied).
+
+A reasoning model emits hidden chain-of-thought before its reply and bills it at the
+output rate. Counting only the visible reply understated API cost by **30–45% on the
+frontier models people actually pay for** — and, being an understatement of cost, it
+pushed break-even *up*, printing a higher bar than the truth.
+
+| Plan | Before | After |
+|---|---|---|
+| ChatGPT Plus | 26–127 msgs/day | **16–141** |
+| Claude Pro | 21–103 | **13–114** |
+| Google AI Pro | 48–137 | **28–151** |
+| Perplexity Pro | 48–51 | **32–41** |
+
+**These multipliers are estimates, and coarse ones.** No provider publishes per-model
+thinking-token statistics, so nobody outside them can measure it. They are modelled
+anyway — unlike search fees and caching — because the omission was large and
+one-directional, and because EcoMeter has modelled it since it shipped: the website
+being out of step with our own extension was the harder position to defend.
+
+**Three copies again:** `plan-limits.json` (source), `pricing.html`’s
+`FALLBACK_LIMITS.reasoning` mirror (used when the fetch fails), and
+`extension/sidepanel.js` `REASONING_RANGES` (older, covers the o-series and R1).
+`check-auditor.js` fails on mirror drift, on a `mid` outside its own lo/hi, on a model
+with no API rate, and where the extension and the site contradict each other on a
+model both name. All four verified by injecting the fault.
+
+**Still not modelled, and both stated on the page:** per-search fees (§A7, pushes
+break-even down) and prompt caching (pushes it up). They partly cancel, by an unknown
+amount.
+
 # B. Plan limits, caps and disclosure
 
 ## B1. The caps themselves
