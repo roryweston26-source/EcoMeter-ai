@@ -40,6 +40,27 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-26 — the reasoning multipliers can be measured, and there is now a script for it
+
+The multipliers shipped this morning were my judgement, and they are the largest soft input in a number that tells people whether to spend $20 a month. They do not have to be a guess: two of the three providers report thinking tokens outright.
+
+| Provider | How |
+|---|---|
+| OpenAI | `usage.output_tokens_details.reasoning_tokens` — reported |
+| Google | `total_thought_tokens` vs `total_output_tokens` — reported |
+| Anthropic | Not reported. Thinking is billed inside `output_tokens` and the raw chain of thought is never returned, so the ratio is `output_tokens ÷ count_tokens(visible reply)` |
+
+`scripts/measure-reasoning.js` runs an ordinary-chat corpus (24 prompts, four usage styles) against each model, reports p10/p50/p90 of the per-prompt ratio, and with `--write` puts them in `plan-limits.json` as `measured: true` with `n` and `as_of`. It costs about **$3** for a full pass, dry-runs by default, prices its own run from our `prices.json`, and skips any provider whose key is absent. Zero dependencies, like the rest of `scripts/`.
+
+**Rory has to run it** — it needs his API keys, which are deliberately not in this repo and not in the agent environment.
+
+Two design decisions worth keeping:
+
+- **The corpus is deliberately boring.** Benchmark problems would measure the hard case, overstate API cost, understate break-even, and tell people a subscription pays for itself sooner than it does. That is the direction that costs the reader money, so the prompts are things like "how long should I boil eggs" and "why does my CSS grid collapse on mobile".
+- **It measures the API, not the consumer app.** ChatGPT and Claude tune thinking behind the paywall and publish nothing. Break-even asks what the same usage costs on the API, so the API is the right scope — but it means the number is not "how much does Claude.ai think", and the script says so in its own header.
+
+`check-auditor.js` now refuses a `measured: true` row without `n` and `as_of`: the flag is a claim about evidence, so it has to carry the evidence. One honest gap: the Anthropic path is the only one I could not exercise, because there is no key in this environment — if `count_tokens` rejects an assistant-only conversation it falls back to counting the same text as a user turn, which differs by a few tokens of framing.
+
 ### 2026-08-26 — break-even: the archetypes are generated now, and thinking tokens are priced
 
 Asked to tighten the break-even numbers. Two of the three candidate levers were worth pulling; the third was not, and saying why matters as much as the change.

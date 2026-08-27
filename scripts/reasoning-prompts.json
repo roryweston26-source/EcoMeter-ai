@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "comment": "The prompt corpus for scripts/measure-reasoning.js. These exist to measure how many THINKING tokens a model spends on an ordinary consumer question — so they are deliberately ordinary. The temptation is to use benchmark problems, which would measure the hard case and produce a multiplier that flatters no one: it would overstate API cost, which understates break-even, which tells people a subscription pays for itself sooner than it does. That is the direction that costs the reader money.",
+    "shape": "Four groups matching the Auditor's own 'what do you mostly use it for' answers, so the measured multiplier can be reported per usage style rather than as one number for everybody.",
+    "rules": [
+      "No personal data, no real names, no anything a provider could tie to a person. These prompts are sent to OpenAI, Anthropic and Google.",
+      "Single-turn. History depth is already modelled by the archetypes; mixing it in here would double-count.",
+      "Stable. Changing a prompt changes the measurement, so treat edits the way you would treat editing a test fixture: possible, but re-run and re-date the result."
+    ],
+    "as_of": "2026-08-26"
+  },
+  "groups": {
+    "quick": [
+      "What's the difference between a static and a dynamic IP address?",
+      "How long should I boil eggs for a soft yolk?",
+      "Is it cheaper to run a dishwasher at night?",
+      "What does 'amortised' mean in plain English?",
+      "Convert 180C fan oven to gas mark and explain the rule.",
+      "Why does my laptop battery drain faster in cold weather?"
+    ],
+    "writing": [
+      "Rewrite this so it sounds less stiff: 'Please be advised that the meeting scheduled for Thursday has been moved to Friday at the same time.'",
+      "Write a three-sentence thank-you note to a neighbour who took in a parcel while I was away.",
+      "Give me five subject lines for an email announcing that a small shop is closing on Sundays from next month.",
+      "Turn these notes into a short paragraph: solar panels installed march, saved about 40 percent on bills, payback around nine years, tenant loves them.",
+      "Proofread and tighten: 'The reason why we decided to postpone the launch is due to the fact that the supplier was late.'",
+      "Draft a polite message declining a wedding invitation for a date I'm already away."
+    ],
+    "research": [
+      "Explain the trade-offs between heat pumps and gas boilers for a 1930s semi-detached house in the UK.",
+      "What actually changed for consumers when GDPR came in, as opposed to what people think changed?",
+      "Compare index funds and ETFs for someone investing a small amount monthly. Don't recommend anything, just lay out the differences.",
+      "Why did UK energy prices spike in 2022 and what parts of that were structural rather than temporary?",
+      "Summarise the main arguments for and against a four-day working week, with the strongest version of each.",
+      "How do noise-cancelling headphones work, and why are they better at some sounds than others?"
+    ],
+    "coding": [
+      "Why would a JavaScript String.replace() call insert unrelated text into the output? Give the likely cause.",
+      "Write a small Node function that reads a JSON file, adds a field to every object in an array, and writes it back atomically.",
+      "My CSS grid collapses to one column on mobile even though I set three columns. What are the usual causes?",
+      "Explain the difference between CRLF and LF line endings and one way each can break a build.",
+      "Write a regex that matches an ISO date (YYYY-MM-DD) and explain each part.",
+      "What's the difference between a debounce and a throttle, and when would each be wrong?"
+    ]
+  }
+}

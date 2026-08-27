@@ -459,6 +459,34 @@ anyway — unlike search fees and caching — because the omission was large and
 one-directional, and because EcoMeter has modelled it since it shipped: the website
 being out of step with our own extension was the harder position to defend.
 
+**They do not have to stay estimates.** `scripts/measure-reasoning.js` measures them
+against the providers’ own APIs and writes the result back with `measured: true`,
+`n` and `as_of`. Dry-run first (it prices the run from our own `prices.json`); a full
+pass over all five models and 24 prompts costs about **$3**.
+
+```bash
+node scripts/measure-reasoning.js                 # cost estimate, sends nothing
+node scripts/measure-reasoning.js --run --write   # measure and update plan-limits.json
+```
+
+| Provider | How the number is obtained |
+|---|---|
+| OpenAI | Reported: `usage.output_tokens_details.reasoning_tokens` |
+| Google | Reported: `total_thought_tokens` against `total_output_tokens` |
+| Anthropic | **Derived** — thinking is billed inside `output_tokens` and the raw chain of thought is never returned, so the ratio is `output_tokens ÷ count_tokens(visible reply)` |
+
+**What it measures is the API, not the app.** ChatGPT and Claude route and tune
+thinking their own way behind the paywall and publish nothing about it. That is the
+right scope anyway: break-even asks what the same usage would cost *on the API*.
+
+**The corpus is deliberately ordinary** (`scripts/reasoning-prompts.json`, 24 prompts
+across quick / writing / research / coding). Benchmark problems would measure the hard
+case, overstate API cost, understate break-even, and tell people a subscription pays
+for itself sooner than it does — the direction that costs the reader money.
+
+`check-auditor.js` refuses a `measured: true` row that has no `n` and `as_of`, so the
+flag cannot be set by hand.
+
 **Three copies again:** `plan-limits.json` (source), `pricing.html`’s
 `FALLBACK_LIMITS.reasoning` mirror (used when the fetch fails), and
 `extension/sidepanel.js` `REASONING_RANGES` (older, covers the o-series and R1).
