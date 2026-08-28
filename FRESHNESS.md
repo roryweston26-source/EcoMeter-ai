@@ -759,6 +759,7 @@ body carries the checklist, and that checklist is the actual work:
 - Installed compute — latest Epoch AI H100e estimate
 - Frontier training run — latest Epoch record FLOP
 - Users — ChatGPT WAU / Gemini MAU
+- Inference spend — **weakest link**; is it still a vendor-revenue proxy? (see D4)
 - Growth rates — trim any multiplier reality has undershot
 
 **Then update `_meta.reanchor_log` and `_meta.open_questions`.** They carry the
@@ -825,6 +826,30 @@ data sitting next to it.
   *fixed capability*; the per-unit panel measures blended spend per token — a
   different quantity, derived as spend ÷ tokens. `_meta.why_no_unit_cost_field`
   records this so it doesn't get re-added.
+
+- **`spend` is mislabelled at source, and the level is still unfixed.**
+  `spendPerYear` is anchored to MarketsandMarkets' *AI inference market* size, which
+  that report scopes as infrastructure **vendor revenue** — accelerators, HBM/DDR,
+  networking, cloud inference services. It therefore **overlaps `capexPerYear`**
+  (the same silicon, counted from the other side of the transaction) rather than
+  being "distinct from buildout capex", which is what `ai-clock.html` claimed until
+  **2026-08-28**. Prose corrected then; the **level was left alone on purpose** —
+  no better-sourced worldwide inference-opex figure was found, and inventing one is
+  worse than a weak number that says it's weak. The per-unit cost line inherits the
+  problem: infrastructure revenue ÷ *all* tokens, free-tier and internal included.
+  The page now calls that directional only. **Next re-anchor, go looking for a real
+  inference-opex total** and re-level, don't just re-label.
+
+- **An external cross-check exists for the per-unit panel and we are not allowed to use it.**
+  Ornn's Token Price Index — realized $/Mtok per lab, free no-key API at
+  `api.ornnai.com`, one month of daily history — is the closest external reference to
+  that panel, and reading it is what exposed the `spend` problem above. Their terms
+  (https://data.ornn.com/terms) forbid republishing the data, separately forbid using
+  it to "create, calculate, validate, benchmark" any index or derived product, and
+  state that attribution and caching are not consent. So it cannot go in `clock.json`
+  and it cannot go in `check-clock.js`. **Don't re-research this** —
+  `_meta.why_no_external_token_price_index` records the whole finding. Written consent
+  from Ornn is the only route in.
 
 ---
 

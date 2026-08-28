@@ -71,6 +71,7 @@ jobs:
             - [ ] Installed compute — latest Epoch AI H100e estimate
             - [ ] Frontier training run — latest Epoch record (FLOP)
             - [ ] Users — ChatGPT WAU / Gemini MAU
+            - [ ] Inference spend — weakest counter; still a vendor-revenue proxy? See clock.json _meta.open_questions
             - [ ] Growth rates — trim any multiplier reality has undershot
 
             The live clock reads these numbers, so nothing changes on the site until
