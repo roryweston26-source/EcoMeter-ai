@@ -30,6 +30,23 @@ sweeps `priority` (225,000 combinations). **New entry B5** — the days-per-mont
 assumption this created. PR #35. (2) **J1 cleared** — 25 remote and 24 local
 branches deleted, two unmerged ones kept and documented. **All six guards pass.**_
 
+_**2026-08-28 — not a full pass; one targeted job: F re-sourced.** `water.json`'s
+`_tiers_last_sourced` had read `2025-12` for nine months while every other dataset
+sat at days old. **Re-checked against primary sources: the anchors have not moved.**
+Google's paper (arXiv:2508.15734) is still v1 and never revised, its 2026
+Environmental Report repeats the same May-2025 per-prompt figures (matching what
+`transparency-index.json` recorded on 2026-08-25 from a direct read), Anthropic
+still discloses nothing, and no provider publishes water per *token* at all. So the
+stale date was bookkeeping, not evidence — `_tiers_last_sourced` is now `2026-08`,
+honestly earned. **But the pass found six errors in how the file described its own
+numbers**, listed in F1: a scope label that overstated what Google measures, a
+halved academic range, a 33× energy figure passed off as a water figure, an
+unsourceable "10–25×", an unreproducible academic derivation, and a data-centre
+cooling vendor's marketing blog sitting in `_sources` as our newest evidence. Two
+of these were also live in the extension's user-facing disclaimer and are fixed
+there. **No tier value changed** — all 68 preserved. **New: `_open_questions`** in
+`water.json`, two items needing Rory. `check-prices.js` passes._
+
 ---
 
 ## The one prompt
@@ -1196,18 +1213,47 @@ disagree. **Don't "reconcile" xAI's 🟡-vs-🔴** — it's documented in
 
 ## F1. `extension/water.json`
 
-**Two dates now, and the split matters.** Until 2026-08-24 this file had one
-`_last_updated`, which moved every time a tier was added for a new model — so
-routine model additions made the ml-per-token estimates look freshly verified when
-they hadn't been re-read since Dec 2025. Now:
+**Re-sourced 2026-08-28.** `_tiers_last_sourced` is now `2026-08`; `_last_updated`
+tracks the file, `_tiers_last_sourced` tracks the research behind the numbers. The
+split exists (since 2026-08-24) so routine model additions can't make the intensity
+estimates look freshly verified. **Don't bump `_tiers_last_sourced` without actually
+re-reading the primary sources** — that field is the whole point.
 
-- **`_last_updated`** — when the file last changed (usually a new model's tier).
-- **`_tiers_last_sourced`** — when the intensity figures were last checked against primary research. Currently `2025-12`.
+**What the 2026-08 re-source found: the anchors did not move.** Google's 0.26 ml per
+median Gemini Apps text prompt and Altman's 0.32 ml per ChatGPT query are still the
+only first-party per-prompt figures in existence, and **nobody publishes water per
+token**. Verified against primary sources, not coverage: arXiv:2508.15734 is still
+v1 (21 Aug 2025, never revised); Google's 2026 Environmental Report repeats the same
+May-2025 measurement (independently confirmed by `transparency-index.json`'s direct
+read on 2026-08-25); Anthropic still discloses nothing. Li et al. **has** since been
+peer-reviewed — Communications of the ACM 68(7):54-63, July 2025, doi 10.1145/3724499
+— with unchanged numbers; we had only ever cited the preprint, and now cite both.
 
-The anchors remain Google's 0.26 ml per median Gemini text prompt (Aug 2025) and
-Altman's 0.32 ml per ChatGPT query (Jun 2025). **No provider has published a newer
-per-token figure**, and a 2026 peer-reviewed comparison found none reports an
-AI-specific water metric at all — so "not disclosed" is still the finding here.
+**Six errors found in how the file described its own numbers.** None changed a tier
+value; all six changed what we were *claiming*:
+
+| Was | Now | Why it mattered |
+|---|---|---|
+| Google's 0.26 ml labelled "scope 1+2 on-site" | scope-1 on-site cooling only | Google's boundary excludes electricity-generation water — the exact gap the academic scope exists to fill. Wrong in the direction that flatters the provider. |
+| "~500ml per 20-50 queries = ~10-25ml per query" | 10–50 ml per response | Halved the top of Li et al.'s own stated range. |
+| "10-33x more water-efficient" | ~8.5× like-for-like, on-site | 33× is Google's **energy** cut and 44× is **carbon**; neither is water. `transparency-index.json` already labelled them correctly — the extension didn't. |
+| "Varies 10-25x by location" | ~5× (Li et al.'s own spread) | Unsourceable; appears to be the 10–25 ml-per-query figure restated as a multiplier. |
+| Academic tier "derived" as per-query ÷ 500 | stated as a judgement, with its bracket | 16.9 ml ÷ 500 = 0.0338, not the 0.020 in the file. **A reader checking our arithmetic could not reproduce our number from our stated method.** |
+| `moduledge.com` in `_sources` (Apr 2026) | removed, with reason recorded | ModulEdge s.r.o. sells modular data centres and waterless cooling. A vendor blog, carrying the newest date in the list, so it read as our most current evidence. |
+
+**Two of these were live in the UI** — `extension/sidepanel.html` repeated the scope
+error and the "10–25×". Both fixed there in the same commit. **If you correct a
+figure in `water.json`, grep `sidepanel.html` for it too.**
+
+**`_open_questions` — needs Rory, don't resolve silently:**
+
+1. **`token_divisor`** — the 500-token divisor converting per-query anchors to
+   per-token is unsourced, and *every* figure in the file scales inversely with it.
+   Google's anchor is per prompt; Li et al.'s is per 150–300 word output (~200–400
+   tokens); the extension multiplies by input+output combined.
+2. **`academic_tier_value`** — 0.020 ml/token sits in a defensible 0.004–0.0338
+   bracket. Moving it shifts user-facing full-scope numbers up to ~1.7×. Left alone
+   because no new evidence justified moving it.
 
 **The silent failure:** a model priced in `prices.json` with no `water.json` tier
 renders **no water figure at all**, with no error. That gap had accumulated across
@@ -1219,10 +1265,12 @@ that's a judgement about the model's size, and it's part of why some models are
 deliberately untracked (A3).
 
 **Goes stale when:** a provider publishes real per-token water data (nobody has
-yet), or the underlying academic estimates are revised. Check `_sources` and
-`_methodology` still describe what the numbers actually are.
+yet), or the underlying academic estimates are revised. Next re-source should
+re-check the same four: arXiv:2508.15734 for a v2, Google's next Environmental
+Report, Anthropic for any first disclosure, and Li et al. for a revision.
 
-**Guard:** `check-prices.js` — "priced, no water tier" is its first check.
+**Guard:** `check-prices.js` — "priced, no water tier" is its first check. Nothing
+guards the *figures* or their descriptions; only a re-source like this catches those.
 
 ---
 
