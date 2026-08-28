@@ -659,8 +659,8 @@
       reasoning: { models: {
         "gpt-5.6-sol":            { mid: 3.0 },
         "gpt-5.6-terra":          { mid: 2.5 },
-        "claude-opus-5":          { mid: 3.0 },
-        "claude-sonnet-5":        { mid: 2.0 },
+        "claude-opus-5":          { mid: 1.8 },
+        "claude-sonnet-5":        { mid: 1.0 },
         "gemini-3.1-pro-preview": { mid: 3.0 },
         "o3":                     { mid: 4.0 },
         "o4-mini":                { mid: 2.0 },
@@ -765,9 +765,15 @@
   // Multiplier for a model that reasons by default, from plan-limits.json. Returns 1
   // when the model does not reason or we have no figure — never invent one per model.
   function reasoningMult(modelKey) {
+    var e = reasoningEntry(modelKey);
+    return (e && typeof e.mid === "number") ? e.mid : 1;
+  }
+
+  // The whole entry, because "×1.8" means something different when it was measured
+  // against the provider's own API than when it was somebody's judgement.
+  function reasoningEntry(modelKey) {
     var key = String(modelKey).split(":").pop();
-    var r = ((PLAN_LIMITS._meta || {}).reasoning || {}).models || {};
-    return (r[key] && typeof r[key].mid === "number") ? r[key].mid : 1;
+    return (((PLAN_LIMITS._meta || {}).reasoning || {}).models || {})[key] || null;
   }
 
   // Messages per day needed before the subscription beats per-token pricing.
@@ -1104,6 +1110,7 @@
       var mBits  = String(be.fewModel).split(":");
       var hiRate = (RATES[mBits.length > 1 ? mBits[0] : sub.p] || {})[mBits.length > 1 ? mBits[1] : be.fewModel];
       var mult   = reasoningMult(be.fewModel);
+      var rInfo  = reasoningEntry(be.fewModel);
       // Cost comes from the engine, not a second implementation of it. This panel
       // exists to show the working; if it recomputed the number it could disagree with
       // the one above it, which is worse than showing nothing.
@@ -1114,7 +1121,11 @@
                '-char reply, ' + a.history_turns + ' turns of history re-sent, converted at a measured ' +
                CHARS_PER_TOKEN.toFixed(2) + ' chars/token)</span>' : "") + '</dd>' +
              (mult > 1 ? '<dt>Thinking tokens</dt><dd>× ' + mult + ' on the output side. ' + esc(modelLabel(be.fewModel)) +
-               ' reasons before answering and bills that at the output rate. A midpoint estimate — no provider publishes this.</dd>' : "") +
+               ' reasons before answering and bills that at the output rate. ' +
+               (rInfo && rInfo.measured
+                 ? '<b>Measured</b> against the provider’s own API over ' + rInfo.n +
+                   ' ordinary chat prompts on ' + esc(rInfo.as_of) + ' — median of the per-prompt ratio, not a guess.'
+                 : 'A midpoint estimate, not yet measured for this model.') + '</dd>' : "") +
              (hiRate ? '<dt>' + esc(modelLabel(be.fewModel)) + ' API rate</dt><dd>$' + (hiRate.input * 1e6).toFixed(2) + ' / $' + (hiRate.output * 1e6).toFixed(2) + ' per 1M</dd>' : "") +
              (cpm ? '<dt>Cost per message</dt><dd>$' + cpm.toFixed(4) + '</dd>' : "") +
              '<dt>Break even</dt><dd>$' + sub.price + ' ÷ cost ÷ ' + monthDays() + ' days = ' + fmtNum(be.few) + ' messages/day</dd>' +

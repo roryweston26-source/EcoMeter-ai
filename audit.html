@@ -821,7 +821,11 @@ function recommend(pf,sig){
   const be = fit.price>0 ? breakEven(pf.provider, fit, pf.arc) : null;
   if(be){
     const thinks = reasoningMult(be.fewModel)>1 || reasoningMult(be.manyModel)>1;
-    why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.${thinks?` That includes the hidden thinking tokens a reasoning model bills at the output rate — our estimate of them, since no provider publishes the figure.`:``}`);
+    // Only claim "measured" when the model actually driving the figure was measured.
+    const thinkMeasured = [be.fewModel, be.manyModel]
+      .filter(m => reasoningMult(m) > 1)
+      .every(m => (reasoningEntry(m) || {}).measured);
+    why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.${thinks?` That includes the hidden thinking tokens a reasoning model bills at the output rate${thinkMeasured?` — measured against the provider’s own API, not estimated`:` — our estimate of them, not yet measured for this model`}.`:``}`);
     // Break-even is a per-day rate, so it has to be compared against an AVERAGE day.
     // Comparing it to the busy-day figure cleared the bar for people who only use it
     // twice a week, and told them a subscription was the cheaper option when it wasn't.
@@ -876,10 +880,13 @@ function costPerMessage(prov, modelKey, arc){
 }
 // From plan-limits.json, so the site has one list. 1 when a model does not reason by
 // default or we have no figure for it — an invented multiplier is worse than none.
-function reasoningMult(modelKey){
+function reasoningEntry(modelKey){
   const key=String(modelKey).split(':').pop();
-  const r=((LIMITS&&LIMITS._meta||{}).reasoning||{}).models||{};
-  return (r[key] && typeof r[key].mid==='number') ? r[key].mid : 1;
+  return (((LIMITS&&LIMITS._meta||{}).reasoning||{}).models||{})[key] || null;
+}
+function reasoningMult(modelKey){
+  const e=reasoningEntry(modelKey);
+  return (e && typeof e.mid==='number') ? e.mid : 1;
 }
 // Long-context blocks straight from prices.json, kept beside the flattened rates.
 let RAW_LONG = {};

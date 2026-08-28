@@ -1,0 +1,41 @@
+{
+  "measured_on": "2026-08-27",
+  "method": "One API call per prompt at each provider default. OpenAI and Google report thinking tokens; Anthropic does not, so its ratio is output_tokens divided by count_tokens of the visible reply.",
+  "caveat": "This measures the API, not the consumer apps. ChatGPT and Claude tune thinking their own way behind the paywall and publish nothing about it.",
+  "corpus": "scripts/reasoning-prompts.json",
+  "prompts": 24,
+  "models": {
+    "claude-opus-5": {
+      "n": 23,
+      "lo": 1.1,
+      "mid": 1.8,
+      "hi": 2.1,
+      "mean": 1.7,
+      "by_group": {
+        "quick": 1.7,
+        "writing": 1.3,
+        "research": 1.9,
+        "coding": 1.9
+      },
+      "thinking_reported_by_provider": false,
+      "errors": [
+        "coding#3: socket hang up"
+      ]
+    },
+    "claude-sonnet-5": {
+      "n": 24,
+      "lo": 1,
+      "mid": 1,
+      "hi": 1,
+      "mean": 1,
+      "by_group": {
+        "quick": 1,
+        "writing": 1,
+        "research": 1,
+        "coding": 1
+      },
+      "thinking_reported_by_provider": false,
+      "errors": []
+    }
+  }
+}

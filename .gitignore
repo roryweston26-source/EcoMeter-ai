@@ -18,3 +18,6 @@ npm-debug.log*
 # Claude Code — shared config (.claude/launch.json, static-server.js) IS committed;
 # only the per-machine permission allowlist is local.
 .claude/settings.local.json
+
+# API keys for scripts/measure-reasoning.js — local only, never committed
+scripts/.keys.local.json

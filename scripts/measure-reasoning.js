@@ -9,15 +9,17 @@
  * the largest soft input in a figure that tells people whether to spend $20 a month.
  * If ×3 should be ×2, Claude Pro's break-even moves from 13 to 16 messages/day.
  *
- * It does not have to be a guess. Two of the three providers report thinking tokens
- * directly, and the third can be derived:
+ * It does not have to be a guess. Every provider reports thinking tokens in usage:
  *
  *   OpenAI     usage.output_tokens_details.reasoning_tokens        (reported)
  *   Google     usage.total_thought_tokens / total_output_tokens    (reported)
- *   Anthropic  not reported — thinking is billed inside output_tokens and the raw
- *              chain of thought is never returned. So: multiplier = output_tokens
- *              ÷ tokens(visible reply), with the visible reply counted by
- *              /v1/messages/count_tokens. One extra call, and count_tokens is free.
+ *   Anthropic  usage.output_tokens_details.thinking_tokens              (reported)
+ *
+ * All three report it. An earlier version of this header said Anthropic did not and
+ * derived the figure by subtracting a count_tokens of the visible reply; that was
+ * wrong, and wrong in a way that produced plausible numbers — count_tokens of an
+ * assistant message adds ~20 tokens of framing, so a reply with no thinking at all
+ * came out negative and clamped to exactly 1.0.
  *
  * WHAT IT MEASURES, AND WHAT IT DOES NOT
  * It measures what the API bills for an ordinary consumer question at default
@@ -72,11 +74,34 @@ const TARGETS = [
   { key: 'gemini-3.1-pro-preview', provider: 'google',    api: 'gemini-3.1-pro-preview' },
 ];
 
+/* Keys come from the environment, or from a gitignored file if you would rather not
+   fight PowerShell quoting — three attempts at exporting a key produced two syntax
+   errors and a literal placeholder, which is a UX problem, not a user problem.
+   scripts/.keys.local.json:  { "anthropic": "sk-ant-...", "openai": "sk-proj-..." }
+   It is in .gitignore, nothing prints or logs it, and deleting the file revokes this
+   script's access to it. An env var still wins if both are set. */
+const KEYFILE = path.join(__dirname, '.keys.local.json');
+let fileKeys = {};
+try {
+  if (fs.existsSync(KEYFILE)) fileKeys = JSON.parse(fs.readFileSync(KEYFILE, 'utf8'));
+} catch (e) {
+  console.error('scripts/.keys.local.json exists but is not valid JSON: ' + e.message);
+  process.exit(1);
+}
+const clean = s => (typeof s === 'string' ? s.trim().replace(/^[<"']+|[>"']+$/g, '') : undefined);
 const KEYS = {
-  openai:    process.env.OPENAI_API_KEY,
-  anthropic: process.env.ANTHROPIC_API_KEY,
-  google:    process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+  openai:    clean(process.env.OPENAI_API_KEY) || clean(fileKeys.openai),
+  anthropic: clean(process.env.ANTHROPIC_API_KEY) || clean(fileKeys.anthropic),
+  google:    clean(process.env.GEMINI_API_KEY) || clean(process.env.GOOGLE_API_KEY) || clean(fileKeys.google),
 };
+// A key still wrapped in the placeholder brackets is not a key. Say so before spending
+// six requests discovering it — that is what happened the first two times.
+for (const [prov, k] of Object.entries(KEYS)) {
+  if (k && (/paste|placeholder|^(new |your )?key$|^sk-\.\.\./i.test(k) || !/^[A-Za-z0-9_\-]{20,}$/.test(k))) {
+    console.error('The ' + prov + ' key is still the placeholder text, not a real key.');
+    process.exit(1);
+  }
+}
 
 const prompts = [];
 for (const [group, list] of Object.entries(corpus.groups)) {
@@ -148,14 +173,30 @@ async function measureGoogle(t, prompt) {
 }
 
 async function measureAnthropic(t, prompt) {
-  // Thinking is billed inside output_tokens and never itemised, so the visible half
-  // has to be counted separately. count_tokens is free and exact — much better than
-  // estimating the reply length with a char ratio.
+  // max_tokens has to be generous. At 4096 the first real run truncated long answers
+  // mid-reply (stop_reason: max_tokens): thinking is emitted first, so a cut-off reply
+  // shrinks the visible half and inflates the ratio. Measuring a cap is not measuring
+  // a model.
   const r = await post('api.anthropic.com', '/v1/messages',
     { 'x-api-key': KEYS.anthropic, 'anthropic-version': '2023-06-01' },
-    { model: t.api, max_tokens: 4096, thinking: { type: 'adaptive' },
+    { model: t.api, max_tokens: 16000, thinking: { type: 'adaptive' },
       messages: [{ role: 'user', content: prompt.text }] });
+  if (r.stop_reason === 'max_tokens')
+    throw new Error('hit max_tokens — reply truncated, ratio would be inflated');
   const total = (r.usage || {}).output_tokens || 0;
+
+  // Anthropic DOES itemise thinking, in usage.output_tokens_details.thinking_tokens.
+  // The first version of this script derived it instead, by subtracting a count_tokens
+  // of the visible reply — which was wrong twice over: count_tokens of an assistant
+  // message adds ~20 tokens of framing, so a non-thinking reply came out NEGATIVE and
+  // got clamped to a ratio of exactly 1.0, indistinguishable from a real 1.0. Use the
+  // reported figure; keep the derivation only as a fallback if the field disappears.
+  const details = (r.usage || {}).output_tokens_details || {};
+  if (typeof details.thinking_tokens === 'number') {
+    const thinking = details.thinking_tokens;
+    const visible = Math.max(1, total - thinking);
+    return { visible, thinking, reported: true };
+  }
   const text = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   if (!text) throw new Error('no visible text block in response (stop_reason: ' + r.stop_reason + ')');
   // count_tokens wants a conversation, and whether it accepts an assistant-only one
@@ -209,6 +250,17 @@ const pct = (sorted, p) => {
 const round1 = n => Math.round(n * 10) / 10;
 
 async function main() {
+  // Apply an existing report without re-measuring. Needed the first time because the
+  // method had two bugs and the data was re-gathered; useful every time after, because
+  // paying an API again to correct something on our side is not a measurement.
+  if (has('--from-report')) {
+    const p = path.join(ROOT, 'scripts', 'reasoning-measurement.json');
+    const report = JSON.parse(fs.readFileSync(p, 'utf8'));
+    console.log('Applying ' + path.relative(ROOT, p) + ' (measured ' + report.measured_on + ') — no API calls.');
+    writeBack(report);
+    return;
+  }
+
   console.log('Reasoning-multiplier measurement');
   console.log('prompts: ' + prompts.length + (ONLY_GROUP ? ' (group: ' + ONLY_GROUP + ')' : '') +
               ' · models: ' + targets.length);
@@ -259,7 +311,7 @@ async function main() {
       mean: ratios.length ? round1(ratios.reduce((a, b) => a + b, 0) / ratios.length) : null,
       by_group: Object.fromEntries(Object.entries(byGroup).map(([g, v]) =>
         [g, round1(v.reduce((a, b) => a + b, 0) / v.length)])),
-      thinking_reported_by_provider: t.provider !== 'anthropic',
+      thinking_reported_by_provider: true,
       errors: errors.slice(0, 10),
     };
     const r = results[t.key];
@@ -268,9 +320,30 @@ async function main() {
                 (errors.length ? '  (' + errors.length + ' failed)' : ''));
   }
 
+  // A run that measured nothing must not look like a run that succeeded. The first
+  // real use of this script skipped every model for want of a key, wrote a report
+  // whose models block was {}, exited 0, and told the operator nothing was wrong —
+  // the same shape of failure as a guard that scans an empty string and passes.
+  const measured = Object.values(results).filter(r => r.n > 0);
+  if (!measured.length) {
+    console.error('\nNOTHING WAS MEASURED — no report written, no data changed.');
+    const noKey = [...new Set(targets.map(t => t.provider))].filter(p => !KEYS[p]);
+    if (noKey.length) {
+      console.error('No key visible to this process for: ' + noKey.join(', ') + '.');
+      console.error('Env vars are per-terminal: if you set them with $env:NAME = "..." you must run');
+      console.error('node in THAT same window. Check what this process can see, without printing it:');
+      console.error('  node -e "console.log(Object.keys(process.env).filter(k=>/API_KEY/.test(k)))"');
+    } else {
+      console.error('Keys were present, so every call failed. First errors:');
+      for (const [k, r] of Object.entries(results))
+        (r.errors || []).slice(0, 2).forEach(e => console.error('  ' + k + ' — ' + e));
+    }
+    process.exit(1);
+  }
+
   const report = {
     measured_on: new Date().toISOString().slice(0, 10),
-    method: 'One API call per prompt at each provider default. OpenAI and Google report thinking tokens; Anthropic does not, so its ratio is output_tokens divided by count_tokens of the visible reply.',
+    method: 'One API call per prompt at each provider default. All three providers report thinking tokens in usage — OpenAI as output_tokens_details.reasoning_tokens, Anthropic as output_tokens_details.thinking_tokens, Google as total_thought_tokens. Responses that hit max_tokens are discarded rather than counted: thinking is emitted before the reply, so a truncated answer inflates the ratio.',
     caveat: 'This measures the API, not the consumer apps. ChatGPT and Claude tune thinking their own way behind the paywall and publish nothing about it.',
     corpus: 'scripts/reasoning-prompts.json',
     prompts: prompts.length,
@@ -280,6 +353,15 @@ async function main() {
   fs.writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
   console.log('\nreport: ' + path.relative(ROOT, out));
 
+  writeBack(report);
+}
+
+/* Write measured values into plan-limits.json. Split out from the run so a report can
+   be applied without paying for the measurement twice — the first pass here was thrown
+   away for method errors, and re-billing an API to fix a typo in my own script would
+   be a silly way to spend someone else's money. */
+function writeBack(report) {
+  const results = report.models;
   if (WRITE) {
     const P = path.join(ROOT, 'plan-limits.json');
     const raw = fs.readFileSync(P, 'utf8');
@@ -290,8 +372,23 @@ async function main() {
         measured: true, n: r.n, as_of: report.measured_on };
     }
     j._meta.reasoning.basis = 'MEASURED where a row says measured:true — see scripts/measure-reasoning.js and scripts/reasoning-measurement.json. lo/mid/hi are the p10/p50/p90 of the per-prompt ratio over an ordinary-chat corpus. Rows without measured:true are still estimates.';
+    // Surgical, like derive-archetypes.js. Re-serialising the whole file reflowed
+    // every row in it — a 300-line diff for a ten-number change, on the first run,
+    // while changing no number at all.
     const NL = raw.indexOf('\r\n') >= 0 ? '\r\n' : '\n';
-    fs.writeFileSync(P, JSON.stringify(j, null, 2).split('\n').join(NL) + NL);
+    const block = ['    "reasoning": {',
+      '      "comment": ' + JSON.stringify(j._meta.reasoning.comment) + ',',
+      '      "basis": ' + JSON.stringify(j._meta.reasoning.basis) + ',',
+      '      "models": {',
+      Object.entries(j._meta.reasoning.models).map(([k, v]) =>
+        '        ' + JSON.stringify(k) + ': ' + JSON.stringify(v)).join(',' + NL),
+      '      }', '    },'].join(NL);
+    const start = raw.indexOf('    "reasoning": {');
+    const end = raw.indexOf('    },', raw.indexOf('"models": {', start));
+    if (start < 0 || end < 0) throw new Error('cannot locate the reasoning block in plan-limits.json');
+    const out = raw.slice(0, start) + block + raw.slice(end + '    },'.length);
+    JSON.parse(out);
+    fs.writeFileSync(P, out);
     console.log('plan-limits.json updated — re-run check-auditor.js, and mirror the mids into pricing.html.');
   }
 }

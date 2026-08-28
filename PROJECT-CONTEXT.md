@@ -40,6 +40,30 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-27 — the reasoning multipliers are measured now, and I was wrong by ~2x
+
+Rory funded the Anthropic API and the harness ran. Both of my guesses were too high, in the direction that flatters the subscription:
+
+| Model | Guessed | Measured (n) |
+|---|---|---|
+| Claude Opus 5 | ×3.0 | **×1.8** (23) |
+| Claude Sonnet 5 | ×2.0 | **×1.0** (24) |
+
+**Sonnet 5 does not think at all on ordinary questions** — `thinking_tokens: 0` on all 24, confirmed against a single probe showing no thinking block in the response. We had been charging readers for reasoning that never happens. Opus does think, and the split is legible: writing 1.3, quick 1.7, research 1.9, coding 1.9.
+
+Break-even moved up accordingly: Claude Pro 13→17 msgs/day, Max 5× 63→86, Max 20× 127→172, Perplexity Pro's upper end 41→56.
+
+**The measurement found two bugs in my own method, after the first run was already paid for:**
+
+- I *derived* Anthropic's thinking tokens by subtracting a `count_tokens` of the visible reply, because I had asserted the API does not report them. It does — `usage.output_tokens_details.thinking_tokens`. Worse, the derivation produced plausible-looking numbers: `count_tokens` of an assistant message adds ~20 tokens of framing, so a no-thinking reply came out negative and clamped to exactly 1.0. Sonnet's 1.0 was right by accident before it was right on purpose.
+- `max_tokens: 4096` truncated long replies. Thinking comes first, so truncation shrinks the visible half and inflates the ratio — the first run's research figure was measuring my cap.
+
+Both fixed, re-measured (~$2.40 across the two runs), and `--from-report` now applies a stored report without re-billing anyone.
+
+**The site now distinguishes measured from estimated per model** — the "show the math" panel says "Measured against the provider's own API over 23 ordinary chat prompts" on Claude rows and "a midpoint estimate, not yet measured" on ChatGPT ones, and the Auditor line does the same. Mixed provenance is fine as long as the reader can see which is which.
+
+**Still guesses:** OpenAI, Google, o-series, DeepSeek. Both guesses that have been checked were high by 65–100%, so assume the rest are too. They need OpenAI and Google credit — the accounts had none, which is itself the Auditor's own thesis in miniature: a ChatGPT Plus or Claude Pro subscription buys nothing on the API.
+
 ### 2026-08-26 — the reasoning multipliers can be measured, and there is now a script for it
 
 The multipliers shipped this morning were my judgement, and they are the largest soft input in a number that tells people whether to spend $20 a month. They do not have to be a guess: two of the three providers report thinking tokens outright.
