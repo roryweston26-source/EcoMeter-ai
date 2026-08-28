@@ -83,7 +83,11 @@ const TARGETS = [
 const KEYFILE = path.join(__dirname, '.keys.local.json');
 let fileKeys = {};
 try {
-  if (fs.existsSync(KEYFILE)) fileKeys = JSON.parse(fs.readFileSync(KEYFILE, 'utf8'));
+  // Strip a byte-order mark. Windows PowerShell 5.1's Set-Content -Encoding utf8
+  // writes one, and JSON.parse rejects it — so the documented way of creating this
+  // file produced a file this script refused to read.
+  if (fs.existsSync(KEYFILE))
+    fileKeys = JSON.parse(fs.readFileSync(KEYFILE, 'utf8').replace(/^﻿/, ''));
 } catch (e) {
   console.error('scripts/.keys.local.json exists but is not valid JSON: ' + e.message);
   process.exit(1);
@@ -349,7 +353,25 @@ async function main() {
     prompts: prompts.length,
     models: results,
   };
+  // MERGE with whatever is already there. This file is the evidence behind every
+  // measured:true row in plan-limits.json, and a partial run used to overwrite it
+  // wholesale — measuring one OpenAI model deleted the record of yesterday's Anthropic
+  // pass, leaving a claim in the data file with nothing standing behind it. Each model
+  // carries its own date, because they are not measured on the same day.
   const out = path.join(ROOT, 'scripts', 'reasoning-measurement.json');
+  let prior = {};
+  try {
+    if (fs.existsSync(out)) {
+      const p = JSON.parse(fs.readFileSync(out, 'utf8'));
+      prior = p.models || {};
+      // Backfill the date onto rows written before this field existed. Without it they
+      // inherit the top-level date of THIS run, which would silently re-stamp an old
+      // measurement as today's — a fresher provenance than the evidence supports.
+      for (const v of Object.values(prior)) if (!v.measured_on) v.measured_on = p.measured_on;
+    }
+  } catch { /* unreadable prior report: better to rewrite it than to abort the run */ }
+  for (const [k, v] of Object.entries(report.models)) v.measured_on = report.measured_on;
+  report.models = Object.assign({}, prior, report.models);
   fs.writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
   console.log('\nreport: ' + path.relative(ROOT, out));
 
@@ -369,7 +391,7 @@ function writeBack(report) {
     for (const [key, r] of Object.entries(results)) {
       if (!r.n) continue;
       j._meta.reasoning.models[key] = { lo: r.lo, hi: r.hi, mid: r.mid,
-        measured: true, n: r.n, as_of: report.measured_on };
+        measured: true, n: r.n, as_of: r.measured_on || report.measured_on };
     }
     j._meta.reasoning.basis = 'MEASURED where a row says measured:true — see scripts/measure-reasoning.js and scripts/reasoning-measurement.json. lo/mid/hi are the p10/p50/p90 of the per-prompt ratio over an ordinary-chat corpus. Rows without measured:true are still estimates.';
     // Surgical, like derive-archetypes.js. Re-serialising the whole file reflowed

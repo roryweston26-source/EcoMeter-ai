@@ -1,6 +1,6 @@
 {
-  "measured_on": "2026-08-27",
-  "method": "One API call per prompt at each provider default. OpenAI and Google report thinking tokens; Anthropic does not, so its ratio is output_tokens divided by count_tokens of the visible reply.",
+  "measured_on": "2026-08-28",
+  "method": "One API call per prompt at each provider default. All three providers report thinking tokens in usage — OpenAI as output_tokens_details.reasoning_tokens, Anthropic as output_tokens_details.thinking_tokens, Google as total_thought_tokens. Responses that hit max_tokens are discarded rather than counted: thinking is emitted before the reply, so a truncated answer inflates the ratio.",
   "caveat": "This measures the API, not the consumer apps. ChatGPT and Claude tune thinking their own way behind the paywall and publish nothing about it.",
   "corpus": "scripts/reasoning-prompts.json",
   "prompts": 24,
@@ -20,7 +20,8 @@
       "thinking_reported_by_provider": false,
       "errors": [
         "coding#3: socket hang up"
-      ]
+      ],
+      "measured_on": "2026-08-27"
     },
     "claude-sonnet-5": {
       "n": 24,
@@ -35,7 +36,40 @@
         "coding": 1
       },
       "thinking_reported_by_provider": false,
-      "errors": []
+      "errors": [],
+      "measured_on": "2026-08-27"
+    },
+    "gpt-5.6-sol": {
+      "n": 24,
+      "lo": 1,
+      "mid": 1.2,
+      "hi": 1.9,
+      "mean": 1.4,
+      "by_group": {
+        "quick": 1.3,
+        "writing": 1,
+        "research": 1.2,
+        "coding": 1.8
+      },
+      "thinking_reported_by_provider": true,
+      "errors": [],
+      "measured_on": "2026-08-28"
+    },
+    "gpt-5.6-terra": {
+      "n": 24,
+      "lo": 1,
+      "mid": 1.1,
+      "hi": 2,
+      "mean": 1.2,
+      "by_group": {
+        "quick": 1.1,
+        "writing": 1,
+        "research": 1.1,
+        "coding": 1.6
+      },
+      "thinking_reported_by_provider": true,
+      "errors": [],
+      "measured_on": "2026-08-28"
     }
   }
 }

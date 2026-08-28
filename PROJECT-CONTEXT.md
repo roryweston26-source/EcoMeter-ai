@@ -40,6 +40,32 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-28 — OpenAI measured too: four guesses checked, four too high
+
+Rory funded the OpenAI API and the second half ran. The pattern from the Anthropic pass held, harder:
+
+| Model | Guessed | Measured (n) |
+|---|---|---|
+| GPT-5.6 Sol | ×3.0 | **×1.2** (24) |
+| GPT-5.6 Terra | ×2.5 | **×1.1** (24) |
+
+**ChatGPT Plus break-even moves 16 → 26 messages/day** — the largest single correction of the week, on the plan most readers actually hold. Pro 79 → 131, Perplexity Pro 32 → 50.
+
+Three things worth carrying forward:
+
+1. **Reasoning models mostly do not reason on ordinary questions.** Sonnet 5 thinks on none of the 24; Sol and Terra think on none of the writing group. The whole category label is misleading for consumer chat.
+2. **Task type predicts the multiplier better than the model does**, and consistently across vendors: writing ≈1.0, quick slightly above, research higher, coding highest (1.6–1.9). A future refinement is a per-group multiplier tied to the archetype selector rather than one number per model.
+3. **Anthropic thinks about 50% more than OpenAI on identical prompts** (Opus 1.8 vs Sol 1.2).
+
+**Four for four, every guess high.** Mine were 3.0/2.0/3.0/2.5 against measured 1.8/1.0/1.2/1.1 — an average overstatement of ~2x, all in the direction that flatters the subscription. The remaining estimates (Gemini, o-series, DeepSeek) should be assumed high until measured.
+
+**Two more bugs in the harness, both found by using it:**
+
+- Writing the report OVERWROTE it, so measuring one OpenAI model deleted the evidence behind yesterday’s measured:true Anthropic rows. Recovered from git; it merges per model now.
+- The merge then stamped the old rows with today’s date, quietly claiming fresher provenance than the evidence supported. Each row now carries its own measured_on, and write-back uses it.
+
+Also: PowerShell 5.1’s `Set-Content -Encoding utf8` writes a BOM, which `JSON.parse` rejects — so the command I documented for creating the key file produced a file the script then refused to read. It strips the BOM now.
+
 ### 2026-08-27 — the reasoning multipliers are measured now, and I was wrong by ~2x
 
 Rory funded the Anthropic API and the harness ran. Both of my guesses were too high, in the direction that flatters the subscription:
