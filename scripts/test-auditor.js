@@ -364,8 +364,17 @@ async function main() {
   ok('v2 prices the billed input, not the visible text', pf.input_tokens_per_day === 120000, pf.input_tokens_per_day);
   ok('v2 carries the per-model split', pf.perModel && pf.perModel.length === 2);
   ok('v2 sets the frontier signal from a paid-tier model', A.state.answers.frontier === 'always', A.state.answers.frontier);
-  const expected = (100000 * A.API['gpt-5.6-luna'].in + 12000 * A.API['gpt-5.6-luna'].out
-                  + 20000 * A.API['gpt-5.6-sol'].in + 3000 * A.API['gpt-5.6-sol'].out) * pf.days_per_month;
+  // Output is multiplied by the model's reasoning factor: measured output tokens are
+  // the VISIBLE reply, and a reasoning model bills its thinking at the output rate on
+  // top. luna does not reason (no entry, so 1); sol does.
+  const rm = k => {
+    const r = ((P.PLAN_LIMITS() || {})._meta || {}).reasoning || {};
+    const e = (r.models || {})[k];
+    return e && typeof e.mid === 'number' ? e.mid : 1;
+  };
+  const expected = (100000 * A.API['gpt-5.6-luna'].in + 12000 * rm('gpt-5.6-luna') * A.API['gpt-5.6-luna'].out
+                  + 20000 * A.API['gpt-5.6-sol'].in + 3000 * rm('gpt-5.6-sol') * A.API['gpt-5.6-sol'].out) * pf.days_per_month;
+  ok('and the reasoning multiplier is actually in there', rm('gpt-5.6-sol') > 1, rm('gpt-5.6-sol'));
   ok('each model is priced at its OWN rate', Math.abs(A.apiCostPerMonth(pf) - expected) < 1e-9,
      { got: A.apiCostPerMonth(pf), expected });
   ok('and billed across the days actually used, not a flat 30', pf.days_per_month === 24, pf.days_per_month);
@@ -451,6 +460,30 @@ async function main() {
   ok('a deadline in the past is not a live offer', A.offerLive({ claim_by: '2020-01-01' }) === false);
   ok('a deadline in the future is', A.offerLive({ claim_by: '2099-01-01' }) === true);
   ok('and a route with no deadline is live', A.offerLive({}) === true);
+
+  /* ---------- 5. the two cost paths must agree ----------
+     apiCostPerMonth() drives the recommendation; costPerMessage() drives the
+     break-even figure printed beside it. Both answer "what would this usage cost on
+     the API", and for one day they answered differently: break-even counted thinking
+     tokens and the API estimate did not, so the Auditor advised dropping a plan
+     against a bill it had understated by ~30%. Two implementations of one number is
+     the drift this repo keeps paying for — assert they agree per message. */
+  {
+    for (const [prov, key] of [['anthropic', 'claude-opus-5'], ['openai', 'gpt-5.6-sol'],
+                               ['openai', 'gpt-5.6-luna'], ['google', 'gemini-3.6-flash']]) {
+      const msgs = 20, days = 30;
+      // No perModel: that path keys tokens as inTok/outTok, and writing in/out here
+      // silently produced zero-cost profiles that made this very test pass vacuously.
+      const p = { provider: prov, models_used: [key], days_per_month: days,
+        messages_per_day: msgs, input_tokens_per_day: 4000 * msgs, output_tokens_per_day: 500 * msgs };
+      const monthly = A.apiCostPerMonth(p);
+      const perMsg = A.costPerMessage(prov, key, { in: 4000, out: 500 });
+      if (monthly == null || perMsg == null) { ok('cost paths comparable for ' + key, false, 'null'); continue; }
+      ok('both cost paths agree per message on ' + key,
+         Math.abs(monthly / (days * msgs) - perMsg) < 1e-9,
+         { monthlyPerMsg: monthly / (days * msgs), perMsg });
+    }
+  }
 
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'
                   : 'all auditor behaviour tests pass — ' + ran + ' checks, ' + combos + ' answer combinations swept');

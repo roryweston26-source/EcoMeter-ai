@@ -40,6 +40,18 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
+### 2026-08-28 — the two cost paths disagreed, and only one of them drove the advice
+
+Asked whether the measured multipliers changed the Auditor’s decisions. Swept 5,625 answer combinations with measured multipliers against the old guesses: **zero recommendations differed.** Only the printed break-even moved.
+
+That turned out to be the finding, not the reassurance. `breakEven()` applied the reasoning multiplier; `apiCostPerMonth()` — the function the downgrade path actually decides on — did not. One recommendation, two different answers to "what would this cost on the API", differing by ~30% for a user on a reasoning model.
+
+The gap ran the harmful way: the API looked cheaper than it is, so the Auditor was readier to say *drop your plan and pay per token* than the real bill supports. Someone following that advice gets a surprise invoice, from the tool whose entire job is preventing exactly that.
+
+**Fixed, and the size of it measured rather than asserted: 40 of 5,625 combinations change (0.7%), all of them the same case** — *"Drop to free ChatGPT + pay-as-you-go"* becoming *"ChatGPT Plus — $20/mo"*. Light-to-moderate users on a reasoning model, where thinking tokens tip pay-as-you-go above the $20. Note the direction: this correction pushes people **toward** paying, unlike everything else this week. The Auditor now says so out loud in the copy, because a number that moves that way should explain itself.
+
+**The guard that should have existed:** `test-auditor.js` now asserts the two paths agree per message across four models. Verified by reverting the fix and watching it fail (0.0325 vs 0.0425 on Opus). Writing it also caught a vacuous version of itself — a synthetic profile using `in`/`out` where `tokenBuckets` expects `inTok`/`outTok`, which produced zero-cost profiles and would have passed no matter what.
+
 ### 2026-08-28 — OpenAI measured too: four guesses checked, four too high
 
 Rory funded the OpenAI API and the second half ran. The pattern from the Anthropic pass held, harder:
