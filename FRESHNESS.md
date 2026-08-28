@@ -45,7 +45,7 @@ unsourceable "10–25×", an unreproducible academic derivation, and a data-cent
 cooling vendor's marketing blog sitting in `_sources` as our newest evidence. Two
 of these were also live in the extension's user-facing disclaimer and are fixed
 there. **No tier value changed** — all 68 preserved. **New: `_open_questions`** in
-`water.json`, two items needing Rory. `check-prices.js` passes._
+`water.json`, two items needing Rory — **and then researched in a second pass the same day (F1a): there is real evidence on both.** Li et al.’s own request definition is ~1,300 tokens not 500; OpenRouter’s 100T-token study puts real prompt+completion at >5,400; and Jegham et al. — which we were already citing without using — benchmarks 30 models at known token counts and shows the constant-ml-per-token model is **structurally** wrong, roughly right at short queries and 4–15× over at long ones. The ~40× full-scope multiplier is also outside the evidence range (real: 5× Google, 14× Azure, 26× AWS). **Numbers still unchanged** — it is now a design decision, not a data refresh. `check-prices.js` passes._
 
 ---
 
@@ -1245,7 +1245,7 @@ value; all six changed what we were *claiming*:
 error and the "10–25×". Both fixed there in the same commit. **If you correct a
 figure in `water.json`, grep `sidepanel.html` for it too.**
 
-**`_open_questions` — needs Rory, don't resolve silently:**
+**`_open_questions` — needs Rory, don't resolve silently** (both researched in a second pass the same day — see **F1a**):
 
 1. **`token_divisor`** — the 500-token divisor converting per-query anchors to
    per-token is unsourced, and *every* figure in the file scales inversely with it.
@@ -1271,6 +1271,64 @@ Report, Anthropic for any first disclosure, and Li et al. for a revision.
 
 **Guard:** `check-prices.js` — "priced, no water tier" is its first check. Nothing
 guards the *figures* or their descriptions; only a re-source like this catches those.
+
+### F1a. The two open questions, researched (2026-08-28, second pass)
+
+Both were chased down the same day. **There is real evidence on both, and it points at
+something bigger than either question: the constant-ml-per-token model is structurally
+wrong, not merely mis-calibrated.** Numbers deliberately unchanged — this is a design
+decision, not a data refresh.
+
+**The divisor.** 500 has evidence against it now:
+
+- **Li et al.'s own "medium-sized request"** — the thing the 16.9 ml figure describes —
+  is ~800 words in plus 150–300 words out, i.e. **~1,300 tokens**. We divided the
+  academic anchor by a number ~2.6× too small.
+- **Google publishes no token count** for its median Gemini prompt (searched the paper
+  directly), so the conservative divisor stays genuinely unsourceable.
+- **OpenRouter's 100-trillion-token study** (arXiv:2601.10088) measures exactly what the
+  extension multiplies — prompt+completion per request — at **over 5,400 by late 2025**,
+  up from under 2,000 in late 2023. *Caveat: router/API traffic, skewed toward developer
+  and agentic workloads; a proxy for chat usage, not a measurement of it.*
+
+**The academic tier.** `Jegham et al.` (arXiv:2505.09598) answers this directly, and **we
+were already citing it without using it.** It gives per-query energy for 30 models at three
+*known* token configs, plus a water equation — `Water = E × PUE × WUE_site + E × WUE_source`
+— that is precisely our conservative/academic split. Reconstructing water from its Table 4
+energies and Table 1 multipliers **reproduces four figures the paper states in prose**
+(219 mL vs "over 200", 34.7 vs "only 34", 2.4 and 3.9 vs "under 4"), so the reconstruction
+holds. Measured against it, the shipped tiers are roughly right at short queries and
+overestimate progressively as queries lengthen:
+
+| Full scope, EcoMeter ÷ Jegham | 400 tok | 2,000 tok | 11,500 tok |
+|---|---|---|---|
+| o3 (large) | 1.5× over | 1.7× over | 4.0× over |
+| GPT-4o (medium) | 2.6× over | 4.6× over | 11.1× over |
+| Claude-3.7 Sonnet (medium) | 1.0× | 1.6× over | 5.0× over |
+| GPT-4.1 nano (tiny) | 2.1× over | 3.7× over | 14.8× over |
+
+**Why: per-token water isn't constant.** A 28× rise in tokens (400 → 11,500) raises energy
+only ~5×, because latency-to-first-token, prefill and idle capacity don't scale with length.
+A single ml/token figure can be right at one query size and nowhere else — **picking a better
+divisor only moves where it's right.** This is the same direction and shape as the
+prompt-caching bias already disclosed in `sidepanel.html` ("we overestimate, and the gap
+widens as a chat gets longer"), from an independent cause, and it is **currently undisclosed**.
+
+**Bonus: the "~40×" full-scope multiplier is outside the evidence range.** We ship 38×
+(0.020/0.00052). Real infrastructure implies **Google 5.0×**, **Azure/OpenAI 13.9×**,
+**AWS/Anthropic 25.9×**. It also isn't a constant: the *better* a provider's on-site cooling,
+the *higher* its multiplier, because scope-2 stays put while scope-1 shrinks. A single global
+multiplier is wrong in kind, not just in value.
+
+**Three options, all of which move user-facing numbers — Rory's call:**
+
+1. Keep the linear model, re-centre the divisor on a defensible query size. Cheapest; still wrong at both ends.
+2. Make water a function of query size, the way the cost model already handles context replay. Most accurate, most work.
+3. Keep the numbers and disclose the bias, as the caching disclaimer already does.
+
+Working scripts for the whole derivation are in the session scratchpad (`jegham-per-token.js`,
+`error-profile.js`) — both are pure arithmetic over the two papers' published tables and can be
+re-run against a newer benchmark.
 
 ---
 
