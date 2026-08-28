@@ -516,6 +516,12 @@ Break-even moved up everywhere as a result: **ChatGPT Plus 16→26 msgs/day**, C
 **Still estimates:** `gemini-3.1-pro-preview` (needs a Google key), the o-series and the
 DeepSeek rows. Four guesses checked, four too high — assume the rest are too.
 
+**The multiplier is applied in TWO places and they must agree:** `breakEven()` (the
+figure shown) and `apiCostPerMonth()` (the figure the downgrade recommendation is
+made on). For one day it was only in the first, so the Auditor advised dropping plans
+against an API bill it had understated by ~30%. `test-auditor.js` now asserts the two
+agree per message across four models; verified by reverting the fix.
+
 **The claim that this cannot be measured from outside was wrong**, and it was in this
 file. Providers publish no per-model statistics, but all three report thinking tokens
 **per response** in `usage` — `output_tokens_details.reasoning_tokens` (OpenAI),

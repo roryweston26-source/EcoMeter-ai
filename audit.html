@@ -621,7 +621,15 @@ function apiCostPerMonth(pf, only){
   // look better than it was. Missing value falls back to 30 — the direction that
   // never understates an API bill.
   const days = pf.days_per_month || 30;
-  return list.reduce((s,m)=> s + (m.in*API[m.key].in + m.out*API[m.key].out)*days, 0);
+  // Thinking tokens bill at the output rate here too. This function and breakEven()
+  // were answering the same question — what would this usage cost on the API — with
+  // two different costs: break-even counted thinking, this did not. The gap ran in
+  // the harmful direction, making the API look ~30% cheaper than it is for a user on
+  // a reasoning model, so the downgrade path recommended dropping a plan for a bill
+  // we had understated. Measured output tokens are the VISIBLE reply (EcoMeter reads
+  // the DOM; the archetypes describe a reply), so thinking is additional in both.
+  return list.reduce((s,m)=>
+    s + (m.in*API[m.key].in + m.out*reasoningMult(m.key)*API[m.key].out)*days, 0);
 }
 // Everything a tier must clear that pay-as-you-go API access CANNOT substitute
 // for: volume, seats, and image generation. The downgrade path below offloads
@@ -836,7 +844,7 @@ function recommend(pf,sig){
     else if(mpd>=be.few) why.push(`${src} clears it if you're mostly on ${labelModel(be.fewModel)}, but not if you're mostly on ${labelModel(be.manyModel)}.`);
     else why.push(`${src} is below break-even on both — so what you're buying here isn't volume, it's the models or features the cheaper tiers don't carry.`);
   }
-  if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo`
+  if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo${(()=>{const rs=(pf.models_used||[]).filter(k=>reasoningMult(k)>1);if(!rs.length) return ``;const allMeasured=rs.every(k=>(reasoningEntry(k)||{}).measured);return `, including the thinking tokens a reasoning model bills at the output rate (${allMeasured?`measured against the provider’s own API`:`our estimate — not yet measured for this model`})`;})()}`
     + ((pf.days_per_month||30)<30 ? ` — billed across the ${pf.days_per_month} days a month you actually use it, not all 30` : '')
     + (fit.price>0 && api<fit.price ? ` — cheaper, if you’re fine without the app.` : `.`));
   else if(LEGACY_ONLY.has(pf.provider)) why.push(`No API comparison here: Copilot runs on OpenAI models but Microsoft publishes no per-token rate to price it against.`);
