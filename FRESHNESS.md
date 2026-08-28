@@ -265,7 +265,10 @@ current page are retained at last-known rates because they stay selectable in th
 picker — record them in `_meta.caveats._legacy_keys` and treat those numbers as
 historical, not current.
 
-**Deliberately untracked** — decide, don't default: `grok-build-0.1` ($1/$2),
+**Deliberately untracked** — decide, don't default: `deepseek-v4-flash-vision-exp`
+($0.44/$1.32 peak, seen on api-docs.deepseek.com 2026-08-27 — experimental vision
+variant, not offered as a chat model, and adding it would mean inventing a
+`water.json` tier for an image path we do not model), `grok-build-0.1` ($1/$2),
 Sonar Deep Research, Magistral / Devstral / Ministral, Codex. They're specialist
 or non-consumer-chat models, and adding any means inventing a `water.json` tier.
 
@@ -672,7 +675,7 @@ _**Re-verified again 2026-08-26** against provider-owned pages. No status change
 - _**SheerID was stated as fact for the main offer.** Footnotes 1 and 3 say only "Offer Terms apply"; SheerID is named in footnote 5, the YouTube bundle. Softened to "a school email address"._
 - _**"Code completion is unlimited" on Copilot Student is not disclosed.** GitHub's plans page puts the 2,000-completions-a-month cap on Copilot **Free** and states no figure for Student. Removed; the newly documented "excludes third-party agents" added._
 
-_Confirmed unchanged and verbatim: Google's 31 Dec 2026 deadline, payment method required, $19.99/$4.99 auto-conversion (blog.google, 19 Aug 2026); "Available for free to verified students, teachers, and open-source maintainers" (github.com/education/students); ChatGPT for Teachers free for verified U.S. K-12 educators through June 2027 (chatgpt.com/pricing FAQ); "Verified students can get Mistral Pro for $5.99 / month (normally $14.99)" (mistral.ai/pricing); still exactly nine institution logos on Anthropic's higher-education page, matching our named list. **DeepSeek was NOT re-checked — deepseek.com was blocked by browser navigation permission — so its row still says 2026-08-24.**_
+_Confirmed unchanged and verbatim: Google's 31 Dec 2026 deadline, payment method required, $19.99/$4.99 auto-conversion (blog.google, 19 Aug 2026); "Available for free to verified students, teachers, and open-source maintainers" (github.com/education/students); ChatGPT for Teachers free for verified U.S. K-12 educators through June 2027 (chatgpt.com/pricing FAQ); "Verified students can get Mistral Pro for $5.99 / month (normally $14.99)" (mistral.ai/pricing); still exactly nine institution logos on Anthropic's higher-education page, matching our named list. **DeepSeek re-checked 2026-08-27** (deepseek.com loaded on the third attempt after two navigation blocks): "Free access to DeepSeek", and the only pricing link on the entire site is API Pricing — there is no consumer plans page for a student discount to exist on. Row now carries a source, which a "none" finding should always have had, and all six routes are verified within the same week._
 
 
 _Since 2026-08-25 a redemption deadline is a **field**, not just prose: `claim_by`

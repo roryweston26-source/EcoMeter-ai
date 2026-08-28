@@ -399,6 +399,11 @@ for (const r of S.routes) {
   if (!ROUTE_PROV.has(r.provenance)) fail('student route has unknown provenance: ' + r.p + ' -> ' + r.provenance);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(r.as_of || '')) fail('student route missing as_of date: ' + r.p);
   if (!r.headline || !r.detail) fail('student route missing headline/detail: ' + r.p);
+  // A finding needs a source too. "We checked and there is no offer" is a claim about
+  // a company, and an unsourced one is indistinguishable from not having looked —
+  // which is exactly how the Google year was missed for sixteen days.
+  if (r.provenance === 'none' && !r.source)
+    fail('student route records "none" with no source — a finding a reader cannot check is not a finding: ' + r.p);
   if (r.provenance === 'disclosed' && !r.source)
     fail('student route claims "disclosed" with no source — that is exactly the claim that needs one: ' + r.p);
   if (!p.subscriptions.some(s => s.p === r.p)) fail('student route for a provider absent from prices.json: ' + r.p);

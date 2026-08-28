@@ -1,7 +1,7 @@
 {
   "_meta": {
     "comment": "What each provider actually offers students and teachers, and how well it is disclosed. Read by audit.html when the user says they're a student or teacher. Joins to extension/prices.json 'subscriptions' on 'p'. Same standard as plan-limits.json: 'not offered' is a finding, and an unverifiable claim is recorded as unverifiable rather than repeated.",
-    "last_verified": "2026-08-26",
+    "last_verified": "2026-08-27",
     "finding": "This changed sharply between our 2026-08-08 and 2026-08-24 checks, and it changed in students' favour. Three of the providers we track now have a student route you can actually claim yourself: Google is again giving 12 months of AI Pro free in the US (AI Plus in 140+ other markets), redeemable until 31 December 2026; GitHub's free Copilot for verified students is being granted again after a pause; and Mistral publishes a $5.99/mo student rate. OpenAI and Anthropic still offer individual students nothing — what they have is institutional, bought by your university and invisible to you unless someone tells you. DeepSeek is free for everyone anyway. Two warnings that matter more than the list: the Google year requires a payment method up front and converts to $19.99/mo automatically when it ends, so it is only free if you diarise the cancellation; and whatever you do, ask your own university IT desk or library whether the school already pays for one of these before you pay for anything. That question is free, takes a minute, and routinely goes unasked.",
     "why_no_partner_directory": "We deliberately do NOT ship a list of partner universities presented as complete, because no provider publishes one. Anthropic's higher-education page shows nine institution logos with no terms, no directory and no way to check membership; Syracuse's own announcement describes itself as 'one of the first universities', so the set is growing and any snapshot is stale on arrival. A partial list rendered as authoritative would tell a student whose school is absent that they cannot get access — the opposite of true, and the exact failure this project exists to prevent. The named institutions below are labelled as examples and must never be rendered as a lookup.",
     "provenance_legend": {
@@ -66,9 +66,10 @@
       "p": "deepseek",
       "provenance": "none",
       "headline": "No student discount, because there's nothing to discount.",
-      "detail": "DeepSeek has no paid consumer tier — the web chat is free for everyone, with fair-use throttling. The price rise DeepSeek had been warning about landed in August 2026 (roughly 3x input, 4.5x output), but that applies to its API, not the free chat, so nothing changes for you as a student using the app.",
+      "detail": "DeepSeek has no paid consumer tier — the web chat is free for everyone, with fair-use throttling. Re-verified on deepseek.com on 2026-08-27: the site offers \"Free access to DeepSeek\", and the only pricing link anywhere on it is API Pricing. There is no consumer plans page to have a student discount on. The price rise DeepSeek had been warning about landed in August 2026 (roughly 3x input, 4.5x output), but that applies to its API, not the free chat, so nothing changes for you as a student using the app. DeepSeek-V4-Pro is now the official release across web, app and API.",
       "action": "Nothing to do. If cost is your main constraint this is already the cheapest capable option available to you.",
-      "as_of": "2026-08-24"
+      "source": "https://www.deepseek.com/en",
+      "as_of": "2026-08-27"
     },
     {
       "p": "mistral",
