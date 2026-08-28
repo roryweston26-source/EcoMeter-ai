@@ -31,6 +31,42 @@ for (const [prov, m] of Object.entries(p.api)) {
   for (const k of Object.keys(m)) if (!wp[k]) fail('priced, no water tier: ' + prov + '/' + k);
 }
 
+// 1b. water MODEL shape. On 2026-08-28 the flat ml-per-token constants were
+// replaced by a query-size model (base per request + input rate + output rate),
+// fitted by scripts/derive-water-model.js. Guard the shape as well as the
+// per-model tiers: a missing scope or tier renders NO water figure at all, with
+// no error — the same silent failure the tier-parity check above exists for.
+const WTIERS = ['large', 'medium', 'small', 'tiny'];
+const WPARAMS = ['base_ml_per_request', 'ml_per_input_token', 'ml_per_output_token'];
+if (w._tiers) fail('water.json still carries the old flat _tiers block — re-run scripts/derive-water-model.js --write');
+for (const scope of ['conservative', 'academic']) {
+  const sc = (w._model || {})[scope];
+  if (!sc) { fail('water.json _model missing scope: ' + scope); continue; }
+  for (const t of WTIERS) {
+    if (!sc[t]) { fail('water.json _model.' + scope + ' missing tier: ' + t); continue; }
+    for (const k of WPARAMS) {
+      const v = sc[t][k];
+      if (typeof v !== 'number' || !isFinite(v) || v < 0)
+        fail('water _model.' + scope + '.' + t + '.' + k + ' must be a finite number >= 0, got ' + v);
+    }
+  }
+}
+// Every tier a model names must exist in the model block.
+for (const [prov, group] of Object.entries(w)) {
+  if (prov.startsWith('_')) continue;
+  for (const [k, v] of Object.entries(group))
+    if (!WTIERS.includes(v.tier)) fail('unknown water tier "' + v.tier + '" on ' + prov + '/' + k);
+}
+// Full scope must cost more than on-site scope, or the panel's toggle is a lie.
+if (w._model && w._model.conservative && w._model.academic) {
+  for (const t of WTIERS) {
+    const c = w._model.conservative[t], a = w._model.academic[t];
+    if (!c || !a) continue;
+    if (!(a.ml_per_output_token > c.ml_per_output_token))
+      fail('water: academic output rate must exceed conservative, tier ' + t);
+  }
+}
+
 // 2. plan-limits joins + model refs
 const subK = new Set(p.subscriptions.map(s => s.p + '|' + s.m));
 for (const s of L.plans) {

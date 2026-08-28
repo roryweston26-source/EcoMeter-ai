@@ -200,11 +200,11 @@ function getPrice(modelKey) {
 
 // ── Water data ────────────────────────────────────────────
 let WATER_DATA  = {};
-let WATER_TIERS = {};
+let WATER_MODEL = {};
 let waterScope  = 'conservative';
 
 function parseWater(json) {
-  WATER_TIERS = json._tiers || {};
+  WATER_MODEL = json._model || {};
   WATER_DATA  = {};
   for (const provider in json) {
     if (provider.startsWith('_')) continue;
@@ -225,12 +225,26 @@ async function loadWater() {
   }
 }
 
-function getWaterMlPerToken(modelKey) {
-  if (!modelKey || !WATER_DATA[modelKey] || !WATER_TIERS[WATER_DATA[modelKey]]) return null;
-  const tier = WATER_TIERS[WATER_DATA[modelKey]];
-  return waterScope === 'academic'
-    ? tier.academic_ml_per_token
-    : tier.conservative_ml_per_token;
+// Water is a function of query SIZE, not a flat rate per token. Energy per
+// request is a fixed cost (latency to first token, idle capacity provisioned for
+// availability) plus cheap parallel prefill of the input and expensive
+// sequential decode of the output. In Jegham et al. a 28x rise in tokens raises
+// energy only ~5x, so one ml/token constant is right at a single query length
+// and wrong everywhere else — it was 4-15x over on long chats. Same shape as the
+// cost model: per-request base, input rate, output rate.
+// Fitted by scripts/derive-water-model.js; see water.json _model.
+function getWaterParams(modelKey) {
+  if (!modelKey) return null;
+  const tier  = WATER_DATA[modelKey];
+  const scope = WATER_MODEL[waterScope];
+  if (!tier || !scope || !scope[tier]) return null;
+  return scope[tier];
+}
+
+function waterForRequest(prm, turns, inputTokens, outputTokens) {
+  return prm.base_ml_per_request * Math.max(turns, 1)
+       + prm.ml_per_input_token  * inputTokens
+       + prm.ml_per_output_token * outputTokens;
 }
 
 function fmtWater(ml) {
@@ -1019,12 +1033,19 @@ function renderSummary() {
     accEl.textContent = !wsum ? '' : (werr < 0.005 ? '✓ exact tokenizer' : '±' + Math.round(werr * 100) + '% token estimate');
   }
 
-  if (p && tot > 0) {
-    const range = REASONING_RANGES[key];
-    const adjustedOut  = out * (range ? range.mid : 1.0);
+  // Cost and water both work per REQUEST, so both need the turn count and the
+  // reasoning-adjusted output. Hoisted out of the cost branch so water still
+  // works when we have no price for a model.
+  const range        = REASONING_RANGES[key];
+  const adjustedOut  = out * (range ? range.mid : 1.0);
+  const turns        = msgData.filter(m => m.counted && m.role === 'user').length;
 
-    const turns          = msgData.filter(m => m.counted && m.role === 'user').length;
+  if (p && tot > 0) {
     const overheadPerTurn = PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000;
+
+    // Every request resends the transcript, so this IS the whole input bill —
+    // the visible messages included. Do not add `inp` on top of it.
+    const billedInput = estimateBilledInput(msgData.filter(m => m.counted));
 
     // Long-context tiers: resolve the effective rates before costing anything.
     // Without this the estimate silently halves once a conversation crosses the
@@ -1039,10 +1060,6 @@ function renderSummary() {
       const toks = estimateImageTokens(img, currentPlatformName, key);
       return sum + toks * inRate;
     }, 0);
-
-    // Every request resends the transcript, so this IS the whole input bill —
-    // the visible messages included. Do not add `inp` on top of it.
-    const billedInput = estimateBilledInput(msgData.filter(m => m.counted));
 
     // The hidden system prompt / tool schemas are re-sent on EVERY API call, not
     // once per conversation — so overhead scales with the number of user turns.
@@ -1087,10 +1104,16 @@ function renderSummary() {
     if (replayEl) replayEl.textContent = '';
   }
 
-  // Water
-  const wml = getWaterMlPerToken(key);
-  if (wml && tot > 0 && totalWater) {
-    totalWater.textContent  = '💧 ~' + fmtWater(tot * wml);
+  // Water — per request, over VISIBLE input rather than the replayed transcript.
+  // This deliberately diverges from the cost model: billing re-charges the whole
+  // history every turn, but the compute does not re-spend it — the shared prefix
+  // sits in the KV cache, so only the new tokens are actually prefilled. Feeding
+  // the replayed figure here put a 20-turn chat at 1.29 ml per request against
+  // Google's measured 0.26 ml, i.e. ~5x too high. Output still dominates, which
+  // is what the benchmark shows.
+  const wprm = getWaterParams(key);
+  if (wprm && tot > 0 && totalWater) {
+    totalWater.textContent  = '💧 ~' + fmtWater(waterForRequest(wprm, turns, inp, adjustedOut));
     totalWater.style.display = 'inline';
     if (waterDisclaimer) waterDisclaimer.style.display = 'block';
   } else if (totalWater) {

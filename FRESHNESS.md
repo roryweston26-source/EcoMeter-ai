@@ -45,7 +45,7 @@ unsourceable "10–25×", an unreproducible academic derivation, and a data-cent
 cooling vendor's marketing blog sitting in `_sources` as our newest evidence. Two
 of these were also live in the extension's user-facing disclaimer and are fixed
 there. **No tier value changed** — all 68 preserved. **New: `_open_questions`** in
-`water.json`, two items needing Rory — **and then researched in a second pass the same day (F1a): there is real evidence on both.** Li et al.’s own request definition is ~1,300 tokens not 500; OpenRouter’s 100T-token study puts real prompt+completion at >5,400; and Jegham et al. — which we were already citing without using — benchmarks 30 models at known token counts and shows the constant-ml-per-token model is **structurally** wrong, roughly right at short queries and 4–15× over at long ones. The ~40× full-scope multiplier is also outside the evidence range (real: 5× Google, 14× Azure, 26× AWS). **Numbers still unchanged** — it is now a design decision, not a data refresh. `check-prices.js` passes._
+`water.json`, two items needing Rory — **and then researched in a second pass the same day (F1a): there is real evidence on both.** Li et al.’s own request definition is ~1,300 tokens not 500; OpenRouter’s 100T-token study puts real prompt+completion at >5,400; and Jegham et al. — which we were already citing without using — benchmarks 30 models at known token counts and shows the constant-ml-per-token model is **structurally** wrong, roughly right at short queries and 4–15× over at long ones. The ~40× full-scope multiplier is also outside the evidence range (real: 5× Google, 14× Azure, 26× AWS). **Then Rory chose option 2 and it shipped the same day (F1b): water is now a function of query size**, fitted to that benchmark by the new `scripts/derive-water-model.js`, with the flat ml-per-token constants deleted. Cross-checks against Google at 0.86x without being tuned to it; the full-scope multiplier lands at 14–25x, inside what real infrastructure implies, where the old value was 38x. Water and cost now make deliberately OPPOSITE caching assumptions — billing re-charges history, compute does not re-spend it. One live finding left open: the fitted tiers are **not monotonic** (`small` above `medium`), which undercuts size-based tiering and is shipped rather than smoothed. Six new guards in `check-prices.js`, each verified by injecting its fault, plus a new `test-water-model.js`. **All seven guards pass.**_
 
 ---
 
@@ -1320,7 +1320,7 @@ widens as a chat gets longer"), from an independent cause, and it is **currently
 the *higher* its multiplier, because scope-2 stays put while scope-1 shrinks. A single global
 multiplier is wrong in kind, not just in value.
 
-**Three options, all of which move user-facing numbers — Rory's call:**
+**Three options, all of which move user-facing numbers.** Rory chose **(2)** — see **F1b** for what shipped:
 
 1. Keep the linear model, re-centre the divisor on a defensible query size. Cheapest; still wrong at both ends.
 2. Make water a function of query size, the way the cost model already handles context replay. Most accurate, most work.
@@ -1329,6 +1329,72 @@ multiplier is wrong in kind, not just in value.
 Working scripts for the whole derivation are in the session scratchpad (`jegham-per-token.js`,
 `error-profile.js`) — both are pure arithmetic over the two papers' published tables and can be
 re-run against a newer benchmark.
+
+### F1b. The query-size water model (shipped 2026-08-28)
+
+**Option 2 from F1a was taken: water is now a function of query size.** The flat
+ml-per-token constants are gone.
+
+```
+water_ml_per_request = base_ml_per_request
+                     + ml_per_input_token  * input_tokens
+                     + ml_per_output_token * output_tokens
+```
+
+per tier, per scope, summed over turns. **Deliberately the same shape as the cost
+model** — fixed per-request cost, cheap input, expensive output — because the
+physics matches: latency-to-first-token and idle capacity don't scale with length,
+prefill is parallel and cheap, decode is sequential and bandwidth-bound.
+
+**Fitted, not chosen.** `scripts/derive-water-model.js` fits the parameters to
+Jegham et al. (arXiv:2505.09598) — 30 models at three known token configurations,
+with their water equation `E × PUE × WUE_site + E × WUE_source`, which *is* our
+conservative/academic split. Tier parameters are fitted across all models in a tier
+at once, constrained non-negative, minimising relative error. **Re-run the script;
+don't hand-edit `_model`.**
+
+- An exact 3-point-per-model solve **overfits** — it returns negative bases and
+  negative input rates, which would show water *falling* as you type. Hence the
+  pooled, constrained fit. RMS relative error 17–43%; still order-of-magnitude.
+- **Independent cross-check the fit was not tuned to:** the medium tier predicts
+  **0.22 ml** for a 1k-in/300-out prompt against Google's measured **0.26 ml**
+  (0.86×) — different provider, fleet, WUE and method.
+- The full-scope multiplier is now **14–25×**, inside the range real infrastructure
+  implies (Azure 13.9×, AWS 25.9×). The old shipped value was 38×, above everything.
+
+**Water and cost make opposite caching assumptions, on purpose.** Cost uses the
+replayed transcript, because billing really does re-charge the whole history each
+turn. Water uses **only the visible new input**, because compute does *not*
+re-spend a cached prefix — the KV cache is reused. Feeding the replayed figure into
+water put a 20-turn chat at **1.29 ml per request against Google's measured 0.26**,
+~5× too high. Residual risk runs the other way: where a provider doesn't cache, we
+now understate prefill.
+
+**Effect on users:** short turns barely move; long sessions fall substantially
+(~4× on a 40k/10k session, full scope). The panel was overestimating long chats.
+
+> **`_tier_inversion` — a live finding, shipped rather than smoothed.** The fitted
+> output rates are **not monotonic**: `small` (6.32e-4 / 9.02e-3) sits above
+> `medium` (4.81e-4 / 6.96e-3). In Jegham's data Claude-3.5 Haiku draws 8.010 Wh on
+> a long query — more than Claude-3.7 Sonnet (5.671) and far more than GPT-4o
+> (2.875) — and runs on AWS, whose off-site WUE is higher than Azure's. That matches
+> the paper's own headline: infrastructure outweighs architecture. **It undercuts the
+> premise of size-based tiers.** Deliberately *not* guarded — a monotonicity check
+> would only force the data to be quiet. **Open for Rory:** accept non-monotonic
+> tiers, or drop size tiers for per-model/per-host figures.
+
+**Still true, and recorded in `_remaining_caveats`:** one benchmark, itself modelled
+(inferred hardware, published multipliers, API latency) rather than metered; wide
+tier spreads; and Google/xAI models assigned tiers by analogy since Jegham covers
+OpenAI, Anthropic, Meta and DeepSeek only.
+
+**Guards:** `check-prices.js` gained six water-model checks (shape, both scopes, all
+four tiers, non-negative finite parameters, known tier names, academic > conservative)
+— **each verified by injecting its fault**. `test-water-model.js` is new: it lifts
+`waterForRequest` out of `sidepanel.js` rather than restating the formula, and pins
+that the parameters still reproduce the source data, that the curve stays sublinear
+and monotonic, that the Google cross-check holds, and that the specific regression
+this replaced (4.0× over on a long query) stays fixed.
 
 ---
 
@@ -1619,11 +1685,13 @@ node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/te
 
 | Script | Covers | Doesn't cover |
 |---|---|---|
-| `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models | **Never opens `audit.html`** |
+| `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models; (2026-08-28) the water `_model` shape, both scopes, all four tiers, non-negative parameters, known tier names, academic > conservative | **Never opens `audit.html`**; not the water *values* — that is `test-water-model.js` |
 | `check-auditor.js` | `audit.html` + `pricing.html`'s `FALLBACK_LIMITS`, against `prices.json` / `plan-limits.json` / `student-access.json` / `transparency-index.json`; plus (2026-08-25) every paid tier being selectable, feature labels, the practices join, the frontier examples, no hand-typed dates in the student copy, expired `claim_by`, and the extension button names | `pricing.html` prices — that's `check-prices.js` |
 | `test-auditor.js` | Sweeps all 56,250 answer combinations + the EcoMeter import | Whether the underlying data is *true* |
 | `check-clock.js` | Clock fallback parity; capex/energy levels vs published totals; one-company share bound; hardcoded anchor date | Counters with no authoritative total — by design, not omission |
 | `test-cost-model.js` | 44 assertions: billed input, image tokens, long-context tiers, export v2 | — |
+| `test-water-model.js` | Water model: reproduces Jegham et al., sublinearity, monotonicity, the Google cross-check, the flat-model regression | Whether the benchmark itself is right |
+| `derive-water-model.js` | Fits `water.json` `_model` from the benchmark (`--write`) | Not a guard — run it when the benchmark changes |
 | `calibrate-tokenizer.js` | Measures the estimator; fails if the UI band is optimistic | The two guessed bands (G3) |
 | `validate-site.js` | HTML/JSON well-formedness, page references | **Plausibility of any number** |
 
