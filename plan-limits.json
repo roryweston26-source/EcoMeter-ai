@@ -19,19 +19,19 @@
       "heavy": { "input": 14791, "output": 1082, "prompt_chars": 1400, "reply_chars": 4200, "history_turns": 10, "label": "Long context, documents, code" }
     },
     "reasoning": {
-      "comment": "Thinking-token multipliers on the OUTPUT side. A reasoning model emits hidden chain-of-thought before its visible reply and bills it at the output rate, so a break-even that counts only the reply understates what the same work costs on the API — which pushes the break-even figure UP and makes a plan look harder to justify than it is. EcoMeter has modelled this since it shipped (REASONING_RANGES in extension/sidepanel.js); the website did not, and the gap was worth 30-45% on exactly the frontier models people pay for. mid is applied; lo/hi record the spread rather than pretending there is not one. THESE ARE ESTIMATES, and coarse ones: providers publish no per-model thinking-token statistics at all, so nobody outside them can measure it. Applies to the models that reason BY DEFAULT in consumer chat, which is why gpt-5.6-luna and the flash/mini tiers are absent rather than set to 1.",
-      "basis": "Ranges follow the shape EcoMeter already used for the o-series and R1 (1-10x depending on task complexity, mid nearer the low end because ordinary chat is not the hard case). Extended to the current default-thinking frontier models on 2026-08-26. Unverifiable against provider data; revise on any published figure.",
+      "comment": "Thinking-token multipliers on the OUTPUT side. A reasoning model emits hidden chain-of-thought before its visible reply and bills it at the output rate, so a break-even that counts only the reply understates what the same work costs on the API — which pushes the break-even figure UP and makes a plan look harder to justify than it is. EcoMeter has modelled this since it shipped (REASONING_RANGES in extension/sidepanel.js); the website did not, and the gap was worth 30-45% on exactly the frontier models people pay for. mid is applied; lo/hi record the spread rather than pretending there is not one. A row with measured:true was MEASURED — see scripts/measure-reasoning.js; providers do not publish per-model statistics, but they do report thinking tokens per response in usage, so it can be measured from outside, and for those rows it was. A row without measured:true is still judgement and should be treated as provisional: every guess checked so far was too high. Applies to the models that reason BY DEFAULT in consumer chat, which is why gpt-5.6-luna and the flash/mini tiers are absent rather than set to 1.",
+      "basis": "MEASURED where a row says measured:true — see scripts/measure-reasoning.js and scripts/reasoning-measurement.json. lo/mid/hi are the p10/p50/p90 of the per-prompt ratio over an ordinary-chat corpus. Rows without measured:true are still estimates.",
       "models": {
-        "gpt-5.6-sol":            { "lo": 2, "hi": 6, "mid": 3.0 },
-        "gpt-5.6-terra":          { "lo": 1.5, "hi": 4, "mid": 2.5 },
-        "claude-opus-5":          { "lo": 2, "hi": 6, "mid": 3.0 },
-        "claude-sonnet-5":        { "lo": 1.5, "hi": 4, "mid": 2.0 },
-        "gemini-3.1-pro-preview": { "lo": 2, "hi": 6, "mid": 3.0 },
-        "o3":                     { "lo": 3, "hi": 8, "mid": 4.0 },
-        "o4-mini":                { "lo": 1, "hi": 4, "mid": 2.0 },
-        "deepseek-v4-pro":        { "lo": 1, "hi": 5, "mid": 2.5 },
-        "deepseek-r1":            { "lo": 1, "hi": 5, "mid": 2.5 },
-        "deepseek-reasoner":      { "lo": 1, "hi": 5, "mid": 2.5 }
+        "gpt-5.6-sol": {"lo":2,"hi":6,"mid":3},
+        "gpt-5.6-terra": {"lo":1.5,"hi":4,"mid":2.5},
+        "claude-opus-5": {"lo":1.1,"hi":2.1,"mid":1.8,"measured":true,"n":23,"as_of":"2026-08-27"},
+        "claude-sonnet-5": {"lo":1,"hi":1,"mid":1,"measured":true,"n":24,"as_of":"2026-08-27"},
+        "gemini-3.1-pro-preview": {"lo":2,"hi":6,"mid":3},
+        "o3": {"lo":3,"hi":8,"mid":4},
+        "o4-mini": {"lo":1,"hi":4,"mid":2},
+        "deepseek-v4-pro": {"lo":1,"hi":5,"mid":2.5},
+        "deepseek-r1": {"lo":1,"hi":5,"mid":2.5},
+        "deepseek-reasoner": {"lo":1,"hi":5,"mid":2.5}
       }
     },
     "default_archetype": "standard",
@@ -44,7 +44,7 @@
     "caveats": [
       "Break-even is what the same usage would cost at the provider's own published API rates. The API is not the product: no app, no memory, no file handling, no support. Treat it as a floor on value, not a full accounting.",
       "The tokens-per-message archetypes are HALF assumption and half measurement, and the halves must not be confused. Message lengths (prompt_chars, reply_chars, history_turns) are judgement; the characters-to-tokens conversion is measured with the real cl100k tokenizer by scripts/derive-archetypes.js, which owns the numbers. Still the single largest lever on every figure here. Lengths stated in characters rather than tokens on purpose: a person can check '1,800-character reply' against a real chat window, and cannot check '500 output tokens'.",
-      "Thinking tokens ARE now priced, at _meta.reasoning mid, for the models that reason by default. A reasoning model emits hidden chain-of-thought before its reply and bills it at the output rate, so counting only the visible reply understated API cost by 30-45% on exactly the frontier models people pay for. The multipliers are estimates and coarse ones — no provider publishes per-model thinking-token statistics, so this cannot be verified from outside. It is modelled anyway, unlike search fees and caching, because the omission was one-directional and large, and because EcoMeter has modelled it since it shipped: leaving the site out of step with our own extension was the harder position to defend.",
+      "Thinking tokens ARE now priced, at _meta.reasoning mid, for the models that reason by default. A reasoning model emits hidden chain-of-thought before its reply and bills it at the output rate, so counting only the visible reply understates API cost. The Anthropic rows were MEASURED on 2026-08-27 against Anthropic's own API over 24 ordinary chat prompts (scripts/measure-reasoning.js): Opus 5 came out at 1.8, not the 3.0 we had guessed, and Sonnet 5 at exactly 1.0 — with adaptive thinking it does not think at all on ordinary questions, so we had been charging readers for reasoning that never happens. Both guesses were too high, which overstated API cost and made those plans look easier to justify than they are. The OpenAI, Google, o-series and DeepSeek rows are still estimates and should be assumed too high until someone measures them.",
       "Ceiling figures assume the cap is hit in every window, every day, for 30 days. Essentially nobody does this. It is an upper bound, not an expectation.",
       "Prompt caching is not modelled, consistent with EcoMeter. Cached input bills far less, so real API cost is lower than shown and break-even is correspondingly harder to reach.",
       "Where a cap is a soft fallback rather than a hard stop (OpenAI downgrades to mini rather than cutting you off), the ceiling understates total value and overstates top-model value.",

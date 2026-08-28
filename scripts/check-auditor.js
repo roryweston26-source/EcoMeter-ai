@@ -293,6 +293,10 @@ for (const [name, v] of Object.entries(L._meta.archetypes || {}))
   for (const [k, v] of Object.entries(rx)) {
     if (!all[k]) fail('reasoning multiplier for a model with no API rate: ' + k);
     if (!(v.mid > 0)) fail('reasoning entry needs a positive mid: ' + k);
+    // measured:true is a claim about evidence. Make it carry the evidence.
+    if (v.measured && (!(v.n > 0) || !/^\d{4}-\d{2}-\d{2}$/.test(v.as_of || '')))
+      fail('reasoning entry claims measured:true without n and as_of: ' + k +
+           ' — run scripts/measure-reasoning.js --run --write, do not hand-set the flag');
     if (v.lo != null && v.hi != null && !(v.lo <= v.mid && v.mid <= v.hi))
       fail('reasoning mid outside its own range: ' + k + ' ' + v.lo + '/' + v.mid + '/' + v.hi);
   }

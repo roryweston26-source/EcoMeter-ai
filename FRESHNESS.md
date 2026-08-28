@@ -459,6 +459,69 @@ anyway — unlike search fees and caching — because the omission was large and
 one-directional, and because EcoMeter has modelled it since it shipped: the website
 being out of step with our own extension was the harder position to defend.
 
+**They do not have to stay estimates.** `scripts/measure-reasoning.js` measures them
+against the providers’ own APIs and writes the result back with `measured: true`,
+`n` and `as_of`. Dry-run first (it prices the run from our own `prices.json`); a full
+pass over all five models and 24 prompts costs about **$3**.
+
+```bash
+node scripts/measure-reasoning.js                 # cost estimate, sends nothing
+node scripts/measure-reasoning.js --run --write   # measure and update plan-limits.json
+```
+
+| Provider | How the number is obtained |
+|---|---|
+| OpenAI | Reported: `usage.output_tokens_details.reasoning_tokens` |
+| Google | Reported: `total_thought_tokens` against `total_output_tokens` |
+| Anthropic | **Derived** — thinking is billed inside `output_tokens` and the raw chain of thought is never returned, so the ratio is `output_tokens ÷ count_tokens(visible reply)` |
+
+**What it measures is the API, not the app.** ChatGPT and Claude route and tune
+thinking their own way behind the paywall and publish nothing about it. That is the
+right scope anyway: break-even asks what the same usage would cost *on the API*.
+
+**The corpus is deliberately ordinary** (`scripts/reasoning-prompts.json`, 24 prompts
+across quick / writing / research / coding). Benchmark problems would measure the hard
+case, overstate API cost, understate break-even, and tell people a subscription pays
+for itself sooner than it does — the direction that costs the reader money.
+
+`check-auditor.js` refuses a `measured: true` row that has no `n` and `as_of`, so the
+flag cannot be set by hand.
+
+**Two of them are now MEASURED** (2026-08-27, `scripts/measure-reasoning.js`, 24
+ordinary chat prompts against Anthropic’s own API). Both guesses were too high:
+
+| Model | Guessed | Measured | n | By group |
+|---|---|---|---|---|
+| Claude Opus 5 | ×3.0 (2–6) | **×1.8** (1.1–2.1) | 23 | writing 1.3 · quick 1.7 · research 1.9 · coding 1.9 |
+| Claude Sonnet 5 | ×2.0 (1.5–4) | **×1.0** (no thinking at all) | 24 | 1.0 in every group |
+
+Sonnet 5 returns `thinking_tokens: 0` on every ordinary prompt — with adaptive thinking
+it does not deliberate on this kind of question at all, so we had been charging readers
+for reasoning that never happens. Overstating the multiplier overstates API cost, which
+pushes break-even DOWN and makes the plan look easier to justify. Claude Pro moved
+13→17 msgs/day, Max 5× 63→86, Max 20× 127→172.
+
+**Still estimates, and assume they are too high:** `gpt-5.6-sol`, `gpt-5.6-terra`,
+`gemini-3.1-pro-preview`, the o-series and the DeepSeek rows. Both guesses that have
+been checked were high by 65–100%. Measuring them needs OpenAI and Google API credit.
+
+**The claim that this cannot be measured from outside was wrong**, and it was in this
+file. Providers publish no per-model statistics, but all three report thinking tokens
+**per response** in `usage` — `output_tokens_details.reasoning_tokens` (OpenAI),
+`output_tokens_details.thinking_tokens` (Anthropic), `total_thought_tokens` (Google).
+
+**Two method bugs, both found after the first paid run and worth not repeating:**
+
+1. The first version *derived* Anthropic’s figure by subtracting a `count_tokens` of
+   the visible reply, not knowing the field existed. `count_tokens` on an assistant
+   message adds ~20 tokens of framing, so a reply with no thinking came out **negative**
+   and clamped to exactly 1.0 — indistinguishable from a real 1.0.
+2. `max_tokens: 4096` truncated long replies. Thinking is emitted first, so a truncated
+   answer shrinks the visible half and **inflates** the ratio. Now 16,000, and any
+   response that still hits the cap is discarded rather than counted.
+
+`--from-report` applies a stored report without re-billing the API.
+
 **Three copies again:** `plan-limits.json` (source), `pricing.html`’s
 `FALLBACK_LIMITS.reasoning` mirror (used when the fetch fails), and
 `extension/sidepanel.js` `REASONING_RANGES` (older, covers the o-series and R1).
