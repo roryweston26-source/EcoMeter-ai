@@ -513,8 +513,31 @@ prompts per model against each provider's own API). **All four guesses were too 
 Break-even moved up everywhere as a result: **ChatGPT Plus 16→26 msgs/day**, Claude Pro
 13→17, Max 5× 63→86, Max 20× 127→172, Perplexity Pro 32→50.
 
-**Still estimates:** `gemini-3.1-pro-preview` (needs a Google key), the o-series and the
-DeepSeek rows. Four guesses checked, four too high — assume the rest are too.
+**Still estimates:** `gemini-3.1-pro-preview`, the o-series and the DeepSeek rows. Four
+guesses checked, four too high — assume the rest are too.
+
+**⚠️ Gemini is BLOCKED, not merely undone — needs Rory.** On 2026-08-28, creating a key at
+`aistudio.google.com/apikey` failed with **"failed to generate key, the request was
+suspicious"** on a personal Gmail account with no VPN. That is Google's anti-abuse
+system and it gives no detail, no reason code and no appeal. What is already ruled out:
+VPN, managed/Workspace account, and the wrong URL. What is left to try, cheapest first:
+
+1. Retry after a day or two — the signal is often transient, and rapid retries make it worse.
+2. A different personal Google account, ideally an older one with a recovery phone.
+3. **Vertex AI instead of AI Studio** — same models, different auth (a Cloud project plus
+   `gcloud` ADC rather than an API key). It needs a Vertex code path in
+   `measure-reasoning.js` that does not exist yet: roughly an hour's work to measure
+   one number.
+
+**The measurement is FREE when it does work** — `gemini-3.1-pro-preview` has a free tier
+(`Input price: Free of charge`, checked 2026-08-28), so this is blocked on access, not
+money. Note the free tier's trade: Google uses free-tier prompts to improve its products,
+which is acceptable for a corpus of 24 synthetic questions and would not be for anything
+else.
+
+**Until then nothing is overclaimed:** every surface that shows a Gemini break-even says
+"our estimate — not yet measured for this model", and `check-auditor.js` will not let
+`measured: true` be set by hand.
 
 **The multiplier is applied in TWO places and they must agree:** `breakEven()` (the
 figure shown) and `apiCostPerMonth()` (the figure the downgrade recommendation is
