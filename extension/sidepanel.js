@@ -199,18 +199,21 @@ function getPrice(modelKey) {
 }
 
 // ── Water data ────────────────────────────────────────────
-let WATER_DATA  = {};
-let WATER_MODEL = {};
-let waterScope  = 'conservative';
+let WATER_DATA   = {};   // modelId -> { energy?, class, host }
+let WATER_ENERGY = {};   // { measured: {...}, class: {...} } — Wh per request
+let WATER_HOSTS  = {};   // host -> { pue, wue_site, wue_source }
+let waterScope   = 'conservative';
 
 function parseWater(json) {
-  WATER_MODEL = json._model || {};
-  WATER_DATA  = {};
+  WATER_ENERGY = json._energy || {};
+  WATER_HOSTS  = json._hosts  || {};
+  WATER_DATA   = {};
   for (const provider in json) {
     if (provider.startsWith('_')) continue;
     const group = json[provider];
     for (const modelId in group) {
-      if (group[modelId]?.tier) WATER_DATA[modelId] = group[modelId].tier;
+      const e = group[modelId];
+      if (e && e.class && e.host) WATER_DATA[modelId] = e;
     }
   }
 }
@@ -225,26 +228,47 @@ async function loadWater() {
   }
 }
 
-// Water is a function of query SIZE, not a flat rate per token. Energy per
-// request is a fixed cost (latency to first token, idle capacity provisioned for
-// availability) plus cheap parallel prefill of the input and expensive
-// sequential decode of the output. In Jegham et al. a 28x rise in tokens raises
-// energy only ~5x, so one ml/token constant is right at a single query length
-// and wrong everywhere else — it was 4-15x over on long chats. Same shape as the
-// cost model: per-request base, input rate, output rate.
-// Fitted by scripts/derive-water-model.js; see water.json _model.
+// Water = how much ENERGY the model spends x how much water that host spends
+// per unit of energy. The two are separated because the evidence says they are
+// separate: the same DeepSeek model uses ~7-10x less water on Azure than on
+// DeepSeek's own data centres. Folding both into one size tier produced a
+// non-monotonic mess where "small" outranked "medium".
+//
+// Energy is a function of query SIZE, not a flat rate per token — a fixed cost
+// per request (latency to first token, idle capacity held for availability),
+// plus cheap parallel prefill of input and expensive sequential decode of
+// output. In Jegham et al. a 28x rise in tokens raises energy only ~5x.
+//
+// WUE is defined per unit of IT energy (The Green Grid), and Google applies it
+// that way with no PUE multiplier. Off-site generation water tracks what the
+// facility draws from the grid, so that term does carry PUE.
+//
+// Units work out directly: 1 Wh x (L/kWh) = 1 mL.
+// Fitted by scripts/derive-water-model.js; see water.json _hosts and _energy.
 function getWaterParams(modelKey) {
-  if (!modelKey) return null;
-  const tier  = WATER_DATA[modelKey];
-  const scope = WATER_MODEL[waterScope];
-  if (!tier || !scope || !scope[tier]) return null;
-  return scope[tier];
+  const m = modelKey && WATER_DATA[modelKey];
+  if (!m) return null;
+  const measured = m.energy && (WATER_ENERGY.measured || {})[m.energy];
+  const curve = measured || (WATER_ENERGY.class || {})[m.class];
+  const host = WATER_HOSTS[m.host];
+  if (!curve || !host) return null;
+  return {
+    curve,
+    // conservative = on-site cooling only; academic adds the water consumed
+    // generating the electricity, which is where most of it actually goes.
+    mlPerWh: waterScope === 'academic'
+      ? host.wue_site + host.pue * host.wue_source
+      : host.wue_site,
+    measured: !!measured,
+    host: m.host,
+  };
 }
 
 function waterForRequest(prm, turns, inputTokens, outputTokens) {
-  return prm.base_ml_per_request * Math.max(turns, 1)
-       + prm.ml_per_input_token  * inputTokens
-       + prm.ml_per_output_token * outputTokens;
+  const wh = prm.curve.base_wh * Math.max(turns, 1)
+           + prm.curve.wh_per_input_token  * inputTokens
+           + prm.curve.wh_per_output_token * outputTokens;
+  return wh * prm.mlPerWh;
 }
 
 function fmtWater(ml) {
@@ -1114,6 +1138,13 @@ function renderSummary() {
   const wprm = getWaterParams(key);
   if (wprm && tot > 0 && totalWater) {
     totalWater.textContent  = '💧 ~' + fmtWater(waterForRequest(wprm, turns, inp, adjustedOut));
+    // Say which of the two this is. A curve fitted to THIS model is a much
+    // stronger claim than one borrowed from other models of a similar size,
+    // and the user should be able to find that out.
+    totalWater.title = (wprm.measured
+      ? 'Energy curve measured for this model'
+      : 'Energy curve inferred from similarly-sized models — nobody has measured this one')
+      + '; water rates from ' + wprm.host + '. Scope: ' + waterScope + '.';
     totalWater.style.display = 'inline';
     if (waterDisclaimer) waterDisclaimer.style.display = 'block';
   } else if (totalWater) {

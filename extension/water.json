@@ -1,9 +1,13 @@
 {
-  "_comment": "Water estimates in millilitres, modelled PER REQUEST as a function of query size — not as a flat rate per token. Two scopes: conservative (scope-1 on-site cooling water, as companies report it) and academic (full lifecycle, adding the scope-2 water consumed generating the electricity). The numbers in _model are FITTED — re-run scripts/derive-water-model.js rather than hand-editing them.",
+  "_comment": "Water estimates in millilitres, modelled PER REQUEST as energy x infrastructure: how much energy a model spends on a query of a given size, times how much water that host spends per unit of energy. Not a flat rate per token, and not a size tier. Two scopes: conservative (on-site cooling, as operators report it) and academic (adds the water consumed generating the electricity). The numbers in _energy and _hosts are DERIVED — re-run scripts/derive-water-model.js rather than hand-editing them.",
+
   "_last_updated": "2026-08-28",
+
   "_tiers_last_sourced": "2026-08",
+
   "_date_fields_note": "_last_updated is when this FILE last changed, which is usually just adding a tier for a newly-priced model. _tiers_last_sourced is when the underlying ml-per-token figures were last checked against primary research — a different and much slower-moving thing. These were one field until 2026-08-24, which let routine model additions make the intensity estimates look freshly verified when they had not been re-read since Dec 2025.",
-  "_tiers_last_sourced_note": "2026-08-28 re-source, the first since 2025-12. THE ANCHORS DID NOT MOVE. Google's 0.26 ml per median Gemini Apps text prompt and Altman's 0.32 ml per ChatGPT query are still the only first-party per-prompt water figures that exist, and no provider has published a per-TOKEN figure at all. Checked against primary sources rather than coverage: the Google paper (arXiv:2508.15734) is still v1, 21 Aug 2025, never revised; Google's 2026 Environmental Report repeats the same May-2025 measurement unchanged (independently confirmed by this repo's own direct read, transparency-index.json, 2026-08-25); Anthropic still publishes no per-query water figure; Li et al. has since been peer-reviewed but its numbers are unchanged. So the nine-month-old date was stale bookkeeping, not stale evidence. What the pass DID find was six errors in how this file described its own numbers — each is corrected below and flagged inline where it lived. A SECOND pass the same day researched the two _open_questions and found real evidence on both: see _open_questions, which now records that the constant-ml-per-token model is structurally wrong rather than merely mis-calibrated.",
+
+  "_tiers_last_sourced_note": "2026-08-28 re-source, the first since 2025-12. THE ANCHORS DID NOT MOVE. Google's 0.26 ml per median Gemini Apps text prompt and Altman's 0.32 ml per ChatGPT query are still the only first-party per-prompt water figures that exist, and no provider has published a per-TOKEN figure at all. Checked against primary sources rather than coverage: the Google paper (arXiv:2508.15734) is still v1, 21 Aug 2025, never revised; Google's 2026 Environmental Report repeats the same May-2025 measurement unchanged (independently confirmed by this repo's own direct read, transparency-index.json, 2026-08-25); Anthropic still publishes no per-query water figure; Li et al. has since been peer-reviewed but its numbers are unchanged. So the nine-month-old date was stale bookkeeping, not stale evidence. What the pass DID find was six errors in how this file described its own numbers — each is corrected below and flagged inline where it lived. Two further passes the same day rebuilt the model itself: first from a flat ml-per-token constant to a query-size curve, then from size tiers to energy x infrastructure. See _model_history.",
 
   "_sources": [
     "Li, Yang, Islam, Ren — 'Making AI Less Thirsty: Uncovering and Addressing the Secret Water Footprint of AI Models' — arXiv:2304.03271 — arxiv.org/abs/2304.03271",
@@ -15,141 +19,363 @@
     "Jegham et al. — 'How Hungry is AI? Benchmarking Energy, Water and Carbon Footprint of LLM Inference' — arXiv:2505.09598, May 2025 — per-query energy for 30 models at three KNOWN token configs, plus a water equation matching our conservative/academic split. Load-bearing as of 2026-08-28: this is the benchmark _open_questions is measured against",
     "OpenRouter / 'State of AI: An Empirical 100 Trillion Token Study' — arXiv:2601.10088, 2026 — average prompt+completion tokens per request, the same quantity the extension multiplies. Router/API traffic, so a proxy for chat usage rather than a measurement of it",
     "de Vries-Gao — 'The carbon and water footprints of data centers and what this could mean for artificial intelligence' — Patterns 7(1) 101430, online 17 Dec 2025 — doi.org/10.1016/j.patter.2025.101430 — industry aggregate, not a per-token source",
-    "IEEE Spectrum — 'The Real Story on AI Water Usage at Data Centers', Sep 2025 — relays the Li et al. 16.9 ml breakdown"
+    "IEEE Spectrum — 'The Real Story on AI Water Usage at Data Centers', Sep 2025 — relays the Li et al. 16.9 ml breakdown",
+    "Mistral AI — life-cycle analysis of Mistral Large 2, 2025 — 45 mL of water and 1.14 gCO2e per 400-token prompt+reply, FULL lifecycle (training amortised, embodied hardware, construction). AFNOR Frugal AI methodology, externally peer-reviewed. The only first-party peer-reviewed LCA from a model provider; not comparable to our operational scopes, which is itself the finding",
+    "Amazon 2025 Sustainability Report + AWS Region PUE/WUE table — global WUE 0.12 L/kWh and PUE 1.14 (2025), read directly 2026-08-25 (see transparency-index.json)",
+    "Microsoft 2026 Environmental Data Fact Sheet — WUE 0.27 L/kWh (2025), read directly 2026-08-24",
+    "Google datacenters.google/efficiency — fleet-wide PUE 1.09 (2025), read directly. Google publishes no fleet-wide WUE"
   ],
+
   "_sources_removed": "2026-08-28: dropped 'moduledge.com AI Water Usage Per-Query Cost analysis - Apr 2026'. ModulEdge s.r.o. sells modular data centres and waterless/liquid cooling — a vendor with a direct commercial interest in this number — and the post only relays Li et al. anyway. It carried the newest date in the list, so it read as our most current evidence while being marketing. We grade providers on the quality of what they disclose; the same bar has to apply to what we cite.",
 
-  "_methodology": "THE MODEL: water_ml_per_request = base_ml_per_request + ml_per_input_token * input_tokens + ml_per_output_token * output_tokens, per tier, per scope. Deliberately the same shape as the cost model in sidepanel.js — a fixed per-request cost, a cheap input rate and an expensive output rate — because the underlying physics is the same: latency-to-first-token and idle capacity do not scale with length, prefill is parallel and cheap, decode is sequential and memory-bandwidth-bound. This replaced a flat ml-per-token constant on 2026-08-28; see _model_change_2026_08_28. FITTED FROM: Jegham et al. (arXiv:2505.09598), which reports per-query energy for 30 models at three known token configurations (100+300, 1k+1k, 10k+1.5k) and gives the water equation Water(L) = E * PUE * WUE_site + E * WUE_source — on-site plus off-site, which is exactly our conservative/academic split. Tier parameters are fitted across all models in that tier at once, constrained non-negative, minimising relative error. Reproduced four figures the paper states in prose, so the reconstruction is sound. CROSS-CHECK: nothing in the fit was tuned to Google, yet the medium tier predicts 0.22 ml for a 1k-in/300-out prompt against Google's independently measured 0.26 ml per median Gemini Apps text prompt (arXiv:2508.15734) — a different provider, fleet, WUE and method. SCOPES: conservative is scope-1 on-site cooling only, as Google reports it; academic adds the scope-2 water consumed generating the electricity. TIER ASSIGNMENT (which model is large/medium/small/tiny) remains a judgement about compute intensity, and is not measured by anyone — see _tier_inversion.",
-
-  "_model": {
-    "_form": "water_ml_per_request = base_ml_per_request + ml_per_input_token * input_tokens + ml_per_output_token * output_tokens",
-    "_derived_by": "scripts/derive-water-model.js — re-run it rather than hand-editing these numbers",
-    "conservative": {
-      "large":   { "base_ml_per_request": 0.0332, "ml_per_input_token": 0.0000336, "ml_per_output_token": 0.00154 },
-      "medium":  { "base_ml_per_request": 0.034, "ml_per_input_token": 0.0000459, "ml_per_output_token": 0.000481 },
-      "small":   { "base_ml_per_request": 0, "ml_per_input_token": 0.00000167, "ml_per_output_token": 0.000632 },
-      "tiny":    { "base_ml_per_request": 0.00172, "ml_per_input_token": 8.54e-7, "ml_per_output_token": 0.0000862 }
-    },
-    "academic": {
-      "large":   { "base_ml_per_request": 0.463, "ml_per_input_token": 0.000469, "ml_per_output_token": 0.0215 },
-      "medium":  { "base_ml_per_request": 0.749, "ml_per_input_token": 0.000803, "ml_per_output_token": 0.00696 },
-      "small":   { "base_ml_per_request": 0.0137, "ml_per_input_token": 0, "ml_per_output_token": 0.00902 },
-      "tiny":    { "base_ml_per_request": 0.0651, "ml_per_input_token": 0.0000152, "ml_per_output_token": 0.00213 }
-    }
-  },
+  "_methodology": "THE MODEL: water_ml = energy_wh(model, input_tokens, output_tokens) x water_rate(host, scope). ENERGY: wh_per_request = base_wh + wh_per_input_token * in + wh_per_output_token * out — the same shape as the cost model, because the physics matches: a fixed cost per request (latency to first token, idle capacity held for availability), cheap parallel prefill of input, expensive sequential decode of output. Fitted to Jegham et al. (arXiv:2505.09598) Table 4, which reports IT energy per query for 30 models at three known token configurations. Per-model curves where that model was measured; a class fallback fitted across all measured models of that size where it was not. WATER RATE: WUE is defined by The Green Grid as site water per unit of IT ENERGY, and Google applies it exactly that way — Water/prompt = (E_total - E_overhead) x WUE, with no PUE multiplier. Off-site generation water instead tracks what the facility draws from the grid, which does carry PUE. So conservative = wh * wue_site, and academic = wh * (wue_site + pue * wue_source). Jegham has this the other way round (PUE on the site term, none on the source term); we follow the operator definition. WHY ENERGY AND INFRASTRUCTURE ARE SEPARATE: because the evidence says they are. The same DeepSeek model consumes 7-10x more water on DeepSeek's own data centres than on Azure. Folding both into one size tier produced a non-monotonic result where \"small\" outranked \"medium\" — see _tier_inversion_resolved. HOST FIGURES ARE OURS, NOT THE PAPER'S: transparency-index.json carries directly-read 2025 numbers newer than Jegham's Table 1 (AWS WUE 0.12, not 0.18; Microsoft 0.27, not 0.30). UNITS: 1 Wh x 1 L/kWh = 1 mL exactly.",
 
   "_notes": {
-    "gemini_official":  "Google disclosed 0.26 ml per median Gemini Apps text prompt (measured May 2025, published Aug 2025). SCOPE-1 on-site cooling water only — NOT 'scope 1+2'. This file carried the wrong label until 2026-08-28; it implied Google's number already covered electricity-generation water, when that is precisely the gap the academic scope exists to fill, and it was wrong in the direction that flatters the provider. Google's own narrower 'existing approach' methodology gives 0.15 ml for the same prompt. Was the anchor for the flat conservative tier until 2026-08-28; under the query-size model it is now an INDEPENDENT CROSS-CHECK, which the fit passes at 0.86x on the medium tier without having been tuned to it.",
+    "gemini_official": "Google disclosed 0.26 ml per median Gemini Apps text prompt (measured May 2025, published Aug 2025). SCOPE-1 on-site cooling water only — NOT \"scope 1+2\". This file carried the wrong label until 2026-08-28; it implied Google's number already covered electricity-generation water, when that is precisely the gap the academic scope exists to fill, and it was wrong in the direction that flatters the provider. Google's own narrower \"existing approach\" methodology gives 0.15 ml for the same prompt. As of the 2026-08-28 redesign this is no longer a cross-check but the ANCHOR for Gemini's energy curve: 0.26 mL / 1.15 L/kWh implies 0.226 Wh of IT energy, which is the only first-party per-prompt energy measurement any provider publishes.",
     "chatgpt_official": "Sam Altman stated 0.000085 gallons — 0.32 ml — per average ChatGPT query in 'The Gentle Singularity', Jun 2025. Scope-1 by implication. It is a blog sentence with no published methodology, no stated measurement boundary and no way to audit it; we cite it because it is the only OpenAI figure in existence, not because it is verified. Its closeness to Google's 0.26 ml is reassuring but is not independent confirmation — different scopes, different fleets, one of them unmeasured.",
-    "claude_official":  "Anthropic has published no per-query or per-model water figure as of 2026-08-28 (re-checked this pass). No environmental report with model-level metrics exists. Claude's tiers here are inferred from comparable frontier models, and that inference is ours.",
-    "academic_range":   "Li et al.: GPT-3 consumes a 500 ml bottle 'for roughly 10 - 50 medium-length responses, depending on when and where it is deployed' — i.e. 10-50 ml per response, scope 1+2. This file said '~500ml per 20-50 queries = ~10-25ml per query' until 2026-08-28, which halved the top of the authors' own range. IEEE Spectrum's 16.9 ml per 150-300 word output (2.2 on-site + 14.7 electricity) is the same work stated per output. Li et al. describe their own inference estimate as 'on the conservative side'.",
-    "uncertainty":      "Water intensity varies with data-centre location, cooling method, season and grid fuel mix. Li et al.'s own stated spread is about 5x — the 10-50 responses per bottle above. This file previously claimed variation of '10-25x by location'; that figure was unsourced and appears to be the 10-25 ml-per-query number restated as a multiplier, so it was removed 2026-08-28. Closed-loop liquid cooling cuts direct water use sharply but shifts the burden to electricity, which the conservative scope does not count. These are order-of-magnitude estimates only.",
+    "claude_official": "Anthropic has published no per-query or per-model water figure as of 2026-08-28 (re-checked this pass). No environmental report with model-level metrics exists. Claude's tiers here are inferred from comparable frontier models, and that inference is ours.",
+    "academic_range": "Li et al.: GPT-3 consumes a 500 ml bottle 'for roughly 10 - 50 medium-length responses, depending on when and where it is deployed' — i.e. 10-50 ml per response, scope 1+2. This file said '~500ml per 20-50 queries = ~10-25ml per query' until 2026-08-28, which halved the top of the authors' own range. IEEE Spectrum's 16.9 ml per 150-300 word output (2.2 on-site + 14.7 electricity) is the same work stated per output. Li et al. describe their own inference estimate as 'on the conservative side'.",
+    "uncertainty": "Water intensity varies with data-centre location, cooling method, season and grid fuel mix. Li et al.'s own stated spread is about 5x — the 10-50 responses per bottle above. This file previously claimed variation of '10-25x by location'; that figure was unsourced and appears to be the 10-25 ml-per-query number restated as a multiplier, so it was removed 2026-08-28. Closed-loop liquid cooling cuts direct water use sharply but shifts the burden to electricity, which the conservative scope does not count. These are order-of-magnitude estimates only.",
     "efficiency_trend": "Per-prompt water has fallen sharply. Like-for-like on the on-site scope: GPT-3 in 2023 at 2.2 ml per medium response (Li et al.) against Gemini at 0.26 ml in May 2025 (Google) — about 8.5x. This file previously claimed models are '10-33x more water-efficient per output token'; Google's 33x is its ENERGY reduction over twelve months and the 44x is CARBON — neither is a water figure, and this repo's own transparency-index.json already labels them correctly. Corrected 2026-08-28. Total data-centre water consumption keeps rising with scale regardless of per-prompt gains; Li et al. make the same point."
   },
 
-  "_model_change_2026_08_28": {
-    "what": "The flat ml-per-token constants were replaced by the query-size model in _model. Before: water = total_tokens * constant. After: water = base per request + input rate * input tokens + output rate * output tokens, summed over turns, using VISIBLE input and reasoning-adjusted output.",
-    "why": "Per-token water is not constant. In Jegham et al. a 28x rise in tokens (400 -> 11,500) raises energy only about 5x, because latency-to-first-token, prefill and idle capacity do not scale with length. A single constant can be right at one query size and nowhere else: measured against Jegham the flat model was roughly right at 400 tokens and 4-15x OVER at 11,500 — wrong exactly where real chat sessions live.",
-    "effect_on_users": "Short single turns barely move. Long sessions fall substantially — a 40k-in/10k-out session on the large tier drops about 4x on the full scope. The panel was overestimating long conversations and now does so far less.",
-    "resolves": "Both entries formerly in _open_questions. The 500-token divisor is gone entirely — the model no longer needs a median query size, because the extension already knows the real token counts. The academic tier value is no longer a judgement inside a bracket; it is fitted to per-model measurements at known token counts.",
-    "guarded_by": "scripts/check-prices.js (shape, non-negativity, academic > conservative, tier names) and scripts/test-water-model.js (reproduces the source data, sublinearity, monotonicity, the Google cross-check, and the specific regression this replaced)."
-  },
-
-  "_tier_inversion": "A real finding, shipped rather than smoothed. The fitted output rates are NOT monotonic in tier: small (6.32e-4 conservative, 9.02e-3 academic) sits above medium (4.81e-4, 6.96e-3). Cause: in Jegham's data Claude-3.5 Haiku draws 8.010 Wh on a long query — more than Claude-3.7 Sonnet at 5.671 and far more than GPT-4o at 2.875 — and it runs on AWS, whose off-site WUE (5.11 L/kWh) is higher than Azure's (4.35). That is their measurement, and it matches their headline conclusion that infrastructure outweighs model architecture. It does undercut the premise of the tier system, which assigns tiers by model size: a 'small' model on worse infrastructure can genuinely use more water than a 'medium' one. We did not massage the fit to hide this. Open for Rory: either accept non-monotonic tiers as what the evidence says, or drop size-based tiers in favour of per-model or per-host figures. NOT enforced by a guard, deliberately — a monotonicity guard would only force the data to be quiet.",
-
   "_remaining_caveats": {
-    "one_source": "The fit rests on a single benchmark. Jegham et al. is itself modelled — inferred hardware, published multipliers, API latency — not metered. No provider publishes water per token, so this is the best available, not ground truth.",
-    "tier_pooling": "Each tier is fitted across a handful of models whose spread is wide; RMS relative error runs 17-43%. These stay order-of-magnitude estimates.",
-    "caching": "Water and cost make OPPOSITE caching assumptions, on purpose. Cost uses the replayed transcript because billing really does re-charge the whole history every turn (minus cache discounts it does not model, so it overestimates). Water uses only the visible new input, because the compute does not re-spend a cached prefix — the KV cache is reused, so only new tokens are prefilled. Feeding the replayed figure into water put a 20-turn chat at 1.29 ml per request against Google's measured 0.26 ml, about 5x too high. The residual risk runs the other way: where a provider does NOT cache, we now understate prefill. Output dominates either way, which is what the benchmark shows.",
-    "no_gemini_or_xai": "Jegham covers OpenAI, Anthropic, Meta and DeepSeek. Google and xAI models are assigned tiers by analogy, which is a judgement."
+    "measured_vs_inferred": "16 of 68 models sit on a curve fitted to that exact model; the other 52 use a class fallback fitted across measured models of similar size. Per-model fits carry up to 29% error against the source; class fits run 39-74%. The panel marks which is which on hover. A class figure is a genuinely weaker claim.",
+    "one_energy_source": "All energy comes from a single benchmark, and that benchmark is itself modelled — inferred hardware, published multipliers, API latency — not metered. No provider publishes energy or water per token. Google publishes one per-prompt energy figure and it is the only first-party number in the whole model.",
+    "google_token_count": "Gemini is anchored on Google's measurement, but Google does not publish the token count of its median prompt, so mapping it onto the 100-in/300-out config is our assumption. That single undisclosed number is the largest remaining source of error for Gemini.",
+    "unpublished_hosts": "xAI and Mistral publish no PUE or WUE. They use the median of the four hosts that do publish, which is inference, not measurement. Google publishes no fleet-wide WUE either — the figure used is the LLM-serving WUE from its own paper.",
+    "operational_only": "Both scopes are OPERATIONAL. Neither includes training amortisation, embodied hardware or datacentre construction. Mistral's peer-reviewed LCA puts a 400-token prompt at 45 mL on a full-lifecycle basis against our ~9 mL operational — a ~5x gap that is real and that we do not currently model.",
+    "caching": "Water and cost make OPPOSITE caching assumptions, on purpose. Cost uses the replayed transcript because billing really does re-charge the whole history every turn. Water uses only the visible new input, because the compute does not re-spend a cached prefix. Where a provider does not cache, water now understates prefill."
   },
 
   "anthropic": {
-    "claude-fable-5":            { "tier": "large"  },
-    "claude-mythos-5":           { "tier": "large"  },
-    "claude-opus-5":             { "tier": "large"  },
-    "claude-opus-4-8":           { "tier": "large"  },
-    "claude-opus-4-7":           { "tier": "large"  },
-    "claude-opus-4-6":           { "tier": "large"  },
-    "claude-opus-4-5":           { "tier": "large"  },
-    "claude-opus":               { "tier": "large"  },
-    "claude-sonnet-5":           { "tier": "medium" },
-    "claude-sonnet-4-6":         { "tier": "medium" },
-    "claude-sonnet-4-5":         { "tier": "medium" },
-    "claude-sonnet":             { "tier": "medium" },
-    "claude-haiku-4-5-20251001": { "tier": "small"  },
-    "claude-haiku":              { "tier": "small"  }
+    "claude-fable-5":            { "class": "large", "host": "aws" },
+    "claude-mythos-5":           { "class": "large", "host": "aws" },
+    "claude-opus-5":             { "class": "large", "host": "aws" },
+    "claude-opus-4-8":           { "class": "large", "host": "aws" },
+    "claude-opus-4-7":           { "class": "large", "host": "aws" },
+    "claude-opus-4-6":           { "class": "large", "host": "aws" },
+    "claude-opus-4-5":           { "class": "large", "host": "aws" },
+    "claude-opus":               { "class": "large", "host": "aws" },
+    "claude-sonnet-5":           { "class": "medium", "host": "aws" },
+    "claude-sonnet-4-6":         { "class": "medium", "host": "aws" },
+    "claude-sonnet-4-5":         { "class": "medium", "host": "aws" },
+    "claude-sonnet":             { "class": "medium", "host": "aws" },
+    "claude-haiku-4-5-20251001": { "class": "small", "host": "aws" },
+    "claude-haiku":              { "class": "small", "host": "aws" }
   },
 
   "openai": {
-    "gpt-5.6-sol":   { "tier": "large"  },
-    "gpt-5.6-terra": { "tier": "medium" },
-    "gpt-5.6-luna":  { "tier": "small"  },
-    "gpt-5.5":       { "tier": "large"  },
-    "gpt-5.5-pro":   { "tier": "large"  },
-    "gpt-5.4-nano":  { "tier": "tiny"   },
-    "gpt-5.4-pro":   { "tier": "large"  },
-    "gpt-5.4":       { "tier": "large"  },
-    "gpt-5.4-mini":  { "tier": "medium" },
-    "o3":            { "tier": "large"  },
-    "o3-mini":       { "tier": "small"  },
-    "o1":            { "tier": "large"  },
-    "gpt-4-turbo":   { "tier": "large"  },
-    "gpt-4":         { "tier": "large"  },
-    "gpt-4.1":       { "tier": "medium" },
-    "gpt-4.1-mini":  { "tier": "small"  },
-    "gpt-4.1-nano":  { "tier": "tiny"   },
-    "gpt-4o":        { "tier": "medium" },
-    "o4-mini":       { "tier": "small"  },
-    "gpt-4o-mini":   { "tier": "small"  }
+    "gpt-5.6-sol":   { "class": "large", "host": "azure" },
+    "gpt-5.6-terra": { "class": "medium", "host": "azure" },
+    "gpt-5.6-luna":  { "class": "small", "host": "azure" },
+    "gpt-5.5":       { "class": "large", "host": "azure" },
+    "gpt-5.5-pro":   { "class": "large", "host": "azure" },
+    "gpt-5.4-nano":  { "class": "tiny", "host": "azure" },
+    "gpt-5.4-pro":   { "class": "large", "host": "azure" },
+    "gpt-5.4":       { "class": "large", "host": "azure" },
+    "gpt-5.4-mini":  { "class": "medium", "host": "azure" },
+    "o3":            { "energy": "o3", "class": "large", "host": "azure" },
+    "o3-mini":       { "energy": "o3-mini", "class": "small", "host": "azure" },
+    "o1":            { "energy": "o1", "class": "large", "host": "azure" },
+    "gpt-4-turbo":   { "energy": "gpt-4-turbo", "class": "large", "host": "azure" },
+    "gpt-4":         { "energy": "gpt-4", "class": "large", "host": "azure" },
+    "gpt-4.1":       { "energy": "gpt-4.1", "class": "medium", "host": "azure" },
+    "gpt-4.1-mini":  { "energy": "gpt-4.1-mini", "class": "small", "host": "azure" },
+    "gpt-4.1-nano":  { "energy": "gpt-4.1-nano", "class": "tiny", "host": "azure" },
+    "gpt-4o":        { "energy": "gpt-4o", "class": "medium", "host": "azure" },
+    "o4-mini":       { "class": "small", "host": "azure" },
+    "gpt-4o-mini":   { "energy": "gpt-4o-mini", "class": "small", "host": "azure" }
   },
 
   "google": {
-    "gemini-3.7-flash":      { "tier": "medium" },
-    "gemini-3.6-flash":      { "tier": "medium" },
-    "gemini-3.5-flash":      { "tier": "medium" },
-    "gemini-3.5-flash-lite": { "tier": "tiny"   },
-    "gemini-3-flash-preview":{ "tier": "small"  },
-    "gemini-3.1-pro-preview":{ "tier": "large"  },
-    "gemini-3.1-flash-lite": { "tier": "tiny"   },
-    "gemini-2.5-pro":        { "tier": "large"  },
-    "gemini-2.5-flash":      { "tier": "medium" },
-    "gemini-2.5-flash-lite": { "tier": "tiny"   }
+    "gemini-3.7-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
+    "gemini-3.6-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
+    "gemini-3.5-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
+    "gemini-3.5-flash-lite":  { "class": "tiny", "host": "google" },
+    "gemini-3-flash-preview": { "class": "small", "host": "google" },
+    "gemini-3.1-pro-preview": { "class": "large", "host": "google" },
+    "gemini-3.1-flash-lite":  { "class": "tiny", "host": "google" },
+    "gemini-2.5-pro":         { "class": "large", "host": "google" },
+    "gemini-2.5-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
+    "gemini-2.5-flash-lite":  { "class": "tiny", "host": "google" }
   },
 
   "xai": {
-    "grok-4":      { "tier": "large"  },
-    "grok-4.6":    { "tier": "large"  },
-    "grok-4.5":    { "tier": "large"  },
-    "grok-4.3":    { "tier": "large"  },
-    "grok-4.20":   { "tier": "large"  },
-    "grok-3":      { "tier": "large"  },
-    "grok-3-mini": { "tier": "small"  }
+    "grok-4":      { "class": "large", "host": "unpublished" },
+    "grok-4.6":    { "class": "large", "host": "unpublished" },
+    "grok-4.5":    { "class": "large", "host": "unpublished" },
+    "grok-4.3":    { "class": "large", "host": "unpublished" },
+    "grok-4.20":   { "class": "large", "host": "unpublished" },
+    "grok-3":      { "class": "large", "host": "unpublished" },
+    "grok-3-mini": { "class": "small", "host": "unpublished" }
   },
 
   "mistral": {
-    "mistral-large":   { "tier": "large"  },
-    "mistral-large-3": { "tier": "large"  },
-    "mistral-medium-3.5":{ "tier": "medium" },
-    "mistral-medium-3":{ "tier": "medium" },
-    "mistral-small":   { "tier": "small"  },
-    "mistral-small-3": { "tier": "small"  },
-    "mistral-small-4": { "tier": "small"  },
-    "codestral":       { "tier": "small"  }
+    "mistral-large":      { "class": "large", "host": "unpublished" },
+    "mistral-large-3":    { "class": "large", "host": "unpublished" },
+    "mistral-medium-3.5": { "class": "medium", "host": "unpublished" },
+    "mistral-medium-3":   { "class": "medium", "host": "unpublished" },
+    "mistral-small":      { "class": "small", "host": "unpublished" },
+    "mistral-small-3":    { "class": "small", "host": "unpublished" },
+    "mistral-small-4":    { "class": "small", "host": "unpublished" },
+    "codestral":          { "class": "small", "host": "unpublished" }
   },
 
   "perplexity": {
-    "sonar-pro":           { "tier": "medium" },
-    "sonar":               { "tier": "small"  },
-    "sonar-reasoning-pro": { "tier": "medium" }
+    "sonar-pro":           { "class": "medium", "host": "aws" },
+    "sonar":               { "class": "small", "host": "aws" },
+    "sonar-reasoning-pro": { "class": "medium", "host": "aws" }
   },
 
   "deepseek": {
-    "deepseek-v4-pro":   { "tier": "large"  },
-    "deepseek-chat":     { "tier": "medium" },
-    "deepseek-reasoner": { "tier": "large"  },
-    "deepseek-v4-flash": { "tier": "medium" },
-    "deepseek-r1": { "tier": "large"  },
-    "deepseek-v3": { "tier": "medium" }
-  }
+    "deepseek-v4-pro":   { "class": "large", "host": "deepseek" },
+    "deepseek-chat":     { "class": "medium", "host": "deepseek" },
+    "deepseek-reasoner": { "class": "large", "host": "deepseek" },
+    "deepseek-v4-flash": { "class": "medium", "host": "deepseek" },
+    "deepseek-r1":       { "energy": "deepseek-r1-own", "class": "large", "host": "deepseek" },
+    "deepseek-v3":       { "energy": "deepseek-v3-own", "class": "medium", "host": "deepseek" }
+  },
+
+  "_hosts": {
+    "aws": {
+      "pue": 1.14,
+      "wue_site": 0.12,
+      "wue_source": 5.11,
+      "year": "2025",
+      "source": "Amazon 2025 Sustainability Report + AWS Region PUE/WUE table (read directly 2026-08-25); wue_source from Jegham et al. Table 1",
+      "note": "Global WUE series 0.25 -> 0.19 -> 0.18 -> 0.15 -> 0.12 across 2021-2025. Jegham used 0.18, a 2023 figure."
+    },
+    "azure": {
+      "pue": 1.12,
+      "wue_site": 0.27,
+      "wue_source": 4.35,
+      "year": "2025",
+      "source": "Microsoft 2026 Environmental Data Fact Sheet (read directly 2026-08-24); PUE from Microsoft Azure blog via Jegham et al. Table 1; wue_source from the LBNL US data-centre report via Jegham",
+      "note": "WUE 0.27 L/kWh (2025), down from 2.3 historically. Jegham used 0.30."
+    },
+    "google": {
+      "pue": 1.09,
+      "wue_site": 1.15,
+      "wue_source": 4.35,
+      "year": "2025 (PUE) / 2024 (WUE)",
+      "source": "PUE: datacenters.google/efficiency (2025 fleet-wide, read directly). WUE: Google arXiv:2508.15734 — Category 2 consumptive WUE of the fleet serving LLMs, 2023 and 2024",
+      "note": "Google publishes NO fleet-wide WUE — a documented finding in our own transparency index, and the reason this uses the LLM-serving figure from their paper instead. Beware: several vendor blogs attribute 0.27 L/kWh to Google; that is MICROSOFT's number."
+    },
+    "deepseek": {
+      "pue": 1.27,
+      "wue_site": 1.2,
+      "wue_source": 6.016,
+      "year": "2025",
+      "source": "Jegham et al. Table 1 — average of the thirty most efficient Chinese data centres; regional grid factor for DeepSeek's known deployments",
+      "note": "Not first-party. DeepSeek publishes nothing."
+    },
+    "unpublished": {
+      "pue": 1.105,
+      "wue_site": 0.23,
+      "wue_source": 4.35,
+      "year": "n/a",
+      "source": "INFERRED — median of the four hosts above, which publish. Not a measurement.",
+      "note": "Used for xAI (own Colossus sites) and Mistral, neither of which publishes PUE or WUE. Every figure for these providers inherits that uncertainty."
+    }
+  },
+
+  "_energy": {
+    "_form": "wh_per_request = base_wh + wh_per_input_token * input_tokens + wh_per_output_token * output_tokens",
+    "_water": "conservative: ml = wh * wue_site.  academic: ml = wh * (wue_site + pue * wue_source).",
+    "_derived_by": "scripts/derive-water-model.js — re-run it rather than hand-editing these numbers",
+    "_fitted_from": "Jegham et al. arXiv:2505.09598 Table 4 — IT energy per query for 30 models at three known token configs. Host water factors are NOT from that paper; see _hosts.",
+    "_measured_vs_class": "measured = a curve fitted to that exact model. class = a fallback fitted across every measured model of that size, used where nobody has measured the model. Class fits carry 39-74% RMS against 19% worst-case for per-model fits, so a class figure is a genuinely weaker claim.",
+    "_anchors": {
+      "gemini": "Google arXiv:2508.15734 — 0.26 mL/prompt at WUE 1.15 L/kWh implies 0.226 Wh of IT energy; 0.24 Wh is the comprehensive figure including overhead"
+    },
+    "measured": {
+      "gpt-4.1": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.0000368,
+        "wh_per_output_token": 0.00299
+      },
+      "gpt-4.1-mini": {
+        "base_wh": 0.0153,
+        "wh_per_input_token": 1.86e-19,
+        "wh_per_output_token": 0.00146
+      },
+      "gpt-4.1-nano": {
+        "base_wh": 0.0511,
+        "wh_per_input_token": 1.85e-19,
+        "wh_per_output_token": 0.00052
+      },
+      "o4-mini-high": {
+        "base_wh": 2.74,
+        "wh_per_input_token": 1.99e-19,
+        "wh_per_output_token": 0.00345
+      },
+      "o3": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.000646,
+        "wh_per_output_token": 0.00398
+      },
+      "o3-mini-high": {
+        "base_wh": 2.44,
+        "wh_per_input_token": 0,
+        "wh_per_output_token": 0.00244
+      },
+      "o3-mini": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.00000601,
+        "wh_per_output_token": 0.00232
+      },
+      "o1": {
+        "base_wh": 1.54,
+        "wh_per_input_token": 0.000103,
+        "wh_per_output_token": 0.00241
+      },
+      "o1-mini": {
+        "base_wh": 0.103,
+        "wh_per_input_token": 0.00000564,
+        "wh_per_output_token": 0.00144
+      },
+      "gpt-4o": {
+        "base_wh": 0.121,
+        "wh_per_input_token": 0.000131,
+        "wh_per_output_token": 0.000963
+      },
+      "gpt-4o-mini": {
+        "base_wh": 0.0201,
+        "wh_per_input_token": 0.0000309,
+        "wh_per_output_token": 0.00185
+      },
+      "gpt-4-turbo": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.000134,
+        "wh_per_output_token": 0.0057
+      },
+      "gpt-4": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.0014,
+        "wh_per_output_token": 0.00552
+      },
+      "deepseek-r1-own": {
+        "base_wh": 17,
+        "wh_per_input_token": 0.0000795,
+        "wh_per_output_token": 0.00753
+      },
+      "deepseek-v3-own": {
+        "base_wh": 0.176,
+        "wh_per_input_token": 2e-19,
+        "wh_per_output_token": 0.00867
+      },
+      "deepseek-r1-azure": {
+        "base_wh": 1.56,
+        "wh_per_input_token": 0.000199,
+        "wh_per_output_token": 0.00257
+      },
+      "deepseek-v3-azure": {
+        "base_wh": 0.15,
+        "wh_per_input_token": 0.0000616,
+        "wh_per_output_token": 0.00195
+      },
+      "claude-3.7-sonnet": {
+        "base_wh": 0.118,
+        "wh_per_input_token": 0.000147,
+        "wh_per_output_token": 0.00272
+      },
+      "claude-3.5-sonnet": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.000297,
+        "wh_per_output_token": 0.00323
+      },
+      "claude-3.5-haiku": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.000295,
+        "wh_per_output_token": 0.00348
+      },
+      "llama-3-8b": {
+        "base_wh": 0.00286,
+        "wh_per_input_token": 0.000025,
+        "wh_per_output_token": 0.000342
+      },
+      "llama-3-70b": {
+        "base_wh": 0.0743,
+        "wh_per_input_token": 0.000261,
+        "wh_per_output_token": 0.00254
+      },
+      "llama-3.1-8b": {
+        "base_wh": 0.00691,
+        "wh_per_input_token": 0.0000222,
+        "wh_per_output_token": 0.000143
+      },
+      "llama-3.1-70b": {
+        "base_wh": 0.298,
+        "wh_per_input_token": 0.00148,
+        "wh_per_output_token": 0.00275
+      },
+      "llama-3.1-405b": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.00147,
+        "wh_per_output_token": 0.00717
+      },
+      "llama-3.2-1b": {
+        "base_wh": 0.0106,
+        "wh_per_input_token": 0.00000521,
+        "wh_per_output_token": 0.000326
+      },
+      "llama-3.2-3b": {
+        "base_wh": 0.000919,
+        "wh_per_input_token": 1.85e-19,
+        "wh_per_output_token": 0.000474
+      },
+      "llama-3.2-vision-11b": {
+        "base_wh": 0.0326,
+        "wh_per_input_token": 0.0000871,
+        "wh_per_output_token": 0.000122
+      },
+      "llama-3.2-vision-90b": {
+        "base_wh": 0,
+        "wh_per_input_token": 0.0000492,
+        "wh_per_output_token": 0.00426
+      },
+      "llama-3.3-70b": {
+        "base_wh": 0.0236,
+        "wh_per_input_token": 0.0000375,
+        "wh_per_output_token": 0.000699
+      },
+      "gemini": {
+        "base_wh": 0.0315,
+        "wh_per_input_token": 0.0000329,
+        "wh_per_output_token": 0.000637
+      }
+    },
+    "class": {
+      "large": {
+        "base_wh": 0.218,
+        "wh_per_input_token": 0.0000975,
+        "wh_per_output_token": 0.00497
+      },
+      "medium": {
+        "base_wh": 0.0632,
+        "wh_per_input_token": 0.0000661,
+        "wh_per_output_token": 0.00128
+      },
+      "small": {
+        "base_wh": 0.0602,
+        "wh_per_input_token": 0.000162,
+        "wh_per_output_token": 0.00015
+      },
+      "tiny": {
+        "base_wh": 0.00642,
+        "wh_per_input_token": 0.0000196,
+        "wh_per_output_token": 0.000242
+      }
+    }
+  },
+
+  "_model_history": {
+    "was_flat_per_token": "Until 2026-08-28 water was one ml-per-token constant per size tier, multiplied by total tokens. Linear, where reality is strongly sublinear: in Jegham et al. a 28x rise in tokens raises energy only about 5x, because latency-to-first-token, prefill and idle capacity do not scale with length. Measured against that benchmark the flat model was roughly right at 400 tokens and 4-15x OVER at 11,500 — wrong exactly where real chat sessions live.",
+    "then_query_size_but_still_tiered": "The first rewrite made water a function of query size but still fitted it per SIZE TIER, using the paper's own infrastructure multipliers. That surfaced a genuine problem rather than solving it — see _tier_inversion_resolved.",
+    "now_energy_times_infrastructure": "Water is now energy x host. Model efficiency and infrastructure are separated because the evidence treats them separately, and because it means adding a model and re-sourcing a host's WUE are independent jobs. It also let the host numbers come from our own directly-read 2025 figures instead of the paper's 2022-23 ones.",
+    "effect_on_users": "Long sessions fell substantially versus the flat model. Beyond that the change is per-model: figures for AWS-hosted models dropped (WUE 0.18 -> 0.12), Gemini is now anchored on Google's own measurement instead of a cross-vendor average that overstated it by 2.3x, and DeepSeek-on-DeepSeek rose sharply, which is what its infrastructure actually implies."
+  },
+
+  "_tier_inversion_resolved": "RESOLVED by the redesign, and worth keeping because it is why the redesign happened. Fitting water per size tier produced non-monotonic output rates: \"small\" (6.32e-4 on-site) sat ABOVE \"medium\" (4.81e-4). The cause was that size was standing in for two different things at once — Claude-3.5 Haiku genuinely draws more energy than Sonnet in Jegham's data, AND it ran on a host with different water numbers. Separating energy from infrastructure removes the paradox without hiding anything: a small model on thirsty infrastructure can legitimately use more water than a medium one on efficient infrastructure, and now the model says so explicitly instead of smuggling it into a tier. Jegham's own headline conclusion is the same — deployment outweighs architecture."
 }

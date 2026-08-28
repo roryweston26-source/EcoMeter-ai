@@ -45,7 +45,7 @@ unsourceable "10–25×", an unreproducible academic derivation, and a data-cent
 cooling vendor's marketing blog sitting in `_sources` as our newest evidence. Two
 of these were also live in the extension's user-facing disclaimer and are fixed
 there. **No tier value changed** — all 68 preserved. **New: `_open_questions`** in
-`water.json`, two items needing Rory — **and then researched in a second pass the same day (F1a): there is real evidence on both.** Li et al.’s own request definition is ~1,300 tokens not 500; OpenRouter’s 100T-token study puts real prompt+completion at >5,400; and Jegham et al. — which we were already citing without using — benchmarks 30 models at known token counts and shows the constant-ml-per-token model is **structurally** wrong, roughly right at short queries and 4–15× over at long ones. The ~40× full-scope multiplier is also outside the evidence range (real: 5× Google, 14× Azure, 26× AWS). **Then Rory chose option 2 and it shipped the same day (F1b): water is now a function of query size**, fitted to that benchmark by the new `scripts/derive-water-model.js`, with the flat ml-per-token constants deleted. Cross-checks against Google at 0.86x without being tuned to it; the full-scope multiplier lands at 14–25x, inside what real infrastructure implies, where the old value was 38x. Water and cost now make deliberately OPPOSITE caching assumptions — billing re-charges history, compute does not re-spend it. One live finding left open: the fitted tiers are **not monotonic** (`small` above `medium`), which undercuts size-based tiering and is shipped rather than smoothed. Six new guards in `check-prices.js`, each verified by injecting its fault, plus a new `test-water-model.js`. **All seven guards pass.**_
+`water.json`, two items needing Rory — **and then researched in a second pass the same day (F1a): there is real evidence on both.** Li et al.’s own request definition is ~1,300 tokens not 500; OpenRouter’s 100T-token study puts real prompt+completion at >5,400; and Jegham et al. — which we were already citing without using — benchmarks 30 models at known token counts and shows the constant-ml-per-token model is **structurally** wrong, roughly right at short queries and 4–15× over at long ones. The ~40× full-scope multiplier is also outside the evidence range (real: 5× Google, 14× Azure, 26× AWS). **Then Rory chose option 2 and it shipped the same day (F1b): water is now a function of query size**, fitted to that benchmark by the new `scripts/derive-water-model.js`, with the flat ml-per-token constants deleted. Cross-checks against Google at 0.86x without being tuned to it; the full-scope multiplier lands at 14–25x, inside what real infrastructure implies, where the old value was 38x. Water and cost now make deliberately OPPOSITE caching assumptions — billing re-charges history, compute does not re-spend it. One live finding left open: the fitted tiers are **not monotonic** (`small` above `medium`), which undercuts size-based tiering and is shipped rather than smoothed. **A third pass then rebuilt it again (F1c): water is now energy × infrastructure**, because the inversion was the model telling us size was doing two jobs. Every published per-prompt figure now either feeds the model or tests it — Google’s 0.26 mL anchors Gemini’s energy curve (it had been 2.3× over on a cross-vendor average), Jegham’s 30 models fit the energy curves, and Li et al., Altman and **Mistral’s peer-reviewed LCA** validate. Host water rates now come from **our own directly-read 2025 figures**, not the paper’s 2022–23 ones (AWS WUE 0.12, not 0.18). Two methodology corrections against primary definitions: WUE applies to IT energy with no PUE multiplier, and off-site water carries PUE — Jegham has both backwards. Ten water guards, **10/10 verified by fault injection**. **All seven scripts pass.**_
 
 ---
 
@@ -1381,7 +1381,7 @@ now understate prefill.
 > the paper's own headline: infrastructure outweighs architecture. **It undercuts the
 > premise of size-based tiers.** Deliberately *not* guarded — a monotonicity check
 > would only force the data to be quiet. **Open for Rory:** accept non-monotonic
-> tiers, or drop size tiers for per-model/per-host figures.
+> tiers, or drop size tiers for per-model/per-host figures. **Rory took the second: see F1b was superseded within the hour by F1c**, which separates energy from infrastructure and removes the inversion entirely.
 
 **Still true, and recorded in `_remaining_caveats`:** one benchmark, itself modelled
 (inferred hardware, published multipliers, API latency) rather than metered; wide
@@ -1395,6 +1395,78 @@ four tiers, non-negative finite parameters, known tier names, academic > conserv
 that the parameters still reproduce the source data, that the curve stays sublinear
 and monotonic, that the Google cross-check holds, and that the specific regression
 this replaced (4.0× over on a long query) stays fixed.
+
+### F1c. Energy × infrastructure — the model that fits all the published data (2026-08-28)
+
+**F1b's tier inversion wasn't a wart to accept; it was the model telling us size was
+doing two jobs.** Water is now:
+
+```
+water_ml = energy_wh(model, in, out)  ×  water_rate(host, scope)
+```
+
+Model efficiency and infrastructure are **separated, because the evidence separates
+them**: the same DeepSeek model uses **7–10× more water on DeepSeek's own data
+centres than on Azure**. Once that's explicit, a "small" model on thirsty
+infrastructure beating a "medium" one on efficient infrastructure is just a fact,
+not a paradox — and adding a model and re-sourcing a host's WUE become independent
+jobs. `_tier_inversion_resolved` keeps the history.
+
+**Two corrections to how the water rate is computed**, both from primary definitions:
+
+1. **WUE is defined per unit of IT energy** (The Green Grid), and Google applies it
+   that way — `Water/prompt = (E_total − E_overhead) × WUE`, **no PUE multiplier**.
+   Off-site generation water *does* carry PUE, since it tracks grid draw. Jegham has
+   this the other way round. We follow the operator definition:
+   `conservative = wh × wue_site`, `academic = wh × (wue_site + pue × wue_source)`.
+2. **Host figures come from our own index, not the paper.** `transparency-index.json`
+   has directly-read 2025 numbers that are newer: **AWS WUE 0.12 (2025), not 0.18
+   (2023)**; Microsoft 0.27, not 0.30. Using the paper's would have overstated every
+   AWS-hosted model by ~50%.
+
+Energy — and *only* energy — comes from Jegham's Table 4, which is a measurement of
+models, independent of anyone's cooling, so it survives host figures being re-sourced.
+
+**Every published per-prompt figure now either feeds the model or tests it:**
+
+| Published figure | Role | Result |
+|---|---|---|
+| Google 0.26 mL/prompt (arXiv:2508.15734) | **anchors Gemini's energy** | 0.26 mL ⇒ 0.226 Wh IT. Only first-party per-prompt energy anyone publishes |
+| Jegham Table 4, 30 models | **fits every energy curve** | worst per-model error 29% |
+| AWS / Microsoft / Google / Meta PUE + WUE | **sets the water rates** | all directly read, dated, sourced |
+| Li et al. 16.9 mL (GPT-3, 2023) | validation | we give 9.32 mL — lower, as 2025 models should be |
+| Altman 0.32 mL/query | validation | we give 0.11–0.15 mL for GPT-4o. **His figure has no methodology**; the gap is his to explain |
+| Mistral 45 mL/400 tokens (LCA) | validation | we give ~8.7 mL **operational** — the ~5× gap is training + embodied hardware |
+
+Anchoring Gemini mattered: on a cross-vendor class average it came out **2.3× over
+Google's own measurement**. It now brackets it.
+
+**16 of 68 models sit on a curve fitted to that exact model; 52 use a class
+fallback.** Per-model fits carry ≤29% error, class fallbacks 39–74% — so a class
+figure is a genuinely weaker claim, and **the panel says which on hover**. Only exact
+id matches get a measured curve: a 2026 Sonnet does not borrow Claude-3.5 Sonnet's
+numbers.
+
+> **The one number that would most improve this model is one Google already has.**
+> Gemini is anchored on their measurement, but they don't publish the token count of
+> their median prompt, so mapping it to the 100-in/300-out config is our assumption.
+
+**Still true:** all energy rests on one benchmark, itself modelled rather than
+metered. xAI and Mistral publish no PUE or WUE and use the median of the four hosts
+that do. Google publishes no fleet-wide WUE either. **Both scopes are operational
+only** — no training amortisation, no embodied hardware; Mistral's LCA says that's a
+~5× gap we don't model.
+
+**Guards:** `check-prices.js` carries **ten** water checks (host numbers finite and
+non-negative, every host sourced, `wue_source > 0`, curve shapes, all four class
+fallbacks, non-zero output cost, and the model→host / model→curve joins) — **each
+verified by injecting its fault, 10/10 caught**. `test-water-model.js` lifts
+`waterForRequest` from `sidepanel.js` and pins the energy fit against Table 4, the
+host rates against their sources, all six validation figures above, sublinearity,
+monotonicity, and both historical regressions.
+
+**Re-run `node scripts/derive-water-model.js --write` rather than hand-editing
+`_hosts` or `_energy`.** It is idempotent and re-migrates the model entries.
 
 ---
 
@@ -1685,13 +1757,13 @@ node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/te
 
 | Script | Covers | Doesn't cover |
 |---|---|---|
-| `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models; (2026-08-28) the water `_model` shape, both scopes, all four tiers, non-negative parameters, known tier names, academic > conservative | **Never opens `audit.html`**; not the water *values* — that is `test-water-model.js` |
+| `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models; (2026-08-28) the water `_model` shape, both scopes, all four tiers, non-negative parameters, known tier names, ten water checks incl. host sourcing and the model→host/model→curve joins | **Never opens `audit.html`**; not the water *values* — that is `test-water-model.js` |
 | `check-auditor.js` | `audit.html` + `pricing.html`'s `FALLBACK_LIMITS`, against `prices.json` / `plan-limits.json` / `student-access.json` / `transparency-index.json`; plus (2026-08-25) every paid tier being selectable, feature labels, the practices join, the frontier examples, no hand-typed dates in the student copy, expired `claim_by`, and the extension button names | `pricing.html` prices — that's `check-prices.js` |
 | `test-auditor.js` | Sweeps all 56,250 answer combinations + the EcoMeter import | Whether the underlying data is *true* |
 | `check-clock.js` | Clock fallback parity; capex/energy levels vs published totals; one-company share bound; hardcoded anchor date | Counters with no authoritative total — by design, not omission |
 | `test-cost-model.js` | 44 assertions: billed input, image tokens, long-context tiers, export v2 | — |
-| `test-water-model.js` | Water model: reproduces Jegham et al., sublinearity, monotonicity, the Google cross-check, the flat-model regression | Whether the benchmark itself is right |
-| `derive-water-model.js` | Fits `water.json` `_model` from the benchmark (`--write`) | Not a guard — run it when the benchmark changes |
+| `test-water-model.js` | Water model: energy fit vs Jegham Table 4, host rates vs their sources, six published-figure validations, sublinearity, monotonicity, both historical regressions | Whether the benchmark itself is right |
+| `derive-water-model.js` | Fits `water.json` `_energy` + writes `_hosts`, and re-migrates all 68 model entries (`--write`, idempotent) | Not a guard — run it when the benchmark or a host’s WUE changes |
 | `calibrate-tokenizer.js` | Measures the estimator; fails if the UI band is optimistic | The two guessed bands (G3) |
 | `validate-site.js` | HTML/JSON well-formedness, page references | **Plausibility of any number** |
 
