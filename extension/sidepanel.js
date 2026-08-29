@@ -20,7 +20,6 @@ const modelLabel    = document.getElementById('model-label');
 const modelMain     = document.getElementById('model-select-main');
 const msgList       = document.getElementById('msg-list');
 const totalWater      = document.getElementById('water-inline');
-const waterScopeBtn   = document.getElementById('water-scope-btn');
 const waterDisclaimer = document.getElementById('water-disclaimer');
 const refreshBtn    = document.getElementById('refresh-btn');
 const clearBtn      = document.getElementById('clear-btn');
@@ -202,7 +201,6 @@ function getPrice(modelKey) {
 let WATER_DATA   = {};   // modelId -> { energy?, class, host }
 let WATER_ENERGY = {};   // { measured: {...}, class: {...} } — Wh per request
 let WATER_HOSTS  = {};   // host -> { pue, wue_site, wue_source }
-let waterScope   = 'conservative';
 
 function parseWater(json) {
   WATER_ENERGY = json._energy || {};
@@ -254,11 +252,13 @@ function getWaterParams(modelKey) {
   if (!curve || !host) return null;
   return {
     curve,
-    // conservative = on-site cooling only; academic adds the water consumed
-    // generating the electricity, which is where most of it actually goes.
-    mlPerWh: waterScope === 'academic'
-      ? host.wue_site + host.pue * host.wue_source
-      : host.wue_site,
+    // Both ends of the honest range, always. Low = on-site cooling only, the way
+    // operators report it. High adds the water consumed generating the electricity,
+    // which is where most of it actually goes. We used to make the reader pick one
+    // and then printed it to two decimal places, which presented a figure carrying
+    // an order of magnitude of real uncertainty as though it had been measured.
+    mlPerWhLow:  host.wue_site,
+    mlPerWhHigh: host.wue_site + host.pue * host.wue_source,
     measured: !!measured,
     host: m.host,
   };
@@ -268,14 +268,26 @@ function waterForRequest(prm, turns, inputTokens, outputTokens) {
   const wh = prm.curve.base_wh * Math.max(turns, 1)
            + prm.curve.wh_per_input_token  * inputTokens
            + prm.curve.wh_per_output_token * outputTokens;
-  return wh * prm.mlPerWh;
+  return { low: wh * prm.mlPerWhLow, high: wh * prm.mlPerWhHigh };
 }
 
-function fmtWater(ml) {
-  if (ml >= 1000)  return (ml / 1000).toFixed(2) + ' L';
-  if (ml >= 1)     return ml.toFixed(2) + ' ml';
-  if (ml >= 0.001) return (ml * 1000).toFixed(2) + ' µl';
-  return ml.toFixed(6) + ' ml';
+// Two significant figures. The underlying number swings by an order of magnitude
+// with host and cooling design, so further decimal places are decoration that
+// reads as precision we do not have.
+function sigFigs2(n) {
+  if (!isFinite(n) || n <= 0) return '0';
+  return String(Number(n.toPrecision(2)));
+}
+function waterUnit(ml) {
+  if (ml >= 1000) return { div: 1000,  unit: 'L' };
+  if (ml >= 1)    return { div: 1,     unit: 'ml' };
+  return { div: 0.001, unit: 'µl' };
+}
+// One unit across the whole range, chosen off the top end so the two numbers stay
+// directly comparable: "0.9\u20137 ml", never "900 µl \u2013 7 ml".
+function fmtWaterRange(low, high) {
+  const u = waterUnit(high);
+  return sigFigs2(low / u.div) + '\u2013' + sigFigs2(high / u.div) + ' ' + u.unit;
 }
 
 // ── Usage log — local only, for the Subscription Auditor ──────────────────────
@@ -1115,11 +1127,20 @@ function renderSummary() {
     const perfNote = currentPlatformName === 'Perplexity'
       ? ' (overhead assumes web search active)'
       : '';
+    // The one thing a DOM-level tracker can see that almost nobody reports: chat
+    // UIs resend the whole transcript every turn, so the bill is a multiple of the
+    // text on screen — and that multiple CLIMBS as the conversation runs. Saying
+    // only "includes replay" states the mechanism but hides the shape of it, and
+    // the shape is the part that costs the user money.
+    const replayMult = inp > 0 ? billedInput / inp : 1;
+    const replayNote = (turns >= 2 && replayMult >= 1.05)
+      ? ' — billed on ×' + replayMult.toFixed(1) + ' that, rising with every turn'
+      : ' — true cost includes replay + overhead';
+
     const replayEl = document.getElementById('replay-cost-label');
     if (replayEl) {
       replayEl.textContent =
-        '~$' + visibleCost.toFixed(4) + ' visible' + imgNote +
-        ' — true cost includes replay + overhead' + perfNote;
+        '~$' + visibleCost.toFixed(4) + ' visible' + imgNote + replayNote + perfNote;
     }
   } else {
     totalCost.textContent = '—';
@@ -1137,14 +1158,17 @@ function renderSummary() {
   // is what the benchmark shows.
   const wprm = getWaterParams(key);
   if (wprm && tot > 0 && totalWater) {
-    totalWater.textContent  = '💧 ~' + fmtWater(waterForRequest(wprm, turns, inp, adjustedOut));
+    const w = waterForRequest(wprm, turns, inp, adjustedOut);
+    totalWater.textContent  = '💧 ' + fmtWaterRange(w.low, w.high);
     // Say which of the two this is. A curve fitted to THIS model is a much
     // stronger claim than one borrowed from other models of a similar size,
     // and the user should be able to find that out.
     totalWater.title = (wprm.measured
       ? 'Energy curve measured for this model'
       : 'Energy curve inferred from similarly-sized models — nobody has measured this one')
-      + '; water rates from ' + wprm.host + '. Scope: ' + waterScope + '.';
+      + '; water rates from ' + wprm.host + '. Low end = on-site cooling only, the way '
+      + 'operators report it. High end adds the water used generating that electricity. '
+      + 'Both are operational only — training and hardware are not counted.';
     totalWater.style.display = 'inline';
     if (waterDisclaimer) waterDisclaimer.style.display = 'block';
   } else if (totalWater) {
@@ -1670,10 +1694,3 @@ logoutBtn.addEventListener('click', async () => {
   setStatus('');
 });
 
-// ── Water scope toggle ────────────────────────────────────
-waterScopeBtn.addEventListener('click', () => {
-  waterScope = waterScope === 'conservative' ? 'academic' : 'conservative';
-  waterScopeBtn.textContent = waterScope === 'academic' ? '💧 Full-scope' : '💧 Conservative';
-  waterScopeBtn.classList.toggle('active', waterScope === 'academic');
-  renderSummary();
-});

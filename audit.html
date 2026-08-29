@@ -738,6 +738,11 @@ function privacyLine(prov){
   if(!bits.length) return `You said privacy matters most. See the ${link} for what ${row.provider} discloses.`;
   return `You said privacy matters most. On ${row.provider}'s own consumer documents: ${bits.join('; ')}. That grades what they DISCLOSE, not what they do — and note the pattern across this whole market: the paying business customer is opted out of training by default while the consumer is opted in and has to go find the toggle. Full detail in the ${link}.`;
 }
+/* What the per-token comparison leaves out. The API is a FLOOR on what a plan is
+   worth, not a substitute for it: the same models with none of the product built
+   around them. Any line that says "the API is cheaper" has to carry this, or it is
+   upsell copy in reverse — selling a worse experience on price alone. */
+const API_TRADEOFF = `The API isn’t the app: no chat interface, memory or projects, no file handling, no connectors or web search wired up for you, and its own rate limits to sit inside. You build and run all of that yourself.`;
 function recommend(pf,sig){
   const tiers=PLANS[pf.provider].slice().sort((x,y)=>x.price-y.price);
   const free=tiers[0];
@@ -785,7 +790,7 @@ function recommend(pf,sig){
     why.push(`Pay per-use via the API for those (~${money(hybrid.apiExtra)}/mo)${t.price>0?` — about ${money(hybrid.total)}/mo all in`:''} versus ${fit.m} at ${money(fit.price)}/mo; you pay only for what you actually run.`);
     // The API is a floor on value, not the product. Saying "it's cheaper" without
     // this is upsell copy in reverse — it sells a worse experience on price alone.
-    why.push(`The API isn’t the app: no chat interface, memory, file handling or support, and you wire it up yourself.`);
+    why.push(API_TRADEOFF);
     // Our conversation-size assumption is the biggest lever on that API figure. When
     // the two options land close together it is the assumption deciding, not the maths.
     if(closeCall) why.push(sig.priority==='cost'
@@ -846,7 +851,11 @@ function recommend(pf,sig){
   }
   if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo${(()=>{const rs=(pf.models_used||[]).filter(k=>reasoningMult(k)>1);if(!rs.length) return ``;const allMeasured=rs.every(k=>(reasoningEntry(k)||{}).measured);return `, including the thinking tokens a reasoning model bills at the output rate (${allMeasured?`measured against the provider’s own API`:`our estimate — not yet measured for this model`})`;})()}`
     + ((pf.days_per_month||30)<30 ? ` — billed across the ${pf.days_per_month} days a month you actually use it, not all 30` : '')
-    + (fit.price>0 && api<fit.price ? ` — cheaper, if you’re fine without the app.` : `.`));
+    + (fit.price>0 && api<fit.price ? ` — cheaper on tokens alone.` : `.`));
+  // A bare "the API is cheaper" is the one recommendation here that can send
+  // someone somewhere materially worse, so it never ships without what it costs
+  // them. The hybrid branch above already said this; do not say it twice.
+  if(api!=null && !hybrid && fit.price>0 && api<fit.price) why.push(API_TRADEOFF);
   else if(LEGACY_ONLY.has(pf.provider)) why.push(`No API comparison here: Copilot runs on OpenAI models but Microsoft publishes no per-token rate to price it against.`);
   // DeepSeek has said in writing that a "significant" price rise is coming with no
   // date attached, and it's the cheapest thing we track by a wide margin — so any
