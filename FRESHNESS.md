@@ -125,7 +125,7 @@ wrong number in front of a user.
 | ~~2026-08-31~~ | ~~Sonnet 5 intro rate ends~~ — **resolved 2026-08-24.** Anthropic made $2/$10 permanent; the rise to $3/$15 will not occur. | [A5](#a5-dated-price-events) |
 | ~~No date~~ | ~~DeepSeek's warned price rise~~ — **landed 2026-08-24**, ~3× input / ~4.5× output. | [A5](#a5-dated-price-events) |
 | ~~No date~~ | ~~Mistral "Vibe" rename~~ — **confirmed 2026-08-24.** Product is branded Vibe; the `Le Chat Pro` plan key is kept as the cross-file join. | [A2](#a2-consumer-subscription-prices) |
-| ~~Blocking~~ | ~~Store build materially wrong, fix unshipped~~ — **v6.13 uploaded 2026-08-24**, awaiting review. Top item since 2026-08-02. | [H4](#h4-the-shipped-build-vs-main) |
+| ~~Blocking~~ | ~~Store build materially wrong, fix unshipped~~ — **v6.13 uploaded 2026-08-24**, **v6.14 on 2026-08-28**. Top item since 2026-08-02. | [H4](#h4-the-shipped-build-vs-main) |
 
 ---
 
@@ -1663,12 +1663,19 @@ change with it.
 
 **This is a freshness item because what users have is not what this repo says.**
 
-**Closed 2026-08-24: v6.13 uploaded**, built from `main` at `35359ec` and verified
-before upload (22 entries, manifest at root, no backslash separators, fonts and
-icons present, version confirmed inside the zip). It is the first build carrying
-the corrected cost model. **Awaiting review** — watch for a repeat of the Yellow
-Argon listing rejection, and expect permission re-review for
-`generativelanguage.googleapis.com` regardless.
+**v6.14 uploaded 2026-08-28**, built by `scripts/build-extension.js` (H0) and
+verified with an independent implementation: 22 entries, zero backslash
+separators, manifest reading 6.14 inside the zip, every file byte-identical to
+`extension/`. It ships the rebuilt water model (F1a–F1c), so **users' water
+figures move** — `water.json` `_model_history` explains why, in order.
+**Awaiting review** — watch for a repeat of the Yellow Argon listing rejection,
+and expect permission re-review for `generativelanguage.googleapis.com`
+regardless.
+
+**v6.13 (2026-08-24) appears to have cleared review**, because the store blocks a
+new upload while a prior version is pending and 6.14 went up. Its verdict was
+never recorded here before it was superseded — confirm in the dashboard rather
+than assuming. It was the first build carrying the corrected cost model.
 
 For the record, the store had been serving a pre-2026-08-02 build with billed
 input charged ~2×, Claude image tokens ~51×, a false "±8%" band, stale prices, no
@@ -1678,7 +1685,7 @@ GPT-5.6 family, and export v1.
 > The extension reads `chrome.runtime.getURL('prices.json')` — the bundled copy —
 > and never fetches remotely. Whatever shipped is what users see until the next
 > upload. **`gemini-3.6-flash` and `gemini-3.7-flash` are on a promotional rate
-> until 2026-12-31** (A6); if 6.13 is still live in January it understates Gemini
+> until 2026-12-31** (A6); if 6.14 is still live in January it understates Gemini
 > cost by 2×, which is the harmful direction. `check-prices.js` catches this in the
 > repo and cannot catch it in the store. **The real fix is exercising the weekly
 > `publish.yml` cadence rather than shipping once every few months.**
@@ -1686,14 +1693,15 @@ GPT-5.6 family, and export v1.
 **Every pass should re-ask:** what's the store status (dashboard → the item →
 status + version), and has the fix gone up?
 
-**Local state:** `manifest.json` and `prices.json._meta.version` agree at **6.13**
-(`check-prices.js` enforces the match — bump both or neither).
+**Local state:** `manifest.json` and `prices.json._meta.version` agree at **6.14**
+(`check-prices.js` enforces the match, and `build-extension.js` refuses to package
+if they drift — bump both or neither).
 
 **What a future pass should ask here**, in order:
 
 | Question | Why it matters |
 |---|---|
-| Did 6.13 clear review? | If rejected on listing copy again, the fixed text is already in `STORE-LISTING.md` — don't recompose it. |
+| Did 6.14 clear review, and did 6.13 ever publish? | If rejected on listing copy again, the fixed text is already in `STORE-LISTING.md` — don't recompose it. |
 | Is it *submitted*, or a saved draft? | A draft sits in the dashboard forever and never reaches review. |
 | How old are the shipped prices? | They're frozen at build time. Compare the live build's version against `prices.json._meta.last_updated`. |
 
@@ -1704,7 +1712,7 @@ regardless of code.
 
 **Windows build traps are in `PROJECT-CONTEXT.md` §11** — there are two, and the
 dangerous one *uploads successfully* and just ships broken icons and fonts. The
-verified 6.13 build checked: 22 entries, manifest at root, no backslash
+verified 6.14 build checked: 22 entries, manifest at root, no backslash
 separators, `fonts/` (5) and `icons/` (4) present, store docs excluded, and the
 version read back from *inside* the zip. Repeat all five next time.
 

@@ -7,21 +7,23 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ---
 
-## 0. Working state (read this first) — as of 2026-08-26
+## 0. Working state (read this first) — as of 2026-08-28
 
-### ✅ v6.13 IS UPLOADED — the long-running store gap is closed
+### ✅ v6.14 IS UPLOADED (2026-08-28) — and 6.13 must have cleared review
 
-**Rory uploaded `ecometer-ai-v6.13.zip` on 2026-08-24.** This had been the top item since 2026-08-02 and the whole of §0 used to be about it. It is done.
+**Rory uploaded `ecometer-ai-v6.14.zip` on 2026-08-28.** The store blocks a new upload while a prior version is still "Pending review" (§11), so **the fact that 6.14 went up is itself evidence 6.13 cleared** — its verdict was never recorded here before it was superseded. Worth confirming in the dashboard rather than assuming.
 
-What that fixes for users, all of which had been live in the store since before 2026-08-02:
+**What 6.14 carries over 6.13:** the water model was rebuilt twice on 2026-08-28 — from a flat ml-per-token constant, to a query-size curve, to energy × infrastructure (FRESHNESS F1a–F1c). **Users' water figures move**, and not uniformly: long sessions fall substantially, AWS-hosted models drop (published WUE is 0.12, not the 0.18 we had been using), Gemini is now anchored on Google's own measurement instead of a cross-vendor average that overstated it by 2.3×, and DeepSeek-on-DeepSeek rises sharply. If anyone asks why a number changed, `water.json` `_model_history` answers in order.
+
+**v6.13 was the release that closed the long-running store gap**, which had been the top item since 2026-08-02. What it fixed, all live in the store since before then:
 - **billed input charged at ~2×** (every "true cost" figure roughly double)
 - **Claude image tokens at ~51×** (any conversation with an image wildly overcounted)
 - **"±8% token estimate"** in the panel, when the real figure was 12.9% with a systematic undercount bias
 - stale prices, no GPT-5.6 family, export v1
 
-**The build that went up:** built from `main` at `35359ec` via the §11 PowerShell procedure, verified before upload — 22 entries, `manifest.json` at root, no backslash separators, `fonts/` (5) and `icons/` (4) present, store-docs excluded, manifest version `6.13` confirmed *inside* the zip. `check-prices`, `check-auditor`, `test-cost-model` and `validate-site` all passed at 6.13.
+**The build that went up:** 6.14 was built by `node scripts/build-extension.js` — packaging is no longer a hand-run PowerShell snippet (§11, and FRESHNESS H0) — and verified with an *independent* implementation rather than the writer that produced it: 22 entries, zero backslash separators, `manifest.json` at root reading `6.14` *inside* the zip, `fonts/` (5) and `icons/` (4) present, store-docs excluded, and all 22 files extracting byte-identical to `extension/`. **All seven scripts passed at 6.14.** (6.13 was built from `main` at `35359ec` via the old PowerShell procedure.)
 
-It carries yesterday's full price re-verification, the Auditor accuracy work, and the corrected student-access data.
+v6.13 had also carried the 2026-08-23 full price re-verification, the Auditor accuracy work and the corrected student-access data; 6.14 inherits all of it.
 
 **Next checkpoint: the review verdict.** Two things to watch, in order of likelihood:
 1. **Listing copy.** v6.12 was rejected on *Spam and Placement in the Store* (ref **Yellow Argon**) for the nine-platform keyword list — code was never at issue. If it lands again, the fixed copy is already in `STORE-LISTING.md` and the standing rule is at the top of that file.
@@ -29,14 +31,14 @@ It carries yesterday's full price re-verification, the Auditor accuracy work, an
 
 **If it was left as a saved draft rather than actually submitted, submitting is the remaining step** — a draft sits in the dashboard indefinitely and never reaches review.
 
-⚠️ **Prices in a shipped build are frozen.** The extension reads `chrome.runtime.getURL('prices.json')` — the bundled copy — and never fetches remotely. So 6.13's prices are what users see until the next upload. Concretely: **`gemini-3.6-flash` and `gemini-3.7-flash` are on a promotional half-price rate that ends 2026-12-31.** If 6.13 is still the live build in January it will *understate* Gemini cost by 2×, which is the harmful direction for this project. `check-prices.js` fails in the repo on that date, but a shipped build cannot know. Either exercise the weekly `publish.yml` cadence or diarise a December rebuild.
+⚠️ **Prices in a shipped build are frozen.** The extension reads `chrome.runtime.getURL('prices.json')` — the bundled copy — and never fetches remotely. So 6.14's prices are what users see until the next upload. Concretely: **`gemini-3.6-flash` and `gemini-3.7-flash` are on a promotional half-price rate that ends 2026-12-31.** If 6.14 is still the live build in January it will *understate* Gemini cost by 2×, which is the harmful direction for this project. `check-prices.js` fails in the repo on that date, but a shipped build cannot know. Either exercise the weekly `publish.yml` cadence or diarise a December rebuild.
 
 ### Ship status
 
 - **Website: current.** `main` auto-deploys; everything below is live on `legerlyai.com`.
-- **Extension: v6.13 uploaded 2026-08-24, awaiting review.** Built from `main` at `35359ec`. This is the first build to ship the corrected cost model — the store had been serving the ~2× / ~51× build since before 2026-08-02.
+- **Extension: v6.14 uploaded 2026-08-28, awaiting review.** Ships the rebuilt water model (F1a–F1c). v6.13 (2026-08-24) was the first build with the corrected cost model, and appears to have cleared review since the store would otherwise have blocked this upload.
 - **What users get once it clears:** correct billed-input and image-token maths, the measured ±11% band instead of the false ±8%, prices verified 2026-08-24 against every provider's own page, the GPT-5.6 family, and export v2.
-- **v6.12 was REJECTED 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Listing copy only; code and permissions were never at issue. Fixed, with a standing rule at the top of `STORE-LISTING.md`. **6.13 was bumped pre-emptively rather than reactively** (the convention is to bump only on a duplicate-version rejection) because 6.12 was already consumed by the rejected submission.
+- **v6.12 was REJECTED 2026-07-29** — *Spam and Placement in the Store*, ref **Yellow Argon**: "excessive keywords in the item's description", quoting the nine-platform list. Listing copy only; code and permissions were never at issue. Fixed, with a standing rule at the top of `STORE-LISTING.md`. **6.13 was bumped pre-emptively rather than reactively** (the convention is to bump only on a duplicate-version rejection) because 6.12 was already consumed by the rejected submission. **6.14 was likewise bumped deliberately** — 6.13 is live, so shipping the water-model work needed a strictly higher version.
 - Whatever is submitted still adds the **`generativelanguage.googleapis.com` host permission**, so expect permission re-review and a user-facing notice regardless.
 - Paste-ready store answers already exist — don't recompose them: `STORE-SUBMISSION.md` (single purpose, per-permission justifications, data-usage disclosure — submitted as **"Website content" only**, reasoning in its §3) and `STORE-LISTING.md` (descriptions + pre-upload checklist).
 
@@ -331,7 +333,7 @@ The clock gap is now closed. **`check-clock.js` (added 2026-08-24) is the sanity
 
 ### Open threads, most useful first
 
-1. **Watch for the v6.13 review verdict** (uploaded 2026-08-24; see §0). If it is rejected on listing copy again, the fixed text is already in STORE-LISTING.md — do not recompose it. If it is left as an unsubmitted draft, submit it. Once it publishes, the store and main finally agree for the first time since before 2026-08-02.
+1. **Watch for the v6.14 review verdict** (uploaded 2026-08-28; see §0). If it is rejected on listing copy again, the fixed text is already in STORE-LISTING.md — do not recompose it. If it is left as an unsubmitted draft, submit it. **Expect permission re-review** for `generativelanguage.googleapis.com` and a user-facing notice regardless of the verdict — that is the likeliest source of friction, and it is unrelated to the water work. Also confirm in the dashboard that **6.13 actually published**, which this upload succeeding implies but does not prove.
 2. **Rory's EcoMeter export.** The `pricing.html` tokens-per-message archetypes are still round-number *assumptions*, and they are the largest lever on every figure in the Break even column. Export v2 exists to fix this but needs a shipped build first. `billed_input_tokens_per_day ÷ user_turns_per_day` is the number to anchor to.
 3. **A screenshot showing supported platforms.** The store description now points at one ("The screenshots below show the full list of supported platforms"). If it isn't uploaded, that's its own metadata problem — arguably worse than the original rejection.
 4. **A human read of the store description.** It was rewritten across four commits (opening, a moved sentence, a changed bullet, markdown stripped). Each diff is sound; the flow has never had a human's eyes.
@@ -391,7 +393,7 @@ CNAME                     legerlyai.com
 PROJECT-CONTEXT.md        (this file)
 
 extension/                The Chrome extension (load THIS folder unpacked)
-  manifest.json             MV3, version 6.13  (host perms incl. generativelanguage.googleapis.com)
+  manifest.json             MV3, version 6.14  (host perms incl. generativelanguage.googleapis.com)
   STORE-LISTING.md          Paste-ready store description + pre-upload checklist
   STORE-SUBMISSION.md       Paste-ready privacy practices + per-permission justifications
   sidepanel.html/.js        The side-panel UI + all logic
@@ -755,8 +757,8 @@ Full summary in §0. The short version:
 
 ## 10. Open items / caveats
 
-- **✅ RESOLVED 2026-08-24 — v6.13 uploaded, awaiting review (see §0).** The store had been serving a pre-2026-08-02 build carrying the ~2× billed-input and ~51× image-token bugs and the false ±8% band. That gap is closed pending the review verdict. Note that a shipped build freezes its bundled prices (see the promo warning in §0).
-- **v6.12 was rejected 2026-07-29 for listing copy, not code** (excessive keywords — the nine-platform list). Copy is fixed, and **v6.13 was uploaded 2026-08-24**. Note for next time: it still adds the `generativelanguage.googleapis.com` host permission, so expect permission re-review and a user-facing notice regardless. **Name supported platforms at most once, in prose, and never in the short description** — the standing rule is at the top of `extension/STORE-LISTING.md`.
+- **✅ v6.14 uploaded 2026-08-28, awaiting review (see §0).** Ships the rebuilt water model. The long-running store gap — a pre-2026-08-02 build with the ~2× billed-input and ~51× image-token bugs and the false ±8% band — was closed by v6.13 on 2026-08-24, which appears to have published since the store would otherwise have blocked this upload. Note that a shipped build freezes its bundled prices (see the promo warning in §0).
+- **v6.12 was rejected 2026-07-29 for listing copy, not code** (excessive keywords — the nine-platform list). Copy is fixed; **v6.13 went up 2026-08-24 and v6.14 on 2026-08-28**. Note for next time: it still adds the `generativelanguage.googleapis.com` host permission, so expect permission re-review and a user-facing notice regardless. **Name supported platforms at most once, in prose, and never in the short description** — the standing rule is at the top of `extension/STORE-LISTING.md`.
 - **Sonnet 5's intro rate is now PERMANENT** — Anthropic cancelled the 2026-09-01 rise to $3/$15 and $2/$10 is the standard price (its pricing page, 2026-08-24). This was the nearest-term dated task in this file; there is nothing to do on 31 August.
 - **`grok-build-0.1`, Sonar Deep Research, Magistral / Devstral / Ministral and Codex are deliberately untracked** — specialist or non-consumer-chat models. Adding any means inventing a `water.json` tier, so decide rather than default.
 - **Mistral HAS rebranded Le Chat → "Vibe"** (confirmed 2026-08-24). Plan keys deliberately unchanged — they are the join key across `prices.json`, `plan-limits.json` and `audit.html`; the rebrand lives in the plan `note`. Renaming means changing all three in one commit.
@@ -792,26 +794,15 @@ Both were hit on the 6.12 upload; the second one is the dangerous one because th
 1. **`manifest.json` must be at the zip ROOT.** Zipping the `extension` folder gives `extension/manifest.json` and the store rejects it as missing. Zip the **contents**.
 2. **Windows zip tools write backslash path separators**, which violate the ZIP spec. `manifest.json` is still found (it's at root), but Chrome then can't resolve `fonts/` and `icons/` — so it installs with **missing icons and fonts instead of failing**. This affects `Compress-Archive`, .NET `ZipFile::CreateFromDirectory` under PowerShell 5.1, *and* Explorer's "Send to → Compressed folder". `zip` is not available in this Git Bash.
 
-Working build (writes each entry with an explicit forward-slash path; also drops the two store-docs markdown files, which shouldn't ship to users):
+**Both traps are handled by the build script — use it rather than zipping by hand:**
 
-```powershell
-$stage="$env:TEMP\ecometer-build"; $out="$PWD\ecometer-ai-v<VERSION>.zip"
-if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
-New-Item -ItemType Directory -Force -Path $stage | Out-Null
-Copy-Item "$PWD\extension\*" -Destination $stage -Recurse -Force
-Remove-Item "$stage\STORE-LISTING.md","$stage\STORE-SUBMISSION.md" -Force -ErrorAction SilentlyContinue
-if (Test-Path $out) { Remove-Item $out -Force }
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-$zip=[System.IO.Compression.ZipFile]::Open($out,'Create')
-$base=(Resolve-Path $stage).Path.TrimEnd('\') + '\'
-foreach ($f in Get-ChildItem $stage -Recurse -File) {
-  $rel=$f.FullName.Substring($base.Length).Replace('\','/')
-  [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip,$f.FullName,$rel,'Optimal') | Out-Null
-}
-$zip.Dispose()
+```bash
+node scripts/build-extension.js
 ```
 
-Verify before uploading: no backslashes in entry names, `manifest.json` present at root, `fonts/` and `icons/` present. `*.zip` is gitignored, so the artifact won't be committed.
+It writes the archive itself (deflate via `zlib`, forward slashes, zero dependencies) and **refuses to build** if `prices.json._meta.version` disagrees with the manifest, if `manifest.description` names any of the nine products or drifts from `STORE-LISTING.md`, or if a required file is missing. `--check` verifies without writing. See FRESHNESS **H0**.
+
+Verify before uploading with an *independent* implementation, not the writer that produced the zip — FRESHNESS H0 has the one-liner. Check: no backslashes in entry names, `manifest.json` at root with the right version *inside* the zip, `fonts/` and `icons/` present. `*.zip` is gitignored, so the artifact won't be committed.
 
 > Note: `release.yml` builds with `cd extension && zip -r ..` on Linux, which is correct, but it does **not** exclude `STORE-LISTING.md` / `STORE-SUBMISSION.md` — CI zips still contain them. Harmless, but the two paths differ.
 
