@@ -897,6 +897,25 @@ data sitting next to it.
 
 ## E1. `transparency-index.json`
 
+**Two cells changed 2026-08-28, both found by building on the numbers rather than
+re-reading the reports** — `_meta.last_verified` moved to 2026-08-28, no grade moved:
+
+- **Google / comparability** gained the finding that its per-prompt figures have
+  **no published denominator**. Google reports 0.24 Wh and 0.26 mL for the *median*
+  Gemini Apps text prompt but never says how many tokens a median prompt is, so the
+  number cannot be turned into a rate, checked against a per-token benchmark, or
+  applied to your own usage. Searched arXiv:2508.15734 directly; it is not there.
+  **Mistral, publishing far less overall, states its figure per 400-token prompt and
+  is therefore usable** — so this is fixable, and it is a number Google already holds.
+  It is also the largest remaining error source in F1c's water model.
+- **OpenAI / comparability** was **corrected**: it said OpenAI had published no water
+  numbers, which overstated the case. Altman's 0.32 ml per query (Jun 2025) exists and
+  is widely cited as if it were a disclosure. Still 🔴 — no methodology, boundary,
+  token count or scope, and nothing to audit it against — but "no number" and "a
+  number you cannot check" are different findings, and we were making the wrong one.
+  Caught because `water.json` cites that figure while this file denied it existed:
+  **two files in this repo disagreed about a fact.**
+
 **Re-checked 2026-08-24, and the open question it raised was resolved the same day.
 It produced the first grade movement this index has ever recorded:**
 
