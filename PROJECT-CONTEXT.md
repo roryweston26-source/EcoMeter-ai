@@ -414,7 +414,7 @@ extension/                The Chrome extension (load THIS folder unpacked)
 
 scripts/
   update-prices.js          Writes prices.json api section (hardcoded values)
-  bump-version.js           Increments manifest version (reactive)
+  bump-version.js           Increments manifest + prices.json version (reactive)
   roll-clock.js             Rolls clock.json anchor forward
   fetch-tokenizers.js       Stages real provider tokenizer assets for exact-local counts
   validate-site.js          Pre-deploy sanity check for the static site
