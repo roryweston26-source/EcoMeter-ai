@@ -40,6 +40,9 @@ function lift(name) {
   }
 }
 const waterForRequest = eval('(' + lift('waterForRequest') + ')');
+const sigFigs2      = eval('(' + lift('sigFigs2') + ')');
+const waterUnit     = eval('(' + lift('waterUnit') + ')');
+const fmtWaterRange = eval('(' + lift('fmtWaterRange') + ')');
 
 let fail = 0;
 const ok = (cond, msg) => {
@@ -48,11 +51,18 @@ const ok = (cond, msg) => {
 };
 
 const curveOf = key => water._energy.measured[key] || water._energy.class[key];
-const mlPerWh = (host, scope) => scope === 'academic'
-  ? water._hosts[host].wue_site + water._hosts[host].pue * water._hosts[host].wue_source
-  : water._hosts[host].wue_site;
-const W = (key, host, scope, turns, i, o) =>
-  waterForRequest({ curve: curveOf(key), mlPerWh: mlPerWh(host, scope) }, turns, i, o);
+const scopeEnds = host => ({
+  mlPerWhLow:  water._hosts[host].wue_site,
+  mlPerWhHigh: water._hosts[host].wue_site
+             + water._hosts[host].pue * water._hosts[host].wue_source,
+});
+// waterForRequest returns { low, high } — the panel shows both as a range rather
+// than making the reader pick one. The scopes are still the ends of that range,
+// so this helper keeps taking a scope and reads the matching end.
+const W = (key, host, scope, turns, i, o) => {
+  const r = waterForRequest(Object.assign({ curve: curveOf(key) }, scopeEnds(host)), turns, i, o);
+  return scope === 'academic' ? r.high : r.low;
+};
 const whOf = (key, i, o) => {
   const c = curveOf(key);
   return c.base_wh + c.wh_per_input_token * i + c.wh_per_output_token * o;
@@ -153,6 +163,45 @@ console.log('\nthe original regression stays fixed');
   const flat = (10000 + 1500) * 0.020;
   const now = W('o3', 'azure', 'academic', 1, 10000, 1500);
   ok(flat / now > 2, 'flat model was ' + (flat / now).toFixed(1) + 'x the current figure on a long query');
+}
+
+/* ── The number must not READ as more certain than it is ──────────────────────
+   The panel used to print one scope at toFixed(2) — two decimals on a figure that
+   swings 5x-50x by scope and 7-10x by host. It now prints both ends of that range
+   at two significant figures. These pin the PRESENTATION, not the model: a range
+   that silently collapses back to false precision is the regression to catch. */
+console.log('\nthe displayed range stays honest');
+{
+  let inverted = 0, mixedUnit = 0, tooPrecise = 0, unreadable = 0, n = 0;
+  for (const host of Object.keys(water._hosts)) {
+    for (const key of Object.keys(water._energy.class)) {
+      for (const [t, i, o] of [[1, 400, 600], [10, 4000, 6000], [60, 30000, 45000]]) {
+        const r = waterForRequest(Object.assign({ curve: curveOf(key) }, scopeEnds(host)), t, i, o);
+        const out = fmtWaterRange(r.low, r.high);
+        n++;
+        if (!(r.high > r.low)) inverted++;
+        // "0.39–19 ml" — two numbers, one unit, unit at the end.
+        if (!/^[0-9.]+\u2013[0-9.]+ (\u00b5l|ml|L)$/.test(out)) mixedUnit++;
+        // The unit must come off the HIGH end. Picking it off the low end still
+        // yields one unit, but renders "390\u201319000 µl" instead of "0.39\u201319 ml".
+        const parts = out.split(' ');
+        const hiRendered = Number(parts[0].split('\u2013')[1]);
+        if (hiRendered >= 1000 && parts[1] !== 'L') unreadable++;
+        for (const v of out.split(' ')[0].split('\u2013')) {
+          if (Number(Number(v).toPrecision(2)) !== Number(v)) tooPrecise++;
+        }
+      }
+    }
+  }
+  ok(inverted === 0,   'full scope exceeds on-site scope in all ' + n + ' rendered cases');
+  ok(unreadable === 0, 'the unit is picked off the top end, so the high figure never reads 1000+');
+  ok(mixedUnit === 0,  'both ends share one unit in all ' + n + ' rendered cases');
+  ok(tooPrecise === 0, 'neither end exceeds two significant figures');
+
+  // The toggle is gone; nothing may reintroduce a single selected scope, and no
+  // ml figure may go back to two decimal places.
+  ok(!/waterScope/.test(src), 'no waterScope toggle left in sidepanel.js');
+  ok(!/toFixed\(2\) \+ ' ml'/.test(src), 'no two-decimal ml formatting left in sidepanel.js');
 }
 
 console.log(fail ? '\n' + fail + ' FAILURE(S)' : '\nall water-model tests pass');

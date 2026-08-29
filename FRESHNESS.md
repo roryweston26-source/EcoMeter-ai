@@ -47,6 +47,39 @@ of these were also live in the extension's user-facing disclaimer and are fixed
 there. **No tier value changed** — all 68 preserved. **New: `_open_questions`** in
 `water.json`, two items needing Rory — **and then researched in a second pass the same day (F1a): there is real evidence on both.** Li et al.’s own request definition is ~1,300 tokens not 500; OpenRouter’s 100T-token study puts real prompt+completion at >5,400; and Jegham et al. — which we were already citing without using — benchmarks 30 models at known token counts and shows the constant-ml-per-token model is **structurally** wrong, roughly right at short queries and 4–15× over at long ones. The ~40× full-scope multiplier is also outside the evidence range (real: 5× Google, 14× Azure, 26× AWS). **Then Rory chose option 2 and it shipped the same day (F1b): water is now a function of query size**, fitted to that benchmark by the new `scripts/derive-water-model.js`, with the flat ml-per-token constants deleted. Cross-checks against Google at 0.86x without being tuned to it; the full-scope multiplier lands at 14–25x, inside what real infrastructure implies, where the old value was 38x. Water and cost now make deliberately OPPOSITE caching assumptions — billing re-charges history, compute does not re-spend it. One live finding left open: the fitted tiers are **not monotonic** (`small` above `medium`), which undercuts size-based tiering and is shipped rather than smoothed. **A third pass then rebuilt it again (F1c): water is now energy × infrastructure**, because the inversion was the model telling us size was doing two jobs. Every published per-prompt figure now either feeds the model or tests it — Google’s 0.26 mL anchors Gemini’s energy curve (it had been 2.3× over on a cross-vendor average), Jegham’s 30 models fit the energy curves, and Li et al., Altman and **Mistral’s peer-reviewed LCA** validate. Host water rates now come from **our own directly-read 2025 figures**, not the paper’s 2022–23 ones (AWS WUE 0.12, not 0.18). Two methodology corrections against primary definitions: WUE applies to IT energy with no PUE multiplier, and off-site water carries PUE — Jegham has both backwards. Ten water guards, **10/10 verified by fault injection**. **All seven scripts pass.**_
 
+_**2026-08-29 — not a full pass; one targeted job: F's presentation, plus three
+outside-feedback fixes.** The water model itself is unchanged (F1c stands); what
+changed is that it no longer **presents** as certain. The panel used to render
+`'💧 ~' + fmtWater(...)` at `toFixed(2)` — two decimal places on a figure our own
+disclaimer says swings **5×–50× by scope and 7–10× by host**. Verified against
+`water.json` `_hosts`: the real scope spread is 5.1× (Google) to 49.5× (AWS), so
+the disclaimer was right and the display was not. **Both endpoints are now shown
+as a range at two significant figures** (`0.39–19 ml`), the Conservative /
+Full-scope toggle is deleted (it existed only to pick which single number to
+over-state), and `fmtWaterRange()` holds one unit across the range so the ends stay
+comparable. Checked across all 68 models in `water.json` and every magnitude from
+µl to L. **Six new guards in `test-water-model.js`, each verified by injecting its
+fault** — they pin the *presentation*, not the model: the range must not collapse to
+one number, the unit must come off the top end, neither end may exceed two
+significant figures, and neither `waterScope` nor two-decimal ml formatting may
+return. Its `W()` helper still takes a scope, because the scopes are now the ends of
+the range rather than a thing the reader picks. This closes the gap between what CLAUDE.md requires — never present
+modelled figures as measured — and what the extension actually did.
+**Two more from the same feedback.** (1) The Auditor could tell a reader the API
+was cheaper while only sometimes saying what they gave up; the trade-off is now
+one shared `API_TRADEOFF` constant naming projects, connectors and the API's own
+rate limits, and `pricing.html`'s break-even note says outright that a plan
+pricing out at $4 of tokens can still be worth $20. **Note:** the second
+`API_TRADEOFF` call site is defensive only — 36 probed profiles never reached it,
+because whenever plain API beats the fit tier the hybrid branch has already
+claimed the recommendation. (2) The replay label stated the mechanism but hid its
+shape; it now shows the measured multiple and that it climbs (`×3.4 that, rising
+with every turn`) — ×1.0 at turn 1 to **×62 at turn 50** on a 400/600-token
+synthetic chat. That growth is the one thing DOM-level tracking can see that
+almost nobody reports. **Homepage reordered** so the Transparency Index sits in
+the top three; both "Coming soon" cards moved to the end, since nothing that
+exists should rank below something that does not._
+
 ---
 
 ## The one prompt
