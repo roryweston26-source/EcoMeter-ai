@@ -31,6 +31,54 @@ for (const [prov, m] of Object.entries(p.api)) {
   for (const k of Object.keys(m)) if (!wp[k]) fail('priced, no water tier: ' + prov + '/' + k);
 }
 
+// 1b. water model shape. Water is energy x host, not a size tier: a curve in
+// _energy (measured per model, or a class fallback) times the water rates of the
+// _hosts entry the model runs on. Guard the joins as well as the numbers — a
+// missing host or curve renders NO water figure at all, with no error, which is
+// the same silent failure the tier-parity check above exists for.
+const WCLASSES = ['large', 'medium', 'small', 'tiny'];
+const WCURVE = ['base_wh', 'wh_per_input_token', 'wh_per_output_token'];
+const WHOST = ['pue', 'wue_site', 'wue_source'];
+const num = (v, what) => {
+  if (typeof v !== 'number' || !isFinite(v) || v < 0) { fail(what + ' must be a finite number >= 0, got ' + v); return false; }
+  return true;
+};
+if (w._tiers || w._model) fail('water.json still carries a pre-2026-08-28 _tiers/_model block — re-run scripts/derive-water-model.js --write');
+
+if (!w._hosts) fail('water.json has no _hosts block');
+else for (const [h, v] of Object.entries(w._hosts)) {
+  for (const k of WHOST) num(v[k], '_hosts.' + h + '.' + k);
+  if (!v.source) fail('_hosts.' + h + ' has no source — every published figure must say where it came from');
+  // Full scope must exceed on-site, or the panel's toggle is a lie.
+  if (!(v.wue_source > 0)) fail('_hosts.' + h + ': wue_source must be > 0 so the academic scope exceeds the conservative one');
+}
+
+if (!w._energy) fail('water.json has no _energy block');
+else {
+  for (const grp of ['measured', 'class']) {
+    if (!w._energy[grp]) { fail('_energy.' + grp + ' missing'); continue; }
+    for (const [name, c] of Object.entries(w._energy[grp]))
+      for (const k of WCURVE) num(c[k], '_energy.' + grp + '.' + name + '.' + k);
+  }
+  for (const c of WCLASSES)
+    if (!(w._energy.class || {})[c]) fail('_energy.class missing the ' + c + ' fallback');
+  // A curve with no output cost would make every reply free.
+  for (const [grp, set] of Object.entries({ measured: w._energy.measured || {}, class: w._energy.class || {} }))
+    for (const [name, c] of Object.entries(set))
+      if (!(c.wh_per_output_token > 0)) fail('_energy.' + grp + '.' + name + ': output tokens must cost energy');
+}
+
+// Every model must join to a real host and a real curve.
+for (const [prov, group] of Object.entries(w)) {
+  if (prov.startsWith('_')) continue;
+  for (const [k, v] of Object.entries(group)) {
+    if (!WCLASSES.includes(v.class)) fail('unknown water class "' + v.class + '" on ' + prov + '/' + k);
+    if (!(w._hosts || {})[v.host]) fail('unknown water host "' + v.host + '" on ' + prov + '/' + k);
+    if (v.energy && !((w._energy || {}).measured || {})[v.energy])
+      fail('unknown measured energy curve "' + v.energy + '" on ' + prov + '/' + k);
+  }
+}
+
 // 2. plan-limits joins + model refs
 const subK = new Set(p.subscriptions.map(s => s.p + '|' + s.m));
 for (const s of L.plans) {

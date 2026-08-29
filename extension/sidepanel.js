@@ -199,18 +199,21 @@ function getPrice(modelKey) {
 }
 
 // ── Water data ────────────────────────────────────────────
-let WATER_DATA  = {};
-let WATER_TIERS = {};
-let waterScope  = 'conservative';
+let WATER_DATA   = {};   // modelId -> { energy?, class, host }
+let WATER_ENERGY = {};   // { measured: {...}, class: {...} } — Wh per request
+let WATER_HOSTS  = {};   // host -> { pue, wue_site, wue_source }
+let waterScope   = 'conservative';
 
 function parseWater(json) {
-  WATER_TIERS = json._tiers || {};
-  WATER_DATA  = {};
+  WATER_ENERGY = json._energy || {};
+  WATER_HOSTS  = json._hosts  || {};
+  WATER_DATA   = {};
   for (const provider in json) {
     if (provider.startsWith('_')) continue;
     const group = json[provider];
     for (const modelId in group) {
-      if (group[modelId]?.tier) WATER_DATA[modelId] = group[modelId].tier;
+      const e = group[modelId];
+      if (e && e.class && e.host) WATER_DATA[modelId] = e;
     }
   }
 }
@@ -225,12 +228,47 @@ async function loadWater() {
   }
 }
 
-function getWaterMlPerToken(modelKey) {
-  if (!modelKey || !WATER_DATA[modelKey] || !WATER_TIERS[WATER_DATA[modelKey]]) return null;
-  const tier = WATER_TIERS[WATER_DATA[modelKey]];
-  return waterScope === 'academic'
-    ? tier.academic_ml_per_token
-    : tier.conservative_ml_per_token;
+// Water = how much ENERGY the model spends x how much water that host spends
+// per unit of energy. The two are separated because the evidence says they are
+// separate: the same DeepSeek model uses ~7-10x less water on Azure than on
+// DeepSeek's own data centres. Folding both into one size tier produced a
+// non-monotonic mess where "small" outranked "medium".
+//
+// Energy is a function of query SIZE, not a flat rate per token — a fixed cost
+// per request (latency to first token, idle capacity held for availability),
+// plus cheap parallel prefill of input and expensive sequential decode of
+// output. In Jegham et al. a 28x rise in tokens raises energy only ~5x.
+//
+// WUE is defined per unit of IT energy (The Green Grid), and Google applies it
+// that way with no PUE multiplier. Off-site generation water tracks what the
+// facility draws from the grid, so that term does carry PUE.
+//
+// Units work out directly: 1 Wh x (L/kWh) = 1 mL.
+// Fitted by scripts/derive-water-model.js; see water.json _hosts and _energy.
+function getWaterParams(modelKey) {
+  const m = modelKey && WATER_DATA[modelKey];
+  if (!m) return null;
+  const measured = m.energy && (WATER_ENERGY.measured || {})[m.energy];
+  const curve = measured || (WATER_ENERGY.class || {})[m.class];
+  const host = WATER_HOSTS[m.host];
+  if (!curve || !host) return null;
+  return {
+    curve,
+    // conservative = on-site cooling only; academic adds the water consumed
+    // generating the electricity, which is where most of it actually goes.
+    mlPerWh: waterScope === 'academic'
+      ? host.wue_site + host.pue * host.wue_source
+      : host.wue_site,
+    measured: !!measured,
+    host: m.host,
+  };
+}
+
+function waterForRequest(prm, turns, inputTokens, outputTokens) {
+  const wh = prm.curve.base_wh * Math.max(turns, 1)
+           + prm.curve.wh_per_input_token  * inputTokens
+           + prm.curve.wh_per_output_token * outputTokens;
+  return wh * prm.mlPerWh;
 }
 
 function fmtWater(ml) {
@@ -1019,12 +1057,19 @@ function renderSummary() {
     accEl.textContent = !wsum ? '' : (werr < 0.005 ? '✓ exact tokenizer' : '±' + Math.round(werr * 100) + '% token estimate');
   }
 
-  if (p && tot > 0) {
-    const range = REASONING_RANGES[key];
-    const adjustedOut  = out * (range ? range.mid : 1.0);
+  // Cost and water both work per REQUEST, so both need the turn count and the
+  // reasoning-adjusted output. Hoisted out of the cost branch so water still
+  // works when we have no price for a model.
+  const range        = REASONING_RANGES[key];
+  const adjustedOut  = out * (range ? range.mid : 1.0);
+  const turns        = msgData.filter(m => m.counted && m.role === 'user').length;
 
-    const turns          = msgData.filter(m => m.counted && m.role === 'user').length;
+  if (p && tot > 0) {
     const overheadPerTurn = PLATFORM_OVERHEAD_TOKENS[currentPlatformName] || 2000;
+
+    // Every request resends the transcript, so this IS the whole input bill —
+    // the visible messages included. Do not add `inp` on top of it.
+    const billedInput = estimateBilledInput(msgData.filter(m => m.counted));
 
     // Long-context tiers: resolve the effective rates before costing anything.
     // Without this the estimate silently halves once a conversation crosses the
@@ -1039,10 +1084,6 @@ function renderSummary() {
       const toks = estimateImageTokens(img, currentPlatformName, key);
       return sum + toks * inRate;
     }, 0);
-
-    // Every request resends the transcript, so this IS the whole input bill —
-    // the visible messages included. Do not add `inp` on top of it.
-    const billedInput = estimateBilledInput(msgData.filter(m => m.counted));
 
     // The hidden system prompt / tool schemas are re-sent on EVERY API call, not
     // once per conversation — so overhead scales with the number of user turns.
@@ -1087,10 +1128,23 @@ function renderSummary() {
     if (replayEl) replayEl.textContent = '';
   }
 
-  // Water
-  const wml = getWaterMlPerToken(key);
-  if (wml && tot > 0 && totalWater) {
-    totalWater.textContent  = '💧 ~' + fmtWater(tot * wml);
+  // Water — per request, over VISIBLE input rather than the replayed transcript.
+  // This deliberately diverges from the cost model: billing re-charges the whole
+  // history every turn, but the compute does not re-spend it — the shared prefix
+  // sits in the KV cache, so only the new tokens are actually prefilled. Feeding
+  // the replayed figure here put a 20-turn chat at 1.29 ml per request against
+  // Google's measured 0.26 ml, i.e. ~5x too high. Output still dominates, which
+  // is what the benchmark shows.
+  const wprm = getWaterParams(key);
+  if (wprm && tot > 0 && totalWater) {
+    totalWater.textContent  = '💧 ~' + fmtWater(waterForRequest(wprm, turns, inp, adjustedOut));
+    // Say which of the two this is. A curve fitted to THIS model is a much
+    // stronger claim than one borrowed from other models of a similar size,
+    // and the user should be able to find that out.
+    totalWater.title = (wprm.measured
+      ? 'Energy curve measured for this model'
+      : 'Energy curve inferred from similarly-sized models — nobody has measured this one')
+      + '; water rates from ' + wprm.host + '. Scope: ' + waterScope + '.';
     totalWater.style.display = 'inline';
     if (waterDisclaimer) waterDisclaimer.style.display = 'block';
   } else if (totalWater) {

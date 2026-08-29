@@ -30,6 +30,23 @@ sweeps `priority` (225,000 combinations). **New entry B5** — the days-per-mont
 assumption this created. PR #35. (2) **J1 cleared** — 25 remote and 24 local
 branches deleted, two unmerged ones kept and documented. **All six guards pass.**_
 
+_**2026-08-28 — not a full pass; one targeted job: F re-sourced.** `water.json`'s
+`_tiers_last_sourced` had read `2025-12` for nine months while every other dataset
+sat at days old. **Re-checked against primary sources: the anchors have not moved.**
+Google's paper (arXiv:2508.15734) is still v1 and never revised, its 2026
+Environmental Report repeats the same May-2025 per-prompt figures (matching what
+`transparency-index.json` recorded on 2026-08-25 from a direct read), Anthropic
+still discloses nothing, and no provider publishes water per *token* at all. So the
+stale date was bookkeeping, not evidence — `_tiers_last_sourced` is now `2026-08`,
+honestly earned. **But the pass found six errors in how the file described its own
+numbers**, listed in F1: a scope label that overstated what Google measures, a
+halved academic range, a 33× energy figure passed off as a water figure, an
+unsourceable "10–25×", an unreproducible academic derivation, and a data-centre
+cooling vendor's marketing blog sitting in `_sources` as our newest evidence. Two
+of these were also live in the extension's user-facing disclaimer and are fixed
+there. **No tier value changed** — all 68 preserved. **New: `_open_questions`** in
+`water.json`, two items needing Rory — **and then researched in a second pass the same day (F1a): there is real evidence on both.** Li et al.’s own request definition is ~1,300 tokens not 500; OpenRouter’s 100T-token study puts real prompt+completion at >5,400; and Jegham et al. — which we were already citing without using — benchmarks 30 models at known token counts and shows the constant-ml-per-token model is **structurally** wrong, roughly right at short queries and 4–15× over at long ones. The ~40× full-scope multiplier is also outside the evidence range (real: 5× Google, 14× Azure, 26× AWS). **Then Rory chose option 2 and it shipped the same day (F1b): water is now a function of query size**, fitted to that benchmark by the new `scripts/derive-water-model.js`, with the flat ml-per-token constants deleted. Cross-checks against Google at 0.86x without being tuned to it; the full-scope multiplier lands at 14–25x, inside what real infrastructure implies, where the old value was 38x. Water and cost now make deliberately OPPOSITE caching assumptions — billing re-charges history, compute does not re-spend it. One live finding left open: the fitted tiers are **not monotonic** (`small` above `medium`), which undercuts size-based tiering and is shipped rather than smoothed. **A third pass then rebuilt it again (F1c): water is now energy × infrastructure**, because the inversion was the model telling us size was doing two jobs. Every published per-prompt figure now either feeds the model or tests it — Google’s 0.26 mL anchors Gemini’s energy curve (it had been 2.3× over on a cross-vendor average), Jegham’s 30 models fit the energy curves, and Li et al., Altman and **Mistral’s peer-reviewed LCA** validate. Host water rates now come from **our own directly-read 2025 figures**, not the paper’s 2022–23 ones (AWS WUE 0.12, not 0.18). Two methodology corrections against primary definitions: WUE applies to IT energy with no PUE multiplier, and off-site water carries PUE — Jegham has both backwards. Ten water guards, **10/10 verified by fault injection**. **All seven scripts pass.**_
+
 ---
 
 ## The one prompt
@@ -1196,18 +1213,47 @@ disagree. **Don't "reconcile" xAI's 🟡-vs-🔴** — it's documented in
 
 ## F1. `extension/water.json`
 
-**Two dates now, and the split matters.** Until 2026-08-24 this file had one
-`_last_updated`, which moved every time a tier was added for a new model — so
-routine model additions made the ml-per-token estimates look freshly verified when
-they hadn't been re-read since Dec 2025. Now:
+**Re-sourced 2026-08-28.** `_tiers_last_sourced` is now `2026-08`; `_last_updated`
+tracks the file, `_tiers_last_sourced` tracks the research behind the numbers. The
+split exists (since 2026-08-24) so routine model additions can't make the intensity
+estimates look freshly verified. **Don't bump `_tiers_last_sourced` without actually
+re-reading the primary sources** — that field is the whole point.
 
-- **`_last_updated`** — when the file last changed (usually a new model's tier).
-- **`_tiers_last_sourced`** — when the intensity figures were last checked against primary research. Currently `2025-12`.
+**What the 2026-08 re-source found: the anchors did not move.** Google's 0.26 ml per
+median Gemini Apps text prompt and Altman's 0.32 ml per ChatGPT query are still the
+only first-party per-prompt figures in existence, and **nobody publishes water per
+token**. Verified against primary sources, not coverage: arXiv:2508.15734 is still
+v1 (21 Aug 2025, never revised); Google's 2026 Environmental Report repeats the same
+May-2025 measurement (independently confirmed by `transparency-index.json`'s direct
+read on 2026-08-25); Anthropic still discloses nothing. Li et al. **has** since been
+peer-reviewed — Communications of the ACM 68(7):54-63, July 2025, doi 10.1145/3724499
+— with unchanged numbers; we had only ever cited the preprint, and now cite both.
 
-The anchors remain Google's 0.26 ml per median Gemini text prompt (Aug 2025) and
-Altman's 0.32 ml per ChatGPT query (Jun 2025). **No provider has published a newer
-per-token figure**, and a 2026 peer-reviewed comparison found none reports an
-AI-specific water metric at all — so "not disclosed" is still the finding here.
+**Six errors found in how the file described its own numbers.** None changed a tier
+value; all six changed what we were *claiming*:
+
+| Was | Now | Why it mattered |
+|---|---|---|
+| Google's 0.26 ml labelled "scope 1+2 on-site" | scope-1 on-site cooling only | Google's boundary excludes electricity-generation water — the exact gap the academic scope exists to fill. Wrong in the direction that flatters the provider. |
+| "~500ml per 20-50 queries = ~10-25ml per query" | 10–50 ml per response | Halved the top of Li et al.'s own stated range. |
+| "10-33x more water-efficient" | ~8.5× like-for-like, on-site | 33× is Google's **energy** cut and 44× is **carbon**; neither is water. `transparency-index.json` already labelled them correctly — the extension didn't. |
+| "Varies 10-25x by location" | ~5× (Li et al.'s own spread) | Unsourceable; appears to be the 10–25 ml-per-query figure restated as a multiplier. |
+| Academic tier "derived" as per-query ÷ 500 | stated as a judgement, with its bracket | 16.9 ml ÷ 500 = 0.0338, not the 0.020 in the file. **A reader checking our arithmetic could not reproduce our number from our stated method.** |
+| `moduledge.com` in `_sources` (Apr 2026) | removed, with reason recorded | ModulEdge s.r.o. sells modular data centres and waterless cooling. A vendor blog, carrying the newest date in the list, so it read as our most current evidence. |
+
+**Two of these were live in the UI** — `extension/sidepanel.html` repeated the scope
+error and the "10–25×". Both fixed there in the same commit. **If you correct a
+figure in `water.json`, grep `sidepanel.html` for it too.**
+
+**`_open_questions` — needs Rory, don't resolve silently** (both researched in a second pass the same day — see **F1a**):
+
+1. **`token_divisor`** — the 500-token divisor converting per-query anchors to
+   per-token is unsourced, and *every* figure in the file scales inversely with it.
+   Google's anchor is per prompt; Li et al.'s is per 150–300 word output (~200–400
+   tokens); the extension multiplies by input+output combined.
+2. **`academic_tier_value`** — 0.020 ml/token sits in a defensible 0.004–0.0338
+   bracket. Moving it shifts user-facing full-scope numbers up to ~1.7×. Left alone
+   because no new evidence justified moving it.
 
 **The silent failure:** a model priced in `prices.json` with no `water.json` tier
 renders **no water figure at all**, with no error. That gap had accumulated across
@@ -1219,10 +1265,208 @@ that's a judgement about the model's size, and it's part of why some models are
 deliberately untracked (A3).
 
 **Goes stale when:** a provider publishes real per-token water data (nobody has
-yet), or the underlying academic estimates are revised. Check `_sources` and
-`_methodology` still describe what the numbers actually are.
+yet), or the underlying academic estimates are revised. Next re-source should
+re-check the same four: arXiv:2508.15734 for a v2, Google's next Environmental
+Report, Anthropic for any first disclosure, and Li et al. for a revision.
 
-**Guard:** `check-prices.js` — "priced, no water tier" is its first check.
+**Guard:** `check-prices.js` — "priced, no water tier" is its first check. Nothing
+guards the *figures* or their descriptions; only a re-source like this catches those.
+
+### F1a. The two open questions, researched (2026-08-28, second pass)
+
+Both were chased down the same day. **There is real evidence on both, and it points at
+something bigger than either question: the constant-ml-per-token model is structurally
+wrong, not merely mis-calibrated.** Numbers deliberately unchanged — this is a design
+decision, not a data refresh.
+
+**The divisor.** 500 has evidence against it now:
+
+- **Li et al.'s own "medium-sized request"** — the thing the 16.9 ml figure describes —
+  is ~800 words in plus 150–300 words out, i.e. **~1,300 tokens**. We divided the
+  academic anchor by a number ~2.6× too small.
+- **Google publishes no token count** for its median Gemini prompt (searched the paper
+  directly), so the conservative divisor stays genuinely unsourceable.
+- **OpenRouter's 100-trillion-token study** (arXiv:2601.10088) measures exactly what the
+  extension multiplies — prompt+completion per request — at **over 5,400 by late 2025**,
+  up from under 2,000 in late 2023. *Caveat: router/API traffic, skewed toward developer
+  and agentic workloads; a proxy for chat usage, not a measurement of it.*
+
+**The academic tier.** `Jegham et al.` (arXiv:2505.09598) answers this directly, and **we
+were already citing it without using it.** It gives per-query energy for 30 models at three
+*known* token configs, plus a water equation — `Water = E × PUE × WUE_site + E × WUE_source`
+— that is precisely our conservative/academic split. Reconstructing water from its Table 4
+energies and Table 1 multipliers **reproduces four figures the paper states in prose**
+(219 mL vs "over 200", 34.7 vs "only 34", 2.4 and 3.9 vs "under 4"), so the reconstruction
+holds. Measured against it, the shipped tiers are roughly right at short queries and
+overestimate progressively as queries lengthen:
+
+| Full scope, EcoMeter ÷ Jegham | 400 tok | 2,000 tok | 11,500 tok |
+|---|---|---|---|
+| o3 (large) | 1.5× over | 1.7× over | 4.0× over |
+| GPT-4o (medium) | 2.6× over | 4.6× over | 11.1× over |
+| Claude-3.7 Sonnet (medium) | 1.0× | 1.6× over | 5.0× over |
+| GPT-4.1 nano (tiny) | 2.1× over | 3.7× over | 14.8× over |
+
+**Why: per-token water isn't constant.** A 28× rise in tokens (400 → 11,500) raises energy
+only ~5×, because latency-to-first-token, prefill and idle capacity don't scale with length.
+A single ml/token figure can be right at one query size and nowhere else — **picking a better
+divisor only moves where it's right.** This is the same direction and shape as the
+prompt-caching bias already disclosed in `sidepanel.html` ("we overestimate, and the gap
+widens as a chat gets longer"), from an independent cause, and it is **currently undisclosed**.
+
+**Bonus: the "~40×" full-scope multiplier is outside the evidence range.** We ship 38×
+(0.020/0.00052). Real infrastructure implies **Google 5.0×**, **Azure/OpenAI 13.9×**,
+**AWS/Anthropic 25.9×**. It also isn't a constant: the *better* a provider's on-site cooling,
+the *higher* its multiplier, because scope-2 stays put while scope-1 shrinks. A single global
+multiplier is wrong in kind, not just in value.
+
+**Three options, all of which move user-facing numbers.** Rory chose **(2)** — see **F1b** for what shipped:
+
+1. Keep the linear model, re-centre the divisor on a defensible query size. Cheapest; still wrong at both ends.
+2. Make water a function of query size, the way the cost model already handles context replay. Most accurate, most work.
+3. Keep the numbers and disclose the bias, as the caching disclaimer already does.
+
+Working scripts for the whole derivation are in the session scratchpad (`jegham-per-token.js`,
+`error-profile.js`) — both are pure arithmetic over the two papers' published tables and can be
+re-run against a newer benchmark.
+
+### F1b. The query-size water model (shipped 2026-08-28)
+
+**Option 2 from F1a was taken: water is now a function of query size.** The flat
+ml-per-token constants are gone.
+
+```
+water_ml_per_request = base_ml_per_request
+                     + ml_per_input_token  * input_tokens
+                     + ml_per_output_token * output_tokens
+```
+
+per tier, per scope, summed over turns. **Deliberately the same shape as the cost
+model** — fixed per-request cost, cheap input, expensive output — because the
+physics matches: latency-to-first-token and idle capacity don't scale with length,
+prefill is parallel and cheap, decode is sequential and bandwidth-bound.
+
+**Fitted, not chosen.** `scripts/derive-water-model.js` fits the parameters to
+Jegham et al. (arXiv:2505.09598) — 30 models at three known token configurations,
+with their water equation `E × PUE × WUE_site + E × WUE_source`, which *is* our
+conservative/academic split. Tier parameters are fitted across all models in a tier
+at once, constrained non-negative, minimising relative error. **Re-run the script;
+don't hand-edit `_model`.**
+
+- An exact 3-point-per-model solve **overfits** — it returns negative bases and
+  negative input rates, which would show water *falling* as you type. Hence the
+  pooled, constrained fit. RMS relative error 17–43%; still order-of-magnitude.
+- **Independent cross-check the fit was not tuned to:** the medium tier predicts
+  **0.22 ml** for a 1k-in/300-out prompt against Google's measured **0.26 ml**
+  (0.86×) — different provider, fleet, WUE and method.
+- The full-scope multiplier is now **14–25×**, inside the range real infrastructure
+  implies (Azure 13.9×, AWS 25.9×). The old shipped value was 38×, above everything.
+
+**Water and cost make opposite caching assumptions, on purpose.** Cost uses the
+replayed transcript, because billing really does re-charge the whole history each
+turn. Water uses **only the visible new input**, because compute does *not*
+re-spend a cached prefix — the KV cache is reused. Feeding the replayed figure into
+water put a 20-turn chat at **1.29 ml per request against Google's measured 0.26**,
+~5× too high. Residual risk runs the other way: where a provider doesn't cache, we
+now understate prefill.
+
+**Effect on users:** short turns barely move; long sessions fall substantially
+(~4× on a 40k/10k session, full scope). The panel was overestimating long chats.
+
+> **`_tier_inversion` — a live finding, shipped rather than smoothed.** The fitted
+> output rates are **not monotonic**: `small` (6.32e-4 / 9.02e-3) sits above
+> `medium` (4.81e-4 / 6.96e-3). In Jegham's data Claude-3.5 Haiku draws 8.010 Wh on
+> a long query — more than Claude-3.7 Sonnet (5.671) and far more than GPT-4o
+> (2.875) — and runs on AWS, whose off-site WUE is higher than Azure's. That matches
+> the paper's own headline: infrastructure outweighs architecture. **It undercuts the
+> premise of size-based tiers.** Deliberately *not* guarded — a monotonicity check
+> would only force the data to be quiet. **Open for Rory:** accept non-monotonic
+> tiers, or drop size tiers for per-model/per-host figures. **Rory took the second: see F1b was superseded within the hour by F1c**, which separates energy from infrastructure and removes the inversion entirely.
+
+**Still true, and recorded in `_remaining_caveats`:** one benchmark, itself modelled
+(inferred hardware, published multipliers, API latency) rather than metered; wide
+tier spreads; and Google/xAI models assigned tiers by analogy since Jegham covers
+OpenAI, Anthropic, Meta and DeepSeek only.
+
+**Guards:** `check-prices.js` gained six water-model checks (shape, both scopes, all
+four tiers, non-negative finite parameters, known tier names, academic > conservative)
+— **each verified by injecting its fault**. `test-water-model.js` is new: it lifts
+`waterForRequest` out of `sidepanel.js` rather than restating the formula, and pins
+that the parameters still reproduce the source data, that the curve stays sublinear
+and monotonic, that the Google cross-check holds, and that the specific regression
+this replaced (4.0× over on a long query) stays fixed.
+
+### F1c. Energy × infrastructure — the model that fits all the published data (2026-08-28)
+
+**F1b's tier inversion wasn't a wart to accept; it was the model telling us size was
+doing two jobs.** Water is now:
+
+```
+water_ml = energy_wh(model, in, out)  ×  water_rate(host, scope)
+```
+
+Model efficiency and infrastructure are **separated, because the evidence separates
+them**: the same DeepSeek model uses **7–10× more water on DeepSeek's own data
+centres than on Azure**. Once that's explicit, a "small" model on thirsty
+infrastructure beating a "medium" one on efficient infrastructure is just a fact,
+not a paradox — and adding a model and re-sourcing a host's WUE become independent
+jobs. `_tier_inversion_resolved` keeps the history.
+
+**Two corrections to how the water rate is computed**, both from primary definitions:
+
+1. **WUE is defined per unit of IT energy** (The Green Grid), and Google applies it
+   that way — `Water/prompt = (E_total − E_overhead) × WUE`, **no PUE multiplier**.
+   Off-site generation water *does* carry PUE, since it tracks grid draw. Jegham has
+   this the other way round. We follow the operator definition:
+   `conservative = wh × wue_site`, `academic = wh × (wue_site + pue × wue_source)`.
+2. **Host figures come from our own index, not the paper.** `transparency-index.json`
+   has directly-read 2025 numbers that are newer: **AWS WUE 0.12 (2025), not 0.18
+   (2023)**; Microsoft 0.27, not 0.30. Using the paper's would have overstated every
+   AWS-hosted model by ~50%.
+
+Energy — and *only* energy — comes from Jegham's Table 4, which is a measurement of
+models, independent of anyone's cooling, so it survives host figures being re-sourced.
+
+**Every published per-prompt figure now either feeds the model or tests it:**
+
+| Published figure | Role | Result |
+|---|---|---|
+| Google 0.26 mL/prompt (arXiv:2508.15734) | **anchors Gemini's energy** | 0.26 mL ⇒ 0.226 Wh IT. Only first-party per-prompt energy anyone publishes |
+| Jegham Table 4, 30 models | **fits every energy curve** | worst per-model error 29% |
+| AWS / Microsoft / Google / Meta PUE + WUE | **sets the water rates** | all directly read, dated, sourced |
+| Li et al. 16.9 mL (GPT-3, 2023) | validation | we give 9.32 mL — lower, as 2025 models should be |
+| Altman 0.32 mL/query | validation | we give 0.11–0.15 mL for GPT-4o. **His figure has no methodology**; the gap is his to explain |
+| Mistral 45 mL/400 tokens (LCA) | validation | we give ~8.7 mL **operational** — the ~5× gap is training + embodied hardware |
+
+Anchoring Gemini mattered: on a cross-vendor class average it came out **2.3× over
+Google's own measurement**. It now brackets it.
+
+**16 of 68 models sit on a curve fitted to that exact model; 52 use a class
+fallback.** Per-model fits carry ≤29% error, class fallbacks 39–74% — so a class
+figure is a genuinely weaker claim, and **the panel says which on hover**. Only exact
+id matches get a measured curve: a 2026 Sonnet does not borrow Claude-3.5 Sonnet's
+numbers.
+
+> **The one number that would most improve this model is one Google already has.**
+> Gemini is anchored on their measurement, but they don't publish the token count of
+> their median prompt, so mapping it to the 100-in/300-out config is our assumption.
+
+**Still true:** all energy rests on one benchmark, itself modelled rather than
+metered. xAI and Mistral publish no PUE or WUE and use the median of the four hosts
+that do. Google publishes no fleet-wide WUE either. **Both scopes are operational
+only** — no training amortisation, no embodied hardware; Mistral's LCA says that's a
+~5× gap we don't model.
+
+**Guards:** `check-prices.js` carries **ten** water checks (host numbers finite and
+non-negative, every host sourced, `wue_source > 0`, curve shapes, all four class
+fallbacks, non-zero output cost, and the model→host / model→curve joins) — **each
+verified by injecting its fault, 10/10 caught**. `test-water-model.js` lifts
+`waterForRequest` from `sidepanel.js` and pins the energy fit against Table 4, the
+host rates against their sources, all six validation figures above, sublinearity,
+monotonicity, and both historical regressions.
+
+**Re-run `node scripts/derive-water-model.js --write` rather than hand-editing
+`_hosts` or `_energy`.** It is idempotent and re-migrates the model entries.
 
 ---
 
@@ -1513,11 +1757,13 @@ node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/te
 
 | Script | Covers | Doesn't cover |
 |---|---|---|
-| `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models | **Never opens `audit.html`** |
+| `check-prices.js` | 5 files agree on every price; water-tier parity; displayed-but-unpriced models; (2026-08-28) the water `_model` shape, both scopes, all four tiers, non-negative parameters, known tier names, ten water checks incl. host sourcing and the model→host/model→curve joins | **Never opens `audit.html`**; not the water *values* — that is `test-water-model.js` |
 | `check-auditor.js` | `audit.html` + `pricing.html`'s `FALLBACK_LIMITS`, against `prices.json` / `plan-limits.json` / `student-access.json` / `transparency-index.json`; plus (2026-08-25) every paid tier being selectable, feature labels, the practices join, the frontier examples, no hand-typed dates in the student copy, expired `claim_by`, and the extension button names | `pricing.html` prices — that's `check-prices.js` |
 | `test-auditor.js` | Sweeps all 56,250 answer combinations + the EcoMeter import | Whether the underlying data is *true* |
 | `check-clock.js` | Clock fallback parity; capex/energy levels vs published totals; one-company share bound; hardcoded anchor date | Counters with no authoritative total — by design, not omission |
 | `test-cost-model.js` | 44 assertions: billed input, image tokens, long-context tiers, export v2 | — |
+| `test-water-model.js` | Water model: energy fit vs Jegham Table 4, host rates vs their sources, six published-figure validations, sublinearity, monotonicity, both historical regressions | Whether the benchmark itself is right |
+| `derive-water-model.js` | Fits `water.json` `_energy` + writes `_hosts`, and re-migrates all 68 model entries (`--write`, idempotent) | Not a guard — run it when the benchmark or a host’s WUE changes |
 | `calibrate-tokenizer.js` | Measures the estimator; fails if the UI band is optimistic | The two guessed bands (G3) |
 | `validate-site.js` | HTML/JSON well-formedness, page references | **Plausibility of any number** |
 
