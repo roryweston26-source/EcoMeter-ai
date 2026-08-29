@@ -1127,9 +1127,9 @@ function finish(){
     </div>
     ${cards || '<p class="level-blurb">Pick at least one tool to get a recommendation.</p>'}
     ${studentPanel(a)}
+    <div class="center"><button class="btn" id="restart">Start over</button></div>
     ${other}
-    <p class="disclaimer">Prices are list prices, checked against each provider’s own pricing page. Most message limits are <em>not</em> published — where we show one, we say whether it’s the provider’s figure, an outside estimate, or ours. API comparisons assume typical conversation sizes, which is an assumption, not a measurement, and the biggest lever on every dollar here${measuredNote}. Figures are applied per tool, so if you split time across tools your per-tool need is lower. Confirm current limits on the provider’s site. Nothing you entered left your browser.</p>
-    <div class="center"><button class="btn" id="restart">Start over</button></div>`;
+    <p class="disclaimer">Prices are list prices, checked against each provider’s own pricing page. Most message limits are <em>not</em> published — where we show one, we say whether it’s the provider’s figure, an outside estimate, or ours. API comparisons assume typical conversation sizes, which is an assumption, not a measurement, and the biggest lever on every dollar here${measuredNote}. Figures are applied per tool, so if you split time across tools your per-tool need is lower. Confirm current limits on the provider’s site. Nothing you entered left your browser.</p>`;
   resultsEl.querySelector('#restart').addEventListener('click',()=>{
     state.i=0; state.answers={}; resultsEl.classList.add('hidden'); resultsEl.innerHTML='';
     quizEl.classList.remove('hidden'); render(); window.scrollTo({top:0,behavior:'smooth'});
