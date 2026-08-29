@@ -1580,6 +1580,48 @@ double-bumped. Don't pre-emptively bump.
 
 # H. Store listing and policy
 
+## H0. Building the package — `scripts/build-extension.js`
+
+**Packaging was a manual step until 2026-08-28**, which is why the v6.13 zip shipped
+whatever happened to be sitting in the folder. It is now one command:
+
+```
+node scripts/build-extension.js          # build + verify
+node scripts/build-extension.js --check  # verify only, writes nothing
+```
+
+It writes `ecometer-ai-v<version>.zip` at the repo root (gitignored — packages are
+build artifacts, not history) and **refuses to build** if any of these fail:
+
+- `prices.json._meta.version` ≠ `manifest.json` version
+- `manifest.description` names any of the nine products, exceeds 132 chars, or
+  doesn't appear verbatim in `STORE-LISTING.md` — **this field IS the store's short
+  description, and it is what got v6.12 rejected**
+- a required file is missing, or `STORE-*.md` leaks into the package
+
+**Why it writes the zip itself:** there is no `zip` binary on this machine, and
+PowerShell's `Compress-Archive` can emit entry names with **backslashes**, which
+Chrome rejects. The script deflates through `zlib` and writes forward slashes.
+Zero dependencies, like everything else here.
+
+**Verify a build independently** — don't trust the writer just because it ran:
+
+```
+powershell -c "Add-Type -AssemblyName System.IO.Compression.FileSystem; \
+  ([System.IO.Compression.ZipFile]::OpenRead('ecometer-ai-v6.14.zip')).Entries.Count"
+```
+
+v6.14 was checked this way: 22 entries, **zero backslash separators**, manifest reads
+6.14 inside the archive, and all 22 files extract byte-identical to `extension/`.
+
+**`tokenizers/.gitignore` and `tokenizers/README.md` ship on purpose.** `tokenizer_hf.js`
+references the `tokenizers/` path, and a zip cannot carry an empty directory — those two
+files are what keep it present. Don't "tidy" them out without checking that.
+
+**The one thing the script cannot do is the smoke test.** Load-unpacked at the exact
+version being uploaded is still manual, and it is the check that catches what static
+verification can't.
+
 ## H1. `extension/STORE-LISTING.md`
 
 **Standing rule, at the top of the file:** name supported platforms **at most once,
@@ -1784,6 +1826,7 @@ node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/te
 | `test-water-model.js` | Water model: energy fit vs Jegham Table 4, host rates vs their sources, six published-figure validations, sublinearity, monotonicity, both historical regressions | Whether the benchmark itself is right |
 | `derive-water-model.js` | Fits `water.json` `_energy` + writes `_hosts`, and re-migrates all 68 model entries (`--write`, idempotent) | Not a guard — run it when the benchmark or a host’s WUE changes |
 | `calibrate-tokenizer.js` | Measures the estimator; fails if the UI band is optimistic | The two guessed bands (G3) |
+| `build-extension.js` | Packages extension/ for the store; blocks on version mismatch, brand names in the short description, missing files | Not a guard — and it cannot smoke-test |
 | `validate-site.js` | HTML/JSON well-formedness, page references | **Plausibility of any number** |
 
 **In CI** (`validate-site.yml`, on PRs into `main` and pushes to `main`):
