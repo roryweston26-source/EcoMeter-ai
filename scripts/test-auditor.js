@@ -252,6 +252,28 @@ async function main() {
        /Stay on the free/.test(rb.head) && !rb.why.some(w => typeof w === 'string' && /Break even/.test(w)), rb.head);
   }
 
+  /* ---------- 1d. the DeepSeek price caveat says something TRUE ----------
+     It claimed "still the cheapest provider we track" for six days after the
+     2026-08-24 rise had moved DeepSeek to third. The rates were updated; the
+     sentence they justified was not. check-prices.js §9 guards the ranking from
+     the data side — this guards that the corrected sentence actually reaches the
+     user, which is the half a string search cannot prove. */
+  {
+    const a = { tools: ['deepseek'], messages: '50to150', frequency: 'constant', purpose: 'coding',
+                limits: 'never', frontier: 'always', media: 'no', team: 'solo', pays: ['none'],
+                priority: 'cost', student: 'no' };
+    const sig = sigFor(a);
+    const r = A.recommend(A.profileFor('deepseek', a, sig), sig);
+    const line = r.why.find(w => typeof w === 'string' && /DeepSeek carried out the price rise/.test(w));
+    ok('the DeepSeek price caveat reaches the user', !!line, r.why);
+    ok('it does NOT claim DeepSeek is the cheapest provider',
+       !!line && !/cheapest provider we track/i.test(line), line);
+    ok('it places DeepSeek third, and credits off-peak for second',
+       !!line && /third cheapest/.test(line) && /second place/.test(line), line);
+    ok('it still carries the peak/off-peak clock warning',
+       !!line && /half price/.test(line), line);
+  }
+
   /* ---------- 2. over/under-payment detection ---------- */
   {
     const a = { tools: ['openai'], messages: '5to20', frequency: 'mostDays', purpose: 'writing', limits: 'never',

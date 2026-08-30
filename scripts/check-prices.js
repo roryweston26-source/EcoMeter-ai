@@ -238,6 +238,50 @@ for (const [prov, m] of Object.entries(p.api)) {
   }
 }
 
+// 9. Stale superlatives — the ranking the Auditor's prose asserts.
+//
+//    audit.html tells the reader, in so many words, where DeepSeek sits on price.
+//    That sentence said "still the cheapest provider we track" for six days after
+//    the 2026-08-24 rise had already moved it to third. The new rates were recorded
+//    correctly; nobody re-ran the ranking those rates invalidated.
+//
+//    A number in a data file gets checked. A superlative in a sentence does not,
+//    unless something like this exists. This recomputes the ranking the copy claims
+//    and fails with the real order when it moves, so the prose gets rewritten
+//    instead of quietly rotting.
+{
+  const audit = fs.readFileSync(R + 'audit.html', 'utf8');
+  const cheapest = {};
+  for (const s of L.plans) {
+    if (!s.value_models) continue;
+    for (const which of ['low', 'high']) {
+      const raw = s.value_models[which];
+      if (!raw) continue;
+      const bits = String(raw).split(':');
+      const prov = bits.length > 1 ? bits[0] : s.p, key = bits.length > 1 ? bits[1] : raw;
+      const r = (p.api[prov] || {})[key];
+      if (!r) continue;
+      // 3:1 input:output, the same shape the Auditor's own archetypes assume.
+      const blended = (r.input * 3 + r.output) / 4 * 1e6;
+      if (!cheapest[s.p] || blended < cheapest[s.p]) cheapest[s.p] = blended;
+    }
+  }
+  const order = Object.entries(cheapest).sort((a, b) => a[1] - b[1]).map(x => x[0]);
+  const rank = pr => order.indexOf(pr) + 1;
+  const fmt = () => order.map((pr, i) => (i + 1) + '. ' + pr + ' $' + cheapest[pr].toFixed(3)).join('  ');
+
+  // The sentence in audit.html names DeepSeek as third, behind Mistral and OpenAI.
+  if (/cheapest provider we track/i.test(audit))
+    fail('audit.html still claims DeepSeek is "the cheapest provider we track" — it is #' +
+         rank('deepseek') + '. Ranking: ' + fmt());
+  if (audit.includes('third cheapest of the providers here') && rank('deepseek') !== 3)
+    fail('audit.html says DeepSeek is third cheapest; it is now #' + rank('deepseek') +
+         '. Rewrite that sentence. Ranking: ' + fmt());
+  for (const [a, b] of [['mistral', 'openai'], ['openai', 'deepseek']])
+    if (rank(a) > rank(b))
+      fail('the Auditor copy assumes ' + a + ' is cheaper than ' + b + '; that has flipped. Ranking: ' + fmt());
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)'
   : '\nALL CHECKS PASS — ' + Object.keys(all).length + ' models priced, ' + promos +
