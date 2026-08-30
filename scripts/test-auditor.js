@@ -507,6 +507,50 @@ async function main() {
     }
   }
 
+  /* ---------- 6. the unquantified weekly window reaches the reader ----------
+     Anthropic and Google both state that a weekly cap sits above their short window
+     and publish neither figure, which makes every `cap` on this page a BURST rate.
+     The number cannot be corrected — guessing lower would push people onto pricier
+     tiers on a figure nobody published — so the only honest fix is to say it, and
+     say it only to the users a weekly cap can actually reach.
+
+     Three things have to hold, and the first is the one that rots: the caveat has to
+     reach r.why at all. The 2026-08-30 DeepSeek caveat sat in the code for six days
+     saying something false because hand-driving the wizard never reached its branch. */
+  {
+    const base = { tools: [], messages: '50to150', purpose: 'writing', limits: 'never',
+                   frontier: 'default', media: 'no', team: 'solo', pays: ['none'],
+                   priority: 'cost', student: 'no' };
+    const ask = (prov, frequency) => {
+      const a = Object.assign({}, base, { tools: [prov], frequency });
+      const sig = sigFor(a);
+      return A.recommend(A.profileFor(prov, a, sig), sig).why
+        .map(w => (typeof w === 'string' ? w : w.html || '')).join(' ');
+    };
+    const WEEKLY = /caps usage weekly as well as in short windows/;
+    for (const prov of ['anthropic', 'google']) {
+      ok('weekly-window caveat reaches a most-days ' + prov + ' user', WEEKLY.test(ask(prov, 'mostDays')));
+      // ...and stays quiet for someone it cannot bite. A caveat that fires on every
+      // reader is noise, and noise is how a real warning stops being read.
+      ok('weekly-window caveat stays quiet for a rarely-' + prov + ' user', !WEEKLY.test(ask(prov, 'rarely')));
+    }
+    // OpenAI deleted its general cap and states no weekly window, so asserting one
+    // about them would be inventing a disclosure. This is the check that stops the
+    // caveat from being pasted onto every provider because it reads well.
+    ok('weekly-window caveat does not fire for a provider that states no such window',
+       !WEEKLY.test(ask('openai', 'mostDays')));
+    // The claim must trace to the data, not to the copy. Read plan-limits.json off
+    // DISK: P.PLAN_LIMITS() falls back to pricing.html's inline snapshot, which mirrors
+    // the same field — so emptying the real file left this check green while the two
+    // checks above went red. A guard that passes off the mirror of the thing it is
+    // guarding is worth nothing.
+    const pl = JSON.parse(fs.readFileSync(R + 'plan-limits.json', 'utf8'));
+    const stated = (pl.plans || []).filter(l => (l.unquantified_windows || []).some(u => u.window === '7d'));
+    ok('a 7d unquantified window is recorded for the providers the caveat names',
+       ['anthropic', 'google'].every(p => stated.some(l => l.p === p)),
+       stated.map(l => l.p + '/' + l.m));
+  }
+
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'
                   : 'all auditor behaviour tests pass — ' + ran + ' checks, ' + combos + ' answer combinations swept');
   process.exit(bad ? 1 : 0);

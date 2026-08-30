@@ -339,6 +339,72 @@ for (const [prov, m] of Object.entries(p.api)) {
     fail('pricing.html callout hardcodes Z.ai as the sole whole-plan discloser — derive it from the data');
 }
 
+// 11. The two-window cap model.
+//
+//     A plan can publish several windows and they all constrain. Until 2026-08-30
+//     each plan named one `binding` window and the ceiling used only that, which
+//     hardcoded an answer that varies per reader — the short window stops a burst,
+//     the long one stops sustained use. For Z.ai the two differ by 6.72x, all of it
+//     in the direction that flatters the plan.
+//
+//     This guards the shape the fix depends on, not the arithmetic: pricing.html
+//     computes that live and the harness in test-auditor.js exercises it.
+{
+  // A resurrected `binding` field would silently re-select one window and nothing
+  // would look wrong — the ceiling would just be too high again.
+  for (const s of L.plans)
+    if (s.binding !== undefined)
+      fail('plan-limits: ' + s.m + ' has a `binding` field again. The ceiling takes the ' +
+           'smallest per-day rate across every window; naming one re-hardcodes a ' +
+           'choice that belongs to the reader.');
+
+  if (!/windows\.sort/.test(html) || !/windows\[0\]/.test(html))
+    fail('pricing.html no longer picks the smallest per-day window — capPerDay has ' +
+         'gone back to reading a single cap');
+
+  // A credit cap can only be priced where the provider published the conversion.
+  // Without it the ceiling would read 10,000 credits as 10,000 messages.
+  const conv = (L._meta || {}).credit_conversion || {};
+  for (const s of L.plans) for (const c of (s.caps || [])) {
+    if (c.unit === 'messages' || c.scope_limited) continue;
+    if (c.unit !== 'credits') { fail('plan-limits: ' + s.m + ' has a whole-plan cap in an ' +
+      'unpriceable unit "' + c.unit + '" — either add a conversion or mark it scope_limited'); continue; }
+    const cc = conv[s.p];
+    if (!cc || !cc.models) { fail('plan-limits: ' + s.m + ' publishes a credit allowance but ' +
+      '_meta.credit_conversion has no ' + s.p + ' block, so its Ceiling silently disappears'); continue; }
+    const key = String((s.value_models || {}).high || '').split(':').pop();
+    if (!cc.models[key])
+      fail('plan-limits: ' + s.m + ' prices its ceiling on ' + key +
+           ', which has no credit multipliers in _meta.credit_conversion.' + s.p);
+    if (!cc.source || !/^https:\/\//.test(cc.source))
+      fail('plan-limits: _meta.credit_conversion.' + s.p + ' must cite the page the formula was read from');
+  }
+
+  // The conservative assumptions are load-bearing. Z.ai's own table assumes a 95%
+  // cache hit and its token range's top end assumes all-off-peak credits at half
+  // price; adopting either would raise every ceiling on the page. Both are stored
+  // rather than implied, so flipping one is a visible edit — and this fails on it.
+  for (const [prov, cc] of Object.entries(conv)) {
+    if (typeof cc !== 'object' || !cc.models) continue;
+    if (cc.cache_hit) fail('plan-limits: credit_conversion.' + prov + ' assumes a ' +
+      (cc.cache_hit * 100) + '% cache hit. That raises every ceiling it touches on a discount ' +
+      'the reader cannot verify — the same problem _deepseek_peak_offpeak already settled.');
+    if (cc.peak !== true) fail('plan-limits: credit_conversion.' + prov + ' is not on peak-rate ' +
+      'credits. Off-peak is the end of the range you do not control (FRESHNESS A11).');
+  }
+
+  // An unquantified window is a claim about a provider. It needs a source like any
+  // other, and an effect, because the whole point is that it biases a number.
+  for (const s of L.plans) for (const u of (s.unquantified_windows || [])) {
+    if (!u.window) fail('plan-limits: ' + s.m + ' has an unquantified_windows entry with no window');
+    if (!u.stated) fail('plan-limits: ' + s.m + ' asserts an unquantified ' + u.window +
+      ' window without saying what the provider actually said');
+    if (!u.source || !/^https:\/\//.test(u.source))
+      fail('plan-limits: ' + s.m + ' asserts an unquantified ' + u.window +
+           ' window with no source. An asserted absence is only as good as the fetch behind it (E1g).');
+  }
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)'
   : '\nALL CHECKS PASS — ' + Object.keys(all).length + ' models priced, ' + promos +
