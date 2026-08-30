@@ -73,7 +73,7 @@ const pFetch = url => {
   return Promise.resolve({ ok: true, json: () => Promise.resolve(JSON.parse(fs.readFileSync(R + f, 'utf8'))) });
 };
 const P = new Function('document', 'window', 'fetch',
-  pBody + '\nreturn { breakEven, costPerMessage, state, PLAN_LIMITS: () => PLAN_LIMITS };')(pDoc, pWin, pFetch);
+  pBody + '\nreturn { breakEven, costPerMessage, state, ceiling, capPerDay, limitsFor, PLAN_LIMITS: () => PLAN_LIMITS, setPlanLimits: d => { PLAN_LIMITS = d; } };')(pDoc, pWin, pFetch);
 
 let bad = 0, ran = 0;
 const ok = (name, cond, detail) => {
@@ -505,6 +505,100 @@ async function main() {
          Math.abs(monthly / (days * msgs) - perMsg) < 1e-9,
          { monthlyPerMsg: monthly / (days * msgs), perMsg });
     }
+  }
+
+  /* ---------- 6. the unquantified weekly window reaches the reader ----------
+     Anthropic and Google both state that a weekly cap sits above their short window
+     and publish neither figure, which makes every `cap` on this page a BURST rate.
+     The number cannot be corrected — guessing lower would push people onto pricier
+     tiers on a figure nobody published — so the only honest fix is to say it, and
+     say it only to the users a weekly cap can actually reach.
+
+     Three things have to hold, and the first is the one that rots: the caveat has to
+     reach r.why at all. The 2026-08-30 DeepSeek caveat sat in the code for six days
+     saying something false because hand-driving the wizard never reached its branch. */
+  {
+    const base = { tools: [], messages: '50to150', purpose: 'writing', limits: 'never',
+                   frontier: 'default', media: 'no', team: 'solo', pays: ['none'],
+                   priority: 'cost', student: 'no' };
+    const ask = (prov, frequency) => {
+      const a = Object.assign({}, base, { tools: [prov], frequency });
+      const sig = sigFor(a);
+      return A.recommend(A.profileFor(prov, a, sig), sig).why
+        .map(w => (typeof w === 'string' ? w : w.html || '')).join(' ');
+    };
+    const WEEKLY = /caps usage weekly as well as in short windows/;
+    for (const prov of ['anthropic', 'google']) {
+      ok('weekly-window caveat reaches a most-days ' + prov + ' user', WEEKLY.test(ask(prov, 'mostDays')));
+      // ...and stays quiet for someone it cannot bite. A caveat that fires on every
+      // reader is noise, and noise is how a real warning stops being read.
+      ok('weekly-window caveat stays quiet for a rarely-' + prov + ' user', !WEEKLY.test(ask(prov, 'rarely')));
+    }
+    // OpenAI deleted its general cap and states no weekly window, so asserting one
+    // about them would be inventing a disclosure. This is the check that stops the
+    // caveat from being pasted onto every provider because it reads well.
+    ok('weekly-window caveat does not fire for a provider that states no such window',
+       !WEEKLY.test(ask('openai', 'mostDays')));
+    // The claim must trace to the data, not to the copy. Read plan-limits.json off
+    // DISK: P.PLAN_LIMITS() falls back to pricing.html's inline snapshot, which mirrors
+    // the same field — so emptying the real file left this check green while the two
+    // checks above went red. A guard that passes off the mirror of the thing it is
+    // guarding is worth nothing.
+    const pl = JSON.parse(fs.readFileSync(R + 'plan-limits.json', 'utf8'));
+    const stated = (pl.plans || []).filter(l => (l.unquantified_windows || []).some(u => u.window === '7d'));
+    ok('a 7d unquantified window is recorded for the providers the caveat names',
+       ['anthropic', 'google'].every(p => stated.some(l => l.p === p)),
+       stated.map(l => l.p + '/' + l.m));
+  }
+
+  /* ---------- 7. the ceiling's window arithmetic ----------
+     A ceiling is the SMALLEST messages-per-day any published window permits, and the
+     math panel prints every window beside it. Two invariants therefore have to hold
+     or the panel contradicts the headline it explains: the headline equals the
+     smallest window, and no window row is below it.
+
+     No shipped plan reaches a ceiling through a multiplier — every chain has
+     base_disclosed:false or scope_unclear — so that branch is unexercised by the
+     real data, and it was wrong: it carried the BASE's per-day rates up to a
+     multiplied headline, printing 143 msgs/day under a headline of 714. Synthetic
+     plans are the only way to reach it. */
+  {
+    const live = P.PLAN_LIMITS();
+    const L = JSON.parse(JSON.stringify(live));
+    L.plans.push({ p:'openai', m:'__TestBase', provenance:'disclosed',
+      caps:[{ n:100, unit:'messages', window:'5h', soft:false, scope_limited:false },
+            { n:1000, unit:'messages', window:'7d', soft:false, scope_limited:false }],
+      value_models:{ low:'gpt-5.4-mini', high:'gpt-5.6-sol' } });
+    L.plans.push({ p:'openai', m:'__TestX5', provenance:'derived',
+      multiplier:{ of:'__TestBase', x:5 }, value_models:{ low:'gpt-5.4-mini', high:'gpt-5.6-sol' } });
+    P.setPlanLimits(L);
+    try {
+      // 1000/week is 143/day; 100/5h is 480/day if held round the clock. The weekly
+      // window binds, and picking the other one would overstate the plan by 3.4x.
+      const base = P.capPerDay(L.plans[L.plans.length - 2]);
+      ok('ceiling binds on the smallest window, not the first',
+         base && base.cap.window === '7d', base && base.cap.window);
+      ok('binding rate is the smallest window rate',
+         base && Math.abs(base.perDay - 1000 / 7) < 1e-9, base && base.perDay);
+      ok('no window row sits below the headline',
+         base && base.windows.every(w => w.perDay >= base.perDay - 1e-9),
+         base && base.windows.map(w => w.cap.window + ':' + Math.round(w.perDay)));
+      // The multiplied tier must not inherit rates that contradict its own headline.
+      const via = P.capPerDay(L.plans[L.plans.length - 1]);
+      ok('multiplier scales the headline', via && Math.abs(via.perDay - 5000 / 7) < 1e-9,
+         via && via.perDay);
+      ok('a multiplied ceiling does not print the base plan\u2019s per-day windows as its own',
+         via && !via.windows, via && via.windows && via.windows.map(w => Math.round(w.perDay)));
+      // Every SHIPPED plan with a ceiling must satisfy the same invariant.
+      P.setPlanLimits(live);
+      for (const pl of live.plans) {
+        const c = P.capPerDay(pl);
+        if (!c || !c.windows) continue;
+        ok('headline equals the smallest window on ' + pl.m,
+           Math.abs(c.perDay - Math.min(...c.windows.map(w => w.perDay))) < 1e-9,
+           { headline: c.perDay, windows: c.windows.map(w => w.perDay) });
+      }
+    } finally { P.setPlanLimits(live); }
   }
 
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'

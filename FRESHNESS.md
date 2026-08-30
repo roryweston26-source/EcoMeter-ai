@@ -1047,8 +1047,9 @@ cap anyone published.
 `disclosed` / `derived` / `third_party` / `not_disclosed`.
 
 **Copies:**
-- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 26 rows, all diffed by `check-auditor.js`
+- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 31 rows, **generated from `plan-limits.json`, not hand-copied** (2026-08-30). It had drifted to 27 rows with no Z.ai at all while the callout derived "31 plans / 5 disclosed" from whatever was loaded, so a failed fetch printed a different finding from the one the data supports. `pricing.html` → `SUBSCRIPTIONS` had drifted the same way, to 26.
 - `audit.html` → `PLANS[].cap` + `.capSource` — uses `estimate` where `plan-limits.json` says `not_disclosed`, because the Auditor needs a working number. **Only `disclosed` may be shown to a user as fact.**
+- `audit.html` → `PLANS[].unquantifiedWindow` — the fetch-failure fallback for B6. Diffed both ways by `check-auditor.js` §18.
 
 **Verify:** help centre first (rule 1). A figure being here today is not evidence
 it will be next quarter — check each surviving figure is *still on the page*, not
@@ -1064,7 +1065,15 @@ general allowance. It carries `scope_limited: true` and `capPerDay()` refuses it
 Pricing a plan off a feature sub-limit while ordinary chat is unlimited puts the
 ceiling far below the plan's real worth. Don't "fix" that refusal.
 
-**Guard:** `check-auditor.js`
+**Window trap (added 2026-08-30):** a plan can publish **several** windows and they
+all constrain. There used to be a `binding` field naming one; it is gone and must not
+come back — `check-prices.js` §11 fails on it. Which window bites is a property of the
+**user**, not the plan, so a plan cannot name it: the short window stops a burst, the
+long one stops sustained use. `capPerDay()` takes the **smallest** messages-per-day
+any published window permits, because that is what a month of maxed-out use can
+actually contain.
+
+**Guard:** `check-auditor.js`, `check-prices.js` §11
 
 ## B2. The disclosure findings (prose)
 
@@ -1127,12 +1136,90 @@ That is why the import resumes the quiz at the frequency question.
 
 ## B4. Does the Ceiling column still earn its place
 
-**As of 2026-08-08 it computes for zero plans.** That's deliberate — an empty
-column *is* the finding, and the copy says so.
+**From 2026-08-08 to 2026-08-30 it computed for ZERO plans**, which was deliberate —
+an empty column *is* the finding. **It now computes for three: the Z.ai GLM Coding
+tiers, at $84 / $506 / $1,181 a month against prices of $18 / $80 / $168.** Those are
+the first Ceiling figures the site has ever printed.
 
-**Check each pass:** if a re-verify finds the third-party-corroborated figures
-have gone too, the column becomes 26 identical cells and should probably become a
-single sentence instead. Flag it; it's a scope call, not a fix.
+**Why they are honest, and what would make them not:**
+
+- Every input to the credits→messages conversion is **Z.ai's own published figure** —
+  the formula, the divisor, the per-model multipliers. Nothing is estimated. See
+  `_meta.credit_conversion`.
+- The **weekly** window binds, not the 5-hour one, by exactly **6.72×**. Reading only
+  the 5-hour figure would have printed $567/mo against an $18 plan and called it 31×
+  the price. **That number would have been the single most wrong figure on the site,
+  and it would have flattered the provider.**
+- Two assumptions are ours and **both make the ceiling smaller**: `cache_hit: 0` and
+  `peak: true`. Z.ai's own table assumes a 95% cache hit and its token range's top end
+  assumes all-off-peak credits at half price. `check-prices.js` §11 fails if either is
+  flipped, because either would raise every ceiling on a discount the reader cannot
+  verify.
+
+**The size of that choice, measured, because "conservative" without a number is just a
+word:** GLM Coding Lite is **$84/mo at 0% cache, $114 at 50%, $167 at Z.ai's own stated
+95%** — so the shipped figure is roughly **half** what Z.ai's own assumption would
+produce. This is the one place the column is deliberately not an upper bound: a Ceiling
+is supposed to be the outer edge of possible, and ours is the low end of it. That is
+the right direction for this project, but **it is a real understatement and should be
+stated as one, not defended as precision.** If a reader's actual cache hit is ever
+knowable (an EcoMeter export would do it), this is the field to revisit.
+
+**Check each pass:** the figure is nearly **archetype-independent** ($82–$85 for Lite
+across light/standard/heavy), because credits and dollars are near-proportional at
+Z.ai's own rates. That stability is the strongest evidence it is a real number rather
+than an artefact of our token assumptions — **if a future re-verify sees it swing
+widely by archetype, something has broken in the conversion, not in the plan.**
+
+**The residual drift is itself a small finding:** Z.ai's credit multipliers weight
+output slightly *less* against input than its own API prices do (6.9/24 vs 1.4/4.4),
+so long-output use is marginally better value on the plan than on the API. It is worth
+about 4% across the archetype range and is not currently stated anywhere user-facing.
+
+**Still zero for everyone else, and that is still the finding.** Nobody else publishes
+an allowance that bounds a whole plan.
+
+## B6. Unquantified windows — the bias we label rather than guess (added 2026-08-30)
+
+**Anthropic, Google and Perplexity each state that a weekly cap exists and none
+publishes a number for it.** That makes every cap figure derived from a *shorter*
+window a **burst rate**: right for a day, wrong for a week, and biased **high** — and
+high on a cap flatters the plan.
+
+This had been sitting in `plan-limits.json` as prose since at least 2026-07-28 ("A
+weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit
+every day for 30 days") while `audit.html` shipped `cap: 144` — which is precisely
+45/5h held every waking hour for thirty days. **The prose knew; the number didn't.**
+
+**Source of truth:** `plan-limits.json` → `plans[].unquantified_windows[]`, each with
+`window` / `stated` / `source` / `effect`. Sourceless entries fail `check-prices.js`
+§11: an asserted absence is only as good as the fetch behind it (E1g).
+
+**We do NOT invent the missing number, and this is the load-bearing decision.** The
+Auditor's fit test reads `cap` to decide whether a tier is big enough, so guessing a
+lower figure would push readers onto a **pricier tier on a number nobody published** —
+the exact harm this project exists to prevent. The number stays; the claim attached to
+it changes.
+
+**Where it surfaces:**
+- `pricing.html` ceiling cell — a third-party figure on a shorter window is labelled
+  "a burst rate, not a sustainable one". Perplexity Pro correctly gets **no** such
+  label: its third-party figure is already weekly, so there is no shorter-window bias.
+- `pricing.html` math panel — the full provider statement, outside the ceiling block,
+  because the plans that have an unquantified window are exactly the plans with no
+  computable ceiling. The first draft rendered it inside and reached nobody.
+- `audit.html` — fires only for readers at **≥24 days/month**, since a weekly cap
+  cannot bite a four-days-a-month user. This is the one thing a per-day model cannot
+  express: the same daily number is sustainable for one reader and not another.
+
+**Re-verify:** if a provider ever *publishes* the weekly figure, this becomes a real
+cap and the row moves to `caps[]`. Watch Anthropic's usage-limits article — it already
+describes the mechanism, so quantifying it is one sentence away.
+
+**Guard:** `check-prices.js` §11 (shape + sources), `check-auditor.js` §18 (the two
+copies agree, both directions), `test-auditor.js` §6 (the caveat reaches `r.why`, and
+stays quiet for the readers it cannot bite). All eight destructive paths validated by
+reintroducing the bug.
 
 ---
 

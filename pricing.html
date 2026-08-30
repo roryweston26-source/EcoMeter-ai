@@ -669,39 +669,45 @@
 
   // ---- Subscription data (USD per month, consumer plans) ----
   var SUBSCRIPTIONS = [
-    { p:"openai",     m:"ChatGPT Free",         price:0 },
-    { p:"openai",     m:"ChatGPT Go",           price:8 },
-    { p:"openai",     m:"ChatGPT Plus",         price:20 },
-    { p:"openai",     m:"ChatGPT Pro",          price:100 },
-    { p:"openai",     m:"ChatGPT Pro (20×)",    price:200 },
+    { p:"openai",      m:"ChatGPT Free",           price:0 },
+    { p:"openai",      m:"ChatGPT Go",             price:8 },
+    { p:"openai",      m:"ChatGPT Plus",           price:20 },
+    { p:"openai",      m:"ChatGPT Pro",            price:100 },
+    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200 },
 
-    { p:"anthropic",  m:"Claude Free",          price:0 },
-    { p:"anthropic",  m:"Claude Pro",           price:20,  note:"$17/mo billed annually" },
-    { p:"anthropic",  m:"Claude Max 5×",        price:100 },
-    { p:"anthropic",  m:"Claude Max 20×",       price:200 },
+    { p:"anthropic",   m:"Claude Free",            price:0 },
+    { p:"anthropic",   m:"Claude Pro",             price:20, note:"$17/mo billed annually" },
+    { p:"anthropic",   m:"Claude Max 5×",          price:100 },
+    { p:"anthropic",   m:"Claude Max 20×",         price:200 },
 
-    { p:"google",     m:"Gemini (Free)",        price:0 },
-    { p:"google",     m:"Google AI Plus",       price:4.99 },
-    { p:"google",     m:"Google AI Pro",        price:19.99 },
-    { p:"google",     m:"Google AI Ultra",      price:99.99, note:"5× Pro limits" },
-    { p:"google",     m:"Google AI Ultra (20×)",price:200 },
+    { p:"google",      m:"Gemini (Free)",          price:0 },
+    { p:"google",      m:"Google AI Plus",         price:4.99 },
+    { p:"google",      m:"Google AI Pro",          price:19.99 },
+    { p:"google",      m:"Google AI Ultra",        price:99.99, note:"5× Pro limits — stated on gemini.google/subscriptions" },
+    { p:"google",      m:"Google AI Ultra (20×)",  price:199.99 },
 
-    { p:"xai",        m:"Grok (Free)",          price:0 },
-    { p:"xai",        m:"SuperGrok Lite",       price:10 },
-    { p:"xai",        m:"SuperGrok",            price:30,  note:"X Premium+ bundle: $40/mo" },
-    { p:"xai",        m:"SuperGrok Heavy",      price:300 },
+    { p:"xai",         m:"Grok (Free)",            price:0 },
+    { p:"xai",         m:"SuperGrok Lite",         price:10 },
+    { p:"xai",         m:"SuperGrok",              price:30, note:"X Premium+ bundle: $40/mo" },
+    { p:"xai",         m:"SuperGrok Plus",         price:100, note:"New tier, live on x.ai/pricing by 2026-08-24" },
+    { p:"xai",         m:"SuperGrok Heavy",        price:300 },
 
-    { p:"perplexity", m:"Perplexity Free",      price:0 },
-    { p:"perplexity", m:"Perplexity Pro",       price:20 },
-    { p:"perplexity", m:"Perplexity Max",       price:200 },
+    { p:"perplexity",  m:"Perplexity Free",        price:0 },
+    { p:"perplexity",  m:"Perplexity Pro",         price:20 },
+    { p:"perplexity",  m:"Perplexity Max",         price:200 },
 
-    { p:"microsoft",  m:"Copilot (Free)",       price:0 },
-    { p:"microsoft",  m:"Microsoft 365 Premium",price:19.99, note:"Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
+    { p:"microsoft",   m:"Copilot (Free)",         price:0 },
+    { p:"microsoft",   m:"Microsoft 365 Premium",  price:19.99, note:"Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
 
-    { p:"mistral",    m:"Le Chat Free",         price:0 },
-    { p:"mistral",    m:"Le Chat Pro",          price:14.99, note:"$5.99/mo for students" },
+    { p:"mistral",     m:"Le Chat Free",           price:0 },
+    { p:"mistral",     m:"Le Chat Pro",            price:14.99, note:"$5.99/mo for students. Mistral now brands the product \"Vibe\" — plan key kept as the cross-file join." },
 
-    { p:"deepseek",   m:"DeepSeek (Free)",      price:0,  note:"No paid consumer tier — chat is free" }
+    { p:"deepseek",    m:"DeepSeek (Free)",        price:0, note:"No paid consumer tier — chat is free" },
+
+    { p:"zai",         m:"Z.ai (Free)",            price:0, note:"chat.z.ai runs GLM-5.3-Flash. Login-walled, no published limits found." },
+    { p:"zai",         m:"GLM Coding Lite",        price:18, note:"Coding-tool plan, not a chat plan. $12.60/mo billed annually (-30%)" },
+    { p:"zai",         m:"GLM Coding Pro",         price:80, note:"Coding-tool plan, not a chat plan. $56/mo billed annually (-30%)" },
+    { p:"zai",         m:"GLM Coding Max",         price:168, note:"Coding-tool plan, not a chat plan. $117.60/mo billed annually (-30%)" }
   ];
 
   var UPDATED = FALLBACK_PRICES._last_updated;
@@ -746,43 +752,71 @@
         "deepseek-v4-pro":        { mid: 2.5 },
         "deepseek-r1":            { mid: 2.5 },
         "deepseek-reasoner":      { mid: 2.5 }
+      } },
+      // Mirrors plan-limits.json _meta.credit_conversion. Without it a credit
+      // allowance cannot be converted to messages, and the only plans that publish a
+      // full allowance would lose their Ceiling whenever the live fetch fails.
+      credit_conversion: { zai: {
+        divisor: 10000, cache_hit: 0, peak: true,
+        models: {
+          "glm-5.3": { input: 6.9, cached: 1.7, output: 24 },
+          "glm-5.3-flash": { input: 2.3, cached: 0.56, output: 8 }
+        }
       } }
     },
     plans: [
-      { p:"openai", m:"ChatGPT Free",  provenance:"not_disclosed", value_models:{low:"gpt-5.6-luna",  high:"gpt-5.5"} },
-      { p:"openai", m:"ChatGPT Go",    provenance:"disclosed", binding:"5h", value_models:{low:"gpt-5.4-mini", high:"gpt-5.5"},
+      { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
+      { p:"openai", m:"ChatGPT Go", provenance:"disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" },
         caps:[{ n:10, unit:"messages", window:"5h", scope:"Thinking", soft:false, scope_limited:true }] },
-      { p:"openai", m:"ChatGPT Plus",  provenance:"not_disclosed", value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
-      { p:"openai", m:"ChatGPT Pro",       provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:5,  scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
-      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{of:"ChatGPT Plus", x:20, scope_unclear:true}, value_models:{low:"gpt-5.4-mini", high:"gpt-5.6-sol"} },
+      { p:"openai", m:"ChatGPT Plus", provenance:"not_disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
+      { p:"openai", m:"ChatGPT Pro", provenance:"not_disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
 
-      { p:"anthropic", m:"Claude Free",    provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5"} },
-      { p:"anthropic", m:"Claude Pro",     provenance:"not_disclosed", value_models:{low:"claude-haiku-4-5-20251001", high:"claude-opus-5"} },
-      { p:"anthropic", m:"Claude Max 5×",  provenance:"not_disclosed", value_models:{low:"claude-sonnet-5", high:"claude-opus-5"} },
-      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", value_models:{low:"claude-sonnet-5", high:"claude-opus-5"} },
+      { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5" } },
+      { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-opus-5" },
+        third_party:[{ n:45, unit:"messages", window:"5h", scope:"all models", confidence:"medium", source:"https://claudelimit.com/claude-pro-limits/" }] },
+      { p:"anthropic", m:"Claude Max 5×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5" } },
+      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:20, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5" } },
 
-      { p:"google", m:"Gemini (Free)",         provenance:"not_disclosed", value_models:{low:"gemini-2.5-flash-lite",  high:"gemini-3.5-flash"} },
-      { p:"google", m:"Google AI Plus",        provenance:"not_disclosed", value_models:{low:"gemini-3.1-flash-lite",  high:"gemini-3.5-flash"} },
-      { p:"google", m:"Google AI Pro",         provenance:"not_disclosed", value_models:{low:"gemini-3.5-flash",       high:"gemini-3.1-pro-preview"} },
-      { p:"google", m:"Google AI Ultra",       provenance:"not_disclosed", value_models:{low:"gemini-3.5-flash",       high:"gemini-3.1-pro-preview"} },
-      { p:"google", m:"Google AI Ultra (20×)", provenance:"not_disclosed", value_models:{low:"gemini-3.5-flash",       high:"gemini-3.1-pro-preview"} },
+      { p:"google", m:"Gemini (Free)", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
+      { p:"google", m:"Google AI Plus", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:2, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
+      { p:"google", m:"Google AI Pro", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:4, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
+      { p:"google", m:"Google AI Ultra", provenance:"not_disclosed", multiplier:{ of:"Google AI Pro", x:5, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
+      { p:"google", m:"Google AI Ultra (20×)", provenance:"not_disclosed", multiplier:{ of:"Google AI Pro", x:20, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
 
-      { p:"xai", m:"Grok (Free)",      provenance:"not_disclosed", value_models:{low:"grok-3-mini", high:"grok-3"} },
-      { p:"xai", m:"SuperGrok Lite",   provenance:"not_disclosed", value_models:{low:"grok-3-mini", high:"grok-4"} },
-      { p:"xai", m:"SuperGrok",        provenance:"not_disclosed", value_models:{low:"grok-4",      high:"grok-4.3"} },
-      { p:"xai", m:"SuperGrok Heavy",  provenance:"not_disclosed", value_models:{low:"grok-4.20",   high:"grok-4.3"} },
+      { p:"xai", m:"Grok (Free)", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"SuperGrok Lite", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"SuperGrok", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"SuperGrok Plus", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"SuperGrok Heavy", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
 
-      { p:"perplexity", m:"Perplexity Free", provenance:"not_disclosed", value_models:{low:"sonar",     high:"sonar"} },
-      { p:"perplexity", m:"Perplexity Pro",  provenance:"not_disclosed", value_models:{low:"sonar",     high:"sonar-reasoning-pro"} },
-      { p:"perplexity", m:"Perplexity Max",  provenance:"disclosed", caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }], value_models:{low:"sonar-pro", high:"sonar-reasoning-pro"} },
+      { p:"perplexity", m:"Perplexity Free", provenance:"not_disclosed", value_models:{ low:"openai:gpt-5.6-terra", high:"anthropic:claude-sonnet-5" },
+        third_party:[{ n:5, unit:"Pro searches", window:"1d", scope:"Pro Search", confidence:"low", source:"https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained" }] },
+      { p:"perplexity", m:"Perplexity Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"openai:gpt-5.6-terra", high:"anthropic:claude-sonnet-5" },
+        third_party:[{ n:125, unit:"advanced-model queries", window:"7d", scope:"advanced models (e.g. Gemini 3.1 Pro, Thinking)", confidence:"low", source:"https://www.androidauthority.com/perplexity-pro-advanced-ai-limits-reduced-3667942/" }] },
+      { p:"perplexity", m:"Perplexity Max", provenance:"disclosed", value_models:{ low:"openai:gpt-5.6-sol", high:"anthropic:claude-opus-5" },
+        caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }] },
 
-      { p:"microsoft", m:"Copilot (Free)",          provenance:"not_disclosed", no_api_rate:true },
-      { p:"microsoft", m:"Microsoft 365 Premium",   provenance:"not_disclosed", no_api_rate:true },
+      { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed" },
+      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"not_disclosed" },
 
-      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{low:"mistral-small-4", high:"mistral-medium-3.5"} },
-      { p:"mistral", m:"Le Chat Pro",  provenance:"not_disclosed", value_models:{low:"mistral-small-4", high:"mistral-medium-3.5"} },
+      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
+        third_party:[{ n:25, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
+      { p:"mistral", m:"Le Chat Pro", provenance:"not_disclosed", value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
+        third_party:[{ n:150, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
 
-      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{low:"deepseek-v4-flash", high:"deepseek-v4-pro"} }
+      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{ low:"deepseek-v4-flash", high:"deepseek-v4-pro" } },
+
+      { p:"zai", m:"Z.ai (Free)", provenance:"not_disclosed", value_models:{ low:"zai:glm-5.3-flash", high:"zai:glm-5.3-flash" } },
+      { p:"zai", m:"GLM Coding Lite", provenance:"disclosed", agentic:true, value_models:{ low:"zai:glm-5.3-flash", high:"zai:glm-5.3" },
+        caps:[{ n:10000, unit:"credits", window:"7d", soft:false, scope_limited:false },
+              { n:2000, unit:"credits", window:"5h", soft:false, scope_limited:false }] },
+      { p:"zai", m:"GLM Coding Pro", provenance:"disclosed", agentic:true, value_models:{ low:"zai:glm-5.3-flash", high:"zai:glm-5.3" },
+        caps:[{ n:60000, unit:"credits", window:"7d", soft:false, scope_limited:false },
+              { n:12000, unit:"credits", window:"5h", soft:false, scope_limited:false }] },
+      { p:"zai", m:"GLM Coding Max", provenance:"disclosed", agentic:true, value_models:{ low:"zai:glm-5.3-flash", high:"zai:glm-5.3" },
+        caps:[{ n:140000, unit:"credits", window:"7d", soft:false, scope_limited:false },
+              { n:28000, unit:"credits", window:"5h", soft:false, scope_limited:false }] }
     ]
   };
 
@@ -878,35 +912,79 @@
     };
   }
 
-  // Resolve a plan's cap to messages/day, following a disclosed multiplier if needed.
+  var WINDOW_HOURS = { "1h":1, "3h":3, "5h":5, "1d":24, "24h":24, "7d":168, "30d":720 };
+
+  // How many credits one message exchange costs, from the provider's OWN published
+  // formula. Z.ai publishes the divisor, the per-model multipliers and the cached
+  // rate, so this is derived arithmetic rather than an estimate — and it is the only
+  // reason a credit allowance can be priced at all. Returns null for any provider
+  // that has not published a formula, which is all of them but one.
+  function creditsPerMessage(lim) {
+    var conv = ((PLAN_LIMITS._meta || {}).credit_conversion || {})[lim.p];
+    if (!conv || !conv.models) return null;
+    var raw = (lim.value_models || {}).high;
+    var m = conv.models[String(raw || "").split(":").pop()];
+    if (!m) return null;
+    var a = archetype();
+    // cache_hit sits in the data at 0 rather than being left out. Z.ai's own token
+    // table assumes 95%, which would make the plan look better; taking the reader's
+    // side means assuming a discount you cannot verify does not apply. Written out
+    // so that raising it is a one-field change with a visible effect.
+    var hit = conv.cache_hit || 0;
+    var inC = a.input * ((1 - hit) * m.input + hit * (m.cached || m.input));
+    // Thinking tokens bill as output on the meter exactly as they do on the invoice,
+    // so the multiplier costPerMessage uses applies here too. It is 1 for GLM today;
+    // keeping both sides on one multiplier means a measured figure moves them
+    // together instead of silently skewing the ceiling.
+    var outC = a.output * reasoningMult(raw) * m.output;
+    return (inC + outC) / (conv.divisor || 1);
+  }
+
+  // One cap, expressed in messages. Units we cannot convert are refused rather than
+  // assumed — pricing 10,000 credits as 10,000 messages would turn the best allowance
+  // data on the table into the worst number on the page.
+  function capMessages(lim, c) {
+    if (!c || typeof c.n !== "number") return null;
+    if (!c.unit || c.unit === "messages") return c.n;
+    if (c.unit === "credits") {
+      var per = creditsPerMessage(lim);
+      return (per && per > 0) ? c.n / per : null;
+    }
+    return null;
+  }
+
+  // Resolve a plan's caps to messages/day, following a disclosed multiplier if needed.
   // Returns null unless the chain terminates in a figure the provider itself published.
+  //
+  // A plan can publish SEVERAL windows and they all constrain: Z.ai publishes a rolling
+  // 5-hour allowance and a weekly one and says outright that both bind. Which one bites
+  // is a property of the USER, not the plan — the short window stops a burst, the long
+  // one stops sustained use — so this used to read a `binding` field that hardcoded an
+  // answer varying per reader, and for a ceiling it hardcoded the wrong one. The ceiling
+  // asks what a MONTH of maxed-out use can contain, which is the SMALLEST per-day rate
+  // any published window permits. For Z.ai that is 6.72x below the 5-hour reading.
   function capPerDay(lim, depth) {
     if (!lim || (depth || 0) > 4) return null;
     if (lim.caps && lim.caps.length) {
-      var cap = null;
+      var windows = [];
       for (var i = 0; i < lim.caps.length; i++) {
         var c = lim.caps[i];
-        if (lim.binding && c.window !== lim.binding) continue;
         // A cap scoped to one FEATURE cannot bound the whole plan. Go's only
         // published figure is 10 Thinking messages/5h while its ordinary chat is
         // advertised as unlimited — pricing the plan off the sub-limit would put a
         // ceiling on it several times below what it is actually worth. Same refusal
         // as an undisclosed multiplier base: better no number than a wrong one.
         if (c.scope_limited) continue;
-        // The Ceiling multiplies this by a cost PER MESSAGE, so a cap denominated
-        // in anything else cannot be priced here. Z.ai's coding plans publish a
-        // full allowance in CREDITS — the most complete disclosure on the table —
-        // and pricing 10,000 credits as 10,000 messages would turn the best data
-        // we have into the worst number on the page. Converting credits to
-        // messages is possible from Z.ai's published formula; until that exists,
-        // this refuses, on the same principle as the scope_limited skip above.
-        if (c.unit && c.unit !== "messages") continue;
-        cap = c; break;
+        var hours = WINDOW_HOURS[c.window];
+        if (!hours) continue;
+        var msgs = capMessages(lim, c);
+        if (msgs == null) continue;
+        windows.push({ perDay: msgs * (24 / hours), msgs: msgs, cap: c });
       }
-      if (!cap || typeof cap.n !== "number") return null;
-      var hours = { "1h":1, "3h":3, "5h":5, "1d":24, "7d":168 }[cap.window];
-      if (!hours) return null;
-      return { perDay: cap.n * (24 / hours), cap: cap };
+      if (!windows.length) return null;
+      windows.sort(function (a, b) { return a.perDay - b.perDay; });
+      return { perDay: windows[0].perDay, cap: windows[0].cap, windows: windows,
+               unquantified: lim.unquantified_windows || null };
     }
     // A multiplier is only usable if the base is disclosed AND the provider says what
     // the multiplier applies to. OpenAI's "5x higher usage than Plus" fails the second
@@ -918,7 +996,17 @@
         if (plans[j].p === lim.p && plans[j].m === lim.multiplier.of) {
           var base = capPerDay(plans[j], (depth || 0) + 1);
           if (!base) return null;
-          return { perDay: base.perDay * lim.multiplier.x, cap: base.cap, via: lim.multiplier };
+          // NOT base.windows: those are the BASE's per-day rates, and the headline
+          // here is multiplied. Passing them through made the math panel print
+          // "143 msgs/day" under a headline of 714 — the panel contradicting the
+          // number it explains. Scaling them instead would be worse: the row is
+          // labelled "Published cap", and base x multiplier is not published.
+          // Without them the panel falls back to the base cap plus an explicit
+          // "5x, as stated by the provider" row, which is what it showed before
+          // two-window support existed and is still the honest presentation.
+          // `cap` is still the BINDING window, because base picked the min.
+          return { perDay: base.perDay * lim.multiplier.x, cap: base.cap, via: lim.multiplier,
+                   unquantified: lim.unquantified_windows || base.unquantified || null };
         }
       }
     }
@@ -937,10 +1025,23 @@
       perDay: c.perDay,
       cap: c.cap,
       via: c.via,
+      windows: c.windows || null,
+      unquantified: c.unquantified || null,
+      // A coding plan is driven by an agent, not typed by a person, so this page's
+      // one-message-per-minute HUMAN throughput cannot be used to call its cap
+      // unreachable. Saying 'more than anyone is awake for' about a plan whose whole
+      // point is that a machine sends the messages would be false in the flattering
+      // direction: it would imply the cap never binds.
+      agentic: !!lim.agentic,
       model: lim.value_models.high,
       multiple: sub.price ? perMonth / sub.price : null
     };
   }
+
+  // One adjective per window, for the ceiling cell and the math panel. The callout
+  // keeps its own phrasing map because it needs a preposition rather than an
+  // adjective: "every 5 hours" reads as prose where "5-hour" reads as a label.
+  var WINDOW_LONG = { "1h":"hourly", "3h":"3-hourly", "5h":"5-hour", "1d":"daily", "24h":"daily", "7d":"weekly", "30d":"monthly" };
 
   function fmtNum(n) {
     if (n === null || n === undefined) return "—";
@@ -1209,20 +1310,51 @@
       if (ceil) {
         var hoursNeeded = ceil.perDay / throughput().mpm / 60;
         var unreachable = hoursNeeded > throughput().waking;
-        var tail = hoursNeeded > 24
-          ? 'needs ' + fmtTime(ceil.perDay) + ' of nonstop use to reach in one day — it cannot be reached'
-          : 'needs ' + fmtTime(ceil.perDay) + '/day nonstop' + (unreachable ? ' — more than anyone is awake for' : "");
-        ceilCell = '<span class="' + (unreachable ? "tp" : "be") + '">' + money0(ceil.perMonth) + ' /mo' +
+        var bindWord = WINDOW_LONG[(ceil.cap || {}).window] || (ceil.cap || {}).window || "";
+        var tail;
+        if (ceil.agentic) {
+          // This plan is driven by an agent, so the page's human throughput says
+          // nothing about whether its cap can be reached — and asserting it cannot
+          // would imply the cap never binds, which is the flattering direction.
+          // Name what actually binds instead, which is the more useful fact anyway.
+          tail = 'bound by the ' + bindWord + ' allowance' +
+                 (ceil.windows && ceil.windows.length > 1
+                   ? ', not the ' + (WINDOW_LONG[ceil.windows[ceil.windows.length - 1].cap.window] || '') + ' one' : '') +
+                 ' · an agent sends these, so we make no claim about how long a person would need';
+        } else if (hoursNeeded > 24) {
+          tail = 'needs ' + fmtTime(ceil.perDay) + ' of nonstop use to reach in one day — it cannot be reached';
+        } else {
+          tail = 'needs ' + fmtTime(ceil.perDay) + '/day nonstop' + (unreachable ? ' — more than anyone is awake for' : "");
+        }
+        // A window the provider admits to but will not size makes any figure derived
+        // from a SHORTER window an over-estimate. Say so on the number itself.
+        if (ceil.unquantified && ceil.unquantified.length) {
+          tail += ' · ' + provName(r.p) + ' says a ' +
+                  (WINDOW_LONG[ceil.unquantified[0].window] || ceil.unquantified[0].window) +
+                  ' cap also applies and does not publish it, so this is an over-estimate';
+        }
+        ceilCell = '<span class="' + (unreachable && !ceil.agentic ? "tp" : "be") + '">' + money0(ceil.perMonth) + ' /mo' +
                    '<span class="sub">' + (ceil.multiple ? "up to " + Math.round(ceil.multiple) + "× the price · " : "") +
                    tail + '</span></span>';
       } else if (lim && lim.third_party && lim.third_party.length) {
         var t = lim.third_party[0];
         var conf = t.confidence || "low";
         var win = { "1d": "day", "7d": "week", "5h": "5h", "3h": "3h" }[t.window] || t.window;
+        // Anthropic's ~45/5h is the best figure anyone has and it still describes a
+        // BURST: Anthropic says a weekly cap sits above the 5-hour one and publishes
+        // neither. Printing the short-window number alone let a reader take it for a
+        // sustainable rate, which overstates the plan — so the cell now carries the
+        // longer window the provider has admitted to but never sized.
+        var uq = (lim.unquantified_windows || []).filter(function (u) {
+          return (WINDOW_HOURS[u.window] || 0) > (WINDOW_HOURS[t.window] || 0);
+        })[0];
         ceilCell = '<span class="tp ' + (conf === "low" ? "tp-low" : "") + '">~' + t.n + ' ' + t.unit + '/' + win +
                    '<span class="sub"><b>' + conf + ' confidence</b> · not published by ' + provName(r.p) +
                    ' · estimated by <a href="' + esc(t.source) + '" target="_blank" rel="noopener">' +
-                   esc(t.source.replace(/^https?:\/\//, "").split("/")[0]) + '</a></span></span>';
+                   esc(t.source.replace(/^https?:\/\//, "").split("/")[0]) + '</a>' +
+                   (uq ? ' · and a ' + (WINDOW_LONG[uq.window] || uq.window) + ' cap sits above it that ' +
+                         provName(r.p) + ' does not publish, so this is a burst rate, not a sustainable one' : '') +
+                   '</span></span>';
       } else {
         ceilCell = '<span class="nd">not disclosed</span>';
       }
@@ -1301,18 +1433,56 @@
     }
 
     if (ceil) {
+      // Every published window, cheapest-per-day first — the one that binds is the
+      // first row, and showing the others is the point: a reader who only saw the
+      // 5-hour figure would put this plan 6.72x higher than it belongs.
+      var wins = ceil.windows || [{ perDay: ceil.perDay, msgs: ceil.cap.n, cap: ceil.cap }];
+      var creditCost = (ceil.cap.unit === 'credits') ? creditsPerMessage(lim) : null;
       out += '<dl>' +
-             '<dt>Published cap</dt><dd>' + ceil.cap.n + ' ' + esc(ceil.cap.unit) + ' per ' + ceil.cap.window +
-             (ceil.cap.scope ? ' (' + esc(ceil.cap.scope) + ')' : "") + '</dd>' +
+             wins.map(function (w, i) {
+               return '<dt>' + (i === 0 ? 'Published cap — this is the one that binds' : 'Also published') + '</dt><dd>' +
+                      fmtNum(w.cap.n) + ' ' + esc(w.cap.unit) + ' per ' + w.cap.window +
+                      (w.cap.scope ? ' (' + esc(w.cap.scope) + ')' : "") +
+                      ' = ' + fmtNum(w.perDay) + ' msgs/day' + (i === 0 ? '' : ' if it could be hit around the clock') + '</dd>';
+             }).join('') +
+             (creditCost ? '<dt>Credits per message</dt><dd>' + creditCost.toFixed(2) +
+               ' <span class="why">— ' + esc(provName(sub.p)) + '\u2019s own published formula and multipliers, applied to this archetype' +
+               ' at no cache discount and peak-rate credits. Both of those choices make the ceiling smaller; ' +
+               esc(provName(sub.p)) + '\u2019s own table assumes a 95% cache hit.</span></dd>' : "") +
              (ceil.via ? '<dt>Multiplier</dt><dd>' + ceil.via.x + '× ' + esc(ceil.via.of) + ', as stated by the provider</dd>' : "") +
              '<dt>Ceiling</dt><dd>' + fmtNum(ceil.perDay) + ' msgs/day × ' + monthDays() + ' days at ' + esc(modelLabel(ceil.model)) + ' rates = ' + money0(ceil.perMonth) + '</dd>' +
              '</dl>' +
-             '<p class="why">This assumes the cap is hit in every window, every day, for a month — ' +
-             fmtTime(ceil.perDay) + ' a day of nonstop messaging. ' +
-             (ceil.perDay / throughput().mpm / 60 > throughput().waking
-               ? 'That is longer than a person is awake, so this plan\'s cap is not what limits its value to you — your time is. The headline multiple is arithmetic, not an opportunity.'
-               : 'Treat it as the outer edge of possible, not a forecast.') +
+             (wins.length > 1
+               ? '<p class="why"><strong>Two windows, and both bind.</strong> Which one bites is about you, not the plan: the ' +
+                 esc(WINDOW_LONG[wins[wins.length - 1].cap.window] || '') + ' window stops a burst, the ' +
+                 esc(WINDOW_LONG[wins[0].cap.window] || '') + ' one stops sustained use. A ceiling asks what a whole month of ' +
+                 'maxed-out use can contain, so it takes the smaller — ' +
+                 (wins[0].perDay > 0 ? (wins[wins.length - 1].perDay / wins[0].perDay).toFixed(2) + '× smaller here. ' : '') +
+                 'Reading only the shorter window is how this figure used to come out too high.</p>'
+               : '') +
+             '<p class="why">This assumes the cap is hit in every window, every day, for a month' +
+             (ceil.agentic
+               ? '. These are agent-driven coding plans, so we do not translate that into hours of human typing — one message a minute describes a person at a keyboard and would understate what an agent does in a day.'
+               : ' — ' + fmtTime(ceil.perDay) + ' a day of nonstop messaging. ' +
+                 (ceil.perDay / throughput().mpm / 60 > throughput().waking
+                   ? 'That is longer than a person is awake, so this plan\'s cap is not what limits its value to you — your time is. The headline multiple is arithmetic, not an opportunity.'
+                   : 'Treat it as the outer edge of possible, not a forecast.')) +
              (ceil.cap.soft ? ' This cap is also a downgrade rather than a cut-off, so usage continues on a cheaper model past this point.' : "") + '</p>';
+    }
+
+    // A window the provider admits to and will not size. This is deliberately OUTSIDE
+    // the ceiling block: the plans that have one are precisely the plans with no
+    // computable ceiling, so rendering it there reached nobody. It is also the single
+    // most important thing on the panel for those rows — it says the figure above is
+    // a burst rate, and every number derived from a shorter window is biased high.
+    if (lim && lim.unquantified_windows && lim.unquantified_windows.length) {
+      out += lim.unquantified_windows.filter(function (u) { return u.stated; }).map(function (u) {
+        return '<p class="why"><strong>A ' + esc(WINDOW_LONG[u.window] || u.window) +
+               ' cap exists that ' + esc(provName(sub.p)) + ' will not size.</strong> ' +
+               esc(u.stated) + ' ' + esc(u.effect || '') +
+               (u.source ? ' <a href="' + esc(u.source) + '" target="_blank" rel="noopener">Source</a>.' : '') +
+               '</p>';
+      }).join('');
     }
 
     if (lim && lim.stated) {
@@ -1410,11 +1580,18 @@
     // single feature" — which stopped being true the moment Z.ai's plans landed,
     // because their credit allowance bounds the whole plan. The split is also the
     // better finding: three of the five are one provider, and it isn't a Western one.
+    // Name EVERY published window, not just the first. Z.ai publishes two and says
+    // both bind; printing caps[0] alone hid half of the best allowance disclosure on
+    // the table, and the half it hid is the one that explains how bursty the plan is.
     var describe = function (l) {
-      var c = (l.caps || [])[0];
-      if (!c) return esc(l.m);
-      return '<b>' + fmtNum(c.n) + ' ' + esc(c.unit) + '</b> ' + (WINDOW[c.window] || 'per ' + esc(c.window)) +
-             (c.scope ? ' for ' + esc(c.scope) + ' only' : '') + ' on ' + esc(l.m);
+      var cs = (l.caps || []);
+      if (!cs.length) return esc(l.m);
+      var parts = cs.map(function (c, i) {
+        return '<b>' + fmtNum(c.n) + (i === 0 || c.unit !== cs[0].unit ? ' ' + esc(c.unit) : '') + '</b> ' +
+               (WINDOW[c.window] || 'per ' + esc(c.window)) +
+               (c.scope ? ' for ' + esc(c.scope) + ' only' : '');
+      });
+      return join(parts) + ' on ' + esc(l.m);
     };
     var join = function (a) {
       return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];

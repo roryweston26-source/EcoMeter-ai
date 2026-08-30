@@ -138,6 +138,75 @@ Three guards, each validated by reintroducing the bug: `check-prices.js` §9 (pr
 
 **Open, and deliberately not done:** **Kimi is the weakest of the three picks on evidence** — it appears in no OpenRouter top-10 while Xiaomi's MiMo (#3) and Tencent's Hy3 (#5) both move more tokens. But the follow-up showed HF downloads and API tokens are **near-opposite measures** — Xiaomi has the smallest HF footprint of any lab considered and the third-largest token volume; Qwen is the exact inverse. "Biggest" can't be claimed without naming the measure (A10). `deepseek-r1` has one priced host so it correctly fails the `n >= 2` guard and carries no spread.
 
+### 2026-08-30 — weekly limits: the Ceiling column printed its first number in three weeks, and it is 6.72x lower than the old model would have said
+
+**The models were single-window, and weekly caps are where that breaks.** `capPerDay()`
+read one `binding` window per plan; `audit.html` compared a **busy-day** volume against
+a scalar messages/day. Neither could express a plan with two windows, which is every
+plan that has a weekly cap. Full detail in FRESHNESS **B1** (the window trap), **B4**
+(the ceiling) and **B6** (unquantified windows).
+
+**`binding` was the bug, and it is the interesting one.** Which window bites is a
+property of the **user**, not the plan — the short window stops a burst, the weekly one
+stops sustained use — so naming one in the data hardcoded an answer that varies per
+reader, and for a ceiling it hardcoded the wrong one. The field is gone;
+`check-prices.js` §11 fails if it comes back.
+
+**The Ceiling column had computed for ZERO of 31 plans since 2026-08-08.** It now
+computes for three — Z.ai's GLM Coding tiers at **$84 / $506 / $1,181 a month against
+$18 / $80 / $168** — by converting credits to messages through Z.ai's own published
+formula, divisor and per-model multipliers. Nothing in that conversion is estimated.
+
+**And the weekly window is what makes it honest. Reading only the 5-hour figure would
+have printed $567/mo for an $18 plan and called it 31x the price.** The weekly
+allowance permits exactly **6.72x fewer** messages per day than the 5-hour window would
+if it could be hit around the clock — a constant across all three tiers, because Z.ai's
+5-hour cap is exactly 20% of its weekly one. **Five maxed consecutive 5-hour windows,
+25 hours of use, exhausts the week.** That is the fact a per-day average erases.
+
+**Two assumptions are ours and both make the ceiling SMALLER** — `cache_hit: 0` and
+peak-rate credits, where Z.ai's own table assumes a 95% cache hit and its range's top
+end assumes all-off-peak at half price. Both stored in the data rather than implied, so
+flipping either is a visible edit that `check-prices.js` §11 fails on.
+
+**The strongest evidence it is a real number: it barely moves with the archetype**
+($82–$85 for Lite across light/standard/heavy), because credits and dollars are
+near-proportional at Z.ai's own rates. A future re-verify that sees it swing by
+archetype should suspect the conversion, not the plan.
+
+**The other half is a non-disclosure, and it had been sitting in the file as prose.**
+Anthropic, Google and Perplexity each state a weekly cap exists and none publishes a
+figure. `plan-limits.json` has said since 2026-07-28 that Anthropic's weekly cap means
+"the limit cannot be hit every day for 30 days" — while `audit.html` shipped
+`cap: 144`, which is precisely 45/5h held every waking hour for thirty days. **The
+prose knew and the number didn't**, which is the same shape as E3a: a claim in a
+sentence gets checked by nobody.
+
+**We did not guess the missing number, and that was the load-bearing call.** The
+Auditor's fit test reads `cap` to decide whether a tier is big enough, so a
+guessed-lower figure would push readers onto a **pricier tier on a number nobody
+published** — the exact harm this tool exists to prevent. The number stays; the claim
+attached to it changes, and only for the readers it can reach (≥24 days/month, since a
+weekly cap cannot bite a four-days-a-month user).
+
+**Three refusals held under pressure and are worth keeping:** the ceiling still refuses
+feature-scoped caps (ChatGPT Go, Perplexity Max), Perplexity Pro correctly gets **no**
+burst-rate label because its third-party figure is already weekly, and the Z.ai rows
+make **no claim about human throughput** — an agent sends those messages, and "more
+than anyone is awake for" would have implied a cap that never binds.
+
+**Adjacent drift found and fixed:** `pricing.html`'s two fallback snapshots had rotted
+to 26 and 27 rows against a live 31, with no Z.ai in either — while the allowance
+callout derives "31 plans / 5 disclosed" from whatever is loaded. A failed fetch
+printed a different finding from the one the data supports. Both are now **generated**
+from `prices.json` and `plan-limits.json` rather than hand-copied.
+
+**Guards, all eight destructive paths validated by reintroducing the bug:**
+`check-prices.js` §11, `check-auditor.js` §18, `test-auditor.js` §6 (69 → 75 checks).
+One of them was worth nothing when first written — the data check read pricing.html's
+inline mirror of `plan-limits.json`, so emptying the real file left it green while the
+two checks beside it went red.
+
 ### 2026-08-28 — the two cost paths disagreed, and only one of them drove the advice
 
 Asked whether the measured multipliers changed the Auditor’s decisions. Swept 5,625 answer combinations with measured multipliers against the old guesses: **zero recommendations differed.** Only the printed break-even moved.

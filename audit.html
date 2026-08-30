@@ -221,15 +221,23 @@ let PLANS = {
     // strongest third-party estimate on plan-limits.json (~45 messages / 5h,
     // several trackers converging), converted to a day at 16 waking hours =
     // 3.2 windows. Max multiplies a base Anthropic has never quantified.
+    //
+    // `cap` IS A BURST RATE, and unquantifiedWindow is what says so. Anthropic states
+    // that a weekly cap sits above the 5-hour one and publishes neither, so 144/day
+    // is a figure Anthropic has itself said you cannot hold for 30 days. We do NOT
+    // lower it: the fit test reads `cap` to decide whether a tier is big enough, so a
+    // guessed-lower number would push readers onto a pricier tier on a figure nobody
+    // published — the exact harm this tool exists to prevent. The number stays, the
+    // claim attached to it changes, and only for the users a weekly cap can reach.
     { m:'Claude Free',   price:0,   cap:40,  capSource:'estimate',
       models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
-    { m:'Claude Pro',    price:20,  cap:144, capSource:'third_party',
+    { m:'Claude Pro',    price:20,  cap:144, capSource:'third_party', unquantifiedWindow:'7d',
       models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
       features:['projects','extended-thinking'], seats:1 },
-    { m:'Claude Max 5×', price:100, cap:720, capSource:'third_party',
+    { m:'Claude Max 5×', price:100, cap:720, capSource:'third_party', unquantifiedWindow:'7d',
       models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
       features:['projects','extended-thinking','priority'], seats:1 },
-    { m:'Claude Max 20×',price:200, cap:null, capSource:'not_disclosed',
+    { m:'Claude Max 20×',price:200, cap:null, capSource:'not_disclosed', unquantifiedWindow:'7d',
       models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
       features:['projects','extended-thinking','priority'], seats:1 },
   ],
@@ -239,13 +247,13 @@ let PLANS = {
     // features (video generation, Deep Research volume), never model access. The
     // 2x/4x/20x multipliers are against "standard limits", which Google has never
     // published, so the caps below are our own working figures.
-    { m:'Gemini (Free)',  price:0,    cap:60,  capSource:'estimate',
+    { m:'Gemini (Free)',  price:0,    cap:60,  capSource:'estimate', unquantifiedWindow:'7d',
       models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:[], seats:1 },
-    { m:'Google AI Plus', price:4.99, cap:120, capSource:'not_disclosed',
+    { m:'Google AI Plus', price:4.99, cap:120, capSource:'not_disclosed', unquantifiedWindow:'7d',
       models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['image-gen'], seats:1 },
-    { m:'Google AI Pro',  price:19.99,cap:240, capSource:'not_disclosed',
+    { m:'Google AI Pro',  price:19.99,cap:240, capSource:'not_disclosed', unquantifiedWindow:'7d',
       models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['deep-research','image-gen','video-gen'], seats:1 },
-    { m:'Google AI Ultra',price:99.99,cap:null,capSource:'not_disclosed',
+    { m:'Google AI Ultra',price:99.99,cap:null,capSource:'not_disclosed', unquantifiedWindow:'7d',
       models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
   ],
   microsoft: [
@@ -853,6 +861,14 @@ function recommend(pf,sig){
     else if(mpd>=be.few) why.push(`${src} clears it if you're mostly on ${labelModel(be.fewModel)}, but not if you're mostly on ${labelModel(be.manyModel)}.`);
     else why.push(`${src} is below break-even on both — so what you're buying here isn't volume, it's the models or features the cheaper tiers don't carry.`);
   }
+  // A weekly cap only bites someone using it most days — for a four-days-a-month user
+  // it is noise, and this page is already long. days_per_month carries exactly that
+  // distinction, so the caveat fires where it is true and stays quiet where it isn't.
+  // This is the one thing a per-day model cannot express: the same daily number is
+  // sustainable for one reader and not for another, and only the provider knows where
+  // the line is.
+  if(unquantifiedWindow(pf.provider, fit)==='7d' && (pf.days_per_month||30)>=24)
+    why.push(`One limit we can’t price: ${NAME[pf.provider]} caps usage weekly as well as in short windows, and publishes neither figure. You said you use it most days, which is exactly who a weekly cap catches — everything above can be right per day and you can still run out before the week is. Only the provider knows where that lands, and it isn’t saying — which is the whole problem.`);
   if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo${(()=>{const rs=(pf.models_used||[]).filter(k=>reasoningMult(k)>1);if(!rs.length) return ``;const allMeasured=rs.every(k=>(reasoningEntry(k)||{}).measured);return `, including the thinking tokens a reasoning model bills at the output rate (${allMeasured?`measured against the provider’s own API`:`our estimate — not yet measured for this model`})`;})()}`
     + ((pf.days_per_month||30)<30 ? ` — billed across the ${pf.days_per_month} days a month you actually use it, not all 30` : '')
     + (fit.price>0 && api<fit.price ? ` — cheaper on tokens alone.` : `.`));
@@ -945,6 +961,27 @@ function fmtTime(messages){
   return (hrs<10 ? hrs.toFixed(1) : String(Math.round(hrs)))+' h';
 }
 const fmtMsgs = n => !isFinite(n) ? '—' : n>=10 ? String(Math.round(n)) : n.toFixed(1);
+
+/* A usage window the provider states and never sizes. Anthropic and Google both say
+   a weekly cap sits above their short window and publish neither figure, which makes
+   every cap on this page a BURST rate: defensible for a day, wrong for a week.
+   Read from plan-limits.json and followed through the multiplier chain, exactly as
+   pricing.html does it, so the two pages cannot disagree. The inline field on each
+   tier is the fetch-failure fallback; check-auditor.js asserts the two agree. */
+function unquantifiedWindow(prov, tier, depth){
+  const plans = (LIMITS && LIMITS.plans) || null;
+  if(plans && (depth||0) <= 4){
+    const row = plans.find(l => l.p===prov && l.m===tier.m);
+    if(row){
+      if(row.unquantified_windows && row.unquantified_windows.length)
+        return row.unquantified_windows[0].window;
+      if(row.multiplier && row.multiplier.of)
+        return unquantifiedWindow(prov, {m:row.multiplier.of}, (depth||0)+1);
+      return null;   // live data says no window; it beats a stale inline marker
+    }
+  }
+  return tier.unquantifiedWindow || null;
+}
 
 /* Message caps are almost never published. Say which kind of number this is
    rather than presenting all of them as if the provider had told us. */

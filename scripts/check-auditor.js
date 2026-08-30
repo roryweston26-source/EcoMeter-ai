@@ -592,6 +592,41 @@ for (const r of S.routes) {
     fail('audit.html does not tell the reader the export button is hidden until tracking is on');
 }
 
+/* 18. The inline unquantifiedWindow markers must agree with plan-limits.json.
+
+      Anthropic and Google both state that a weekly cap sits above their short
+      window and publish neither figure, which makes every `cap` in audit.html a
+      BURST rate. The Auditor says so, and resolves the window from plan-limits.json
+      at render time — the inline field on each tier is only the fetch-failure
+      fallback. Two copies of one fact is the drift this repo keeps paying for, so
+      assert they agree in BOTH directions: a marker with nothing behind it in the
+      data is a claim we invented, and a window in the data with no marker silently
+      disappears the moment a fetch fails. */
+{
+  const L = JSON.parse(fs.readFileSync(R + 'plan-limits.json', 'utf8'));
+  // Resolve the way audit.html does: the plan's own window, else its multiplier
+  // base's. "5x more usage than Pro" inherits whatever bounds Pro.
+  const resolve = (p, m, depth) => {
+    if ((depth || 0) > 4) return null;
+    const row = (L.plans || []).find(l => l.p === p && l.m === m);
+    if (!row) return null;
+    if ((row.unquantified_windows || []).length) return row.unquantified_windows[0].window;
+    if (row.multiplier && row.multiplier.of) return resolve(p, row.multiplier.of, (depth || 0) + 1);
+    return null;
+  };
+  for (const prov of Object.keys(PLANS)) for (const t of PLANS[prov]) {
+    const fromData = resolve(prov, t.m);
+    const inline = t.unquantifiedWindow || null;
+    if (fromData === inline) continue;
+    if (inline && !fromData)
+      fail('audit.html claims a ' + inline + ' unquantified window on ' + t.m +
+           ' that plan-limits.json does not support — that is a disclosure we invented');
+    else
+      fail('plan-limits.json records a ' + fromData + ' unquantified window for ' + t.m +
+           ' and audit.html carries no inline marker, so the caveat vanishes on a failed fetch');
+  }
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)' + (warned ? ' and ' + warned + ' warning(s)' : '')
   : 'AUDITOR CHECKS PASS — ' + Object.keys(PLANS).length + ' providers, ' +

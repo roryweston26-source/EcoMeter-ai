@@ -114,11 +114,30 @@
       "waking_hours": 16,
       "waking_hours_basis": "Used only to flag caps that cannot be reached by a person in a day."
     },
+    "credit_conversion": {
+      "comment": "Turns a credit allowance into messages so the Ceiling column can price it. Every input here — the formula, the divisor, the per-model multipliers — is published by the provider, so the conversion is DERIVED, not estimated. Two choices are ours, and both make the ceiling SMALLER; see assumptions_are_conservative.",
+      "assumptions_are_conservative": "Z.ai's own token table assumes a 95% cache hit, and the top end of its published token range assumes 100% off-peak use, where a credit costs half. Both would RAISE the ceiling. We take neither: cache_hit 0 and peak-rate credits. A ceiling that flatters the plan is the exact failure this column exists to avoid, and FRESHNESS A11 settled the peak/off-peak question the same way for DeepSeek — quote the end of the range you do not control.",
+      "zai": {
+        "divisor": 10000,
+        "cache_hit": 0,
+        "peak": true,
+        "formula": "(input x in-mult + cached x cached-mult + output x out-mult) / 10000",
+        "models": {
+          "glm-5.3": { "input": 6.9, "cached": 1.7, "output": 24 },
+          "glm-5.3-flash": { "input": 2.3, "cached": 0.56, "output": 8 }
+        },
+        "implied_credit_value_usd": "About $0.0019-0.0020 at Z.ai's own API rates, i.e. roughly 510-520 credits per dollar, and it barely moves across the three archetypes. Z.ai does NOT publish this; it is derived from two things it does publish (the credit multipliers and the per-token rates). Worth stating because Perplexity publishes its own conversion as '100 credits equals $1' — the two units differ by about 5x, so 'credits' compares nothing between providers unless someone does this arithmetic.",
+        "source": "https://docs.z.ai/devpack/overview",
+        "as_of": "2026-08-30"
+      }
+    },
     "caveats": [
       "Break-even is what the same usage would cost at the provider's own published API rates. The API is not the product: no app, no memory, no file handling, no support. Treat it as a floor on value, not a full accounting.",
       "The tokens-per-message archetypes are HALF assumption and half measurement, and the halves must not be confused. Message lengths (prompt_chars, reply_chars, history_turns) are judgement; the characters-to-tokens conversion is measured with the real cl100k tokenizer by scripts/derive-archetypes.js, which owns the numbers. Still the single largest lever on every figure here. Lengths stated in characters rather than tokens on purpose: a person can check '1,800-character reply' against a real chat window, and cannot check '500 output tokens'.",
       "Thinking tokens ARE now priced, at _meta.reasoning mid, for the models that reason by default. A reasoning model emits hidden chain-of-thought before its reply and bills it at the output rate, so counting only the visible reply understates API cost. Four rows are now MEASURED against the providers' own APIs over 24 ordinary chat prompts each (scripts/measure-reasoning.js): Opus 5 1.8 and Sonnet 5 1.0 on 2026-08-27, GPT-5.6 Sol 1.2 and Terra 1.1 on 2026-08-28. EVERY ONE OF THE FOUR GUESSES WAS TOO HIGH — 3.0/2.0/3.0/2.5 against measured 1.8/1.0/1.2/1.1 — which overstated API cost and made those plans look easier to justify than they are. Two models do not measurably think on ordinary questions at all (Sonnet 5, and Terra outside coding). The pattern by task is consistent and worth knowing: writing barely triggers thinking, coding triggers the most. Google, the o-series and DeepSeek rows are still estimates; given four for four, assume they are too high as well.",
       "Ceiling figures assume the cap is hit in every window, every day, for 30 days. Essentially nobody does this. It is an upper bound, not an expectation.",
+      "A plan can publish SEVERAL windows and they all constrain. The ceiling takes the SMALLEST messages-per-day any published window permits, because that is the most a month of maxed-out use can actually contain. Until 2026-08-30 each plan named one 'binding' window in this file, which hardcoded an answer that varies per reader: the short window stops a burst, the long one stops sustained use, and which bites is a property of the USER, not the plan. For Z.ai the difference is 6.72x — a ceiling computed from the 5-hour figure alone was that many times too high.",
+      "AN UNQUANTIFIED WINDOW BIASES A CAP HIGH. Anthropic, Google and Perplexity each state that a weekly cap exists and none publishes a number for it. Where that is true the plan carries unquantified_windows, and any per-day figure derived from a shorter window is an upper bound the provider has itself said you cannot sustain. We do not invent the missing number: guessing lower would push readers toward a pricier tier on a figure nobody published, which is the harm this file exists to prevent. We label the bias instead.",
       "Prompt caching is not modelled, consistent with EcoMeter. Cached input bills far less, so real API cost is lower than shown and break-even is correspondingly harder to reach.",
       "Where a cap is a soft fallback rather than a hard stop (OpenAI downgrades to mini rather than cutting you off), the ceiling understates total value and overstates top-model value.",
       "Every Gemini break-even is currently computed on gemini-3.6-flash, whose API rate is PROMOTIONAL until 2026-12-31 (half the standard rate). These figures will roughly halve in the number of messages they name when that promo ends — they re-price themselves from prices.json, so no edit is needed here, but a Gemini plan looks better value today than it will in January. check-prices.js fails on the promo date.",
@@ -162,7 +181,6 @@
           "note": "Enabled via + then Thinking. Explicitly does NOT use GPT-5.6 Sol. scope_limited: this bounds ONE FEATURE, not the plan — ordinary Go chat is advertised as unlimited on Luna, so a ceiling computed from this figure would sit far below what Go is actually worth. Consumers must refuse it the same way they refuse an undisclosed multiplier base."
         }
       ],
-      "binding": "5h",
       "stated": "The only absolute MESSAGE figure OpenAI still publishes for a consumer tier: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' Everything else is 'more messages' than Free. Go carries ads ('This plan may include ads'), and as of 2026-08-24 GPT-5.5 has left this tier along with Free — the 'Legacy models' row reads No for Go.",
       "context_window": {
         "instant_tokens": 54000,
@@ -271,7 +289,15 @@
         "low": "claude-haiku-4-5-20251001",
         "high": "claude-opus-5"
       },
-      "note": "A weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit every day for 30 days.",
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "stated": "Anthropic says usage resets every 5 hours and that a weekly limit sits above that. It publishes no number for either.",
+          "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
+          "effect": "The ~45/5h third-party figure therefore describes a BURST, not a sustained rate, and any per-day number derived from it is an upper bound Anthropic has itself said cannot be held for 30 days. Biased high, and high on a cap flatters the plan."
+        }
+      ],
+      "note": "A weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit every day for 30 days. Anthropic does not size it — see unquantified_windows, and _meta.caveats for why we label the bias instead of inventing the missing number.",
       "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
       "as_of": "2026-07-28"
     },
@@ -314,6 +340,14 @@
       "m": "Gemini (Free)",
       "provenance": "not_disclosed",
       "stated": "'Standard limits' — never quantified. Compute-based, refreshing every 5 hours up to a weekly limit.",
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "stated": "Google states the 5-hour refresh runs 'up to a weekly limit' and quantifies neither window.",
+          "source": "https://support.google.com/gemini/answer/16275805",
+          "effect": "Every paid Gemini tier multiplies this base, so the unquantified weekly window propagates up the whole ladder. Google also reserves the right to change limits without notice."
+        }
+      ],
       "value_models": {
         "low": "gemini-3.6-flash",
         "high": "gemini-3.1-pro-preview"
@@ -466,6 +500,14 @@
       "p": "perplexity",
       "m": "Perplexity Pro",
       "provenance": "not_disclosed",
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "stated": "Perplexity names the weekly advanced-model allowance as the limit that actually binds, and does not publish it — then confirms it is not the same for every Pro subscriber.",
+          "source": "https://www.perplexity.ai/help-center",
+          "effect": "The only handle on it is the low-confidence third-party figure below. Unusually, the provider's own statement implies there may be no single true number to find, so this window may be unquantifiABLE rather than merely unquantified."
+        }
+      ],
       "stated": "Pro Search is marketed as unlimited. Perplexity does not publish the limit that actually binds — the weekly allowance on advanced models — and has confirmed it is not even the same for every Pro subscriber. Perplexity also states the absence directly, on the same page that quantifies Max: “Consumer Pro plans do not start with a set monthly amount” of Computer credits — a provider confirming in writing that this tier carries no published allowance.",
       "third_party": [
         {
@@ -604,7 +646,7 @@
           "window": "7d",
           "soft": false,
           "scope_limited": false,
-          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. unit is \"credits\", NOT messages: the Ceiling column deliberately refuses to price it, because multiplying credits by a cost-per-message would be nonsense. Converting credits to messages is possible from the published formula and is the open opportunity recorded in FRESHNESS A11."
+          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. Since 2026-08-30 the Ceiling column PRICES this: credits convert to messages through _meta.credit_conversion, every input to which is Z.ai's own published figure. THIS WEEKLY WINDOW IS WHAT BINDS — it permits 6.72x fewer messages per day than the 5-hour window would if that could be hit around the clock, so the ceiling this produces is 6.72x lower than a 5-hour-only reading, and the 5-hour-only reading is the one that would have been wrong."
         },
         {
           "n": 2000,
@@ -612,10 +654,10 @@
           "window": "5h",
           "soft": false,
           "scope_limited": false,
-          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind."
+          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind, and which one bites is a property of the USER rather than the plan: this window stops a burst, the weekly one stops sustained use. It is exactly 20% of the weekly allowance on all three tiers, so five maxed consecutive 5-hour windows — 25 hours of use — exhausts the week."
         }
       ],
-      "binding": "7d",
+      "agentic": true,
       "stated": "The most complete consumer allowance disclosure on this table. 10,000 credits a week and 2,000 every rolling 5 hours, with the credit formula, the per-model multipliers and a token conversion table all published. Z.ai also states peak hours (Mon-Fri 14:00-18:00 SGT) and charges half credits outside them, so its own token estimates carry a ~2x range; the low end assumes all-peak.",
       "value_models": {
         "high": "zai:glm-5.3",
@@ -635,7 +677,7 @@
           "window": "7d",
           "soft": false,
           "scope_limited": false,
-          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. unit is \"credits\", NOT messages: the Ceiling column deliberately refuses to price it, because multiplying credits by a cost-per-message would be nonsense. Converting credits to messages is possible from the published formula and is the open opportunity recorded in FRESHNESS A11."
+          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. Since 2026-08-30 the Ceiling column PRICES this: credits convert to messages through _meta.credit_conversion, every input to which is Z.ai's own published figure. THIS WEEKLY WINDOW IS WHAT BINDS — it permits 6.72x fewer messages per day than the 5-hour window would if that could be hit around the clock, so the ceiling this produces is 6.72x lower than a 5-hour-only reading, and the 5-hour-only reading is the one that would have been wrong."
         },
         {
           "n": 12000,
@@ -643,10 +685,10 @@
           "window": "5h",
           "soft": false,
           "scope_limited": false,
-          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind."
+          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind, and which one bites is a property of the USER rather than the plan: this window stops a burst, the weekly one stops sustained use. It is exactly 20% of the weekly allowance on all three tiers, so five maxed consecutive 5-hour windows — 25 hours of use — exhausts the week."
         }
       ],
-      "binding": "7d",
+      "agentic": true,
       "stated": "The most complete consumer allowance disclosure on this table. 60,000 credits a week and 12,000 every rolling 5 hours, with the credit formula, the per-model multipliers and a token conversion table all published. Z.ai also states peak hours (Mon-Fri 14:00-18:00 SGT) and charges half credits outside them, so its own token estimates carry a ~2x range; the low end assumes all-peak.",
       "value_models": {
         "high": "zai:glm-5.3",
@@ -666,7 +708,7 @@
           "window": "7d",
           "soft": false,
           "scope_limited": false,
-          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. unit is \"credits\", NOT messages: the Ceiling column deliberately refuses to price it, because multiplying credits by a cost-per-message would be nonsense. Converting credits to messages is possible from the published formula and is the open opportunity recorded in FRESHNESS A11."
+          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. Since 2026-08-30 the Ceiling column PRICES this: credits convert to messages through _meta.credit_conversion, every input to which is Z.ai's own published figure. THIS WEEKLY WINDOW IS WHAT BINDS — it permits 6.72x fewer messages per day than the 5-hour window would if that could be hit around the clock, so the ceiling this produces is 6.72x lower than a 5-hour-only reading, and the 5-hour-only reading is the one that would have been wrong."
         },
         {
           "n": 28000,
@@ -674,10 +716,10 @@
           "window": "5h",
           "soft": false,
           "scope_limited": false,
-          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind."
+          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind, and which one bites is a property of the USER rather than the plan: this window stops a burst, the weekly one stops sustained use. It is exactly 20% of the weekly allowance on all three tiers, so five maxed consecutive 5-hour windows — 25 hours of use — exhausts the week."
         }
       ],
-      "binding": "7d",
+      "agentic": true,
       "stated": "The most complete consumer allowance disclosure on this table. 140,000 credits a week and 28,000 every rolling 5 hours, with the credit formula, the per-model multipliers and a token conversion table all published. Z.ai also states peak hours (Mon-Fri 14:00-18:00 SGT) and charges half credits outside them, so its own token estimates carry a ~2x range; the low end assumes all-peak.",
       "value_models": {
         "high": "zai:glm-5.3",
