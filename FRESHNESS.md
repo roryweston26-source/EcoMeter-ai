@@ -208,7 +208,7 @@ a source you're about to change.
 
 **Goes stale:** constantly. OpenAI cut two models ~5× overnight on 2026-08-02.
 
-**Source of truth:** `extension/prices.json` → `api` (7 providers, ~50 models).
+**Source of truth:** `extension/prices.json` → `api` (10 providers, ~76 models).
 
 **Copies that must follow — all four drift silently:**
 - `pricing.html` → `FALLBACK_PRICES`
@@ -225,6 +225,16 @@ platform.claude.com/docs/en/about-claude/pricing · developers.openai.com/docs/p
 ai.google.dev/gemini-api/docs/pricing · docs.x.ai/docs/models ·
 api-docs.deepseek.com/quick_start/pricing · mistral.ai/pricing/api ·
 docs.perplexity.ai/getting-started/pricing
+
+Added 2026-08-29, and two of the three need care:
+alibabacloud.com/help/en/model-studio/model-pricing — **JS-rendered; a plain fetch
+returns a shell with no prices at all.** Render it. Also tiers by input-token count
+(same semantics as `long`) and prices the same model differently by region — the
+stored figures are the **International** tier ·
+docs.z.ai/guides/overview/pricing — reads fine with curl ·
+platform.moonshot.ai/docs/pricing/chat-k3 — **append `.md`** for a clean Markdown
+copy. Guessing these paths returns a byte-identical SPA fallback that looks like a
+successful fetch, so follow the real links from the pricing index
 
 **Also check the `long` block** (context-threshold rates). Thresholds today are
 OpenAI >272k, Google >200k, xAI ≥200k; Anthropic doesn't tier this way. Ignoring
@@ -272,6 +282,15 @@ provider pages.
 - `audit.html` → `PLANS[].models`, `MODELS`, and the `API` fallback
 - `extension/prices.json` → `free_tiers`
 - `plan-limits.json` → `value_models`
+
+**The 2026-08-29 Chinese-lab addition touched only the first three**, deliberately.
+The eight Alibaba / Z.ai / Moonshot models are priced, watered and shown on
+`pricing.html`, and appear **nowhere else** — not in the extension picker, not in
+`audit.html`, not in `free_tiers`, not in `plan-limits.json`. That is a coherent
+state, not an oversight: `check-prices.js` §5 requires picker models to be priced,
+not the reverse, and no subscription plans were added so no `plan-limits` rows were
+needed. **Adding any of these models to the picker or the Auditor means doing the
+other four files at the same time.**
 
 **Checked all four unaudited providers on 2026-08-26** — the ones guard 9d cannot see,
 because they have no tier model list. Two were wrong, both now fixed and re-dated:
@@ -402,7 +421,17 @@ promotions rather than standing prices. They carry a machine-readable block:
 ```
 
 **Currently promotional:** `gemini-3.7-flash` and `gemini-3.6-flash`, both at half
-price through **2026-12-31**, reverting to $1.50/$7.50.
+price through **2026-12-31**, reverting to $1.50/$7.50 — and **`glm-5.3-flash`, half
+price through 2026-09-09**, reverting to $0.15/$0.50.
+
+⚠️ **GLM-5.3 Flash is the nearest expiry in the file and it moves a headline number.**
+At its promotional $0.075 it is the cheapest input rate on the whole tracker, so the
+"Cheapest input / 1M" ticker reads **$0.07**. On 2026-09-10 that ticker should read
+$0.10 (Gemini 2.5 Flash-Lite / GPT-4.1 nano). `check-prices.js` fails on the date, but
+the ticker is computed live from whatever the file says, so it will quietly show a
+wrong headline in the window between the promo lapsing and someone running the check.
+Z.ai states the end as **24:00 on 2026-09-09 UTC+8**, which is 16:00 UTC — the stored
+date is the local one, so the guard trips a few hours late.
 
 **Record the standard rate at the moment you record the promo.** Going back to
 find what a price *was* after the promo expires is how this data rots — and it's
@@ -419,6 +448,121 @@ the model for the rest: a dated figure with a machine-readable expiry and a scri
 that fails on it beats a calendar entry and a human remembering. Where another
 entry here relies on someone reading this document on time, that's a gap worth
 closing the same way.
+
+---
+
+## A9. Open weights and the host spread (added 2026-08-29)
+
+**Two new optional blocks on an `api` entry**, added with the three Chinese labs.
+They rot faster than a price does, and neither is checkable against the provider's
+own page the way `input`/`output` are.
+
+```json
+"open_weights": { "license": "apache-2.0", "osi": true, "params": "27B dense", "url": "https://huggingface.co/..." },
+"hosted": { "n": 11, "low": {...}, "high": {...}, "cheaper_than_first_party": 7,
+            "quant": ["fp8"], "checked": "2026-08-29", "source": "https://openrouter.ai/..." }
+```
+
+### The rule that produced these, and must survive
+
+**Open weights is a property of a MODEL, not a provider.** Alibaba publishes weights
+for `qwen3.8-2.4t-a95b` and `qwen3.8-27b` and *not* for the `qwen3.8-max` and
+`qwen3.8-flash` tiers it sells beside them. Mistral publishes **only** Small — Medium
+3.5, Large 3 and Codestral are all closed, which is the opposite of how Mistral is
+usually described. Badging a provider would state a falsehood about specific models.
+The page therefore drives the badge entirely off the presence of an `open_weights`
+block, and that block is only written when the weights page has actually been loaded.
+
+**Two independent sources agreed on the split** and should both be used again:
+OpenRouter's `hugging_face_id` field (null for closed models), and Alibaba's own
+pricing page, which carries a section headed *"Text generation - Qwen (open source)"* —
+the lab drawing the line itself.
+
+### `osi` is a second, weaker claim — don't collapse it
+
+Only **6 of 11** badged models carry a standard OSI licence. The flagships mostly carry
+bespoke licences *named after themselves* (`kimi-k3`, `glm-5.3`, `qwen3.8-max`), which
+are not the same promise as MIT and may carry usage restrictions nobody has read. The
+badge renders solid green for `osi: true` and dashed grey otherwise, and
+`check-prices.js` fails if `osi` disagrees with the licence string in either direction.
+**`deepseek-v3` is recorded as `"not stated in model-card metadata"`** — that is
+literally what the HF API returned, and it is deliberately not a guess.
+
+### What rots, and how fast
+
+| Thing | Rots because | Re-read |
+|---|---|---|
+| `hosted.low/high/n` | hosts add, drop and reprice models constantly | `hosted.source` (OpenRouter endpoints API) |
+| `cheaper_than_first_party` | same | recompute from the same fetch |
+| `quant` | a host silently requantising changes what you're buying | same |
+| `license` / `osi` | labs relicense between releases | the `url` |
+| `params` | fixed per model — safe | — |
+
+**Guard:** `check-prices.js` §8 — shape, `low ≤ high`, `n ≥ 2`,
+`cheaper_than_first_party < n`, `hosted` without `open_weights`, `osi` disagreeing
+with the licence, a missing/non-https `url`, a missing `source`, and **`checked`
+older than 120 days fails loud**. All five destructive paths were validated by
+breaking the data and watching them fire.
+
+### The confound, which must stay in the copy
+
+**Hosts serve at different numeric precisions** — int4, fp4, fp8, bf16, mxfp4 all
+appear. A 4-bit quantisation is a lossy compression of the weights, so the cheapest
+host is frequently *not running the same computation* as the dearest. The spread is
+therefore partly a quality difference and only partly a margin difference, and most
+hosts don't state precision on their own pricing pages. **The page says
+"precision varies (…)" wherever `quant` has more than one value; don't quietly drop
+that line to tidy the layout.** Where a host lists several SKUs for one model we take
+the cheapest per host — otherwise Kimi K2.7 Code's "highspeed" SKU at double the rate
+would masquerade as Moonshot charging two different prices for the same thing.
+
+### The finding, as measured on 2026-08-29
+
+Spreads were **1.18×–2.88×**, not the order-of-magnitude gaps this was expected to
+show. The sharper result is *who* is expensive: **for 4 of 6 models the lab that made
+the model is in the more expensive half of the market for it.** Z.ai is the single
+dearest of 16 hosts for GLM-5.3. Moonshot is 12th of 15 for Kimi K2.7 Code, where nine
+hosts undercut it and the cheapest is 31% below. **And Alibaba's published list price
+for `qwen3.8-27b` ($0.50) is above all eleven hosts serving it — including Alibaba's
+own resale at $0.425.** That last one broke the first version of the guard, which had
+assumed the first-party rate must sit inside the host range; the guard now only catches
+order-of-magnitude gaps, which is the real failure mode (a units error).
+
+**This comparison only exists because the weights are public.** For a closed model
+there is no second price. That is the argument for the column, and it's worth keeping
+in the copy if it ever gets rewritten.
+
+### Not yet done
+
+- **No `hosted` block for DeepSeek or Mistral Small** — they are badged but their
+  spread has never been measured. Same method, ~5 minutes each.
+- **Xiaomi (MiMo) and Tencent (Hunyuan) are not tracked and outrank Kimi on OpenRouter
+  token volume** — see A10.
+
+---
+
+## A10. "Biggest" depends on which measure, and they disagree (2026-08-29)
+
+The three labs were picked as "the largest by user base". Checked rather than assumed,
+and **the three measures do not agree**, so any future "biggest" claim needs to say
+which one it means:
+
+| Measure | What it actually measures | Order |
+|---|---|---|
+| HF 30-day downloads | self-hosting / research adoption | Qwen **315.5M** ≫ DeepSeek 25.3M > Z.ai 11.2M > MiniMax 7.5M > Moonshot 5.2M > Tencent 1.5M |
+| HF likes | community attention | Qwen 125.6k > DeepSeek 72.4k > Z.ai 43.3k > Tencent 30.3k > Moonshot 25.2k > MiniMax 15.1k |
+| OpenRouter weekly tokens | hosted API consumption | DeepSeek V4 Flash 12.3T (#2), **Xiaomi MiMo-V2.5 9.98T (#3)**, **Tencent Hy3 6.62T (#5)**, GLM 5.3 Flash 4.62T (#8), GLM 5.2 3.11T (#10) |
+
+**Qwen is unambiguously first and Z.ai is solidly second.** **Kimi is the weak pick:**
+it appears in no OpenRouter top-10 entry, and both Xiaomi's MiMo and Tencent's Hunyuan
+move more tokens than anything Moonshot ships. It survives on downloads and likes, and
+on having a large consumer product outside these measures. If a fourth lab is ever
+added, **MiMo or Hunyuan has the better evidence than MiniMax**, which leads Moonshot
+on downloads but trails it everywhere else.
+
+Note that OpenRouter's top 10 is *dominated by Chinese open-weight models* — five of
+the ten, plus a stealth model at #1. That is context for how large this category has
+become relative to the eight providers the site tracked before.
 
 ---
 
@@ -1722,6 +1866,14 @@ Adding or removing a site means editing prose in at least two places:
 Same trap elsewhere: "5 of the 8 providers" (Auditor coverage), "26 plans", "all
 56,250 answer combinations". Grep for digits in prose after any structural change.
 
+⚠️ **"8 providers" is now ambiguous and every instance needs reading before it is
+changed.** Since 2026-08-29 `prices.json` carries **10** providers, but the
+transparency index still grades **8** and the Auditor still covers **5**. Those are
+now three different numbers that used to be two, and most existing prose saying
+"eight providers" is about the *index*, where it remains correct. **Do not
+bulk-replace.** The counts that did move: `prices.json` → `api` (7→10 in FRESHNESS
+A1) and the pricing page's own ticker, which is computed live and needs no edit.
+
 ## E4. The two scales are deliberate
 
 The page grades **public knowability** on a 4-state scale and nests the older
@@ -1989,6 +2141,33 @@ monotonicity, and both historical regressions.
 
 **Re-run `node scripts/derive-water-model.js --write` rather than hand-editing
 `_hosts` or `_energy`.** It is idempotent and re-migrates the model entries.
+
+### F1d. Two hosts added 2026-08-29 for the Chinese labs — one first-party, one not
+
+**`alibaba`: PUE 1.200, and it is FIRST-PARTY.** Alibaba Group's FY2024 ESG report,
+published on Alibaba Cloud's own site, gives 1.200 across self-built data centres
+(down from 1.215) with 56% clean electricity. **Alibaba is the only one of the three
+labs that publishes a PUE at all**, and the default assumption nearly cost us: had it
+been filed under the inferred Chinese average of 1.27 it would have **overstated
+Alibaba's water against a figure the company does publish** — an error against the
+provider, the exact shape of the 2026-08-29 transparency failure. Checking took two
+requests.
+
+⚠️ **It is the oldest first-party number in the file** — the year ended 2024-03-31.
+A newer ESG report almost certainly exists and was not looked for. **Check that before
+trusting the year.** No Alibaba WUE was found, so `wue_site` is inherited from
+`china_avg`: the entry has **mixed provenance and says so in its own `note`**.
+
+**`china_avg`: PUE 1.27, INFERRED**, used for Z.ai and Moonshot. Numerically identical
+to the existing `deepseek` host — both are Jegham et al.'s average of the thirty most
+efficient Chinese data centres — and deliberately kept as a separate key so DeepSeek's
+published figures do not move. **The two could be merged; that is a judgement call for
+Rory, not a silent tidy-up.**
+
+**Its `note` is worded as a statement about us, not about them:** *we did not locate a
+PUE or WUE disclosure for Z.ai or Moonshot.* That is not the same claim as "they
+publish nothing", and only one of the two is supported by what was actually done. If
+either lab ever reaches the transparency index, that cell starts at ⚪, not 🔴.
 
 ---
 

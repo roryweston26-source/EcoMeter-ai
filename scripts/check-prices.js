@@ -168,9 +168,72 @@ for (const [prov, m] of Object.entries(p.api)) {
   }
 }
 
+// 8. Open weights and the host spread.
+//
+//    Both blocks were added 2026-08-29 with the three Chinese labs. They describe
+//    a market rather than a rate card, so they rot faster than a price does: a
+//    host list is a snapshot of who was serving a model on one day, and a licence
+//    claim is a legal statement we are making on a provider's behalf. Neither is
+//    checkable against the provider's own page the way `input`/`output` are, so
+//    the guard is about shape and staleness, not correctness.
+//
+//    The staleness thresholds fail LOUD rather than silently ageing, on the same
+//    principle as the promo check above.
+const OSI = new Set(['apache-2.0', 'mit', 'modified-mit', 'bsd-3-clause']);
+const STALE_DAYS = 120;
+const daysOld = d => Math.floor((Date.now() - Date.parse(d)) / 86400000);
+let ow = 0, spreads = 0;
+for (const [prov, m] of Object.entries(p.api)) {
+  for (const [k, v] of Object.entries(m)) {
+    if (v.open_weights) {
+      ow++;
+      const o = v.open_weights;
+      // A badge with no URL is an unverifiable claim — the whole point of the
+      // block is that someone loaded the page the weights are on.
+      if (!o.url || !/^https:\/\//.test(o.url)) fail('open_weights on ' + k + ' needs an https url to the weights');
+      if (!o.license) fail('open_weights on ' + k + ' must name a licence (use the literal text if it is bespoke)');
+      if (typeof o.osi !== 'boolean') fail('open_weights on ' + k + ' must set osi true/false');
+      // osi:true is a stronger claim than "open" and drives a different badge.
+      if (o.osi === true && !OSI.has(o.license))
+        fail('open_weights on ' + k + ' claims osi:true for non-OSI licence "' + o.license + '"');
+      if (o.osi === false && OSI.has(o.license))
+        fail('open_weights on ' + k + ' sets osi:false for standard licence "' + o.license + '" — that understates it');
+    }
+    if (!v.hosted) continue;
+    spreads++;
+    const h = v.hosted;
+    if (!v.open_weights) fail('hosted spread on ' + k + ' but no open_weights — only public weights can have a second host');
+    for (const end of ['low', 'high']) {
+      if (!h[end] || typeof h[end].input !== 'number' || typeof h[end].output !== 'number' || !h[end].host)
+        return fail('hosted.' + end + ' on ' + k + ' needs { input, output, host }');
+    }
+    if (h.low.input > h.high.input) fail('hosted spread on ' + k + ': low.input exceeds high.input');
+    if (typeof h.n !== 'number' || h.n < 2) fail('hosted on ' + k + ': n must be at least 2 — a single host is not a spread');
+    if (h.cheaper_than_first_party != null && h.cheaper_than_first_party >= h.n)
+      fail('hosted on ' + k + ': cheaper_than_first_party (' + h.cheaper_than_first_party + ') must be below n (' + h.n + ')');
+    // The first-party rate is NOT required to sit inside the host range. The first
+    // run of this check asserted it was and failed on qwen3.8-27b, where Alibaba's
+    // $0.50 list price is above all eleven hosts — including Alibaba's own resale
+    // at $0.425. That is the finding, not a bug. What is still worth catching is a
+    // units error (a rate entered per-1M instead of per-token, or a decimal slip),
+    // which shows up as an order-of-magnitude gap rather than a margin.
+    const OOM = 3;
+    if (v.input > h.high.input * OOM || v.input < h.low.input / OOM)
+      fail('hosted on ' + k + ': first-party $' + (v.input * 1e6).toFixed(3) +
+           ' is more than ' + OOM + 'x outside the observed host range $' + (h.low.input * 1e6).toFixed(3) +
+           '-$' + (h.high.input * 1e6).toFixed(3) + ' — likely a units error in one of them');
+    if (!h.checked) fail('hosted on ' + k + ' must carry a "checked" date');
+    else if (daysOld(h.checked) > STALE_DAYS)
+      fail('HOST SPREAD STALE (' + daysOld(h.checked) + 'd): ' + k + ' last checked ' + h.checked +
+           ' — re-read ' + (h.source || 'the endpoints listing') + ' or drop the block');
+    if (!h.source) fail('hosted on ' + k + ' must cite where the spread was read');
+  }
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)'
   : '\nALL CHECKS PASS — ' + Object.keys(all).length + ' models priced, ' + promos +
     ' on promotional rates, ' + shown.length +
-    ' shown, ' + Object.values(all).filter(x => x.long).length + ' with long-context tiers, ' + L.plans.length + ' plans');
+    ' shown, ' + Object.values(all).filter(x => x.long).length + ' with long-context tiers, ' +
+    ow + ' with published weights (' + spreads + ' with a measured host spread), ' + L.plans.length + ' plans');
 process.exit(bad ? 1 : 0);

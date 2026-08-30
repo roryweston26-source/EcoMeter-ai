@@ -136,6 +136,20 @@
     "deepseek-r1":       { "energy": "deepseek-r1-own", "class": "large", "host": "deepseek" },
     "deepseek-v3":       { "energy": "deepseek-v3-own", "class": "medium", "host": "deepseek" }
   },
+  "alibaba": {
+    "qwen3.8-max":       { "class": "large", "host": "alibaba" },
+    "qwen3.8-2.4t-a95b": { "class": "large", "host": "alibaba" },
+    "qwen3.8-27b":       { "class": "small", "host": "alibaba" },
+    "qwen3.8-flash":     { "class": "small", "host": "alibaba" }
+  },
+  "zai": {
+    "glm-5.3":       { "class": "large", "host": "china_avg" },
+    "glm-5.3-flash": { "class": "small", "host": "china_avg" }
+  },
+  "moonshot": {
+    "kimi-k3":        { "class": "large", "host": "china_avg" },
+    "kimi-k2.7-code": { "class": "medium", "host": "china_avg" }
+  },
 
   "_hosts": {
     "aws": {
@@ -169,6 +183,22 @@
       "year": "2025",
       "source": "Jegham et al. Table 1 — average of the thirty most efficient Chinese data centres; regional grid factor for DeepSeek's known deployments",
       "note": "Not first-party. DeepSeek publishes nothing."
+    },
+    "alibaba": {
+      "pue": 1.2,
+      "wue_site": 1.2,
+      "wue_source": 6.016,
+      "year": "FY2024 (PUE, year ended 2024-03-31) / 2025 (WUE)",
+      "source": "PUE: Alibaba Group FY2024 ESG report, as published on Alibaba Cloud's own site (alibabacloud.com/blog/alibaba-progresses-towards-carbon-neutrality-goals-and-digital-inclusion-2024-esg-report_601423, rendered and read 2026-08-29) — 1.200 across self-built data centres, improved from 1.215, with 56% clean electricity. WUE: no Alibaba figure found; inherited from china_avg.",
+      "note": "MIXED PROVENANCE — the PUE is first-party and the WUE is not. Alibaba is the only one of the three Chinese labs added on 2026-08-29 that publishes a PUE at all, and using the china_avg 1.27 for it would have overstated its water against a figure the company does publish. The PUE is also the oldest first-party number in this file: check for a newer ESG report before trusting the year."
+    },
+    "china_avg": {
+      "pue": 1.27,
+      "wue_site": 1.2,
+      "wue_source": 6.016,
+      "year": "2025",
+      "source": "Jegham et al. Table 1 — average of the thirty most efficient Chinese data centres.",
+      "note": "INFERRED regional average, used for Z.ai and Moonshot. Numerically identical to the 'deepseek' host, which was fitted on the same basis; the two are kept separate so DeepSeek's figures do not move. THIS IS NOT A FINDING ABOUT THESE PROVIDERS — we did not locate a PUE or WUE disclosure for Z.ai or Moonshot, which is a statement about our search, not about their silence. Grade it that way if it ever reaches the transparency index."
     },
     "unpublished": {
       "pue": 1.105,
