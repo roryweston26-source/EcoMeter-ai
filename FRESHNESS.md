@@ -2425,6 +2425,76 @@ either lab ever reaches the transparency index, that cell starts at ⚪, not �
 
 # G. Extension mechanics
 
+## G0. ⛔ BLOCKER — the Chinese models cannot go in the extension picker yet
+
+**This is a tokenizer problem, not a data problem, and it is the reason the
+2026-08-29 work stopped at the price tracker.** Anyone tempted to "finish the job"
+by adding Qwen/GLM/Kimi to `MODEL_CATALOG` must read this first.
+
+`getEncodingForModel()` in `sidepanel.js` has no branch for any of them. Verified by
+lifting the function and running it:
+
+| key | encoding it gets |
+|---|---|
+| `qwen3.8-max`, `qwen3.8-27b` | `char-ratio` |
+| `glm-5.3`, `glm-5.3-flash` | `char-ratio` |
+| `kimi-k3`, `kimi-k2.7-code` | `char-ratio` |
+| `mimo-v2.5`, `hy3` (if ever added) | `char-ratio` |
+| `deepseek-v4-flash` | `cl100k_base` (explicit branch) |
+
+**`char-ratio` divides prose by 4.0 characters per token. That is an English ratio,
+and these are Chinese-first models.**
+
+### Measured, 2026-08-30 — not asserted
+
+Bundled `cl100k` vs `charRatioEstimate()`, both lifted from the shipped extension:
+
+| sample | chars | cl100k | char-ratio | error |
+|---|---|---|---|---|
+| English prose | 184 | 33 | 46 | 1.4× **over**count |
+| **Chinese prose** | 62 | 61 | 16 | **3.8× UNDER**count |
+| Mixed CN/EN | 52 | 22 | 13 | 1.7× undercount |
+
+**⚠️ Read the caveat before quoting 3.8×.** cl100k is *not* Qwen's tokenizer — Qwen,
+GLM and Kimi all ship CJK-optimised vocabularies and will produce **fewer** tokens on
+Chinese than cl100k does. So 3.8× is an **upper bound** on the error, measured against
+the wrong tokenizer because it is the one we have. The true figure against Qwen's own
+BPE is unmeasured. It is still certainly a large undercount, because no CJK tokenizer
+comes close to 4 chars/token.
+
+### Why this is disqualifying rather than merely imprecise
+
+**It fails in the direction that flatters the provider.** A Qwen user typing Chinese
+would see roughly a third of their real tokens, so a third of the real cost, water and
+energy. The whole mission is closing exactly that asymmetry — shipping a counter that
+under-reports Chinese usage by multiples would make the tool lie on the provider's
+side, for precisely the users most likely to type Chinese.
+
+Note the English row fails the *safe* way (overcount). This is not a general accuracy
+complaint about `char-ratio`; it is specific to CJK.
+
+### What unblocking actually needs
+
+1. **Bundle real tokenizers.** `tokenizer_hf.js` and `scripts/fetch-tokenizers.js`
+   already exist for this, but `fetch-tokenizers.js` knows **only `deepseek`** and
+   `extension/tokenizers/` contains **nothing but a README**. Add Qwen / GLM / Kimi
+   vocabularies there.
+2. **Watch the bundle size.** `tokenizer_o200k.js` is 2.7MB and `cl100k` is 1.0MB
+   against a ~1.6MB zip today. Three more full vocabularies would dominate the
+   package — check whether the HF path can load them lazily rather than bundling.
+3. **Re-run `scripts/calibrate-tokenizer.js`** — its corpus is built from this repo
+   and is therefore all English. **Its measured ±10.5% band does not apply to CJK
+   text and should not be shown next to a Chinese token count.**
+4. Only then add a `getEncodingForModel` branch and the `MODEL_CATALOG` entries.
+
+**Until all four are done, keep these models out of the picker.** They are correctly
+absent today — `grep -c "qwen\|glm-\|kimi" extension/sidepanel.js` returns 0.
+
+**`content.js` is a second, independent blocker:** its `PLATFORMS` list covers 12
+hosts and **none is Chinese** — no `chat.qwen.ai`, `kimi.com`, or `chat.z.ai`. Adding
+them means new DOM selectors, which G1 below calls the biggest unguarded risk in the
+project.
+
 ## G1. Platform DOM selectors — the biggest unguarded risk
 
 **`extension/content.js` → `PLATFORMS`**, 11 hosts, each with CSS selectors for
