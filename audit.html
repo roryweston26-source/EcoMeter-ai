@@ -861,18 +861,24 @@ function recommend(pf,sig){
   // them. The hybrid branch above already said this; do not say it twice.
   if(api!=null && !hybrid && fit.price>0 && api<fit.price) why.push(API_TRADEOFF);
   else if(LEGACY_ONLY.has(pf.provider)) why.push(`No API comparison here: Copilot runs on OpenAI models but Microsoft publishes no per-token rate to price it against.`);
-  // DeepSeek has said in writing that a "significant" price rise is coming with no
-  // date attached, and it's the cheapest thing we track by a wide margin — so any
-  // advice that leans on it is leaning on a number its owner has told us will move.
-  // The rise DeepSeek warned about landed between the 2026-08-08 and 2026-08-24
-  // checks: roughly 3x on input and 4.5x on output. Saying "a rise is coming" now
-  // would understate a cost the user is already paying, on the provider this
-  // engine's cheapest advice leans on hardest.
+  // DeepSeek WAS the cheapest thing we track by a wide margin, which is why the
+  // advice leans on it. The rise it had warned about landed between the 2026-08-08
+  // and 2026-08-24 checks: roughly 3x on input and 4.5x on output.
+  //
+  // CORRECTED 2026-08-30: that rise cost DeepSeek the lead, and the copy below said
+  // otherwise for six days. On the cheapest value_model we price per provider,
+  // v4-flash at $0.44/$1.32 blends to $0.66 per 1M (3:1 in:out) — behind Mistral
+  // Small 4 at $0.262 and OpenAI's gpt-5.6-luna at $0.45. It is THIRD, not first,
+  // and it was third the moment the rise landed; the 2026-08-24 pass recorded the
+  // new rates but never re-ran the ranking the old rates had justified.
+  // Off-peak (half of every stored rate) blends to $0.33, which puts it second.
+  // A stale superlative on the provider this engine's cheapest advice leans on
+  // hardest is the worst place to leave one.
   // Question 11 pays its way here. `cost` and `capability` have already decided a
   // tie above; these two add what the reader told us they came for.
   if(sig.priority==='privacy') why.push(privacyLine(pf.provider));
   if(sig.priority==='feature'){ const fl=featureLine(pf.provider, fit); if(fl) why.push(fl); }
-  if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier. It’s still the cheapest provider we track, but by a much narrower margin than before, and it has given no indication that’s the end of it. DeepSeek also now charges by the clock: the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price.`);
+  if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier, and it has given no indication that’s the end of it. That rise cost it the lead: of the four providers this tool can price, DeepSeek is now the second cheapest rather than the first, behind OpenAI’s cheapest tier. Cheaper options exist outside this tool altogether — Z.ai and Mistral both undercut it — but neither sells a plan we compare here. DeepSeek also now charges by the clock: the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price, which at off-peak makes it the cheapest of the four again.`);
   return { head, why };
 }
 

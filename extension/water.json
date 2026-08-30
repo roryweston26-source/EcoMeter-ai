@@ -136,6 +136,20 @@
     "deepseek-r1":       { "energy": "deepseek-r1-own", "class": "large", "host": "deepseek" },
     "deepseek-v3":       { "energy": "deepseek-v3-own", "class": "medium", "host": "deepseek" }
   },
+  "alibaba": {
+    "qwen3.8-max":       { "class": "large", "host": "alibaba" },
+    "qwen3.8-2.4t-a95b": { "class": "large", "host": "alibaba" },
+    "qwen3.8-27b":       { "class": "small", "host": "alibaba" },
+    "qwen3.8-flash":     { "class": "small", "host": "alibaba" }
+  },
+  "zai": {
+    "glm-5.3":       { "class": "large", "host": "china_avg" },
+    "glm-5.3-flash": { "class": "small", "host": "china_avg" }
+  },
+  "moonshot": {
+    "kimi-k3":        { "class": "large", "host": "china_avg" },
+    "kimi-k2.7-code": { "class": "medium", "host": "china_avg" }
+  },
 
   "_hosts": {
     "aws": {
@@ -169,6 +183,22 @@
       "year": "2025",
       "source": "Jegham et al. Table 1 — average of the thirty most efficient Chinese data centres; regional grid factor for DeepSeek's known deployments",
       "note": "Not first-party. DeepSeek publishes nothing."
+    },
+    "alibaba": {
+      "pue": 1.187,
+      "wue_site": 1.198,
+      "wue_source": 6.016,
+      "year": "FY2026 (Apr 2025 - Mar 2026)",
+      "source": "Alibaba Group Environmental, Social and Governance Report 2026 (PDF on alibabagroup.com, downloaded and text-extracted 2026-08-29): PUE 1.187 across self-built data centres, down from 1.190 in FY2025; WUE 1.198 L/kWh, published as a three-year series (FY2024 1.205, FY2025 1.144, FY2026 1.198); clean electricity 73.6%. wue_source is NOT Alibaba's — it remains Jegham et al.'s off-site generation figure, which Alibaba does not publish.",
+      "note": "CORRECTED 2026-08-29, hours after being added wrong. The first version said PUE 1.200 from the FY2024 report and 'no Alibaba WUE figure found', inheriting china_avg's 1.2. All three parts were wrong: the current PUE is 1.187, Alibaba DOES publish a WUE, and clean electricity is 73.6% not 56%. The cause was stopping at a search snippet about an old report instead of opening the ESG resource page, where the current PDF is two clicks away — an asserted absence resting on an inadequate search, which is the exact failure this project documented on 2026-08-29. wue_site barely moved (1.2 -> 1.198); the provenance claim was the error. NOTABLE: Alibaba publishes a fleet-wide WUE series for its self-built data centres and Google does not — see the 'google' host below, whose note records that gap."
+    },
+    "china_avg": {
+      "pue": 1.27,
+      "wue_site": 1.2,
+      "wue_source": 6.016,
+      "year": "2025",
+      "source": "Jegham et al. Table 1 — average of the thirty most efficient Chinese data centres.",
+      "note": "INFERRED regional average, used for Z.ai and Moonshot. Numerically identical to the 'deepseek' host, which was fitted on the same basis; the two are kept separate so DeepSeek's figures do not move. THIS IS NOT A FINDING ABOUT THESE PROVIDERS — we did not locate a PUE or WUE disclosure for Z.ai or Moonshot, which is a statement about our search, not about their silence. Grade it that way if it ever reaches the transparency index."
     },
     "unpublished": {
       "pue": 1.105,

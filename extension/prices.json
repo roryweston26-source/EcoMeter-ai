@@ -1,21 +1,26 @@
 {
   "_meta": {
     "comment": "Shared data for the EcoMeter extension and the Legerly pricing page. 'api' = per-token USD (input/output). 'subscriptions' = consumer plan $/month. 'free_tiers' = which models each platform's FREE plan exposes (drives the extension model picker). To update prices, edit the numbers here.",
-    "last_updated": "2026-08-24",
+    "last_updated": "2026-08-29",
     "version": "6.14",
     "source": "Official provider pricing pages + free-tier availability",
-    "verified": "2026-08-24 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com/docs/pricing, ai.google.dev/gemini-api/docs/pricing, docs.x.ai/docs/models, api-docs.deepseek.com/quick_start/pricing, mistral.ai/pricing, docs.perplexity.ai/getting-started/pricing, plus the consumer plan pages openai.com/chatgpt/pricing, claude.com/pricing, gemini.google/subscriptions and x.ai/pricing. FOUR providers had moved since 2026-08-02. OpenAI cut gpt-5.6-sol $5/$30 -> $4/$20 (long $10/$45 -> $8/$30). Google put 3.6 Flash and the new 3.7 Flash on a half-price promotional rate through 2026-12-31. DeepSeek's warned increase LANDED: v4-flash and v4-pro are now 3x-4.5x their previous rates and are metered peak/off-peak by clock time. Anthropic made Sonnet 5's introductory $2/$10 permanent. xAI shipped Grok 4.6 and a new SuperGrok Plus tier. Mistral, Perplexity and Microsoft were unchanged.",
+    "verified": "2026-08-24 against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com/docs/pricing, ai.google.dev/gemini-api/docs/pricing, docs.x.ai/docs/models, api-docs.deepseek.com/quick_start/pricing, mistral.ai/pricing, docs.perplexity.ai/getting-started/pricing, plus the consumer plan pages openai.com/chatgpt/pricing, claude.com/pricing, gemini.google/subscriptions and x.ai/pricing. FOUR providers had moved since 2026-08-02. OpenAI cut gpt-5.6-sol $5/$30 -> $4/$20 (long $10/$45 -> $8/$30). Google put 3.6 Flash and the new 3.7 Flash on a half-price promotional rate through 2026-12-31. DeepSeek's warned increase LANDED: v4-flash and v4-pro are now 3x-4.5x their previous rates and are metered peak/off-peak by clock time. Anthropic made Sonnet 5's introductory $2/$10 permanent. xAI shipped Grok 4.6 and a new SuperGrok Plus tier. Mistral, Perplexity and Microsoft were unchanged. THEN 2026-08-29: three Chinese labs added — Alibaba (Qwen), Z.ai (GLM) and Moonshot (Kimi), eight models, read from their own rate cards that day; see _open_weights, _hosted_spread, _alibaba_tiering and _china_first_party_only below. The existing rates were not re-verified in that pass and still date from 2026-08-24.",
     "caveats": {
       "claude-sonnet-5": "$2/$10 per 1M is now the STANDARD rate. It launched as an introductory rate through 2026-08-31, and Anthropic's pricing page states the scheduled 2026-09-01 rise to $3/$15 will not occur. Resolved 2026-08-24 — no action needed at the end of August.",
       "_long_context": "'input'/'output' are the SHORT-CONTEXT rates. Where a provider charges more past a context threshold, the optional 'long' block holds { over, input, output }: 'over' is the INPUT-token count at which the higher rate starts, and that rate then applies to ALL tokens in the request, not just the excess. Thresholds are OpenAI >272k (per the tooltip on developers.openai.com/docs/pricing), Google >200k, xAI >=200k. Anthropic does not tier this way and has no 'long' block. A consumer that ignores 'long' silently undercounts long conversations by roughly 2x — which is the OPPOSITE direction to the unmodelled prompt-caching discount, so the two do not cancel out.",
       "_perplexity_request_fees": "Sonar token rates are correct but they are not the whole bill. Perplexity also charges $5-$14 per 1,000 requests depending on model and search-context size. For chat-shaped usage that per-request fee typically exceeds the token cost, so any Perplexity figure derived from this file is a substantial UNDERCOUNT.",
       "_claude_tokenizer": "Anthropic states that Claude 4.7 and later (Opus 4.7/4.8/5, Sonnet 5, Fable 5, Mythos 5) use a newer tokenizer producing approximately 30% more tokens for the same text than Sonnet 4.6 and earlier. Identical text is therefore NOT an identical token count across providers or across Claude generations. Any cross-model cost comparison built on a fixed token count understates these models by roughly a third.",
       "_legacy_keys": "grok-4 / grok-3 / grok-3-mini, deepseek-v3 / deepseek-r1, mistral-medium-3 / mistral-small-3 and the o1 / gpt-4 / gpt-4-turbo family are no longer listed on their providers' current pricing pages. They are retained at last-known rates because they remain selectable in the extension's model picker; treat those numbers as historical, not current.",
-      "_deepseek_increase_landed": "The increase DeepSeek warned about has HAPPENED, found 2026-08-24. v4-flash went $0.14/$0.28 -> $0.44/$1.32 and v4-pro $0.435/$0.87 -> $1.32/$3.96 (peak rates): roughly 3x on input and 4.5x on output. DeepSeek is still the cheapest provider tracked, but by a far narrower margin, and the Auditor's downgrade advice leaned on the old numbers hardest.",
+      "_deepseek_increase_landed": "The increase DeepSeek warned about has HAPPENED, found 2026-08-24. v4-flash went $0.14/$0.28 -> $0.44/$1.32 and v4-pro $0.435/$0.87 -> $1.32/$3.96 (peak rates): roughly 3x on input and 4.5x on output, and the Auditor's downgrade advice leaned on the old numbers hardest. CORRECTED 2026-08-30: this caveat used to end 'DeepSeek is still the cheapest provider tracked, but by a far narrower margin', and that was WRONG THE DAY IT WAS WRITTEN. The rise did not narrow DeepSeek's lead, it ended it. On the cheapest model priced per provider, v4-flash at $0.44/$1.32 blends to $0.66 per 1M at 3:1 in:out — behind Mistral Small 4 ($0.262) and OpenAI's gpt-5.6-luna ($0.45), so THIRD of the providers the Auditor prices. Off-peak halves it to $0.33, which is second. Separately, since 2026-08-29 the cheapest input rate in the whole file is Z.ai's glm-5.3-flash at $0.075, not DeepSeek. The lesson: when a price moves, re-run every ranking the old price justified — recording the new number is only half the job.",
       "_deepseek_peak_offpeak": "DeepSeek now meters by CLOCK TIME, which no other provider here does. Peak hours are 01:00-04:00 and 06:00-10:00 UTC Monday-Friday; every other hour is off-peak at half price. The rates stored above are the PEAK (undiscounted) rates, deliberately: off-peak is a discount you only get if your usage happens to fall outside a window you do not control, and quoting the cheap rate would understate the cost of the exact advice this project is most likely to give — 'drop your paid plan and pay per token'. Off-peak is exactly half of every figure stored.",
       "_promotional_rates": "Some rates above are time-limited promotions, not standing prices, and they carry a machine-readable 'promo' block: { until, standard: { input, output } }. scripts/check-prices.js fails once 'until' is in the past, so an expired promo cannot quietly become a wrong price the way it nearly did with Sonnet 5. Currently: gemini-3.7-flash and gemini-3.6-flash are half price through 2026-12-31, reverting to $1.50/$7.50. Record the standard rate at the time you record the promo — going back to find it after expiry is how this data rots.",
       "_anthropic_fast_mode": "Anthropic added a Fast mode (research preview) billing Opus 5 / Opus 4.8 at $10/$50 per 1M instead of $5/$25. Not modelled: it is an opt-in API service tier, like batch or caching, not the default rate a consumer pays. OpenAI renamed its equivalent 'priority' tier to 'Fast mode' on 2026-07-30; also not modelled.",
-      "deepseek-reasoner": "DeepSeek's API aliases (deepseek-chat, deepseek-reasoner) track whichever model is current rather than a fixed version. Priced here as v4-flash and v4-pro respectively, which is an inference from DeepSeek's current lineup, not a published mapping."
+      "deepseek-reasoner": "DeepSeek's API aliases (deepseek-chat, deepseek-reasoner) track whichever model is current rather than a fixed version. Priced here as v4-flash and v4-pro respectively, which is an inference from DeepSeek's current lineup, not a published mapping.",
+      "_open_weights": "An 'open_weights' block means the weights are published and we have loaded the page they are on: { license, osi, params, url }. 'osi' is true only for a standard OSI-approved licence (Apache-2.0, MIT); it is FALSE for the bespoke licences the flagships carry, which are named after the model and must be read before use. Open weights is a property of a MODEL, not of a provider — Alibaba publishes weights for qwen3.8-27b and qwen3.8-2.4t-a95b but not for the qwen3.8-max and qwen3.8-flash tiers it sells alongside them, and Alibaba's own pricing page draws that line itself under a heading reading 'Text generation - Qwen (open source)'. Never badge a provider; badge the model.",
+      "_hosted_spread": "Where a model's weights are public, anyone can serve it, so the same model has many prices. The 'hosted' block records that spread as observed on OpenRouter on 'checked': n hosts, the cheapest and dearest, and how many undercut the model's own maker. 'input'/'output' remain the FIRST-PARTY list rate read from the lab's own page — the spread is context, not a replacement. TWO THINGS MAKE THIS LESS THAN LIKE-FOR-LIKE. (1) Hosts serve at different numeric precisions ('quant': int4, fp4, fp8, bf16, mxfp4). A 4-bit quantisation is a lossy compression of the weights, so the cheapest host is often not running the same computation as the dearest — the spread is partly a quality difference, not purely a margin difference. Most hosts do not state precision on their own pricing pages. THIS IS NOT UNIFORMLY TRUE: where the lab's own released checkpoint is already at these precisions, the hosts are running the published format rather than compressing it, and the block carries 'quant_native': true plus a 'quant_source' url proving it — the page then says 'served at the lab's own published precision' instead of 'precision varies'. Check the model's config.json before repeating the generic caveat; DeepSeek V4 ships fp8 with fp4 experts, so it earns the exemption and Kimi K3 (bf16 down to int4 across hosts) does not. (2) A host may list several SKUs for one model; we take the cheapest per host, so kimi-k2.7-code's first-party figure is the standard SKU, not the 'highspeed' one at double. Treat the range as indicative of a market, not as a like-for-like quote.",
+      "_alibaba_tiering": "Alibaba meters by INPUT-TOKEN COUNT with the tier rate applied to the whole request — the same semantics as the 'long' block above. All four models tracked here sit in a single 0-1M tier, so none carries a 'long' block, but other Qwen models on the same page have two or three tiers and would need one. Alibaba also prices the same model differently by region: qwen3.8-max is $2/$6 on the International tier and $1.65/$4.95 on Global. The International rate is stored, because that is the tab the page opens on and it matches the rate Alibaba charges through OpenRouter. One exception found: Alibaba's own OpenRouter listing for qwen3.8-27b is $0.425/$2.55, BELOW its published list price of $0.50/$3.00.",
+      "_deepseek_open_market_undercuts_deepseek": "The largest spread in the file, and it lands on the provider whose price rise this project already flagged. DeepSeek tripled/quadrupled its rates on 2026-08-24 (see _deepseek_increase_landed). The weights are MIT, so the rest of the market did not have to follow — and did not. On 2026-08-29, SIXTEEN of the seventeen hosts serving deepseek-v4-flash were cheaper than DeepSeek's own API, the cheapest at $0.068 per 1M against DeepSeek's $0.44: a 6.5x gap on the identical published model. This SURVIVES the off-peak objection — DeepSeek's stored rates are peak and off-peak is half, and at $0.22 it is still 16 of 17. Only Cloudflare matches DeepSeek's list price exactly. v4-pro is milder and does not survive it: 7 of 17 at the peak rate, but only 2 of 17 off-peak, where Baidu and StreamLake at ~$0.507 remain below DeepSeek's $0.66. The quantisation caveat is also WEAKER here than elsewhere: DeepSeek's own released checkpoint carries quantization_config.quant_method 'fp8' with expert_dtype 'fp4' (config.json, read 2026-08-29), so the fp8 and fp4 hosts are serving the format DeepSeek itself published rather than a lossy re-compression of it.",
+      "_china_first_party_only": "These three labs are priced from their own rate cards, read 2026-08-29: Alibaba Model Studio (alibabacloud.com/help/en/model-studio/model-pricing, JS-rendered — a plain fetch returns a shell with no prices), docs.z.ai/guides/overview/pricing, and platform.moonshot.ai/docs/pricing/{chat-k3,chat-k27-code}. Moonshot's docs serve a Markdown variant at the same path plus '.md', which is the reliable way to read them; three different pricing URLs there return a byte-identical SPA fallback if you guess the path."
     }
   },
   "api": {
@@ -83,7 +88,9 @@
       "mistral-large": { "input": 5e-07, "output": 1.5e-06 },
       "mistral-medium-3.5": { "input": 1.5e-06, "output": 7.5e-06 },
       "mistral-medium-3": { "input": 4e-07, "output": 2e-06 },
-      "mistral-small-4": { "input": 1.5e-07, "output": 6e-07 },
+      "mistral-small-4": { "input": 1.5e-07, "output": 6e-07,
+        "open_weights": { "license": "apache-2.0", "osi": true, "params": "119B", "url": "https://huggingface.co/mistralai/Mistral-Small-4-119B-2603" },
+        "hosted": { "n": 2, "low": { "input": 1.5e-07, "output": 6e-07, "host": "Mistral" }, "high": { "input": 1.88e-07, "output": 7.5e-07, "host": "Venice" }, "cheaper_than_first_party": 0, "quant": ["unknown", "fp8"], "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/mistralai/mistral-small-2603/endpoints" } },
       "mistral-small-3": { "input": 2e-07, "output": 6e-07 },
       "mistral-small": { "input": 2e-07, "output": 6e-07 },
       "codestral": { "input": 3e-07, "output": 9e-07 }
@@ -94,12 +101,45 @@
       "sonar-reasoning-pro": { "input": 2e-06, "output": 8e-06 }
     },
     "deepseek": {
-      "deepseek-v4-flash": { "input": 4.4e-07, "output": 1.32e-06 },
-      "deepseek-v4-pro": { "input": 1.32e-06, "output": 3.96e-06 },
-      "deepseek-v3": { "input": 1.4e-07, "output": 2.8e-07 },
-      "deepseek-r1": { "input": 5.5e-07, "output": 2.19e-06 },
+      "deepseek-v4-flash": { "input": 4.4e-07, "output": 1.32e-06,
+        "open_weights": { "license": "mit", "osi": true, "params": "not disclosed", "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash" },
+        "hosted": { "n": 17, "low": { "input": 6.8e-08, "output": 1.68e-07, "host": "DigitalOcean" }, "high": { "input": 4.4e-07, "output": 1.32e-06, "host": "Cloudflare" }, "cheaper_than_first_party": 16, "quant": ["fp8", "fp4", "unknown"], "quant_native": true, "quant_source": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/raw/main/config.json", "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-flash/endpoints" } },
+      "deepseek-v4-pro": { "input": 1.32e-06, "output": 3.96e-06,
+        "open_weights": { "license": "mit", "osi": true, "params": "not disclosed", "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro" },
+        "hosted": { "n": 17, "low": { "input": 5.07e-07, "output": 1.014e-06, "host": "Baidu" }, "high": { "input": 1.91e-06, "output": 3.83e-06, "host": "Azure" }, "cheaper_than_first_party": 7, "quant": ["fp8", "fp4", "unknown"], "quant_native": true, "quant_source": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/raw/main/config.json", "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4-pro/endpoints" } },
+      "deepseek-v3": { "input": 1.4e-07, "output": 2.8e-07,
+        "open_weights": { "license": "DeepSeek License Agreement v1.0", "osi": false, "params": "not disclosed", "url": "https://huggingface.co/deepseek-ai/DeepSeek-V3" } },
+      "deepseek-r1": { "input": 5.5e-07, "output": 2.19e-06,
+        "open_weights": { "license": "mit", "osi": true, "params": "not disclosed", "url": "https://huggingface.co/deepseek-ai/DeepSeek-R1" } },
       "deepseek-chat": { "input": 1.4e-07, "output": 2.8e-07 },
       "deepseek-reasoner": { "input": 4.35e-07, "output": 8.7e-07 }
+    },
+    "alibaba": {
+      "qwen3.8-max": { "input": 2e-06, "output": 6e-06 },
+      "qwen3.8-flash": { "input": 1.5e-07, "output": 4.7e-07 },
+      "qwen3.8-2.4t-a95b": { "input": 2e-06, "output": 6e-06,
+        "open_weights": { "license": "qwen3.8-max", "osi": false, "params": "2.4T total / 95B active", "url": "https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B" },
+        "hosted": { "n": 7, "low": { "input": 2e-06, "output": 6e-06, "host": "DeepInfra" }, "high": { "input": 2.5e-06, "output": 7.5e-06, "host": "Venice" }, "cheaper_than_first_party": 0, "quant": ["fp4", "fp8"], "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-2.4t-a95b/endpoints" } },
+      "qwen3.8-27b": { "input": 5e-07, "output": 3e-06,
+        "open_weights": { "license": "apache-2.0", "osi": true, "params": "27B dense", "url": "https://huggingface.co/Qwen/Qwen3.8-27B" },
+        "hosted": { "n": 11, "low": { "input": 3.5e-07, "output": 2.55e-06, "host": "AkashML" }, "high": { "input": 4.8e-07, "output": 3.4e-06, "host": "Io Net" }, "cheaper_than_first_party": 7, "quant": ["fp8"], "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-27b/endpoints" } }
+    },
+    "zai": {
+      "glm-5.3": { "input": 1.4e-06, "output": 4.4e-06,
+        "open_weights": { "license": "glm-5.3", "osi": false, "params": "not disclosed", "url": "https://huggingface.co/zai-org/GLM-5.3" },
+        "hosted": { "n": 16, "low": { "input": 1.1875e-06, "output": 4.18e-06, "host": "Io Net" }, "high": { "input": 1.4e-06, "output": 4.4e-06, "host": "Z.AI" }, "cheaper_than_first_party": 4, "quant": ["fp8", "fp4"], "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3/endpoints" } },
+      "glm-5.3-flash": { "input": 7.5e-08, "output": 2.5e-07,
+        "promo": { "until": "2026-09-09", "standard": { "input": 1.5e-07, "output": 5e-07 } },
+        "open_weights": { "license": "mit", "osi": true, "params": "not disclosed", "url": "https://huggingface.co/zai-org/GLM-5.3-Flash" },
+        "hosted": { "n": 20, "low": { "input": 7.5e-08, "output": 2.5e-07, "host": "Relace" }, "high": { "input": 1.5e-07, "output": 5e-07, "host": "Venice" }, "cheaper_than_first_party": 0, "quant": ["fp4", "fp8"], "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/z-ai/glm-5.3-flash/endpoints" } }
+    },
+    "moonshot": {
+      "kimi-k3": { "input": 3e-06, "output": 1.5e-05,
+        "open_weights": { "license": "kimi-k3", "osi": false, "params": "2.8T", "url": "https://huggingface.co/moonshotai/Kimi-K3" },
+        "hosted": { "n": 14, "low": { "input": 2.55e-06, "output": 1.275e-05, "host": "Makora" }, "high": { "input": 3.45e-06, "output": 1.725e-05, "host": "Alibaba" }, "cheaper_than_first_party": 5, "quant": ["fp4", "bf16", "fp8", "mxfp4"], "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k3/endpoints" } },
+      "kimi-k2.7-code": { "input": 9.5e-07, "output": 4e-06,
+        "open_weights": { "license": "modified-mit", "osi": true, "params": "not disclosed", "url": "https://huggingface.co/moonshotai/Kimi-K2.7-Code" },
+        "hosted": { "n": 15, "low": { "input": 6.6e-07, "output": 3.4e-06, "host": "Inceptron" }, "high": { "input": 1.9e-06, "output": 8e-06, "host": "Fireworks" }, "cheaper_than_first_party": 9, "quant": ["int4", "fp4", "fp8"], "checked": "2026-08-29", "source": "https://openrouter.ai/api/v1/models/moonshotai/kimi-k2.7-code/endpoints" } }
     }
   },
   "subscriptions": [
@@ -136,7 +176,12 @@
     { "p": "mistral", "m": "Le Chat Free", "price": 0 },
     { "p": "mistral", "m": "Le Chat Pro", "price": 14.99, "note": "$5.99/mo for students. Mistral now brands the product \"Vibe\" — plan key kept as the cross-file join." },
 
-    { "p": "deepseek", "m": "DeepSeek (Free)", "price": 0, "note": "No paid consumer tier — chat is free" }
+    { "p": "deepseek", "m": "DeepSeek (Free)", "price": 0, "note": "No paid consumer tier — chat is free" },
+
+    { "p": "zai", "m": "Z.ai (Free)", "price": 0, "note": "chat.z.ai runs GLM-5.3-Flash. Login-walled, no published limits found." },
+    { "p": "zai", "m": "GLM Coding Lite", "price": 18, "note": "Coding-tool plan, not a chat plan. $12.60/mo billed annually (-30%)" },
+    { "p": "zai", "m": "GLM Coding Pro", "price": 80, "note": "Coding-tool plan, not a chat plan. $56/mo billed annually (-30%)" },
+    { "p": "zai", "m": "GLM Coding Max", "price": 168, "note": "Coding-tool plan, not a chat plan. $117.60/mo billed annually (-30%)" }
   ],
   "free_tiers": {
     "anthropic": {

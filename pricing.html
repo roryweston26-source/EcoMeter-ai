@@ -201,6 +201,11 @@
   }
   .chip:hover { color: var(--ink); border-color: var(--ink-faint); }
   .chip[aria-pressed="true"] { color: var(--bg); background: var(--green); border-color: var(--green); font-weight: 500; }
+  /* The open-weights filter is a toggle, not one of the mutually exclusive
+     provider chips, so it sits apart and keeps its own accent. */
+  .chip-ow { margin-left: auto; }
+  .chip-ow[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); }
+  @media (max-width: 560px) { .chip-ow { margin-left: 0; } }
 
   /* ---------- Table ---------- */
   .tablewrap { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel); }
@@ -242,6 +247,18 @@
 
   .model { font-weight: 500; }
   .note { display: block; font-size: 11.5px; color: var(--ink-faint); margin-top: 3px; }
+  /* Weights-published marker. Two states, because a bespoke licence named after
+     the model is a weaker promise than MIT or Apache-2.0 and should not read the
+     same at a glance. */
+  .ow {
+    display: inline-block; margin-left: 7px; padding: 1px 6px;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; vertical-align: 1px;
+    border-radius: 3px; border: 1px solid var(--green); color: var(--green);
+    cursor: help;
+  }
+  .ow-custom { border-color: var(--ink-faint); color: var(--ink-faint); border-style: dashed; }
+  .note.spread { color: var(--ink-faint); opacity: .85; }
 
   .free { font-family: var(--mono); color: var(--green-2); }
 
@@ -410,7 +427,10 @@
     mistral:    { name: "Mistral",    color: "#e0863f" },
     perplexity: { name: "Perplexity", color: "#3fb6c9" },
     microsoft:  { name: "Microsoft",  color: "#6f9fe0" },
-    deepseek:   { name: "DeepSeek",   color: "#8a7fe0" }
+    deepseek:   { name: "DeepSeek",   color: "#8a7fe0" },
+    alibaba:    { name: "Alibaba",    color: "#e0705f" },
+    zai:        { name: "Z.ai",       color: "#5fb0e0" },
+    moonshot:   { name: "Moonshot",   color: "#b98ae0" }
   };
 
   // ---- Model registry: which models to show, display name, and prices.json key ----
@@ -471,7 +491,18 @@
     { p:"deepseek", key:"deepseek-v4-flash", m:"DeepSeek V4 Flash" },
     { p:"deepseek", key:"deepseek-v4-pro",   m:"DeepSeek V4 Pro" },
     { p:"deepseek", key:"deepseek-v3",       m:"DeepSeek V3", note:"no longer listed by DeepSeek · last known rate" },
-    { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1", note:"no longer listed by DeepSeek · last known rate" }
+    { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1", note:"no longer listed by DeepSeek · last known rate" },
+
+    { p:"alibaba", key:"qwen3.8-max",       m:"Qwen3.8 Max", note:"flagship · weights NOT published" },
+    { p:"alibaba", key:"qwen3.8-2.4t-a95b", m:"Qwen3.8 2.4T-A95B", note:"open flagship · same price as the closed Max tier" },
+    { p:"alibaba", key:"qwen3.8-27b",       m:"Qwen3.8 27B", note:"Alibaba's list price is above every host serving it — including Alibaba's own resale at $0.425" },
+    { p:"alibaba", key:"qwen3.8-flash",     m:"Qwen3.8 Flash", note:"weights NOT published" },
+
+    { p:"zai", key:"glm-5.3",       m:"GLM-5.3" },
+    { p:"zai", key:"glm-5.3-flash", m:"GLM-5.3 Flash", note:"Half price until 2026-09-09, then $0.15/$0.50" },
+
+    { p:"moonshot", key:"kimi-k3",        m:"Kimi K3" },
+    { p:"moonshot", key:"kimi-k2.7-code", m:"Kimi K2.7 Code" }
   ];
 
   // ---- Path to the live prices file (same file the Monday Action maintains) ----
@@ -480,7 +511,7 @@
   // ---- Fallback snapshot of prices.json (per-token USD) ----
   // Only used if the live fetch fails, so the table never renders empty.
   var FALLBACK_PRICES = {
-    "_last_updated": "2026-07-27",
+    "_last_updated": "2026-08-29",
     "anthropic": {
       "claude-haiku-4-5-20251001": { input: 1e-6,    output: 5e-6 },
       "claude-sonnet-5":           { input: 2e-6,    output: 1e-5 },
@@ -543,6 +574,20 @@
       "deepseek-v4-pro":   { input: 1.32e-6, output: 3.96e-6 },
       "deepseek-v3":       { input: 1.4e-7,  output: 2.8e-7 },
       "deepseek-r1":       { input: 5.5e-7,  output: 2.19e-6 }
+    },
+    "alibaba": {
+      "qwen3.8-max":       { input: 2e-6,    output: 6e-6 },
+      "qwen3.8-2.4t-a95b": { input: 2e-6,    output: 6e-6 },
+      "qwen3.8-27b":       { input: 5e-7,    output: 3e-6 },
+      "qwen3.8-flash":     { input: 1.5e-7,  output: 4.7e-7 }
+    },
+    "zai": {
+      "glm-5.3":       { input: 1.4e-6,  output: 4.4e-6 },
+      "glm-5.3-flash": { input: 7.5e-8,  output: 2.5e-7 }
+    },
+    "moonshot": {
+      "kimi-k3":        { input: 3e-6,    output: 1.5e-5 },
+      "kimi-k2.7-code": { input: 9.5e-7,  output: 4e-6 }
     }
   };
 
@@ -560,7 +605,8 @@
           " above " + Math.round(rec.long.over / 1000) + "k input tokens"
         : "";
       var note = e.note ? (longNote ? e.note + " · " + longNote : e.note) : longNote;
-      rows.push({ p: e.p, m: e.m, note: note, in: rec.input * 1e6, out: rec.output * 1e6 });
+      rows.push({ p: e.p, m: e.m, note: note, in: rec.input * 1e6, out: rec.output * 1e6,
+                  ow: rec.open_weights || null, hosted: rec.hosted || null });
     });
     return rows;
   }
@@ -814,6 +860,14 @@
         // ceiling on it several times below what it is actually worth. Same refusal
         // as an undisclosed multiplier base: better no number than a wrong one.
         if (c.scope_limited) continue;
+        // The Ceiling multiplies this by a cost PER MESSAGE, so a cap denominated
+        // in anything else cannot be priced here. Z.ai's coding plans publish a
+        // full allowance in CREDITS — the most complete disclosure on the table —
+        // and pricing 10,000 credits as 10,000 messages would turn the best data
+        // we have into the worst number on the page. Converting credits to
+        // messages is possible from Z.ai's published formula; until that exists,
+        // this refuses, on the same principle as the scope_limited skip above.
+        if (c.unit && c.unit !== "messages") continue;
         cap = c; break;
       }
       if (!cap || typeof cap.n !== "number") return null;
@@ -864,8 +918,50 @@
   }
   function money0(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
 
+  // "Open weights" is a property of a MODEL, not a provider: Alibaba publishes
+  // weights for two of the four Qwen models here and not the other two, and
+  // Mistral publishes only Small. Badging the provider would state a falsehood
+  // about specific models, so the badge is driven entirely by the presence of an
+  // open_weights block, which is only written when the weights page has been read.
+  function owBadge(r) {
+    if (!r.ow) return "";
+    var osi = r.ow.osi === true;
+    // A bespoke licence named after the model is not the same promise as MIT or
+    // Apache-2.0, and flattening the two into one green badge would be the kind of
+    // false reassurance this page exists to avoid.
+    return '<span class="ow' + (osi ? "" : " ow-custom") + '" title="Weights published' +
+           (r.ow.params && r.ow.params !== "not disclosed" ? " · " + esc(r.ow.params) : "") +
+           " · licence: " + esc(r.ow.license) +
+           (osi ? "" : " (bespoke — read it before you rely on it)") + '">open</span>';
+  }
+
+  // The spread only exists because the weights are public: for a closed model
+  // there is no second price to compare against. Worth stating when the model's
+  // own maker is not the cheapest place to run it.
+  function spreadNote(r) {
+    var h = r.hosted;
+    if (!h || !h.low || !h.high) return "";
+    var lo = h.low.input * 1e6, hi = h.high.input * 1e6;
+    var txt = h.n + " hosts serve it, " + money(lo) + "–" + money(hi) + " in";
+    if (h.cheaper_than_first_party > 0) {
+      txt += " · " + h.cheaper_than_first_party + " undercut " + provName(r.p) + "'s own API";
+    }
+    // "Precision varies" implies a quality difference between hosts. That's true
+    // where the lab published a full-precision checkpoint and hosts compressed it,
+    // and FALSE where the lab's own released weights are already at these
+    // precisions — DeepSeek V4 ships fp8 with fp4 experts, so its hosts are running
+    // the published format, not a lossy re-compression. Saying otherwise would
+    // invent a caveat.
+    if (h.quant && h.quant.length > 1) {
+      txt += h.quant_native
+        ? " · served at " + provName(r.p) + "'s own published precision"
+        : " · precision varies (" + h.quant.join(", ") + ")";
+    }
+    return '<span class="note spread">' + esc(txt) + '</span>';
+  }
+
   // ---- State ----
-  var state = { view: "token", search: "", provider: "all", sortKey: null, sortDir: 1, arch: "standard" };
+  var state = { view: "token", search: "", provider: "all", sortKey: null, sortDir: 1, arch: "standard", openOnly: false };
 
   var $ = function (id) { return document.getElementById(id); };
   function provName(p) { return (PROVIDERS[p] || {}).name || p; }
@@ -902,11 +998,19 @@
     order.forEach(function (p) {
       html += '<button class="chip" data-prov="' + p + '" aria-pressed="' + (state.provider === p) + '">' + provName(p) + '</button>';
     });
+    // Only offer the open-weights filter where the data can answer it. The
+    // subscription and free-tier views carry no per-model weights information,
+    // so a toggle there would silently filter on a field that isn't populated.
+    if (state.view === "token" && data.some(function (r) { return r.ow; })) {
+      html += '<button class="chip chip-ow" data-ow="1" aria-pressed="' + (state.openOnly === true) +
+              '" title="Models whose weights are published, so you can run them yourself or buy them from someone other than the maker">Open weights</button>';
+    }
     var chips = $("chips");
     chips.innerHTML = html;
     Array.prototype.forEach.call(chips.querySelectorAll(".chip"), function (btn) {
       btn.addEventListener("click", function () {
-        state.provider = btn.getAttribute("data-prov");
+        if (btn.hasAttribute("data-ow")) { state.openOnly = !state.openOnly; }
+        else { state.provider = btn.getAttribute("data-prov"); }
         buildChips();
         render();
       });
@@ -961,6 +1065,9 @@
     if (state.provider !== "all") {
       data = data.filter(function (r) { return r.p === state.provider; });
     }
+    if (state.openOnly) {
+      data = data.filter(function (r) { return !!r.ow; });
+    }
     if (state.search) {
       var q = state.search.toLowerCase();
       data = data.filter(function (r) {
@@ -995,7 +1102,8 @@
     var rows = data.map(function (r, i) {
       var prov = '<span class="prov"><span class="swatch" style="background:' + provColor(r.p) + '"></span>' +
                  '<span class="name">' + provName(r.p) + '</span></span>';
-      var model = '<span class="model">' + r.m + '</span>' + (r.note ? '<span class="note">' + r.note + '</span>' : '');
+      var model = '<span class="model">' + r.m + owBadge(r) + '</span>' +
+                  (r.note ? '<span class="note">' + r.note + '</span>' : '') + spreadNote(r);
 
       if (state.view !== "sub") {
         return '<tr><td>' + prov + '</td><td>' + model + '</td>' +
@@ -1192,6 +1300,7 @@
     state.sortKey = null;
     state.sortDir = 1;
     state.provider = "all";
+    state.openOnly = false;
     $("view-token").setAttribute("aria-pressed", view === "token");
     $("view-sub").setAttribute("aria-pressed", view === "sub");
     $("view-free").setAttribute("aria-pressed", view === "free");
@@ -1228,6 +1337,43 @@
         if ((l.third_party[0].confidence || "low") === "low") lowConf++;
       }
     });
+    // Name the disclosed plans from the data rather than in prose. This sentence
+    // used to hardcode "The only absolute figure still published anywhere ... 10
+    // Thinking messages on ChatGPT Go" while the tally two clauses earlier already
+    // said TWO plans were disclosed — Perplexity Max was added on 2026-08-29 and
+    // the prose never followed, so one paragraph contradicted itself and
+    // understated what a provider actually publishes.
+    // Windows carry their own preposition — "every 5 hours" but "a month".
+    var WINDOW = { "5h": "every 5 hours", "24h": "a day", "7d": "a week", "30d": "a month" };
+    // Split feature-scoped caps from whole-plan ones. Until 2026-08-30 both
+    // disclosed caps were feature-scoped, so the sentence said they "each cover a
+    // single feature" — which stopped being true the moment Z.ai's plans landed,
+    // because their credit allowance bounds the whole plan. The split is also the
+    // better finding: three of the five are one provider, and it isn't a Western one.
+    var describe = function (l) {
+      var c = (l.caps || [])[0];
+      if (!c) return esc(l.m);
+      return '<b>' + fmtNum(c.n) + ' ' + esc(c.unit) + '</b> ' + (WINDOW[c.window] || 'per ' + esc(c.window)) +
+             (c.scope ? ' for ' + esc(c.scope) + ' only' : '') + ' on ' + esc(l.m);
+    };
+    var join = function (a) {
+      return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+    };
+    var discPlans = plans.filter(function (l) {
+      return l.provenance === "disclosed" || l.provenance === "derived";
+    });
+    var partialP = discPlans.filter(function (l) { return ((l.caps || [])[0] || {}).scope_limited; });
+    var wholeP   = discPlans.filter(function (l) { return !((l.caps || [])[0] || {}).scope_limited; });
+    var partial = partialP.map(describe);
+    var whole   = wholeP.map(describe);
+    // Derive who they belong to. Hardcoding "all from Z.ai" here would be the exact
+    // stale-superlative bug this callout was rewritten to eliminate.
+    var wholeProvs = [];
+    wholeP.forEach(function (l) { if (wholeProvs.indexOf(l.p) === -1) wholeProvs.push(l.p); });
+    var wholeAttrib = wholeProvs.length === 1
+      ? ' — every one of them from ' + esc(provName(wholeProvs[0])) + ', which also publishes the credit formula, the per-model multipliers and a token conversion, so the allowance can actually be checked'
+      : ' — from ' + join(wholeProvs.map(function (p) { return esc(provName(p)); }));
+
     $("callout-body").innerHTML =
       'Of the <span class="tally">' + total + '</span> consumer plans tracked here, ' +
       '<span class="tally">' + disclosed + '</span> ' + (disclosed === 1 ? 'has' : 'have') +
@@ -1235,8 +1381,17 @@
       '<span class="tally">' + third + '</span> ' + (third === 1 ? 'has' : 'have') + ' only a third-party estimate' +
       (lowConf ? ', and <span class="tally">' + lowConf + '</span> of those we rate low confidence' : "") + '. ' +
       'The rest are sold on multipliers — "5× more usage than Pro", "20× higher usage than Plus", ' +
-      '"4× higher than standard limits" — against a base nobody states. The only absolute figure still ' +
-      'published anywhere covers a single feature: 10 Thinking messages every 5 hours on ChatGPT Go. ' +
+      '"4× higher than standard limits" — against a base nobody states. ' +
+      (partial.length
+        ? (partial.length === 1 ? 'The one figure that ' : 'The ' + partial.length + ' figures that ') +
+          (partial.length === 1 ? 'is published covers a single feature rather than the plan: ' : 'are published cover a single feature rather than the plan: ') +
+          join(partial) + '. '
+        : '') +
+      (whole.length
+        ? (whole.length === 1 ? 'One plan publishes an allowance for the whole product: ' :
+            'Only ' + whole.length + ' publish an allowance that bounds the whole product: ') +
+          join(whole) + wholeAttrib + '. '
+        : '') +
       'OpenAI deleted its general cap between our July and August 2026 checks, so ChatGPT Plus at $20 ' +
       'now publishes no usage figure at all. Google reserves the right to change limits "without notice."';
   }

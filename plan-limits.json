@@ -14,24 +14,97 @@
     "disclosure_is_getting_worse": "Between the 2026-07-28 and 2026-08-08 checks, OpenAI DELETED the only general absolute cap anyone published — '160 GPT-5.5 Instant messages per 3 hours', which had applied identically to Go at $8 and Plus at $20. The replacement language is that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind. This is worth re-checking every time this file is verified: the trend is one-directional, and a figure being here today is not evidence it will be next quarter.",
     "archetypes": {
       "comment": "Tokens per message exchange. DERIVED, not hand-picked: scripts/derive-archetypes.js measures characters-per-token with the real cl100k tokenizer over this repo’s prose (3.882 chars/token, 165 samples) and converts the message lengths below. Read that honestly: the CONVERSION is measured, the LENGTHS are still an assumption — prompt_chars, reply_chars and history_turns are judgement, chosen to be checkable against a real chat window rather than legible as round token counts. “input” is this prompt plus history_turns prior exchanges re-sent; “output” is the reply, BEFORE the reasoning multiplier in _meta.reasoning is applied. This is still the largest single lever on every figure on the page. There is no corpus of real chat traffic here, so do not call these measurements; the intended anchor remains real EcoMeter exports. check-auditor.js re-runs the derivation and fails if this block has drifted from it.",
-      "light": { "input": 635, "output": 232, "prompt_chars": 220, "reply_chars": 900, "history_turns": 2, "label": "Short exchanges, little history" },
-      "standard": { "input": 3596, "output": 464, "prompt_chars": 450, "reply_chars": 1800, "history_turns": 6, "label": "Typical multi-turn chat" },
-      "heavy": { "input": 14791, "output": 1082, "prompt_chars": 1400, "reply_chars": 4200, "history_turns": 10, "label": "Long context, documents, code" }
+      "light": {
+        "input": 635,
+        "output": 232,
+        "prompt_chars": 220,
+        "reply_chars": 900,
+        "history_turns": 2,
+        "label": "Short exchanges, little history"
+      },
+      "standard": {
+        "input": 3596,
+        "output": 464,
+        "prompt_chars": 450,
+        "reply_chars": 1800,
+        "history_turns": 6,
+        "label": "Typical multi-turn chat"
+      },
+      "heavy": {
+        "input": 14791,
+        "output": 1082,
+        "prompt_chars": 1400,
+        "reply_chars": 4200,
+        "history_turns": 10,
+        "label": "Long context, documents, code"
+      }
     },
     "reasoning": {
       "comment": "Thinking-token multipliers on the OUTPUT side. A reasoning model emits hidden chain-of-thought before its visible reply and bills it at the output rate, so a break-even that counts only the reply understates what the same work costs on the API — which pushes the break-even figure UP and makes a plan look harder to justify than it is. EcoMeter has modelled this since it shipped (REASONING_RANGES in extension/sidepanel.js); the website did not, and the gap was worth 30-45% on exactly the frontier models people pay for. mid is applied; lo/hi record the spread rather than pretending there is not one. A row with measured:true was MEASURED — see scripts/measure-reasoning.js; providers do not publish per-model statistics, but they do report thinking tokens per response in usage, so it can be measured from outside, and for those rows it was. A row without measured:true is still judgement and should be treated as provisional: every guess checked so far was too high. Applies to the models that reason BY DEFAULT in consumer chat, which is why gpt-5.6-luna and the flash/mini tiers are absent rather than set to 1.",
       "basis": "MEASURED where a row says measured:true — see scripts/measure-reasoning.js and scripts/reasoning-measurement.json. lo/mid/hi are the p10/p50/p90 of the per-prompt ratio over an ordinary-chat corpus. Rows without measured:true are still estimates.",
       "models": {
-        "gpt-5.6-sol": {"lo":1,"hi":1.9,"mid":1.2,"measured":true,"n":24,"as_of":"2026-08-28"},
-        "gpt-5.6-terra": {"lo":1,"hi":2,"mid":1.1,"measured":true,"n":24,"as_of":"2026-08-28"},
-        "claude-opus-5": {"lo":1.1,"hi":2.1,"mid":1.8,"measured":true,"n":23,"as_of":"2026-08-27"},
-        "claude-sonnet-5": {"lo":1,"hi":1,"mid":1,"measured":true,"n":24,"as_of":"2026-08-27"},
-        "gemini-3.1-pro-preview": {"lo":2,"hi":6,"mid":3},
-        "o3": {"lo":3,"hi":8,"mid":4},
-        "o4-mini": {"lo":1,"hi":4,"mid":2},
-        "deepseek-v4-pro": {"lo":1,"hi":5,"mid":2.5},
-        "deepseek-r1": {"lo":1,"hi":5,"mid":2.5},
-        "deepseek-reasoner": {"lo":1,"hi":5,"mid":2.5}
+        "gpt-5.6-sol": {
+          "lo": 1,
+          "hi": 1.9,
+          "mid": 1.2,
+          "measured": true,
+          "n": 24,
+          "as_of": "2026-08-28"
+        },
+        "gpt-5.6-terra": {
+          "lo": 1,
+          "hi": 2,
+          "mid": 1.1,
+          "measured": true,
+          "n": 24,
+          "as_of": "2026-08-28"
+        },
+        "claude-opus-5": {
+          "lo": 1.1,
+          "hi": 2.1,
+          "mid": 1.8,
+          "measured": true,
+          "n": 23,
+          "as_of": "2026-08-27"
+        },
+        "claude-sonnet-5": {
+          "lo": 1,
+          "hi": 1,
+          "mid": 1,
+          "measured": true,
+          "n": 24,
+          "as_of": "2026-08-27"
+        },
+        "gemini-3.1-pro-preview": {
+          "lo": 2,
+          "hi": 6,
+          "mid": 3
+        },
+        "o3": {
+          "lo": 3,
+          "hi": 8,
+          "mid": 4
+        },
+        "o4-mini": {
+          "lo": 1,
+          "hi": 4,
+          "mid": 2
+        },
+        "deepseek-v4-pro": {
+          "lo": 1,
+          "hi": 5,
+          "mid": 2.5
+        },
+        "deepseek-r1": {
+          "lo": 1,
+          "hi": 5,
+          "mid": 2.5
+        },
+        "deepseek-reasoner": {
+          "lo": 1,
+          "hi": 5,
+          "mid": 2.5
+        }
       }
     },
     "default_archetype": "standard",
@@ -55,76 +128,135 @@
       "Microsoft plans have no break-even figure: Copilot runs on OpenAI models but Microsoft publishes no equivalent per-token rate to compare against."
     ]
   },
-
   "plans": [
     {
-      "p": "openai", "m": "ChatGPT Free",
+      "p": "openai",
+      "m": "ChatGPT Free",
       "provenance": "not_disclosed",
       "stated": "The plans page advertises 'Unlimited text chats with GPT-5.6 Luna' — 'subject to abuse guardrails' — alongside limited messages, uploads, image generation and voice. So the headline is unlimited-on-the-cheapest-model rather than a capped allowance on the default one. GPT-5.5 has now FINISHED leaving this tier: it sits in the plan table's single 'Legacy models' row, marked No for Free and No for Go, and the Free Tier FAQ updated 2026-08-13 lists only Luna. On 2026-08-08 that rollout was still in progress and 5.5 was correctly recorded as present then. No absolute message figure either way. Free gets no GPT-5.6 Sol at any reasoning level; its Think button runs Thinking Mini.",
-      "context_window": { "instant_tokens": 27000, "reasoning_tokens": null, "reasoning_stated": "Varies", "provenance": "disclosed" },
-      "value_models": { "low": "gpt-5.6-luna", "high": "gpt-5.4-mini" },
+      "context_window": {
+        "instant_tokens": 27000,
+        "reasoning_tokens": null,
+        "reasoning_stated": "Varies",
+        "provenance": "disclosed"
+      },
+      "value_models": {
+        "low": "gpt-5.6-luna",
+        "high": "gpt-5.4-mini"
+      },
       "source": "https://openai.com/chatgpt/pricing + help.openai.com ChatGPT Free Tier FAQ",
       "as_of": "2026-08-24"
     },
     {
-      "p": "openai", "m": "ChatGPT Go",
+      "p": "openai",
+      "m": "ChatGPT Go",
       "provenance": "disclosed",
       "caps": [
-        { "n": 10, "unit": "messages", "window": "5h", "scope": "Thinking", "soft": false, "scope_limited": true,
-          "note": "Enabled via + then Thinking. Explicitly does NOT use GPT-5.6 Sol. scope_limited: this bounds ONE FEATURE, not the plan — ordinary Go chat is advertised as unlimited on Luna, so a ceiling computed from this figure would sit far below what Go is actually worth. Consumers must refuse it the same way they refuse an undisclosed multiplier base." }
+        {
+          "n": 10,
+          "unit": "messages",
+          "window": "5h",
+          "scope": "Thinking",
+          "soft": false,
+          "scope_limited": true,
+          "note": "Enabled via + then Thinking. Explicitly does NOT use GPT-5.6 Sol. scope_limited: this bounds ONE FEATURE, not the plan — ordinary Go chat is advertised as unlimited on Luna, so a ceiling computed from this figure would sit far below what Go is actually worth. Consumers must refuse it the same way they refuse an undisclosed multiplier base."
+        }
       ],
       "binding": "5h",
       "stated": "The only absolute MESSAGE figure OpenAI still publishes for a consumer tier: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' Everything else is 'more messages' than Free. Go carries ads ('This plan may include ads'), and as of 2026-08-24 GPT-5.5 has left this tier along with Free — the 'Legacy models' row reads No for Go.",
-      "context_window": { "instant_tokens": 54000, "reasoning_tokens": 256000, "provenance": "disclosed" },
-      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.6-luna" },
+      "context_window": {
+        "instant_tokens": 54000,
+        "reasoning_tokens": 256000,
+        "provenance": "disclosed"
+      },
+      "value_models": {
+        "low": "gpt-5.4-mini",
+        "high": "gpt-5.6-luna"
+      },
       "source": "https://openai.com/chatgpt/pricing",
       "as_of": "2026-08-24",
       "note": "REMOVED 2026-08-08: a '160 GPT-5.5 Instant messages / 3h' cap, previously recorded here as disclosed for both Go and Plus. OpenAI's help article no longer states any absolute Instant figure — it now says only that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. It was the single disclosed absolute this whole file rested on, and it is gone."
     },
     {
-      "p": "openai", "m": "ChatGPT Plus",
+      "p": "openai",
+      "m": "ChatGPT Plus",
       "provenance": "not_disclosed",
       "stated": "'Expanded messages and uploads' over Go, and 'Limits apply'. No absolute MESSAGE figure. The '160 GPT-5.5 Instant messages / 3h' cap recorded here until 2026-08-08 is no longer published — see the note on ChatGPT Go. Plus remains the most expensive consumer tier of any provider publishing no usage allowance of any kind. It does now publish a context window (54K Instant / 256K Reasoning) — a real disclosure, but a per-conversation size limit, not an allowance.",
-      "context_window": { "instant_tokens": 54000, "reasoning_tokens": 256000, "provenance": "disclosed" },
-      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.6-sol" },
+      "context_window": {
+        "instant_tokens": 54000,
+        "reasoning_tokens": 256000,
+        "provenance": "disclosed"
+      },
+      "value_models": {
+        "low": "gpt-5.4-mini",
+        "high": "gpt-5.6-sol"
+      },
       "note": "Plus includes GPT-5.6 Sol at Medium and High reasoning but not Extra High or Pro, which are Pro-only. Free and Go get no Sol access at all, at any reasoning level. If a Sol reasoning limit is reached, ChatGPT falls back to GPT-5.4 Thinking mini rather than stopping.",
       "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
       "as_of": "2026-08-08"
     },
     {
-      "p": "openai", "m": "ChatGPT Pro",
+      "p": "openai",
+      "m": "ChatGPT Pro",
       "provenance": "not_disclosed",
-      "context_window": { "instant_tokens": 128000, "reasoning_tokens": 400000, "provenance": "disclosed" },
-      "multiplier": { "of": "ChatGPT Plus", "x": 5, "scope_unclear": true },
+      "context_window": {
+        "instant_tokens": 128000,
+        "reasoning_tokens": 400000,
+        "provenance": "disclosed"
+      },
+      "multiplier": {
+        "of": "ChatGPT Plus",
+        "x": 5,
+        "scope_unclear": true
+      },
       "stated": "'Pro $100 unlocks 5x higher usage than Plus.' What it multiplies is not stated: the one published absolute cap (160 GPT-5.5 Instant messages / 3h) is identical on Go at $8 and Plus at $20, so it is plainly not the figure that separates tiers. OpenAI adds only that 'some models have separate usage allowances' — those allowances are never published.",
-      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.6-sol" },
+      "value_models": {
+        "low": "gpt-5.4-mini",
+        "high": "gpt-5.6-sol"
+      },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
       "as_of": "2026-07-28"
     },
     {
-      "p": "openai", "m": "ChatGPT Pro (20×)",
+      "p": "openai",
+      "m": "ChatGPT Pro (20×)",
       "provenance": "not_disclosed",
-      "multiplier": { "of": "ChatGPT Plus", "x": 20, "scope_unclear": true },
+      "multiplier": {
+        "of": "ChatGPT Plus",
+        "x": 20,
+        "scope_unclear": true
+      },
       "stated": "'Pro $200 unlocks 20x usage than Plus.' What it multiplies is not stated — see the $100 tier. Multiplying the published Instant cap by 20 would imply 25,600 messages a day, which is not a claim OpenAI makes and not one worth repeating.",
-      "value_models": { "low": "gpt-5.4-mini", "high": "gpt-5.6-sol" },
+      "value_models": {
+        "low": "gpt-5.4-mini",
+        "high": "gpt-5.6-sol"
+      },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
       "as_of": "2026-07-28"
     },
-
     {
-      "p": "anthropic", "m": "Claude Free",
+      "p": "anthropic",
+      "m": "Claude Free",
       "provenance": "not_disclosed",
       "stated": "'Free for everyone.' No usage figure published.",
-      "value_models": { "low": "claude-haiku-4-5-20251001", "high": "claude-sonnet-5" },
+      "value_models": {
+        "low": "claude-haiku-4-5-20251001",
+        "high": "claude-sonnet-5"
+      },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-07-28"
     },
     {
-      "p": "anthropic", "m": "Claude Pro",
+      "p": "anthropic",
+      "m": "Claude Pro",
       "provenance": "not_disclosed",
       "stated": "'More usage' than Free. Anthropic describes a 'conversation budget' that varies with 'length and complexity of your conversations, the features you use, which Claude model you're chatting with, and the effort level you've selected', and publishes no numbers.",
       "third_party": [
-        { "n": 45, "unit": "messages", "window": "5h", "scope": "all models",
+        {
+          "n": 45,
+          "unit": "messages",
+          "window": "5h",
+          "scope": "all models",
           "confidence": "medium",
           "source": "https://claudelimit.com/claude-pro-limits/",
           "corroborated_by": [
@@ -132,199 +264,427 @@
             "https://www.morphllm.com/claude-code-usage-limits",
             "https://deployhyre.com/ai-tools/claude-usage-limits/"
           ],
-          "why": "The strongest third-party figure on this page. Several independent trackers converge on ~45 per 5 hours, and it is internally consistent with the separately-reported ~225 per 5 hours on Max 5x (exactly 5x). Still an estimate: Anthropic publishes nothing, the 5-hour caps were doubled on 2026-05-06 so older figures are stale, and Anthropic says the real budget varies with conversation length, features, model and effort level." }
+          "why": "The strongest third-party figure on this page. Several independent trackers converge on ~45 per 5 hours, and it is internally consistent with the separately-reported ~225 per 5 hours on Max 5x (exactly 5x). Still an estimate: Anthropic publishes nothing, the 5-hour caps were doubled on 2026-05-06 so older figures are stale, and Anthropic says the real budget varies with conversation length, features, model and effort level."
+        }
       ],
-      "value_models": { "low": "claude-haiku-4-5-20251001", "high": "claude-opus-5" },
+      "value_models": {
+        "low": "claude-haiku-4-5-20251001",
+        "high": "claude-opus-5"
+      },
       "note": "A weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit every day for 30 days.",
       "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
       "as_of": "2026-07-28"
     },
     {
-      "p": "anthropic", "m": "Claude Max 5×",
+      "p": "anthropic",
+      "m": "Claude Max 5×",
       "provenance": "not_disclosed",
       "stated": "'5x more usage than Pro' — a disclosed multiplier against an undisclosed base.",
-      "multiplier": { "of": "Claude Pro", "x": 5, "base_disclosed": false },
-      "value_models": { "low": "claude-sonnet-5", "high": "claude-opus-5" },
+      "multiplier": {
+        "of": "Claude Pro",
+        "x": 5,
+        "base_disclosed": false
+      },
+      "value_models": {
+        "low": "claude-sonnet-5",
+        "high": "claude-opus-5"
+      },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-07-28"
     },
     {
-      "p": "anthropic", "m": "Claude Max 20×",
+      "p": "anthropic",
+      "m": "Claude Max 20×",
       "provenance": "not_disclosed",
       "stated": "'20x more usage than Pro' — a disclosed multiplier against an undisclosed base.",
-      "multiplier": { "of": "Claude Pro", "x": 20, "base_disclosed": false },
-      "value_models": { "low": "claude-sonnet-5", "high": "claude-opus-5" },
+      "multiplier": {
+        "of": "Claude Pro",
+        "x": 20,
+        "base_disclosed": false
+      },
+      "value_models": {
+        "low": "claude-sonnet-5",
+        "high": "claude-opus-5"
+      },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-07-28"
     },
-
     {
-      "p": "google", "m": "Gemini (Free)",
+      "p": "google",
+      "m": "Gemini (Free)",
       "provenance": "not_disclosed",
       "stated": "'Standard limits' — never quantified. Compute-based, refreshing every 5 hours up to a weekly limit.",
-      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
+      "value_models": {
+        "low": "gemini-3.6-flash",
+        "high": "gemini-3.1-pro-preview"
+      },
       "source": "https://support.google.com/gemini/answer/16275805",
       "as_of": "2026-08-26"
     },
     {
-      "p": "google", "m": "Google AI Plus",
+      "p": "google",
+      "m": "Google AI Plus",
       "provenance": "not_disclosed",
       "stated": "'2x higher than standard limits' — a disclosed multiplier against an undisclosed base.",
-      "multiplier": { "of": "Gemini (Free)", "x": 2, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
+      "multiplier": {
+        "of": "Gemini (Free)",
+        "x": 2,
+        "base_disclosed": false
+      },
+      "value_models": {
+        "low": "gemini-3.6-flash",
+        "high": "gemini-3.1-pro-preview"
+      },
       "source": "https://support.google.com/gemini/answer/16275805",
       "as_of": "2026-08-26"
     },
     {
-      "p": "google", "m": "Google AI Pro",
+      "p": "google",
+      "m": "Google AI Pro",
       "provenance": "not_disclosed",
       "stated": "'4x higher than standard limits' — a disclosed multiplier against an undisclosed base.",
-      "multiplier": { "of": "Gemini (Free)", "x": 4, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
+      "multiplier": {
+        "of": "Gemini (Free)",
+        "x": 4,
+        "base_disclosed": false
+      },
+      "value_models": {
+        "low": "gemini-3.6-flash",
+        "high": "gemini-3.1-pro-preview"
+      },
       "source": "https://support.google.com/gemini/answer/16275805",
       "as_of": "2026-08-26"
     },
     {
-      "p": "google", "m": "Google AI Ultra",
+      "p": "google",
+      "m": "Google AI Ultra",
       "provenance": "not_disclosed",
       "stated": "'5x higher than AI Pro limits.' Pay-as-you-go credits can be bought to continue past the limit.",
-      "multiplier": { "of": "Google AI Pro", "x": 5, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
+      "multiplier": {
+        "of": "Google AI Pro",
+        "x": 5,
+        "base_disclosed": false
+      },
+      "value_models": {
+        "low": "gemini-3.6-flash",
+        "high": "gemini-3.1-pro-preview"
+      },
       "source": "https://support.google.com/gemini/answer/16275805",
       "as_of": "2026-08-26"
     },
     {
-      "p": "google", "m": "Google AI Ultra (20×)",
+      "p": "google",
+      "m": "Google AI Ultra (20×)",
       "provenance": "not_disclosed",
       "stated": "'20x higher than AI Pro limits.' Pay-as-you-go credits can be bought to continue past the limit.",
-      "multiplier": { "of": "Google AI Pro", "x": 20, "base_disclosed": false },
-      "value_models": { "low": "gemini-3.6-flash", "high": "gemini-3.1-pro-preview" },
+      "multiplier": {
+        "of": "Google AI Pro",
+        "x": 20,
+        "base_disclosed": false
+      },
+      "value_models": {
+        "low": "gemini-3.6-flash",
+        "high": "gemini-3.1-pro-preview"
+      },
       "source": "https://support.google.com/gemini/answer/16275805",
       "as_of": "2026-08-26"
     },
-
     {
       "_comment": "x.ai/pricing ticks Grok 4.6 in EVERY column, Free included, so every xAI tier is valued on the same pair: what you buy is rate limit, never model access. The previous entries valued these tiers on grok-3 / grok-3-mini / grok-4, all of which had already left xAI's pricing page — the free tier was being valued on a two-generation-old model.",
-      "p": "xai", "m": "Grok (Free)",
+      "p": "xai",
+      "m": "Grok (Free)",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "value_models": {
+        "low": "grok-4.6",
+        "high": "grok-4.6"
+      },
       "as_of": "2026-08-26"
     },
     {
-      "p": "xai", "m": "SuperGrok Lite",
+      "p": "xai",
+      "m": "SuperGrok Lite",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "value_models": {
+        "low": "grok-4.6",
+        "high": "grok-4.6"
+      },
       "as_of": "2026-08-26"
     },
     {
-      "p": "xai", "m": "SuperGrok",
+      "p": "xai",
+      "m": "SuperGrok",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "value_models": {
+        "low": "grok-4.6",
+        "high": "grok-4.6"
+      },
       "as_of": "2026-08-26"
     },
     {
       "_comment": "New tier between SuperGrok and Heavy, found on x.ai/pricing 2026-08-24. xAI publishes no usage figure for it — the card says 'significantly higher usage' against a base it never quantifies.",
-      "p": "xai", "m": "SuperGrok Plus",
+      "p": "xai",
+      "m": "SuperGrok Plus",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "value_models": {
+        "low": "grok-4.6",
+        "high": "grok-4.6"
+      },
       "as_of": "2026-08-26"
     },
     {
-      "p": "xai", "m": "SuperGrok Heavy",
+      "p": "xai",
+      "m": "SuperGrok Heavy",
       "provenance": "not_disclosed",
-      "value_models": { "low": "grok-4.6", "high": "grok-4.6" },
+      "value_models": {
+        "low": "grok-4.6",
+        "high": "grok-4.6"
+      },
       "as_of": "2026-08-26"
     },
-
     {
-      "p": "perplexity", "m": "Perplexity Free",
+      "p": "perplexity",
+      "m": "Perplexity Free",
       "provenance": "not_disclosed",
       "third_party": [
-        { "n": 5, "unit": "Pro searches", "window": "1d", "scope": "Pro Search",
+        {
+          "n": 5,
+          "unit": "Pro searches",
+          "window": "1d",
+          "scope": "Pro Search",
           "confidence": "low",
           "source": "https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained",
-          "why": "Sources disagree — some report 3 per day as of July 2026 rather than 5. Perplexity publishes no figure, so there is no way to settle it." }
+          "why": "Sources disagree — some report 3 per day as of July 2026 rather than 5. Perplexity publishes no figure, so there is no way to settle it."
+        }
       ],
-      "value_models": { "low": "openai:gpt-5.6-terra", "high": "anthropic:claude-sonnet-5" },
+      "value_models": {
+        "low": "openai:gpt-5.6-terra",
+        "high": "anthropic:claude-sonnet-5"
+      },
       "as_of": "2026-08-26"
     },
     {
-      "p": "perplexity", "m": "Perplexity Pro",
+      "p": "perplexity",
+      "m": "Perplexity Pro",
       "provenance": "not_disclosed",
       "stated": "Pro Search is marketed as unlimited. Perplexity does not publish the limit that actually binds — the weekly allowance on advanced models — and has confirmed it is not even the same for every Pro subscriber. Perplexity also states the absence directly, on the same page that quantifies Max: “Consumer Pro plans do not start with a set monthly amount” of Computer credits — a provider confirming in writing that this tier carries no published allowance.",
       "third_party": [
-        { "n": 125, "unit": "advanced-model queries", "window": "7d", "scope": "advanced models (e.g. Gemini 3.1 Pro, Thinking)",
+        {
+          "n": 125,
+          "unit": "advanced-model queries",
+          "window": "7d",
+          "scope": "advanced models (e.g. Gemini 3.1 Pro, Thinking)",
           "confidence": "low",
           "source": "https://www.androidauthority.com/perplexity-pro-advanced-ai-limits-reduced-3667942/",
           "why": "Midpoint of the 100-150 per week that Pro users reported in May 2026 after limits were cut; standard Pro Search was unaffected. Weak for an unusual reason: Perplexity's own response was that 'some users are seeing different usage limits because their accounts are tied to promotional-code offers, and we've had to adjust enforcement due to fraud and unauthorized resale' — i.e. the provider confirms the limit differs between subscribers on the same plan. There may be no single true number to find.",
-          "replaces": "An earlier 600 searches/day figure, dropped: it described unlimited Pro Search rather than the advanced-model allowance that actually binds." }
+          "replaces": "An earlier 600 searches/day figure, dropped: it described unlimited Pro Search rather than the advanced-model allowance that actually binds."
+        }
       ],
-      "value_models": { "low": "openai:gpt-5.6-terra", "high": "anthropic:claude-sonnet-5" },
+      "value_models": {
+        "low": "openai:gpt-5.6-terra",
+        "high": "anthropic:claude-sonnet-5"
+      },
       "as_of": "2026-08-26"
     },
     {
-      "p": "perplexity", "m": "Perplexity Max",
+      "p": "perplexity",
+      "m": "Perplexity Max",
       "provenance": "disclosed",
       "caps": [
-        { "n": 10000, "unit": "credits", "window": "30d", "scope": "Computer", "soft": false, "scope_limited": true,
-          "note": "Perplexity's help centre states plainly that “Consumer Max plans start with 10,000 credits a month”, and unusually it also publishes what a credit is worth — “100 credits equals $1” — plus typical consumption by task class (light 100–350 credits, complex 350–950, heavy 875–2,275, mega 2,400–9,800). scope_limited: this bounds Computer, Perplexity's agent product, not the plan. Ordinary Pro Search on Max is still marketed as unlimited with no published figure, so a ceiling computed from the credit allowance would describe a fraction of what Max is worth." }
+        {
+          "n": 10000,
+          "unit": "credits",
+          "window": "30d",
+          "scope": "Computer",
+          "soft": false,
+          "scope_limited": true,
+          "note": "Perplexity's help centre states plainly that “Consumer Max plans start with 10,000 credits a month”, and unusually it also publishes what a credit is worth — “100 credits equals $1” — plus typical consumption by task class (light 100–350 credits, complex 350–950, heavy 875–2,275, mega 2,400–9,800). scope_limited: this bounds Computer, Perplexity's agent product, not the plan. Ordinary Pro Search on Max is still marketed as unlimited with no published figure, so a ceiling computed from the credit allowance would describe a fraction of what Max is worth."
+        }
       ],
       "stated": "The second absolute consumer usage figure published by any provider on this table, and the only one a reader can do arithmetic with: “Consumer Max plans start with 10,000 credits a month”, at a published rate of 100 credits to the dollar, with typical task costs listed by complexity. It covers Computer only. Pro Search on Max remains marketed as unlimited with no number, and Perplexity reserves the right to change all of it: “credit pricing, task ranges, and monthly allowances may change and can vary by promotion, region, or plan.”",
-      "value_models": { "low": "openai:gpt-5.6-sol", "high": "anthropic:claude-opus-5" },
+      "value_models": {
+        "low": "openai:gpt-5.6-sol",
+        "high": "anthropic:claude-opus-5"
+      },
       "source": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity",
       "as_of": "2026-08-29"
     },
-
     {
-      "p": "microsoft", "m": "Copilot (Free)",
+      "p": "microsoft",
+      "m": "Copilot (Free)",
       "provenance": "not_disclosed",
       "no_api_rate": true,
       "as_of": "2026-07-28"
     },
     {
-      "p": "microsoft", "m": "Microsoft 365 Premium",
+      "p": "microsoft",
+      "m": "Microsoft 365 Premium",
       "provenance": "not_disclosed",
       "no_api_rate": true,
       "stated": "'Extensive use' beyond the standard credit limit. Microsoft publishes a hard 60 AI credits/month for the cheaper Personal and Family plans but no figure for Premium — disclosure decreasing as price rises.",
       "source": "https://support.microsoft.com/en-us/office/ai-credits-and-limits-for-microsoft-365-personal-family-and-premium-68530f1a-4459-4d02-9818-8233c1f673b8",
       "as_of": "2026-07-28"
     },
-
     {
-      "p": "mistral", "m": "Le Chat Free",
+      "p": "mistral",
+      "m": "Le Chat Free",
       "provenance": "not_disclosed",
       "stated": "'Limited messages and web searches' — no number.",
       "third_party": [
-        { "n": 25, "unit": "messages", "window": "1d", "scope": "all models",
+        {
+          "n": 25,
+          "unit": "messages",
+          "window": "1d",
+          "scope": "all models",
           "confidence": "low",
           "source": "https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v",
-          "why": "Single source, described as a soft cap. Mistral's own help-centre articles on Le Chat limits now 404, so there is nothing to check it against." }
+          "why": "Single source, described as a soft cap. Mistral's own help-centre articles on Le Chat limits now 404, so there is nothing to check it against."
+        }
       ],
       "source": "https://mistral.ai/pricing",
-      "value_models": { "low": "mistral-small-4", "high": "mistral-medium-3.5" },
+      "value_models": {
+        "low": "mistral-small-4",
+        "high": "mistral-medium-3.5"
+      },
       "as_of": "2026-07-28"
     },
     {
-      "p": "mistral", "m": "Le Chat Pro",
+      "p": "mistral",
+      "m": "Le Chat Pro",
       "provenance": "not_disclosed",
       "stated": "Messages are 'subject to fair usage limits and Mistral's Terms of Service' — unquantified. Mistral does publish one number on its pricing page: 150 Flash answers per day on Pro (200 on Team). Flash answers are one feature, not the general message allowance.",
       "third_party": [
-        { "n": 150, "unit": "messages", "window": "1d", "scope": "all models",
+        {
+          "n": 150,
+          "unit": "messages",
+          "window": "1d",
+          "scope": "all models",
           "confidence": "low",
           "source": "https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v",
-          "why": "Treat with real suspicion. The widely-repeated '150 messages/day soft cap' for Le Chat Pro is the same number Mistral publishes for Flash answers per day — a specific feature, not a general message limit. Most likely one figure misread as the other. Kept because it is the only general-message estimate in circulation, but the coincidence is not reassuring." }
+          "why": "Treat with real suspicion. The widely-repeated '150 messages/day soft cap' for Le Chat Pro is the same number Mistral publishes for Flash answers per day — a specific feature, not a general message limit. Most likely one figure misread as the other. Kept because it is the only general-message estimate in circulation, but the coincidence is not reassuring."
+        }
       ],
       "source": "https://mistral.ai/pricing",
-      "value_models": { "low": "mistral-small-4", "high": "mistral-medium-3.5" },
+      "value_models": {
+        "low": "mistral-small-4",
+        "high": "mistral-medium-3.5"
+      },
       "as_of": "2026-07-28"
     },
-
     {
-      "p": "deepseek", "m": "DeepSeek (Free)",
+      "p": "deepseek",
+      "m": "DeepSeek (Free)",
       "provenance": "not_disclosed",
       "stated": "No paid consumer tier and no published chat usage limits.",
-      "value_models": { "low": "deepseek-v4-flash", "high": "deepseek-v4-pro" },
+      "value_models": {
+        "low": "deepseek-v4-flash",
+        "high": "deepseek-v4-pro"
+      },
       "as_of": "2026-07-28"
+    },
+    {
+      "p": "zai",
+      "m": "Z.ai (Free)",
+      "provenance": "not_disclosed",
+      "stated": "chat.z.ai is a free consumer chat running GLM-5.3-Flash (stated in the page title). The product is login-walled and no usage figure was found for it. NOT graded as \"publishes nothing\" — we could not read it.",
+      "value_models": {
+        "high": "zai:glm-5.3-flash",
+        "low": "zai:glm-5.3-flash"
+      },
+      "source": "https://chat.z.ai/",
+      "as_of": "2026-08-30"
+    },
+    {
+      "p": "zai",
+      "m": "GLM Coding Lite",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 10000,
+          "unit": "credits",
+          "window": "7d",
+          "soft": false,
+          "scope_limited": false,
+          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. unit is \"credits\", NOT messages: the Ceiling column deliberately refuses to price it, because multiplying credits by a cost-per-message would be nonsense. Converting credits to messages is possible from the published formula and is the open opportunity recorded in FRESHNESS A11."
+        },
+        {
+          "n": 2000,
+          "unit": "credits",
+          "window": "5h",
+          "soft": false,
+          "scope_limited": false,
+          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind."
+        }
+      ],
+      "binding": "7d",
+      "stated": "The most complete consumer allowance disclosure on this table. 10,000 credits a week and 2,000 every rolling 5 hours, with the credit formula, the per-model multipliers and a token conversion table all published. Z.ai also states peak hours (Mon-Fri 14:00-18:00 SGT) and charges half credits outside them, so its own token estimates carry a ~2x range; the low end assumes all-peak.",
+      "value_models": {
+        "high": "zai:glm-5.3",
+        "low": "zai:glm-5.3-flash"
+      },
+      "source": "https://docs.z.ai/devpack/overview",
+      "as_of": "2026-08-30"
+    },
+    {
+      "p": "zai",
+      "m": "GLM Coding Pro",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 60000,
+          "unit": "credits",
+          "window": "7d",
+          "soft": false,
+          "scope_limited": false,
+          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. unit is \"credits\", NOT messages: the Ceiling column deliberately refuses to price it, because multiplying credits by a cost-per-message would be nonsense. Converting credits to messages is possible from the published formula and is the open opportunity recorded in FRESHNESS A11."
+        },
+        {
+          "n": 12000,
+          "unit": "credits",
+          "window": "5h",
+          "soft": false,
+          "scope_limited": false,
+          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind."
+        }
+      ],
+      "binding": "7d",
+      "stated": "The most complete consumer allowance disclosure on this table. 60,000 credits a week and 12,000 every rolling 5 hours, with the credit formula, the per-model multipliers and a token conversion table all published. Z.ai also states peak hours (Mon-Fri 14:00-18:00 SGT) and charges half credits outside them, so its own token estimates carry a ~2x range; the low end assumes all-peak.",
+      "value_models": {
+        "high": "zai:glm-5.3",
+        "low": "zai:glm-5.3-flash"
+      },
+      "source": "https://docs.z.ai/devpack/overview",
+      "as_of": "2026-08-30"
+    },
+    {
+      "p": "zai",
+      "m": "GLM Coding Max",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 140000,
+          "unit": "credits",
+          "window": "7d",
+          "soft": false,
+          "scope_limited": false,
+          "note": "Z.ai publishes the allowance in credits on TWO windows (a rolling 5-hour and a weekly), the exact credit formula — (input x in-mult + cached x cached-mult + output x out-mult) / 10,000 — the per-model multipliers (GLM-5.3 6.9/1.7/24, GLM-5.3-Flash 2.3/0.56/8), and a token conversion table. unit is \"credits\", NOT messages: the Ceiling column deliberately refuses to price it, because multiplying credits by a cost-per-message would be nonsense. Converting credits to messages is possible from the published formula and is the open opportunity recorded in FRESHNESS A11."
+        },
+        {
+          "n": 28000,
+          "unit": "credits",
+          "window": "5h",
+          "soft": false,
+          "scope_limited": false,
+          "note": "Rolling 5-hour allowance, published alongside the weekly one. Both bind."
+        }
+      ],
+      "binding": "7d",
+      "stated": "The most complete consumer allowance disclosure on this table. 140,000 credits a week and 28,000 every rolling 5 hours, with the credit formula, the per-model multipliers and a token conversion table all published. Z.ai also states peak hours (Mon-Fri 14:00-18:00 SGT) and charges half credits outside them, so its own token estimates carry a ~2x range; the low end assumes all-peak.",
+      "value_models": {
+        "high": "zai:glm-5.3",
+        "low": "zai:glm-5.3-flash"
+      },
+      "source": "https://docs.z.ai/devpack/overview",
+      "as_of": "2026-08-30"
     }
   ]
 }

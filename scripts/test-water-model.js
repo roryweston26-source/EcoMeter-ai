@@ -76,7 +76,11 @@ ok(Object.values(water._hosts).every(h => h.source), 'every host says where its 
 {
   const models = Object.entries(water).filter(([k]) => !k.startsWith('_'))
     .flatMap(([, g]) => Object.values(g));
-  ok(models.length === 68, models.length + ' models carry a water entry');
+  // Deliberate literal, not a derived count: a model silently LOSING its water
+  // entry renders no water figure at all, with no error, so this is a tripwire and
+  // has to be updated by hand when models are added. 68 -> 76 on 2026-08-29 with
+  // the three Chinese labs (FRESHNESS E3 — hardcoded coverage counts).
+  ok(models.length === 76, models.length + ' models carry a water entry');
   ok(models.every(m => water._hosts[m.host]), 'every model joins to a real host');
   ok(models.every(m => !m.energy || water._energy.measured[m.energy]), 'every named energy curve exists');
   const measured = models.filter(m => m.energy).length;
