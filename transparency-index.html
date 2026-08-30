@@ -48,7 +48,15 @@
   header{margin-bottom:22px}
   .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin:0 0 16px;display:flex;align-items:center;gap:.7em}
   .eyebrow::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(212,168,67,.5),transparent)}
-  h1{font-family:var(--display);font-weight:800;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1;letter-spacing:-.02em;margin:0 0 16px;overflow-wrap:break-word}
+  /* The clamp floor pins h1 at 2.1rem all the way down to 320px, but .wrap only
+     leaves 100vw-32px of content box on a phone. A single long word in the title
+     -- today "Transparency", ~11em wide in Syne -- is then wider than the line
+     box, and an unbreakable word overflows its block and scrolls the WHOLE page
+     sideways (8px at 375px). Keep the heading fluid below 440px so it fits; the
+     overflow-wrap above is the backstop, because the title is data
+     (_meta.title in transparency-index.json), not something this rule can see. */
+  @media (max-width:440px){ h1{font-size:min(2.1rem,7.6vw)} }
   h1 .accent{color:var(--green-2)}
   .lede{font-size:clamp(1rem,2.1vw,1.15rem);color:var(--muted);max-width:64ch;margin:0 0 18px}
 
