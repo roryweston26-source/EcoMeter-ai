@@ -15,6 +15,7 @@ on:
       - 'scripts/check-auditor.js'
       - 'scripts/test-auditor.js'
       - 'scripts/check-clock.js'
+      - 'scripts/check-transparency.js'
       - '.github/workflows/validate-site.yml'
   push:
     branches: [main]        # backstop: also verify what actually landed
@@ -52,3 +53,11 @@ jobs:
       # drifted, and that the anchor date isn't hardcoded in the prose again.
       - name: Check AI Clock plausibility
         run: node scripts/check-clock.js
+
+      # The Transparency Index makes promises about itself — that every grade links
+      # to a source, that its notes are written for a reader rather than a
+      # maintainer, and that the tables in the docs match the JSON. On 2026-08-29 a
+      # re-read found eight wrong cells across two axes, and every one of them
+      # passed validate-site.js. This gates the promises, not the syntax.
+      - name: Check Transparency Index consistency
+        run: node scripts/check-transparency.js

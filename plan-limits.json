@@ -1,7 +1,7 @@
 {
   "_meta": {
     "comment": "Per-plan usage limits and the assumptions behind the 'break even at' and 'ceiling' columns on pricing.html. Joins to extension/prices.json 'subscriptions' on p + m (exact string match). Rates are NOT stored here — they are read live from prices.json.api at render time, so these figures re-price themselves when API prices change.",
-    "last_verified": "2026-08-24",
+    "last_verified": "2026-08-29",
     "month_days": 30,
     "provenance_legend": {
       "disclosed": "The provider publishes this figure about its own product.",
@@ -9,7 +9,7 @@
       "third_party": "Measured or reported by someone other than the provider. Treat as indicative.",
       "not_disclosed": "The provider does not publish a usable figure."
     },
-    "finding": "As of August 2026, exactly one absolute consumer usage figure is published by any major provider about its own product, and it is a feature sub-limit rather than a general allowance: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' Nothing else is quantified anywhere. Every tier is sold on a relative multiplier against a base nobody quantifies: OpenAI's Pro tiers as '5x or 20x more usage' than Plus (what it multiplies is unstated), Anthropic's Max as '5x/20x more usage than Pro', Google's tiers as '2x/4x/20x higher than standard limits' — Google's own footnote clarifying the base as 'non-AI subscribers'. Anthropic, Google and OpenAI have all moved to metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' The pattern is consistent: disclosure gets worse as the price goes up.",
+    "finding": "As of 2026-08-29, TWO absolute consumer usage figures are published by any major provider about its own product, out of 27 plans — and 25 publish nothing at all. The first is a feature sub-limit: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' The second was found on 2026-08-29 and is materially better: Perplexity states that 'Consumer Max plans start with 10,000 credits a month', publishes the conversion ('100 credits equals $1') and lists typical consumption by task class, so a reader can actually estimate what the plan buys — though it covers Computer rather than the whole plan. Everything else is sold on a relative multiplier against a base nobody quantifies: OpenAI's Pro tiers as '5x or 20x more usage' than Plus (what it multiplies is unstated), Anthropic's Max as '5x/20x more usage than Pro', Google's tiers as '2x/4x/20x higher than standard limits' — Google's own footnote clarifying the base as 'non-AI subscribers'. Anthropic, Google and OpenAI have all moved to metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' The pattern still holds — disclosure gets worse as the price goes up — but it is no longer true that 'nothing else is quantified anywhere', and that sentence stood here unchallenged until someone checked it against the provider's own page.",
     "context_windows_are_now_disclosed": "Counter-example to the finding above, added 2026-08-24, and recorded because a file that only collects evidence for its own thesis is not evidence. OpenAI's plan table now publishes a per-plan CONTEXT WINDOW for every consumer tier — Instant 27K/54K/54K/128K and Reasoning Varies/256K/256K/400K across Free/Go/Plus/Pro. That is a real, absolute, provider-published number about its own product, and the first any provider has ADDED rather than withdrawn in the period this file covers. It does not weaken the finding, because a context window bounds how much fits in one conversation, not how many conversations you get — the allowance question is still unanswered everywhere. But \"nobody discloses anything\" would now be false, and the honest statement is narrower: nobody discloses an ALLOWANCE.",
     "disclosure_is_getting_worse": "Between the 2026-07-28 and 2026-08-08 checks, OpenAI DELETED the only general absolute cap anyone published — '160 GPT-5.5 Instant messages per 3 hours', which had applied identically to Go at $8 and Plus at $20. The replacement language is that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind. This is worth re-checking every time this file is verified: the trend is one-directional, and a figure being here today is not evidence it will be next quarter.",
     "archetypes": {
@@ -251,7 +251,7 @@
     {
       "p": "perplexity", "m": "Perplexity Pro",
       "provenance": "not_disclosed",
-      "stated": "Pro Search is marketed as unlimited. Perplexity does not publish the limit that actually binds — the weekly allowance on advanced models — and has confirmed it is not even the same for every Pro subscriber.",
+      "stated": "Pro Search is marketed as unlimited. Perplexity does not publish the limit that actually binds — the weekly allowance on advanced models — and has confirmed it is not even the same for every Pro subscriber. Perplexity also states the absence directly, on the same page that quantifies Max: “Consumer Pro plans do not start with a set monthly amount” of Computer credits — a provider confirming in writing that this tier carries no published allowance.",
       "third_party": [
         { "n": 125, "unit": "advanced-model queries", "window": "7d", "scope": "advanced models (e.g. Gemini 3.1 Pro, Thinking)",
           "confidence": "low",
@@ -264,10 +264,15 @@
     },
     {
       "p": "perplexity", "m": "Perplexity Max",
-      "provenance": "not_disclosed",
-      "stated": "Marketed as unlimited Pro searches with no daily or hourly cap; no figure published and 'unlimited' is not a number we can price.",
+      "provenance": "disclosed",
+      "caps": [
+        { "n": 10000, "unit": "credits", "window": "30d", "scope": "Computer", "soft": false, "scope_limited": true,
+          "note": "Perplexity's help centre states plainly that “Consumer Max plans start with 10,000 credits a month”, and unusually it also publishes what a credit is worth — “100 credits equals $1” — plus typical consumption by task class (light 100–350 credits, complex 350–950, heavy 875–2,275, mega 2,400–9,800). scope_limited: this bounds Computer, Perplexity's agent product, not the plan. Ordinary Pro Search on Max is still marketed as unlimited with no published figure, so a ceiling computed from the credit allowance would describe a fraction of what Max is worth." }
+      ],
+      "stated": "The second absolute consumer usage figure published by any provider on this table, and the only one a reader can do arithmetic with: “Consumer Max plans start with 10,000 credits a month”, at a published rate of 100 credits to the dollar, with typical task costs listed by complexity. It covers Computer only. Pro Search on Max remains marketed as unlimited with no number, and Perplexity reserves the right to change all of it: “credit pricing, task ranges, and monthly allowances may change and can vary by promotion, region, or plan.”",
       "value_models": { "low": "openai:gpt-5.6-sol", "high": "anthropic:claude-opus-5" },
-      "as_of": "2026-08-26"
+      "source": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity",
+      "as_of": "2026-08-29"
     },
 
     {

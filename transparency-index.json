@@ -2,7 +2,7 @@
   "_meta": {
     "title": "AI Transparency Index",
     "lede": "How openly the major AI providers let the public see what their AI costs — in dollars, in data, and in water and energy. We grade transparency, not the underlying footprint: whether a real figure is findable at all, and who had to surface it. 'Not disclosed' is a finding, not a gap to paper over.",
-    "last_verified": "2026-08-28",
+    "last_verified": "2026-08-29",
     "status": "ok",
     "status_note": "",
     "axes": [
@@ -10,7 +10,7 @@
       { "key": "pricing",       "label": "Pricing",             "state": "scored",  "note": "Five dimensions of what a provider tells you about what you are buying, all read from primary sources. Scored below. Providers tell you the price and when it will change; none tells you what you get for it." },
       { "key": "data",          "label": "Data practices",      "state": "scored",  "note": "Four dimensions of what a provider tells you about what happens to your conversations. Scored below. Business customers are opted out of training by default; consumers are opted in and must find the toggle." }
     ],
-    "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources — 114 of 114 across all three matrices (42 environmental, 40 pricing, 32 data practices), every URL checked. The pricing axis was defined and scored on 2026-08-25 across five independent dimensions — API rate card, consumer allowance, consumer context window, price-change notice and model-retirement notice — graded separately and never averaged, on the same 4-state scale. Its provider set deliberately differs from the environmental one: it covers the eight companies selling AI directly to consumers or developers. The data-practices axis was defined and scored on 2026-08-25 across four dimensions — whether the training default is stated, whether an opt-out is documented, whether a retention period is published, and whether human review is disclosed — read from each provider's consumer-facing documents. All three axes are now scored, and all three remain separate: a provider can be open about billing and silent about water, and several are.",
+    "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources — 122 of 122 across all three matrices (42 environmental, 40 pricing, 40 data practices), every URL checked. The pricing axis was defined and scored on 2026-08-25 across five independent dimensions — API rate card, consumer allowance, consumer context window, price-change notice and model-retirement notice — graded separately and never averaged, on the same 4-state scale. Its provider set deliberately differs from the environmental one: it covers the eight companies selling AI directly to consumers or developers. The data-practices axis was defined and scored on 2026-08-25 across five dimensions — whether the training default is stated, whether an opt-out is documented, whether a retention period is published, whether human review is disclosed, and (added 2026-08-29) whether advertising use is disclosed — read from each provider's consumer-facing documents. All three axes are now scored, and all three remain separate: a provider can be open about billing and silent about water, and several are.",
     "grade_legend": [
       { "grade": "green",   "symbol": "🟢", "label": "Transparent — company discloses itself" },
       { "grade": "yellow",  "symbol": "🟡", "label": "Partial — public only via regulator, utility or watchdog" },
@@ -21,11 +21,12 @@
       "Site coverage is currently 12 sites across 7 providers and expanding over time — that reflects our research pace, not a judgment on any provider we haven't listed yet. Early-stage campuses with no meaningful operating capacity yet (e.g. Meta's Hyperion, the Stargate expansion sites) are tracked but shown without a capacity weight until they're running. Pure-play colocation landlords (e.g. Equinix, NTT, CyrusOne) aren't scored here yet — they publish fleet-wide efficiency rather than per-AI-site figures, and need their own treatment.",
       "Most 🟡 grades today exist only because of local advocacy groups and utility-records work — not because any law requires the company to disclose. That gap is itself part of the story.",
       "Grades are re-verified periodically, not continuously — a site can move between checks.",
-      "This is Legerly's independent read of public information, not a regulatory finding. Tell us if we got something wrong."
+      "This is Legerly's independent read of public information, not a regulatory finding. Tell us if we got something wrong.",
+      "A known limitation of the AI-vs-total split column, stated rather than hidden: for the three AI-only companies (xAI, OpenAI, Anthropic) it is not an independent measurement. Their total IS their AI footprint, so the column can only repeat what site-level disclosure already says — if they published a total, the split would be satisfied trivially. Read those three cells as one finding about publishing nothing, not two. The column does real work only for the hyperscalers, where AI competes with search, cloud and everything else inside the same meter."
     ],
     "detail": {
       "title": "Disclosure quality by dimension",
-      "note": "A closer look at how complete each company's own environmental reporting is, across six disclosure dimensions. This lens grades a company's self-reporting rather than the 'can the public find out at all' question the site scores above answer — so here 🟢 means good disclosure, 🟡 partial, 🔴 none or poor. We grade what each company DISCLOSES about the AI compute it controls, not the footprint itself. Rented-vs-owned rule: each company is graded only on what IT publishes, regardless of who owns the building — so a renter that stays silent (OpenAI, Anthropic, xAI) has disclosed nothing, while one that publishes facility detail gets credit. Cross-board: no company separates AI-specific from general data-center footprint, none discloses indirect (power-generation) water — LBNL estimates indirect ≈ 12× direct — and there is no U.S. federal water-disclosure mandate as of mid-2026.",
+      "note": "A closer look at how complete each company's own environmental reporting is, across six disclosure dimensions. This lens grades a company's self-reporting rather than the 'can the public find out at all' question the site scores above answer — so here 🟢 means good disclosure, 🟡 partial, 🔴 none or poor. We grade what each company DISCLOSES about the AI compute it controls, not the footprint itself. Rented-vs-owned rule: each company is graded only on what IT publishes, regardless of who owns the building — so a renter that stays silent has disclosed nothing, while one that publishes facility detail gets credit. That rule used to name OpenAI, Anthropic and xAI together as silent; on 2026-08-29 we corrected it, because xAI is not. It publishes a Memphis site with turbine counts, permit dates, emissions-control specification and a water-recycling plant with a projected annual volume — which moved two of its cells to 🟡. What it still does not publish, and what this table grades, is a single figure for the water or electricity Colossus actually uses. Anthropic and OpenAI remain silent on the environment in the ordinary sense: a full-text search of Anthropic's Transparency Hub returns zero hits for water, energy, carbon, emissions, climate and electricity. Cross-board: no company separates AI-specific from general data-center footprint AT FACILITY LEVEL — Google is the one partial exception, publishing AI-specific per-prompt energy, carbon and water while leaving the AI share of its 13,562 Mgal data-centre withdrawal unknowable, which is why its cell is 🟡 and not 🔴. None discloses indirect (power-generation) water — LBNL estimates indirect ≈ 12× direct — and there is no U.S. federal water-disclosure mandate as of mid-2026. TWO DATES TO WATCH, one voluntary and one legal. On 23 June 2026 the UN Secretary-General launched the AI Environmental Transparency Initiative, asking every major AI company to disclose its full carbon, water and land footprint and to power its data centres with renewables by 2030; as of this check, more than two months on, no provider on this table has been named as having signed up, and none of these grades has moved because of it. California's SB 253 is the harder deadline: Scope 1 and 2 reporting is due from November 2026 for large companies operating in the state, with Scope 3 not due until 2027.",
       "grade_legend": [
         { "grade": "green",  "symbol": "🟢", "label": "Good disclosure" },
         { "grade": "yellow", "symbol": "🟡", "label": "Partial" },
@@ -42,7 +43,7 @@
   },
   "pricing": {
     "title": "Pricing transparency — by dimension",
-    "note": "What a provider tells you about what you are buying. Same 4-state scale as the page above, applied to five independent dimensions and never averaged. THE HEADLINE FINDING: providers are good at telling you the price and when it will change, and almost uniformly silent on what you get for it. Six of eight commit to a quantified price-change notice and five of those land on exactly 30 days with a cancel-before-renewal right — this is the most standardised disclosure in the industry. Set against that, all eight publish no usage allowance at all. Of 27 consumer plans across 8 providers, 26 publish no usage allowance — and the one exception is a feature sub-limit, not a general allowance. Note the provider set differs from the environmental axis above: this table covers the eight companies that sell AI to consumers or developers directly, so Amazon and Meta are absent and Perplexity, Mistral, DeepSeek and Microsoft appear.",
+    "note": "What a provider tells you about what you are buying. Same 4-state scale as the page above, applied to five independent dimensions and never averaged. THE HEADLINE FINDING: providers are good at telling you the price and when it will change, and almost uniformly silent on what you get for it. Six of eight commit to a quantified price-change notice and five of those land on exactly 30 days with a cancel-before-renewal right — the most standardised disclosure in the industry. Set against that, SEVEN OF EIGHT publish no usage allowance whatsoever. The eighth is Perplexity, and it is the exception that shows the rest is a choice: “Consumer Max plans start with 10,000 credits a month”, with “100 credits equals $1” and typical consumption published by task class — the only allowance figure on this table a reader can do arithmetic with. It covers one product surface on one tier, which is why it is 🟡 rather than 🟢, and it is still more than the other seven manage. The 2026-08-29 re-read also found THREE providers publishing a consumer context window, not one — OpenAI per tier (27K to 128K instant), Google per tier (32k / 128k / 1M) and Anthropic per model (200K / 500K / 1M). Put those together and the pattern is not incapacity: providers quantify the size of ONE conversation precisely, and all but one refuse to say HOW MANY you get. Note the provider set differs from the environmental axis above: this table covers the eight companies that sell AI to consumers or developers directly, so Amazon and Meta are absent and Perplexity, Mistral, DeepSeek and Microsoft appear.",
     "grade_legend": [
       {
         "grade": "green",
@@ -68,8 +69,10 @@
     "caveats": [
       "This axis grades DISCLOSURE, not value for money. A plan can be excellent and still score 🔴 here for not saying what it includes, and a cheap plan gets no credit for being cheap.",
       "Price-change and model-retirement notice have now been read directly on all eight providers' own terms and docs — no cell on this axis rests on a secondary source. The single remaining ⚪ is Microsoft's API rate card, which is not graded because Copilot is sold as a subscription with no per-token price to publish; that is a different business model, not a disclosure failure.",
-      "The allowance finding comes from Legerly's own plan-limits data, re-verified 2026-08-24, where every plan carries a provenance value and a source. It is a count, not an impression.",
-      "Price-change notice turned out BETTER than we expected when we started this axis, and it is recorded that way. Both OpenAI and Anthropic give consumers 30 days and make increases effective at next renewal so the subscription can be cancelled first. An axis that only found bad news would not be evidence."
+      "The allowance finding comes from Legerly's own plan-limits data, where every plan carries a provenance value and a source. It is a count, not an impression — but it is only as good as its last re-read, and on 2026-08-29 it gained a second published figure: Perplexity Max's 10,000 credits a month, which had been on Perplexity's help centre since 2026-08-06 and which we had missed. Re-count against the provider's own pages rather than trusting the stored total.",
+      "Price-change notice turned out BETTER than we expected when we started this axis, and it is recorded that way. Both OpenAI and Anthropic give consumers 30 days and make increases effective at next renewal so the subscription can be cancelled first. An axis that only found bad news would not be evidence.",
+      "Corrected 2026-08-29: this axis used to say OpenAI was alone in publishing a consumer context window. It never was. Google's Gemini Apps limits page carries a per-plan table and Anthropic's help centre a per-model breakdown, and the Internet Archive shows Google's table was live eleven days before we recorded it as unpublished. Two cells moved 🔴→🟢 as a result. The mistake ran in the providers' disfavour, which is the direction an index like this one has the least excuse for.",
+      "The four context-window cells flagged as unverified earlier on 2026-08-29 have since been re-read on consumer-facing pages, and all four held at 🔴 — but the check was worth running twice over. Two of them had been cited against the wrong document: the Perplexity and DeepSeek cells proved a claim about CONSUMER plans by linking to API documentation. Mistral, DeepSeek and xAI all publish per-model context windows to developers (256k, 1M and 500k respectively) while telling consumers nothing, and the notes now say so instead of asserting a bare absence."
     ],
     "columns": [
       {
@@ -113,10 +116,10 @@
           },
           "context_window": {
             "grade": "green",
-            "note": "The one thing that got BETTER. OpenAI's plan table now publishes a per-plan context window for every consumer tier — Instant 27K/54K/54K/128K and Reasoning Varies/256K/256K/400K across Free/Go/Plus/Pro. It is the first absolute product number any provider has ADDED rather than withdrawn in the period we have tracked. It bounds one conversation, not how many you get, so it does not close the allowance gap.",
-            "source": "openai.com/chatgpt/pricing (verified directly)",
+            "note": "The one thing that got BETTER. OpenAI's plan table publishes a per-plan context window for every consumer tier — Instant 27K/54K/54K/128K and Reasoning Varies/256K/256K/400K across Free/Go/Plus/Pro — and it is on the pricing page itself rather than buried in support. It bounds one conversation, not how many you get, so it does not close the allowance gap. This cell used to add that OpenAI was alone in publishing a consumer context window; that was never true. Google publishes a per-plan table and Anthropic a per-model one, and both were live when we wrote it.",
+            "source": "OpenAI pricing page (read directly)",
             "source_url": "https://openai.com/chatgpt/pricing",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "green",
@@ -152,11 +155,11 @@
             "source_date": "Aug 25 2026"
           },
           "context_window": {
-            "grade": "red",
-            "note": "No per-plan context window published for consumer tiers — the figure exists for the API but not for what a Pro or Max subscriber actually gets. OpenAI is currently alone in publishing this.",
-            "source": "claude.com/pricing; Legerly plan-limits.json",
-            "source_url": "https://www.anthropic.com/legal/consumer-terms",
-            "source_date": "Aug 25 2026"
+            "grade": "green",
+            "note": "Corrected 2026-08-29 — this cell said no consumer figure existed, and that was wrong. Anthropic publishes absolute numbers for what a paid subscriber gets, per model: “Claude Opus 5 and Sonnet 5 support a 1M token context window on all paid plans when chatting with Claude”, Opus 4.8 / 4.7 / 4.6 and Sonnet 4.6 get 500K, and “outside of these models, Claude's context window size is 200K.” It goes further than most by stating the figures separately for Claude Code and Cowork, and by naming where a tier changes the answer — Pro users must enable usage credits for the 1M window on Opus models in Claude Code. Structured per model rather than per plan, which is the honest shape when the limit genuinely depends on the model. The one real weakness is location: it is a help-centre article, not the pricing page a consumer compares plans on.",
+            "source": "Anthropic help centre, “How large is the context window on paid Claude plans?” (read directly)",
+            "source_url": "https://support.claude.com/en/articles/8606394-how-large-is-the-context-window-on-paid-claude-plans",
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "green",
@@ -192,11 +195,11 @@
             "source_date": "Aug 25 2026"
           },
           "context_window": {
-            "grade": "red",
-            "note": "No per-plan consumer context window published.",
-            "source": "gemini.google/subscriptions; Legerly plan-limits.json",
-            "source_url": "https://gemini.google/subscriptions",
-            "source_date": "Aug 25 2026"
+            "grade": "green",
+            "note": "Corrected 2026-08-29 — “no per-plan consumer context window published” was wrong. The Gemini Apps limits page carries a plain three-row table: no AI plan 32k tokens, AI Plus 128k tokens, AI Pro and AI Ultra 1 million tokens. That is the same shape as OpenAI's disclosure — absolute, per tier, on the provider's own help page — and it is accompanied by an explanation of what the number means in practice (“up to 1,500 pages of text or 30,000 lines of code”). Verified against the Internet Archive as live on 2026-08-14, eleven days before the pass that recorded it as unpublished, so this is our correction rather than a change at Google. Note the contrast within this same row: Google quantifies the context window precisely and leaves the usage allowance entirely unquantified.",
+            "source": "Google, “Gemini Apps limits & upgrades for Google AI subscribers” (read directly)",
+            "source_url": "https://support.google.com/gemini/answer/16275805",
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "green",
@@ -233,10 +236,10 @@
           },
           "context_window": {
             "grade": "red",
-            "note": "No per-plan consumer context window published.",
-            "source": "x.ai/pricing; Legerly plan-limits.json",
+            "note": "Re-verified 2026-08-29. The consumer pricing page states no context window, and neither does the Grok consumer FAQ. xAI does publish per-model context in its developer documentation — the models page lists 500k tokens — but that is the API product. Nothing tells a SuperGrok subscriber what their conversation limit is. Same rule as Mistral and DeepSeek: publishing the model spec to developers is not telling the consumer.",
+            "source": "x.ai/pricing and the Grok consumer FAQ, against docs.x.ai models (all read directly)",
             "source_url": "https://x.ai/pricing",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "green",
@@ -265,18 +268,18 @@
             "source_date": "Aug 24 2026"
           },
           "allowance": {
-            "grade": "red",
-            "note": "Across 27 consumer plans from 8 providers, 26 publish no usage allowance at all. Every paid tier is sold on a relative multiplier against a base nobody quantifies. Perplexity's three consumer tiers are in that count.",
-            "source": "perplexity.ai/pricing; Legerly plan-limits.json",
-            "source_url": "https://www.perplexity.ai/",
-            "source_date": "Aug 25 2026"
+            "grade": "yellow",
+            "note": "Corrected 2026-08-29, and it breaks what used to be this table's cleanest line. Perplexity publishes an absolute consumer allowance: “Consumer Max plans start with 10,000 credits a month.” It also publishes what a credit is worth — “100 credits equals $1” — and typical consumption by task class: light 100–350 credits, complex 350–950, heavy 875–2,275, mega 2,400–9,800. That is the only figure on this axis a consumer can actually do arithmetic with, and it makes Perplexity the sole provider not 🔴 in this column. It is 🟡 rather than 🟢 because of what it does not cover: the number applies to Computer, Perplexity's agent product, and “Consumer Pro plans do not start with a set monthly amount.” Ordinary search and chat volume stays unquantified — Pro merely gets “a high volume of daily searches.” So one product surface on one tier is quantified and the rest of the plan is not. Note the page also reserves the right to change it: “credit pricing, task ranges, and monthly allowances may change and can vary by promotion, region, or plan.”",
+            "source": "Perplexity help centre, “How Credits Work on Perplexity” (updated 2026-08-06), plus the Pro and Max plan articles",
+            "source_url": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity",
+            "source_date": "Aug 29 2026"
           },
           "context_window": {
             "grade": "red",
-            "note": "No per-plan consumer context window published.",
-            "source": "Legerly plan-limits.json",
-            "source_url": "https://docs.perplexity.ai/getting-started/pricing",
-            "source_date": "Aug 25 2026"
+            "note": "Re-verified 2026-08-29 against the consumer help centre rather than the API docs this cell used to cite — which was the wrong document to prove a claim about consumer plans. The plan articles for Pro and Max, and the AI-models collection, describe model access and search volume in qualitative terms and never state a context window for any tier. Perplexity routes between third-party models whose individual context windows are published by their makers, which makes the consumer's effective limit depend on a routing decision Perplexity does not expose.",
+            "source": "Perplexity help centre — Pro, Max and AI-models articles (read directly)",
+            "source_url": "https://www.perplexity.ai/help-center/en/articles/10352901-what-is-perplexity-pro",
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "yellow",
@@ -313,10 +316,10 @@
           },
           "context_window": {
             "grade": "red",
-            "note": "No per-plan consumer context window published.",
-            "source": "Legerly plan-limits.json",
+            "note": "Re-verified 2026-08-29 against consumer-facing pages rather than assumed. No context window is published for any Copilot consumer tier, and Microsoft's own guidance sidesteps the number entirely: a support page advises keeping referenced content “to around 80,000 words or less” for Copilot to work effectively, which is a rule of thumb about document length, not a stated limit. Prompt character limits (raised to 4,000 and 8,000) are published, which bounds what you can type rather than what the model can hold. A consumer cannot learn how much Copilot will actually keep in view.",
+            "source": "Microsoft Copilot consumer pages and support guidance (read directly)",
             "source_url": "https://www.microsoft.com/en-us/microsoft-365/copilot/",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "green",
@@ -353,10 +356,10 @@
           },
           "context_window": {
             "grade": "red",
-            "note": "No per-plan consumer context window published.",
-            "source": "Legerly plan-limits.json",
+            "note": "Re-verified 2026-08-29 on the fully rendered pricing page: the Vibe plan comparison contains no context-window figure at all. Mistral does publish per-model context windows in its developer documentation — its models overview lists them per model, and Mistral Medium 3.5 and Small 4 are documented at 256k — but nothing connects those numbers to what a Free, Pro or Student subscriber gets in Vibe, or says which model a given tier actually runs. The figure exists for developers and not for the consumer, which is the gap this column measures.",
+            "source": "mistral.ai/pricing (rendered) and docs.mistral.ai models overview (both read directly)",
             "source_url": "https://mistral.ai/pricing",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "green",
@@ -393,10 +396,10 @@
           },
           "context_window": {
             "grade": "red",
-            "note": "No per-plan consumer context window published.",
-            "source": "Legerly plan-limits.json",
-            "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
-            "source_date": "Aug 25 2026"
+            "note": "Re-verified 2026-08-29. DeepSeek publishes a context length prominently — its API pricing page states 1M, with a 384K maximum output — but that is a model and API specification. Nothing on the consumer side states what chat.deepseek.com gives you or whether it differs from the API. DeepSeek also has no paid consumer tier, so there are no plans to differentiate; the honest reading is that the consumer question is never addressed rather than that a plan allowance was withheld. Held 🔴 on the same rule applied to Mistral and xAI: a developer-facing model spec is not a statement to the consumer.",
+            "source": "DeepSeek API pricing/models documentation and the consumer site (both read directly)",
+            "source_url": "https://api-docs.deepseek.com/quick_start/pricing/",
+            "source_date": "Aug 29 2026"
           },
           "price_change": {
             "grade": "yellow",
@@ -418,7 +421,7 @@
   },
   "data_practices": {
     "title": "Data practices — by dimension",
-    "note": "What a provider tells you about what happens to your conversations. Same 4-state scale, four independent dimensions, never averaged. THE HEADLINE FINDING IS AN ASYMMETRY, AND THE PROVIDERS DOCUMENT IT THEMSELVES: at OpenAI, Anthropic and Mistral the paying business customer is opted OUT of model training by default while the consumer is opted IN and must find a toggle. OpenAI's own help page states both halves — consumer ChatGPT “improves by further training on the conversations people have with it, unless you opt out”, while “by default, we do not train on any inputs or outputs from our products for business users”. Anthropic's Commercial Terms say flatly that “Anthropic may not train models on Customer Content from Services”, against consumer terms that train unless you opt out. Same company, same models, opposite default — the difference is which customer had the leverage to negotiate. This axis grades DISCLOSURE, so a provider that states its practice plainly scores well even when the practice is unflattering; the asymmetry above is recorded here in the note rather than as a column, because grading it would mean grading conduct, which this index deliberately does not do.",
+    "note": "What a provider tells you about what happens to your conversations. Same 4-state scale, four independent dimensions, never averaged. THE HEADLINE FINDING IS AN ASYMMETRY, AND THE PROVIDERS DOCUMENT IT THEMSELVES: at OpenAI, Anthropic and Mistral the paying business customer is opted OUT of model training by default while the consumer is opted IN and must find a toggle. OpenAI's own help page states both halves — consumer ChatGPT “improves by further training on the conversations people have with it, unless you opt out”, while “by default, we do not train on any inputs or outputs from our products for business users”. Anthropic's Commercial Terms say flatly that “Anthropic may not train models on Customer Content from Services”, against consumer terms that train unless you opt out. Same company, same models, opposite default — the difference is which customer had the leverage to negotiate. This axis grades DISCLOSURE, so a provider that states its practice plainly scores well even when the practice is unflattering; the asymmetry above is recorded here rather than as a column, because grading it would mean grading conduct, which this index deliberately does not do. A fifth dimension, ADVERTISING USE, was added on 2026-08-29, and its finding is a substitution: only two providers answer the question a consumer actually has — are my conversations used to choose the ads I see? OpenAI says yes and documents how; Google says no and says it will tell you if that changes. The other six answer an easier, adjacent question instead — whether they SELL or SHARE your data with advertisers — and those are different things. A provider can truthfully say it never sends your prompts to an advertiser while still reading those prompts to pick the ad it shows you itself. A second pass on 2026-08-29 enumerated the HUMAN REVIEW column instead of sampling it, and three of its five 🔴 cells fell: Anthropic has a help article titled “Who can view my conversations?”, OpenAI discloses human review of reported content, and Microsoft states outright that it “manually review[s] some of the results against the underlying data” to improve its AI. Only DeepSeek and Perplexity disclose nothing — and Perplexity's own Privacy & Data collection answers every adjacent question except this one. Every cell on this axis is now graded. The 2026-08-29 pass corrected six of them, five in providers' favour — what changed was our reading, not their policies.",
     "grade_legend": [
       {
         "grade": "green",
@@ -443,9 +446,10 @@
     ],
     "caveats": [
       "We grade what the CONSUMER-FACING documents say — the privacy policy a normal user would actually reach, plus each provider's own data-use FAQ where one exists. A practice disclosed only in an enterprise contract or a developer changelog does not count as telling the consumer.",
-      "A 🔴 on 'human review' means the consumer privacy policy does not disclose it, not that no human review happens. The absence of the disclosure is the finding; the underlying practice is not something we can observe.",
+      "A 🔴 on ‘human review’ means the consumer privacy policy does not disclose it, not that no human review happens. The absence of the disclosure is the finding; the underlying practice is not something we can observe.",
       "Defaults change, and this axis rots faster than the environmental one. Anthropic moved consumer chats into training with an opt-out during 2025; any of these positions can move with a policy update that nobody announces.",
-      "Two ⚪ cells are honest gaps rather than findings: Perplexity's data-use FAQ would not render for us, and we did not locate a published retention period for OpenAI in the two documents we read. Neither is graded 🔴 on a failed fetch."
+      "On 2026-08-29 we re-read every source on this axis and corrected six cells — three for xAI, two for Perplexity, one for OpenAI. In each case the provider's disclosure had been there all along and we had missed it, mostly because a page failed to load for us and we recorded the silence as theirs. We publish the corrections rather than quietly restating the grades, because an index that grades disclosure has to disclose its own errors.",
+      "The advertising column grades DISCLOSURE, not whether a provider shows ads. “We do not engage in targeted advertising”, stated plainly, is 🟢 — DeepSeek and Mistral both earn it that way, and so does OpenAI for documenting an ads product in detail. What loses marks is answering a narrower question than the one asked."
     ],
     "columns": [
       {
@@ -463,6 +467,10 @@
       {
         "key": "human_review",
         "label": "Human review disclosed"
+      },
+      {
+        "key": "advertising",
+        "label": "Advertising use disclosed"
       }
     ],
     "rows": [
@@ -484,18 +492,25 @@
             "source_date": "Aug 25 2026"
           },
           "retention": {
-            "grade": "pending",
-            "note": "Not yet assessed. We read the consumer privacy policy and the data-use help page in full and neither states a retention period for conversations. OpenAI may publish one in a separate help article; we are not grading 🔴 on two documents when a third may exist.",
-            "source": "Checked: privacy policy + data-use help page",
+            "grade": "green",
+            "note": "Published in the privacy policy under a plain “Retention” heading, with numbers attached: anything you delete is removed “within 30 days”, Temporary Chats are “automatically deleted within 30 days”, and the reasons it keeps data longer are listed rather than gestured at — a policy ban, a lawful subpoena, financial record-keeping, and the audit record of your own deletion request. One real gap: content already de-identified for model training sits outside that 30-day window and no period is given for it at all, where Anthropic states five years for the same thing. We previously recorded this as unassessed. That was our error rather than a change at OpenAI — the same text was live on the day we last checked.",
+            "source": "OpenAI privacy policy §4 Retention, plus the delete-and-archive help article (both read directly)",
             "source_url": "https://openai.com/policies/privacy-policy/",
-            "source_date": "Not assessed"
+            "source_date": "Aug 29 2026"
           },
           "human_review": {
-            "grade": "red",
-            "note": "The consumer privacy policy contains no disclosure of human review of conversations — the word appears only in reference to California privacy rights and third-party policies. Whatever review happens, a consumer reading the policy would not learn of it.",
-            "source": "OpenAI privacy policy (read in full)",
-            "source_url": "https://openai.com/policies/privacy-policy/",
-            "source_date": "Aug 25 2026"
+            "grade": "yellow",
+            "note": "Corrected 2026-08-29 from 🔴. OpenAI does disclose human review, on a consumer help page whose summary line reads “Learn how OpenAI uses automated systems and human review to identify harmful or policy-violating content”, and which states that for reported content “we use a combination of automated systems and a trained team of experts to review these reports.” It is 🟡 and not 🟢 because of scope: the disclosure covers content that has been reported or flagged, and says nothing about whether people read conversations in the ordinary course of improving the model — which is the question a consumer opting into training is actually asking. The Data Controls FAQ adds that Temporary Chats “may be reviewed only to monitor for abuse”, again without saying by whom.",
+            "source": "OpenAI help centre, “How we identify problematic content on our services for individuals”, plus the Data Controls FAQ",
+            "source_url": "https://help.openai.com/en/articles/8940831-how-we-identify-problematic-content-on-our-services-for-individuals",
+            "source_date": "Aug 29 2026"
+          },
+          "advertising": {
+            "grade": "green",
+            "note": "Answers the question a consumer actually has, and answers it in detail. Ads arrived in ChatGPT for Free and Go users — the test began in the US on 9 February 2026, with no ads on Plus, Pro, Business, Enterprise or Edu, and none shown to accounts identified as under 18. The help page names the signals: selection uses “the context and intent of your current conversation”, and with personalisation on it may also use “Past chats and memory”. It states what advertisers get (“aggregated, non-identifying information”, never “your chats, chat history, memories, or personal details”), how long ads data lives (“up to 30 days” after you clear it), and that ads are not eligible near “personal health, mental health, or politics”. You can turn personalisation off, or switch to an ads-free Free plan with lower limits. Disclosure this specific is rare here — and it describes an unflattering practice, which is exactly what a disclosure grade should reward.",
+            "source": "OpenAI, “Ads in ChatGPT” help page, plus the privacy policy (both read directly)",
+            "source_url": "https://help.openai.com/en/articles/20001047-ads-in-chatgpt",
+            "source_date": "Aug 29 2026"
           }
         }
       },
@@ -524,11 +539,18 @@
             "source_date": "Aug 25 2026"
           },
           "human_review": {
-            "grade": "red",
-            "note": "No disclosure of human review of conversations in the consumer privacy policy; “review” appears only in relation to third-party integrations and automated-decision rights.",
-            "source": "Anthropic consumer privacy policy (read in full)",
+            "grade": "green",
+            "note": "Corrected 2026-08-29 — “no disclosure of human review” was wrong, and Anthropic has an entire consumer help article whose title is the question: “I would like to input sensitive data into my chats with Claude. Who can view my conversations?” It states, explicitly scoped to consumer products, that “we automatically de-link your data from your user ID (like your email address) before any review” and that “access is limited to a small number of personnel involved in model training.” It names the safeguards — filtering and obfuscation of sensitive data, no profiling, no marketing, no sale — and the carve-out: “if our safety classifiers flag your conversations, they may still be used to improve our internal trust and safety models … or advance our safety research”, which applies even to users who have opted out of model improvement. Answers who, under what controls, and what still happens if you opt out.",
+            "source": "Anthropic help centre, “Who can view my conversations?”, plus the consumer privacy policy",
+            "source_url": "https://support.claude.com/en/articles/8325621-i-would-like-to-input-sensitive-data-into-my-chats-with-claude-who-can-view-my-conversations",
+            "source_date": "Aug 29 2026"
+          },
+          "advertising": {
+            "grade": "yellow",
+            "note": "Addresses advertising only in the narrow sense of marketing its own products: “You can opt-out of sharing your personal data for targeted advertising to promote our products and services, and we will honor global privacy controls.” That is a real, actionable control. What the policy never says is whether your conversations with Claude are, or could be, used for advertising of any kind. Anthropic does not appear to run an ads product, which would make the answer an easy no — but a consumer cannot learn that from the document, and the point of this column is that they should not have to infer it.",
+            "source": "Anthropic privacy policy (read directly)",
             "source_url": "https://www.anthropic.com/legal/privacy",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
           }
         }
       },
@@ -558,10 +580,17 @@
           },
           "human_review": {
             "grade": "green",
-            "note": "The only provider of the eight that tells consumers humans read some conversations: “human reviewers (including trained reviewers from our service providers) review some of the data we collect for these purposes.” And it discloses the part users would least expect — that review continues even with Activity turned off. Uncomfortable, specific, and disclosed; that is exactly what this column is for.",
-            "source": "Gemini Apps privacy notice (read directly)",
+            "note": "Discloses human review plainly and, unusually, discloses that it continues after you turn Activity off: reviewed conversations are retained up to three years, disconnected from your Google Account, and Google tells you not to enter anything you would not want a reviewer to see. This cell used to add that Google was the ONLY provider telling consumers that humans read some conversations. That was wrong: Anthropic has a help article dedicated to the question, and OpenAI and Microsoft both disclose human review in narrower terms. Google's disclosure is still the most complete of the four — it is the only one that ties review to a retention period and to the state of your privacy settings.",
+            "source": "Google, Gemini Apps Privacy Hub (read directly)",
             "source_url": "https://support.google.com/gemini/answer/13594961",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
+          },
+          "advertising": {
+            "grade": "green",
+            "note": "The clearest answer on the table, from the company with the most to gain from the opposite one. The Gemini Apps privacy hub carries the question as its own heading — “Do you use my Gemini Apps chats to show me ads?” — and answers it: “Your Gemini Apps chats are not being used to show you ads. If this changes, we will clearly communicate it to you.” It then discloses the carve-out rather than hiding it: if you add products to a Google shopping cart from Gemini, or pay through Google Pay in Gemini, that cart, order and transaction data “is used in accordance with the Google Terms and Privacy Policy … including for personalization and ads (depending on your settings).” Your chats do not feed ads; commerce you transact inside Gemini does; Google says both halves out loud.",
+            "source": "Google, Gemini Apps Privacy Hub (read directly)",
+            "source_url": "https://support.google.com/gemini/answer/13594961",
+            "source_date": "Aug 29 2026"
           }
         }
       },
@@ -595,6 +624,13 @@
             "source": "Mistral privacy policy (read directly)",
             "source_url": "https://legal.mistral.ai/terms/privacy-policy",
             "source_date": "Aug 25 2026"
+          },
+          "advertising": {
+            "grade": "green",
+            "note": "States the non-practice explicitly rather than leaving it to be inferred: “Mistral AI has not ‘sold,’ ‘shared,’ or engaged in ‘targeted advertising’ … in the preceding 12 months, including of any consumer that we know is under 18 years old.” Two honest limits: the wording borrows US state-law definitions and looks back twelve months rather than committing forward, and a separate list of business purposes for service providers does include “Providing advertising and marketing services.” Still a plain answer to a plain question, from the smallest provider here.",
+            "source": "Mistral AI privacy policy (read directly)",
+            "source_url": "https://legal.mistral.ai/terms/privacy-policy",
+            "source_date": "Aug 29 2026"
           }
         }
       },
@@ -603,10 +639,10 @@
         "cells": {
           "training_default": {
             "grade": "yellow",
-            "note": "Discloses the practice but hedges the one detail that decides whether it applies to you: “in some markets, this data can help train our AI models in Microsoft Copilot unless you opt out.” Which markets is not stated, so a consumer cannot tell their own position. It also discloses something no other provider on this table does — Copilot “uses prompts and related data to provide and improve services, including relevant advertising.” Consumer AI prompts feeding ad targeting is disclosed here and nowhere else in this set.",
-            "source": "Microsoft Privacy Statement (read directly)",
+            "note": "Discloses the practice but hedges the one detail that decides whether it applies to you: “in some markets, this data can help train our AI models in Microsoft Copilot unless you opt out.” Which markets is not stated, so a consumer cannot place themselves. It also discloses that Copilot “uses prompts and related data to provide and improve services, including relevant advertising” — consumer prompts feeding ad targeting, stated in the privacy statement itself. We used to add that no other provider here disclosed that; since OpenAI began testing ads in ChatGPT that is no longer true, and OpenAI now documents it in more detail than Microsoft does.",
+            "source": "Microsoft privacy statement (read directly)",
             "source_url": "https://privacy.microsoft.com/en-us/privacystatement",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
           },
           "optout": {
             "grade": "yellow",
@@ -623,11 +659,18 @@
             "source_date": "Aug 25 2026"
           },
           "human_review": {
-            "grade": "red",
-            "note": "No disclosure of human review of Copilot conversations in the privacy statement.",
-            "source": "Microsoft Privacy Statement (read in full)",
+            "grade": "yellow",
+            "note": "Corrected 2026-08-29 from 🔴. The privacy statement does disclose it, in one sentence that names both the practice and its purpose: “Our processing of personal data involves both automated and manual (human) methods … to build, train, and improve the accuracy of our automated systems – such as AI - we manually review some of the results against the underlying data.” That is a plainer statement of human review for AI improvement than OpenAI manages. It stays 🟡 because it is Microsoft-wide rather than Copilot-specific: the reader cannot tell whether their Copilot conversations are among the data reviewed, and the statement covers every Microsoft product at once.",
+            "source": "Microsoft privacy statement (read directly)",
             "source_url": "https://privacy.microsoft.com/en-us/privacystatement",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
+          },
+          "advertising": {
+            "grade": "yellow",
+            "note": "Discloses the practice — Copilot “uses prompts and related data to provide and improve services, including relevant advertising” — which is the substance of it, and which for a long time made Microsoft the only provider here admitting that consumer AI prompts feed ad targeting. It is 🟡 because that sentence sits inside an omnibus privacy statement covering every Microsoft product, where “advertising” appears 85 times about everything from Xbox to Bing. Nothing tells a Copilot user which signals are used, what controls exist for Copilot specifically, how long ads data is kept, or which markets it applies in. The practice is disclosed; the shape of it is not.",
+            "source": "Microsoft privacy statement (read directly)",
+            "source_url": "https://privacy.microsoft.com/en-us/privacystatement",
+            "source_date": "Aug 29 2026"
           }
         }
       },
@@ -657,10 +700,17 @@
           },
           "human_review": {
             "grade": "red",
-            "note": "No disclosure of human review of conversations. The policy's only advice in this direction points the other way — it warns users to check content carefully before sharing conversations publicly.",
-            "source": "DeepSeek privacy policy (read in full)",
+            "note": "Re-verified 2026-08-29 and still 🔴, this time by enumeration rather than assumption. The privacy policy contains no human-review disclosure of any kind — no reference to personnel, staff, reviewers or manual review of conversations — and DeepSeek operates no consumer help centre in which one could appear; the only FAQ surface is API documentation, which does not address it either. A reader cannot learn whether anyone at DeepSeek reads their chats.",
+            "source": "DeepSeek privacy policy and its API FAQ (both read directly; no consumer help centre exists)",
             "source_url": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
+          },
+          "advertising": {
+            "grade": "green",
+            "note": "The bluntest statement of the eight, in capitals in the original: “NOTE WE DO NOT ENGAGE IN TARGETED ADVERTISING, ‘SELL’ PERSONAL DATA OR USE PERSONAL DATA FOR ‘PROFILING’ OR OTHERWISE ENGAGE IN AUTOMATED PROCESSING OF PERSONAL DATA TO MAKE DECISIONS THAT COULD HAVE LEGAL OR SIMILARLY SIGNIFICANT IMPACT ON YOU.” It covers the practice itself, not merely selling data to someone else, which is the distinction most of this column turns on. Worth recording that DeepSeek is 🔴 on retention and on human review and 🟢 here: these dimensions are independent, and a provider can be plain about one thing and silent about another.",
+            "source": "DeepSeek privacy policy (read directly)",
+            "source_url": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
+            "source_date": "Aug 29 2026"
           }
         }
       },
@@ -675,25 +725,32 @@
             "source_date": "Aug 25 2026"
           },
           "optout": {
-            "grade": "pending",
-            "note": "Not yet assessed. The privacy policy documents an opt-out for targeted advertising but none for model training, and Perplexity's data-use FAQ would not render for us. Not graded 🔴 on a page we could not read.",
-            "source": "Checked: privacy policy; hub FAQ did not render",
-            "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
-            "source_date": "Not assessed"
+            "grade": "yellow",
+            "note": "The control exists and is documented: “AI Data Retention is enabled by default” for Free, Pro and Max users, and you turn it off under Account settings → Preferences. The limits are stated honestly too — opting out applies only going forward, and “previously collected training data cannot be deleted or removed.” It is 🟡 rather than 🟢 because none of that appears in the privacy notice a normal user actually reaches: that document sets out three separate opt-outs for advertising and not one for model training. The toggle is also named for retention while what it governs is training, which is an easy thing to misread in the provider's favour.",
+            "source": "Perplexity help centre, “Data Collection at Perplexity”, read against the privacy notice",
+            "source_url": "https://www.perplexity.ai/help-center/en/articles/11564572-data-collection-at-perplexity",
+            "source_date": "Aug 29 2026"
           },
           "retention": {
-            "grade": "pending",
-            "note": "Not yet assessed — no retention period found in the privacy policy, and the FAQ that might carry one did not render.",
-            "source": "Checked: privacy policy",
-            "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
-            "source_date": "Not assessed"
+            "grade": "yellow",
+            "note": "A number does exist, in the help centre rather than the policy: personal information is kept “as long as your account is active”, and on deletion is “removed from our servers within 30 days.” Held at 🟡 for three reasons — the privacy notice itself is entirely qualitative, the same pattern graded 🔴 elsewhere on this table; there is no retention period for a single thread short of deleting your whole account; and Perplexity states that training data already collected cannot be removed at all. We previously could not load the page that carries this. It loads fine — that was our tooling, not their disclosure.",
+            "source": "Perplexity help centre retention and self-serve deletion articles",
+            "source_url": "https://www.perplexity.ai/help-center/en/articles/10354873-how-long-does-perplexity-retain-my-search-history-profile-data-and-personal-information",
+            "source_date": "Aug 29 2026"
           },
           "human_review": {
             "grade": "red",
-            "note": "No disclosure of human review of conversations; “review” appears in the policy only in relation to third-party promotions and public comments.",
-            "source": "Perplexity privacy policy (read in full)",
+            "note": "Re-verified 2026-08-29 and still 🔴. Neither the privacy notice nor any of the nine articles in Perplexity's own “Privacy & Data” help collection mentions human review, reviewers, personnel access or manual inspection of conversations. The collection covers what data is collected, how long it is kept, how to delete it and whether third-party model providers train on it — every adjacent question except this one.",
+            "source": "Perplexity privacy notice plus all nine articles in its Privacy & Data help collection (read directly)",
             "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
+          },
+          "advertising": {
+            "grade": "yellow",
+            "note": "Perplexity does advertise, and says so — its 8 July 2026 notice update added “first-party advertising measurement” and states that “we do not sell your personal data or send your queries, prompts, or conversation content to advertisers.” The notice documents three separate advertising opt-outs, more than it offers for anything else. The gap is the one that decides most of this column: not sending your prompts to advertisers is not the same as not using your prompts to choose which ad Perplexity shows you, and that second question is never answered. Advertising appears 18 times in the notice without resolving it.",
+            "source": "Perplexity privacy notice (read directly)",
+            "source_url": "https://www.perplexity.ai/hub/legal/privacy-policy",
+            "source_date": "Aug 29 2026"
           }
         }
       },
@@ -701,18 +758,18 @@
         "provider": "xAI",
         "cells": {
           "training_default": {
-            "grade": "red",
-            "note": "The clearest non-disclosure on this axis. We read both the consumer privacy policy and the consumer FAQ that the policy itself points to for “data controls”, and neither states whether your conversations with Grok are used to train its models. The policy is specific about training on public web data and about Private Chat, and silent on the question a user actually has. Third-party guides assert the default is on; xAI's own documents do not say either way, and the point of this index is that the company should.",
-            "source": "xAI privacy policy + consumer FAQ (both read in full)",
-            "source_url": "https://x.ai/legal/privacy-policy",
-            "source_date": "Aug 25 2026"
+            "grade": "yellow",
+            "note": "Corrected. We previously called this the clearest non-disclosure on the axis, and that was simply wrong: the consumer FAQ the privacy policy points to answers the question directly — “We may use your content and interactions with Grok (e.g., prompts, searches, and other materials you submit) along with Grok's responses to train our models.” It stays 🟡 rather than 🟢 for one reason: “may” leaves the default unstated. You can work out that you are opted in from the fact that the control offered is an opt-out, but the company never says so outright.",
+            "source": "SpaceXAI (xAI) consumer FAQ, plus the privacy policy that points to it",
+            "source_url": "https://x.ai/legal/faq",
+            "source_date": "Aug 29 2026"
           },
           "optout": {
-            "grade": "yellow",
-            "note": "Data controls exist and are referenced — the policy directs users to “data controls … in our Consumer FAQs” and the product offers Private Chat — but no training opt-out is documented in either page. Private Chat is a retention control, not a training control, and the two are easy to confuse to the provider's advantage.",
-            "source": "xAI privacy policy + consumer FAQ (both read directly)",
+            "grade": "green",
+            "note": "Corrected, and it is one of the better-documented opt-outs on this table: Settings → Data Controls → “Improve the model” on mobile, Settings → Data → “Improve the Model” on Grok.com. The limits are stated rather than buried — it applies only to new conversations, feedback you volunteer can still be used for training afterwards, and if you use Grok without logging in, outside the EU and UK, there is no opt-out at all. That last admission is one most providers here do not make.",
+            "source": "SpaceXAI (xAI) consumer FAQ",
             "source_url": "https://x.ai/legal/faq",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 29 2026"
           },
           "retention": {
             "grade": "green",
@@ -722,11 +779,18 @@
             "source_date": "Aug 25 2026"
           },
           "human_review": {
-            "grade": "red",
-            "note": "No disclosure of human review of conversations in the consumer privacy policy or FAQ.",
-            "source": "xAI privacy policy + consumer FAQ (read in full)",
-            "source_url": "https://x.ai/legal/privacy-policy",
-            "source_date": "Aug 25 2026"
+            "grade": "green",
+            "note": "Corrected. The consumer FAQ asks “Do humans view my conversations?” and answers it: “A limited number of our authorized personnel may review your conversations with Grok for specific business purposes, including improving model performance, investigating security incidents and potential misuse of our services, and complying with our legal obligations.” The purposes are named, not just the fact of review. On this dimension only Google discloses more.",
+            "source": "SpaceXAI (xAI) consumer FAQ",
+            "source_url": "https://x.ai/legal/faq",
+            "source_date": "Aug 29 2026"
+          },
+          "advertising": {
+            "grade": "yellow",
+            "note": "The consumer FAQ answers a neighbouring question well: “We do not sell your data or share it with third parties for marketing or advertising purposes. Thus, there is nothing you need to do to opt out.” But sharing your data with advertisers and using your data to target ads at you are different things, and only the first is addressed. The privacy policy's single advertising reference is a cookie purpose — cookies may “deliver relevant content and targeted advertising” — which concerns the website rather than Grok conversations. Whether your chats with Grok could ever select an ad is not stated either way.",
+            "source": "SpaceXAI (xAI) consumer FAQ and privacy policy (both read directly)",
+            "source_url": "https://x.ai/legal/faq",
+            "source_date": "Aug 29 2026"
           }
         }
       }
@@ -744,7 +808,7 @@
     { "provider": "Google", "cells": {
       "site_level":    { "grade": "green", "note": "Re-read 2026-08-25 against the 2026 Environmental Report (FY2025) — our previous note was a reporting cycle out of date and understated this. Google publishes withdrawal, discharge AND consumption for 36 named data center locations across eight countries (US, Ireland, Netherlands, Denmark, Finland, Belgium, Chile, Canada), plus an aggregated “other locations” bucket — up from 24 locations. It remains the most complete site-level disclosure of any provider, and it is stronger than Microsoft's on the two points that matter: Google publishes consumption, not just withdrawal, and the table sits inside the third-party limited-assurance scope rather than outside it.", "source": "Google 2026 Environmental Report, “Water use by data center location” (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
       "ai_split":      { "grade": "yellow", "note": "Re-checked 2026-08-25: the per-prompt figures are unchanged — median Gemini Apps text prompt at 0.24 Wh, 0.03 gCO₂e and 0.26 mL water, measured as of May 2025. The 2026 report adds that per-prompt energy and carbon fell 33× and 44× over twelve months, but facility reporting still does not split AI from general load, so the AI share of that 13,562 Mgal data-center withdrawal remains unknowable.", "source": "Google 2026 Environmental Report (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "yellow", "note": "Still reports no fleet-wide WUE — now conspicuous, because both Microsoft (0.27 L/kWh) and Meta (0.19) publish one, so Google is the only major operator whose water efficiency cannot be compared with peers. Per-prompt figures still use market-based carbon and exclude indirect water; UC-Riverside's Shaolei Ren said Google is “just hiding the critical information.” Publishing per-location consumption answers part of that critique, not the indirect-water part. A second gap surfaced 2026-08-28, building a water model on this very figure: the per-prompt numbers have no published denominator. Google reports 0.24 Wh and 0.26 mL for the MEDIAN Gemini Apps text prompt but nowhere says how many tokens a median prompt is, so the figure cannot be turned into a rate, checked against any per-token benchmark, or applied to your own usage — you are told what one unnamed unit costs. Searched the paper directly; the count is not in it. Mistral, publishing a far smaller disclosure, states its figure per 400-token prompt and is therefore usable. This is a number Google already holds.", "source": "Google 2026 Environmental Report (read directly); The Verge / DCD; Google arXiv:2508.15734 (searched directly — no token count published)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 28 2026" },
+      "comparability": { "grade": "yellow", "note": "Resolved 2026-08-29 by reading Google's own methodology paper (arXiv 2508.15734) rather than the report. We used to record that the per-prompt figures had “no published denominator”. The truth is sharper: THERE IS NO DENOMINATOR BY CONSTRUCTION. The paper defines the “median Gemini Apps text prompt” by taking the average energy per prompt for each model, ranking the models by that value, and finding the model that serves the 50th-percentile prompt — “the average energy/prompt is defined as the energy of the median Gemini Apps text prompt on that day.” So “median” describes the MODEL, not the prompt, and the headline number is an average across every prompt that model served, whose size distribution is never characterised. It cannot be converted to a per-token rate even in principle, which is why a reader cannot apply it to their own usage. Two things keep this at 🟡 rather than 🔴, and both are to Google's credit: the methodology is published in full, and the paper reports BOTH boundaries rather than the flattering one — 0.10 Wh / 0.12 mL on the narrow “Existing Approach” against 0.24 Wh / 0.26 mL on the “Comprehensive” one, a 2.4× spread from a single measurement, with the larger figure the one Google quotes publicly. The irony is worth recording: the same paper faults OpenAI's 0.34 Wh for giving “no explanation of the measurement boundary or methodology … making it impossible to compare with other estimates”, and notes that Mistral states its own figure per 400-token response. Google identified the failure precisely and then shipped a version of it.", "source": "Google, “Measuring the environmental impact of delivering AI at Google Scale” (arXiv 2508.15734), read directly; plus the 2026 Environmental Report", "source_url": "https://arxiv.org/abs/2508.15734", "source_date": "Aug 29 2026" },
       "replenishment": { "grade": "yellow", "note": "Replenished 78% of the freshwater it consumed in 2025 (9,947 Mgal consumed, 7,717 Mgal replenished), against a stated goal of 120% by 2030 — a real number, published, and trending up. Still graded 🟡 because replenishment is reported by watershed but returned water often sits in different watersheds than those drawn down, so the fleet figure does not mean local supply was made whole.", "source": "Google 2026 Environmental Report, freshwater replenishment table (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
       "energy_source": { "grade": "yellow", "note": "Achieved ~65% global average carbon-free energy in 2025 (up from 64%), and at least 80% CFE in 9 of 22 grid regions — reported by region, which is better than any peer. But it is still a market-based accounting method, and total emissions are now 62% above the 2019 base year, up from the ~51% we recorded last cycle. The trend line and the headline percentage point in opposite directions.", "source": "Google 2026 Environmental Report (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
       "verification":  { "grade": "yellow", "note": "2025 metrics were subject to third-party limited-assurance procedures, and — unlike Microsoft — that scope covers the granular per-location water table, not just the headline aggregates. Held at 🟡 rather than 🟢 because limited assurance is the weakest form of it and covers selected metrics only; we are not going to call limited assurance “good” for anyone.", "source": "Google 2026 (FY2025) Independent Accountants’ Review Report (scope legend read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" }
@@ -774,23 +838,23 @@
       "verification":  { "grade": "yellow", "note": "Ernst & Young LLP provides limited assurance over selected environmental metrics, with a published Independent Accountants' Review Report; water-restoration volumes are separately verified by LimnoTech. Same ceiling as every peer — limited assurance on a selected subset, not the whole inventory.", "source": "Meta 2025 Environmental Data Index, assurance note + Independent Accountants’ Review Report", "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/", "source_date": "Aug 25 2026" }
     } },
     { "provider": "xAI", "cells": {
-      "site_level":    { "grade": "red", "note": "Re-verified 2026-08-25 — still no corporate environmental disclosure of any kind. Every figure in circulation for Colossus comes from Memphis utility records (MLGW), regulators or environmental groups, never from xAI. Reported aquifer draw varies by source and by which facility and period is meant, so we show it as a range rather than picking: roughly 1.3M to 5M gallons per day. A verified absence expires too, which is why this carries an August 2026 date rather than the original finding's.", "source": "SELC (Memphis/xAI); utility MLGW records via press", "source_url": "https://www.selc.org/news/inside-memphis-fight-against-xai/", "source_date": "Aug 25 2026" },
-      "ai_split":      { "grade": "red", "note": "Nothing disclosed — re-verified 2026-08-25. There is no denominator to split, because xAI publishes no environmental total at all.", "source": "Stanford Foundation Model Transparency Index", "source_url": "https://crfm.stanford.edu/fmti/", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "red", "note": "No figures published, so nothing to compare — re-verified 2026-08-25. xAI made minimal environmental disclosure even in its IPO filing and did not respond to press requests for comment.", "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026)", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" },
-      "replenishment": { "grade": "red", "note": "No replenishment claim, project or volume — re-verified 2026-08-25. Unlike every other provider on this table, xAI has not even asserted a goal.", "source": "Legerly check of xAI public materials; SELC", "source_url": "https://www.selc.org/news/inside-memphis-fight-against-xai/", "source_date": "Aug 25 2026" },
-      "energy_source": { "grade": "red", "note": "Ran on-site methane gas turbines without air permits; in January 2026 the EPA issued an applicability determination that the trailer-mounted units had sat in one place long enough to count as stationary sources, closing the “non-road engine” loophole that had kept them unpermitted. Litigation continues, brought by SELC on behalf of the NAACP; reported turbine counts differ across sources, so we do not pick one. xAI itself still discloses no energy mix.", "source": "SELC — Inside Memphis’ fight against xAI; EPA applicability determination; CNBC", "source_url": "https://www.selc.org/news/inside-memphis-fight-against-xai/", "source_date": "Aug 25 2026" },
-      "verification":  { "grade": "red", "note": "No third-party-verified environmental data and no CDP response — re-verified 2026-08-25. Nothing exists to assure.", "source": "Stanford Foundation Model Transparency Index", "source_url": "https://crfm.stanford.edu/fmti/", "source_date": "Aug 25 2026" }
+      "site_level":    { "grade": "red", "note": "Still 🔴, but the old note overstated it and is corrected here. It said there was “no corporate environmental disclosure of any kind” and that every Colossus figure “comes from Memphis utility records, regulators or environmental groups, never from xAI.” That is not true: xAI runs a public Memphis site publishing turbine counts and permit dates, emissions-control specification, substation spend and a water-recycling plant capacity. What it does not publish is the thing this column grades — how much water the site withdraws or consumes, and how much electricity it uses. Not one such figure exists from xAI, so the grade holds. The operating figures in circulation do still come from others, and they disagree: reported aquifer draw runs roughly 1.3M to 5M gallons per day depending on source, facility and period, so we show the range rather than pick.", "source": "xAI (SpaceXAI) Memphis pages read directly; SELC; utility MLGW records via press", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
+      "ai_split":      { "grade": "red", "note": "Nothing to split — re-verified 2026-08-29. xAI publishes no environmental total for Colossus (no water volume withdrawn, no electricity consumed), so there is no denominator from which an AI-specific share could be separated. It is the only provider here whose whole business is AI, which would make the split trivial if any total existed.", "source": "xAI (SpaceXAI) Memphis pages read directly; Stanford Foundation Model Transparency Index", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
+      "comparability": { "grade": "red", "note": "Still 🔴, note corrected 2026-08-29 — “no figures published, so nothing to compare” is no longer accurate. xAI publishes figures on its Memphis pages (13M gallons/day of processing capacity, 4.745B gallons/year conserved, NOx at 2 ppm, turbine counts, substation spend). None of them is comparable: they are projections and equipment specifications, published without methodology, boundary or period, on a page whose stated purpose is rebutting critics rather than reporting. There is no denominator, no prior year, and nothing another provider's figure could be set against. A number you cannot check is not a disclosure, which is the same finding this table makes against OpenAI's 0.32 ml.", "source": "xAI (SpaceXAI) Memphis pages read directly; Fortune/Bloomberg, “AI giants are quiet on climate”", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
+      "replenishment": { "grade": "yellow", "note": "Moved 🔴→🟡 on 2026-08-29, correcting a note that said xAI “has not even asserted a goal.” It has, on its own Memphis site: the Colossus Water Recycle Plant, an $80M facility that “will process up to 13 million gallons of wastewater daily, eliminating the need to draw from the Memphis Aquifer for industrial use”, and which xAI says “will conserve approximately 4.745 billion gallons of water annually.” That is a named project with a volume attached, which is more than OpenAI or Anthropic offer. It is 🟡 and not 🟢 for three reasons, all of them on the page itself: the plant was “scheduled to begin operations in 2026”, so the figure is a projection rather than a delivered volume; conserving water others would have drawn is not the same as replenishing what the datacenter consumes; and no volume xAI actually withdraws is published, so the saving cannot be set against a usage figure.", "source": "xAI (SpaceXAI) Memphis site, “Fact v. Fiction” (read directly)", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
+      "energy_source": { "grade": "yellow", "note": "Moved 🔴→🟡 on 2026-08-29. The enforcement history stands and matters: xAI ran on-site methane turbines without air permits, and in January 2026 the EPA determined the trailer-mounted units had sat in one place long enough to count as stationary sources, closing the “non-road engine” loophole; litigation brought by SELC on behalf of the NAACP continues. What was wrong was the last sentence — that xAI “discloses no energy mix.” On its own Memphis pages it now states what powers the site: temporary turbines “have now been permanently removed from the Electrolux site”; it applied for 15 permanent turbines in January 2025, approved by the Shelby County Health Department on 2 July 2025, and expects to need only 12, “eventually only be used for backup power”; it is “securing additional power from the grid”; and the permitted turbines carry SoLoNOx dry-low-emissions and selective catalytic reduction bringing NOx “to 2 ppm.” Still 🟡, not 🟢: that is equipment and permits, not an energy mix — no generation split, no MWh, no Scope 1/2 inventory. Reported turbine counts still differ across sources, so we quote xAI's own numbers as its claims rather than as findings.", "source": "xAI (SpaceXAI) Memphis “Fact v. Fiction” read directly; SELC; EPA applicability determination", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
+      "verification":  { "grade": "red", "note": "No third-party-verified environmental data and no CDP response — re-verified 2026-08-29. The Memphis figures xAI does publish carry no assurance statement, no auditor and no standard; the only external scrutiny of this site has come from regulators and litigation, which is oversight rather than verification of a disclosure.", "source": "xAI (SpaceXAI) Memphis pages read directly; Stanford Foundation Model Transparency Index", "source_url": "https://crfm.stanford.edu/fmti/", "source_date": "Aug 29 2026" }
     } },
     { "provider": "OpenAI", "cells": {
       "site_level":    { "grade": "red", "note": "Re-verified 2026-08-25: still no numeric site data. Abilene is described qualitatively — closed-loop, an initial fill of “about two Olympic pools” — with no ongoing consumption figure. What is known about the site's scale comes from Epoch AI's facility tracking, not from OpenAI.", "source": "OpenAI blog (qualitative only); Epoch AI facility data", "source_url": "https://epoch.ai/data/ai-data-centers", "source_date": "Aug 25 2026" },
       "ai_split":      { "grade": "red", "note": "No AI-vs-total disclosure — re-verified 2026-08-25. OpenAI is an AI-only company, so this would simply be its footprint, and it publishes none.", "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026)", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "red", "note": "Re-verified 2026-08-25; corrected 2026-08-28. The wording here previously said OpenAI had published no water numbers, which overstated it: Sam Altman stated 0.32 ml per average ChatGPT query in a June 2025 blog post, and that sentence is now widely cited as though it were a disclosure. It stays red because it is not one — no methodology, no measurement boundary, no token count, no scope, nothing to audit it against, and a figure that cannot be checked is not comparable to one that can. OpenAI has a sustainability steering committee and says it coordinates with its data center partners, but has published no emissions or energy figures and made no net-zero pledge.", "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026); Sam Altman, “The Gentle Singularity”, Jun 2025", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 28 2026" },
-      "replenishment": { "grade": "red", "note": "No replenishment claim or volume — re-verified 2026-08-25. The Stargate Community commitment promises to minimise water use in general terms; it sets no target and reports no volume.", "source": "OpenAI Stargate Community commitment (qualitative); Legerly check", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" },
+      "comparability": { "grade": "red", "note": "Re-verified 2026-08-29. Sam Altman stated 0.32 ml per average ChatGPT query in a June 2025 blog post, and that sentence is now widely cited as though it were a disclosure. It stays 🔴 because it is not one — no methodology, no measurement boundary, no token count, no scope, nothing to audit it against. The Stargate Community page adds a second uncheckable comparison: it relays that “the water use at the Abilene site in a year will be half as much as Abilene uses in a single day”, attributed to the city's mayor rather than measured by OpenAI, and expressed as a ratio to a quantity the reader also does not know. Both numbers are the same shape — vivid, quotable, and impossible to verify. OpenAI has a sustainability steering committee and says it coordinates with its data center partners, but publishes no emissions or energy figures and has made no net-zero pledge.", "source": "OpenAI “Stargate Community” read directly; Altman blog post; Fortune/Bloomberg", "source_url": "https://openai.com/index/stargate-community/", "source_date": "Aug 29 2026" },
+      "replenishment": { "grade": "red", "note": "No replenishment volume — re-verified 2026-08-29. The Stargate Community page commits to “minimizing water use … by prioritizing closed-loop or low-water cooling systems” and notes that in Wisconsin “our partners will invest a minimum of $175M in local infrastructure upgrades and water restoration projects.” That is a dollar figure from partners, not a volume from OpenAI, and no target, baseline or replenished quantity is stated anywhere. A spend is not a replenishment disclosure.", "source": "OpenAI, “Stargate Community” (read directly)", "source_url": "https://openai.com/index/stargate-community/", "source_date": "Aug 29 2026" },
       "energy_source": { "grade": "red", "note": "Abilene runs on gas plus grid power per third-party tracking; OpenAI publishes no energy mix and no Scope 1/2/3 data — re-verified 2026-08-25.", "source": "Epoch AI facility data; Legerly check of OpenAI materials", "source_url": "https://epoch.ai/data/ai-data-centers", "source_date": "Aug 25 2026" },
       "verification":  { "grade": "red", "note": "No sustainability report, no CDP response, nothing assured — re-verified 2026-08-25 and directly checkable from the absence of any such document. California's SB 253 requires Scope 1 and 2 reporting from large companies operating in the state starting November 2026, so this cell has a real chance of moving within a year — though reporting the bulk as Scope 3 would push most of it to 2027.", "source": "Fortune/Bloomberg (Aug 12 2026); California SB 253", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" }
     } },
     { "provider": "Anthropic", "cells": {
-      "site_level":    { "grade": "red", "note": "Re-verified 2026-08-25: still no environmental report, and the Transparency Hub remains an AI-safety document — you can confirm the absence yourself at the linked page. No site is named, no figure given.", "source": "Anthropic Transparency Hub (checked directly — safety only, no environmental data)", "source_url": "https://www.anthropic.com/transparency", "source_date": "Aug 25 2026" },
+      "site_level":    { "grade": "red", "note": "Re-verified 2026-08-29, and this time counted rather than asserted. We pulled the full Transparency Hub — 121,341 characters — and searched it: “water” 0, “energy” 0, “carbon” 0, “emissions” 0, “climate” 0, “electricity” 0, “sustainability” 0. It is an AI-safety document, and the only “environment” hits are about model deployment environments. No site is named and no figure is given. We publish the counts so the absence is a measurement you can repeat at the linked page, rather than a claim you have to take on trust.", "source": "Anthropic Transparency Hub, full-text keyword census (read directly)", "source_url": "https://www.anthropic.com/transparency", "source_date": "Aug 29 2026" },
       "ai_split":      { "grade": "red", "note": "Nothing disclosed — re-verified 2026-08-25. FMTI records that water use has been described as proprietary. As with OpenAI, an AI-only company's total *is* its AI footprint, and none is published.", "source": "Stanford Foundation Model Transparency Index", "source_url": "https://crfm.stanford.edu/fmti/", "source_date": "Aug 25 2026" },
       "comparability": { "grade": "red", "note": "No figures published — re-verified 2026-08-25. Anthropic is working with Watershed to measure its footprint for compliance purposes and joined the Frontier carbon-removal coalition in June 2026, but neither has produced a published number yet. Measuring is not disclosing.", "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026)", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" },
       "replenishment": { "grade": "red", "note": "No water claim, target or data — re-verified 2026-08-25.", "source": "Legerly check of Anthropic public materials", "source_url": "https://www.anthropic.com/transparency", "source_date": "Aug 25 2026" },

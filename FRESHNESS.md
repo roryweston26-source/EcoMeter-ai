@@ -939,8 +939,11 @@ re-reading the reports** — `_meta.last_verified` moved to 2026-08-28, no grade
   number cannot be turned into a rate, checked against a per-token benchmark, or
   applied to your own usage. Searched arXiv:2508.15734 directly; it is not there.
   **Mistral, publishing far less overall, states its figure per 400-token prompt and
-  is therefore usable** — so this is fixable, and it is a number Google already holds.
-  It is also the largest remaining error source in F1c's water model.
+  is therefore usable.** ⚠️ **RESOLVED 2026-08-29 — see E1m, and the answer is not
+  what this entry assumed.** It is not a number Google holds and withholds: the
+  metric is a volume-weighted median across MODELS, so no token count exists to
+  publish. That also means it is **not** an error source the water model can close
+  by getting the denominator — the two quantities are not comparable at all.
 - **OpenAI / comparability** was **corrected**: it said OpenAI had published no water
   numbers, which overstated the case. Altman's 0.32 ml per query (Jun 2025) exists and
   is widely cited as if it were a disclosure. Still 🔴 — no methodology, boundary,
@@ -977,9 +980,12 @@ not the report**. URL pattern:
 **Contains:** page copy (`_meta`: lede, methodology, caveats), the disclosure
 matrix (`columns`, `rows` — 7 providers), and the three axes.
 
-**Axes state:** environmental is `scored`; pricing and data practices are `pending`
-("criteria not yet defined"). ⚪ is not the same as 🔴 and the copy must keep
-saying so.
+**Axes state:** all three are `scored` in `_meta.axes` — and have been since
+2026-08-25. **This entry used to say pricing and data practices were `pending`
+("criteria not yet defined"), which was false for four days short of a year of
+reading it.** The JSON was right; two of its three descriptions were not (the
+other was PROJECT-CONTEXT §10). ⚪ is still not the same as 🔴 and the copy must
+keep saying so — one ⚪ remains, Microsoft's API rate card, by design.
 
 **Copy:** `transparency-index.html` → `FALLBACK` is deliberately minimal — it
 renders an *error state*, not stale data. That's correct. Leave it.
@@ -1094,15 +1100,22 @@ key is missing.
 **What rots here, in order of speed:**
 
 1. **`allowance` — fastest-moving thing on the page.** It is 🔴 × 8 today because
-   26 of 27 plans publish nothing. That count comes from `plan-limits.json`, so
+   25 of 27 plans publish nothing (26 of 27 until 2026-08-29 — see E1k). That count comes from `plan-limits.json`, so
    **re-count it whenever that file is verified** rather than trusting the prose.
    The trend is one-directional and hostile: OpenAI *deleted* its only general cap
    between two checks. A 🔴 here is not safe to assume permanent in either
    direction.
 2. **`rate_card`** — tracks `prices.json`. Four providers moved prices in the 22
    days before 2026-08-24. If `check-prices.js` fires, this column may need a look.
-3. **`context_window`** — OpenAI is currently alone. If a second provider adds it,
-   that is a real story, not a footnote.
+3. **`context_window`** — **CORRECTED 2026-08-29. "OpenAI is currently alone" was
+   never true**, and this entry said so for four days short of a year. Google
+   publishes a per-plan table (no plan 32k / AI Plus 128k / AI Pro & Ultra 1M) on
+   its Gemini Apps limits page, archived live on **2026-08-14**; Anthropic
+   publishes per model (Opus 5 and Sonnet 5 1M on all paid plans, Opus 4.8/4.7/4.6
+   and Sonnet 4.6 500K, otherwise 200K), with separate figures for Claude Code and
+   Cowork. Both moved 🔴→🟢. **Microsoft, Mistral, DeepSeek and Perplexity were NOT
+   re-checked in that pass** — two of the three that were checked turned out wrong,
+   so treat those four as unverified rather than as findings.
 4. **`price_change` / `model_retirement`** — slowest. These are contract terms and
    docs pages; annual is fine.
 
@@ -1177,6 +1190,7 @@ review happens. We cannot observe the practice; we can observe the silence.
 - OpenAI — consumer ChatGPT "improves by further training on the conversations people have with it, unless you opt out"; business "by default, we do not train on any inputs or outputs"
 - Anthropic — "unless you opt out through your account settings"; deleted chats gone from back-end within **30 days**; training data kept de-identified **up to 5 years**; Commercial Terms: "Anthropic may not train models on Customer Content from Services"
 - Google — human reviewers disclosed, and disclosed to continue **with Activity off**; auto-delete default **18 months** (3/36/indefinite options); feedback **3 years**
+- **(2026-08-29) Anthropic — "Who can view my conversations?": data de-linked from the user ID "before any review", "access is limited to a small number of personnel involved in model training", with the flagged-conversation carve-out that survives opting out**
 - Mistral — "your Input and Output, subject to your opt-out"; commercial processing "excludes model training"
 - Microsoft — "in some markets, this data can help train our AI models … unless you opt out"; prompts used "including relevant advertising"; retention "can vary significantly" with no number
 - DeepSeek — opt-out right asserted, default never stated, retention entirely qualitative
@@ -1188,6 +1202,462 @@ the two documents read; a separate help article may carry it) and Perplexity
 opt-out + retention (its data-use FAQ would not render). **Do not convert these to
 🔴** — same rule that paid off on the pricing axis, where two ⚪ cells came back
 green once the real terms were read.
+
+## E1g. The 2026-08-29 re-read — six cells were wrong, five against the provider
+
+**This is the worst error this index has recorded, and it is worth reading before
+trusting any 🔴 on the data-practices axis.** Every corrected cell had been
+published by the provider all along. Wayback confirms it: the sources were live,
+in the exact wording now quoted, on the day we graded them.
+
+| Cell | Was | Now | What it actually said |
+|---|---|---|---|
+| xAI `training_default` | 🔴 | 🟡 | "We may use your content and interactions with Grok … to train our models." |
+| xAI `optout` | 🟡 | 🟢 | Settings → Data Controls → "Improve the model", with three limits stated |
+| xAI `human_review` | 🔴 | 🟢 | "A limited number of our authorized personnel may review your conversations" |
+| OpenAI `retention` | ⚪ | 🟢 | Privacy policy §4 "Retention": deleted data gone "within 30 days" |
+| Perplexity `optout` | ⚪ | 🟡 | "AI Data Retention is enabled by default", Account settings → Preferences |
+| Perplexity `retention` | ⚪ | 🟡 | "removed from our servers within 30 days" on account deletion |
+
+**The xAI row is the one that should sting.** Three of four cells wrong, on the
+provider this index is otherwise hardest on, in the row the Subscription Auditor
+reads for its privacy answer — so it was wrong in user-facing advice, not just in
+a table. `x.ai/legal/faq` archived on **2026-08-25 at 16:58** is
+**character-for-character identical to today's**, 115 lines both, differing only
+in a footer social handle's capitalisation. The old note said "we read both the
+consumer privacy policy and the consumer FAQ … and neither states". The FAQ has a
+heading that asks the exact question.
+
+### The rule this produces
+
+> **An asserted ABSENCE is only as good as the fetch behind it.** Perplexity and
+> xAI failed the same way — a page that did not render. At Perplexity that was
+> written down as ⚪ ("not graded 🔴 on a page we could not read") and the re-read
+> produced two correct grades. At xAI the same non-render was written down as
+> "we read it and it does not say", and three cells went wrong. **The ⚪
+> discipline is not politeness; it is the only thing that distinguishes "they
+> are silent" from "we could not hear."** When a fetch returns a shell, a
+> challenge page, or a redirect to a help-centre index, record the fetch — never
+> the silence.
+
+**Tooling that worked, after the browser and plain fetches failed:**
+`curl -sL -A "<browser UA>"`. help.openai.com serves a Cloudflare interstitial to
+the in-app browser but 200s to curl; x.ai and perplexity.ai 403 a bare fetch and
+200 to curl. One Perplexity article returned a challenge page on the first curl
+and the real article on a retry — **a challenge page is not a finding, retry
+before concluding anything.** Check `<title>` before trusting a body: "Just a
+moment…" is Cloudflare, not the provider.
+
+**To re-verify a correction, use Wayback with the `id_` modifier** —
+`https://web.archive.org/web/<timestamp>id_/<url>` returns the original bytes
+(gzipped; `zlib.gunzipSync`). Without `id_` you get the rewritten page, and
+archive.org 429s readily, so pace the requests. This is what separates "the
+provider improved" from "we got it wrong", and the two demand opposite write-ups.
+
+### Advertising is no longer a Microsoft-only finding
+
+**"Microsoft is the only one disclosing that consumer AI prompts feed
+advertising" was repeated in four places and is now false.** OpenAI began testing
+ads in ChatGPT on 2026-02-09 (US, Free and Go), and discloses more detail than
+Microsoft does: selection uses "the context and intent of your current
+conversation"; with personalisation on, "Past chats and memory"; ads data
+"retained for up to 30 days" after clearing. Perplexity advertises too. Corrected
+in the Microsoft cell, the axis note, PROJECT-CONTEXT §7 and here. **A candidate
+fifth column is scoped in PROJECT-CONTEXT open thread 19** — it needs the other
+five providers read first, and "we don't show ads" stated plainly is a 🟢,
+not a 🔴.
+
+### What to re-check next
+
+- **OpenAI `human_review` is still 🔴 and that should be tested, not assumed.**
+  The Data Controls FAQ says Temporary Chats "may be reviewed only to monitor for
+  abuse" — adjacent to the question but it does not say *human*, so the 🔴 held
+  this pass. A dedicated help article may answer it outright.
+- **xAI is "SpaceXAI LLC" in its own policy** (effective 2026-08-24), separate
+  from X Corp. Row key deliberately unchanged — see PROJECT-CONTEXT open thread 20.
+- **Perplexity's training opt-out is absent from its privacy notice** (verified:
+  zero occurrences). If it ever appears there, the cell moves 🟡→🟢.
+
+## E1h. The 2026-08-29 environmental re-read — xAI is not silent
+
+**Ran the same stress test on the environmental matrix that broke the
+data-practices axis: go at the cells that assert a total absence, because those
+are the claims a failed fetch can fake.** Three rows were 🔴 across all six
+dimensions. One of them should not have been.
+
+### xAI publishes a Memphis site, and two cells were wrong about it
+
+`x.ai/memphis` — with `/fact-v-fiction`, `/our-commitment`, `/info`, `/updates` —
+is xAI's own publication about Colossus. It states:
+
+- **Water:** the Colossus Water Recycle Plant, "$80 million", processing "up to
+  13 million gallons of wastewater daily", "scheduled to begin operations in
+  2026", projected to "conserve approximately 4.745 billion gallons of water
+  annually".
+- **Power:** temporary turbines "permanently removed from the Electrolux site";
+  15 permanent turbines applied for January 2025, approved by the Shelby County
+  Health Department 2 July 2025; likely only 12 needed, "eventually only be used
+  for backup power"; grid supply being secured.
+- **Emissions kit:** SoLoNOx dry-low-emissions plus selective catalytic
+  reduction, NOx "to 2 ppm".
+- **Grid spend:** $35M substation built, $20M committed for a second.
+
+| Cell | Was | Now | Why |
+|---|---|---|---|
+| `replenishment` | 🔴 | 🟡 | old note: xAI "has not even asserted a goal" — it had, with a volume |
+| `energy_source` | 🔴 | 🟡 | old note: "xAI itself still discloses no energy mix" — it discloses what powers the site |
+| `site_level` | 🔴 | 🔴 | grade right, **note wrong**: it claimed "no corporate environmental disclosure of any kind" |
+| `comparability` | 🔴 | 🔴 | grade right, note said "no figures published" — there are figures, just uncheckable ones |
+
+> **The distinction to hold on to, because it is the whole job here: a company
+> can publish a great deal about a site and still disclose nothing the column
+> grades.** xAI publishes infrastructure specs, permits and a projected saving.
+> It publishes no figure for the water or electricity Colossus actually uses, so
+> `site_level` stays 🔴 — but on the right ground. **Write the note so it says
+> what the company does publish.** A cell that reads "discloses nothing" to a
+> reader who has just visited the company's page destroys the index's
+> credibility faster than a wrong grade does.
+
+**Why 🟡 and not 🟢 on the two that moved:** the water figure is a projection for
+a plant that was not yet operating, conserving water *others* would have drawn is
+not replenishing what the datacenter consumes, and none of it carries a
+methodology, boundary, period or assurance. It is published on a page whose
+stated purpose is rebutting critics. Company-published and uncheckable is 🟡 here,
+not 🟢.
+
+### Anthropic: the absence is now a measurement
+
+Instead of "we looked and it is not there", the cell now carries a **full-text
+census of the Transparency Hub** (121,341 chars): **water 0, energy 0, carbon 0,
+emissions 0, climate 0, electricity 0, sustainability 0.** The only "environment"
+hits are model deployment environments. **Re-run it whenever you re-verify —
+a counted absence is checkable and an asserted one is not.** This is the cheapest
+available fix for the failure mode in E1g.
+
+### OpenAI held, and that matters
+
+Every OpenAI environmental cell was re-checked against the Stargate Community
+page and survived. Two refinements only, both grade-neutral: `replenishment` now
+names the Wisconsin "$175M in local infrastructure upgrades and water restoration
+projects" and says why a partner's spend is not a replenishment volume; and
+`comparability` now carries a **second** uncheckable OpenAI comparison alongside
+Altman's 0.32 ml — the Stargate page relays that "the water use at the Abilene
+site in a year will be half as much as Abilene uses in a single day", attributed
+to the city's mayor, expressed as a ratio to a quantity the reader also does not
+know. **The careful wording from 2026-08-28 held up. Cells written carefully
+survive re-reads; cells written with a flourish ("has not even asserted a goal")
+are the ones that break.**
+
+### A second date to watch, and it is voluntary
+
+**2026-06-23 — the UN Secretary-General launched the AI Environmental
+Transparency Initiative**, asking every major AI company to disclose full carbon,
+water and land footprints and to power data centres with renewables by 2030. It
+followed the UNU-INWEH report *Environmental Cost of Artificial Intelligence:
+Carbon, Water and Land Footprints*. **As of 2026-08-29, no provider on this table
+is named as having signed up**, and no grade moved because of it. Recorded in
+`_meta.detail.note` alongside SB 253.
+
+**Re-check both together:** SB 253 (Scope 1 + 2 from November 2026, Scope 3
+2027) is the legal deadline; the UN initiative is the voluntary one, and the
+interesting question is which providers answer a request that carries no penalty.
+A provider signing up would be the first movement on this axis driven by
+something other than a regulator.
+
+### Still open on this axis
+
+- **Google's per-prompt denominator — RESOLVED later the same day, see E1m.**
+  There is no token count because the metric is a volume-weighted median across
+  MODELS, not a median prompt: no denominator exists to publish. It is therefore
+  **not** an error source the water model can close. Mistral's 400-token figure
+  remains the only usable anchor.
+- **Colocation landlords** (Equinix, NTT, CyrusOne) still unscored — a decision,
+  not a gap.
+- **The two flagged `datacenters.json` grading calls** (The Dalles, New Carlisle)
+  are untouched and still flagged — see E2.
+
+## E1i. `check-transparency.js` — the guard the 2026-08-29 pass earned
+
+**Eight wrong cells across two axes, and every one passed `validate-site.js`.**
+That script checks form; these were failures of substance. The new one gates the
+promises the index makes about itself, and it is in CI on every PR.
+
+```bash
+node scripts/check-transparency.js
+```
+
+| Gate | Why it exists |
+|---|---|
+| Every cell has a note and a `source_url`, and an "N of N" claim in `_meta.methodology` must still be true | The page promised this while **36 of 42 cells were plain text** (E1d) |
+| No maintainer-speak in rendered copy | A `water_note` saying "Do not flip this grade on the strength of that row" **went live** |
+| `PROJECT-CONTEXT.md` grade tables match the JSON | Its pricing table disagreed in **nine cells** and its §10 caveat called two scored axes ⚪, for months |
+| "N sites across N providers" matches `datacenters.json` | E3 — the count is typed into prose in two files and derived in neither |
+
+**Both destructive checks were validated by replaying the real bug**, the way
+`check-clock.js` was: checking out the tree from before 2026-08-29 fails on four
+pricing rows plus the "env-only" caveat, and injecting the Microsoft PR's exact
+sentence into a `water_note` fails the maintainer-speak scan. **A guard nobody has
+seen fail is a guess.**
+
+**Two deliberate softenings, so the output stays worth reading:** a ⚪ whose note
+says it is deliberate (Microsoft's rate card) is not warned about, and a doc line
+that *quotes* stale wording while correcting it is not flagged as asserting it.
+Both were added because the script fired on its own documentation first.
+
+⚠️ **It cannot tell you a grade is wrong.** Every error found on 2026-08-29 was a
+cell that would still pass this script today, because being wrong about what a
+provider published is not detectable from inside the repo. The script buys
+consistency and honest copy; only a re-read against primary sources buys
+correctness. It warns at 120 days since `_meta.last_verified` and that is the
+most it can do.
+
+## E1j. The `advertising` column (added 2026-08-29)
+
+**Fifth dimension on the data-practices axis. It exists because the old finding
+"Microsoft is the only one disclosing that consumer AI prompts feed advertising"
+stopped being true and, once all eight were read, advertising turned out to
+separate them better than expected.**
+
+| Provider | | What it says |
+|---|---|---|
+| OpenAI | 🟢 | Ads on Free and Go from **2026-02-09** (US test). Names the signals: "the context and intent of your current conversation", plus "Past chats and memory" with personalisation on. Advertisers get aggregated data only; ads data kept "up to 30 days" after clearing; no ads near "personal health, mental health, or politics" |
+| Google | 🟢 | Question is its own FAQ heading: "Your Gemini Apps chats are not being used to show you ads. If this changes, we will clearly communicate it to you." Discloses the carve-out — Gemini shopping-cart and Google Pay data **is** used "for personalization and ads" |
+| DeepSeek | 🟢 | In capitals in the original: "WE DO NOT ENGAGE IN TARGETED ADVERTISING, 'SELL' PERSONAL DATA OR USE PERSONAL DATA FOR 'PROFILING'" |
+| Mistral | 🟢 | "has not 'sold,' 'shared,' or engaged in 'targeted advertising' … in the preceding 12 months" — US-state-law framing and a backward look, not a forward commitment |
+| Microsoft | 🟡 | Copilot "uses prompts and related data to provide and improve services, including relevant advertising" — but inside an omnibus statement where "advertising" appears **85 times** about every Microsoft product. No Copilot-specific signals, controls, retention or markets |
+| Perplexity | 🟡 | Advertises; "we do not sell your personal data or send your queries, prompts, or conversation content to advertisers"; three ad opt-outs. Never says whether prompts *select* the ads it serves |
+| xAI | 🟡 | FAQ: "We do not sell your data or share it with third parties for marketing or advertising purposes." Only the sharing half. The policy's one advertising reference is a **cookie** purpose |
+| Anthropic | 🟡 | Only targeted advertising **of its own products**, with an opt-out. Never says whether conversations could feed ads — it appears to have no ads product, but the document does not say so |
+
+> **THE FINDING IS A SUBSTITUTION, and it is the reason the column earns its
+> place.** Only two providers answer the question a consumer actually has — *are
+> my conversations used to choose the ads I see?* The other six answer an easier,
+> adjacent one: whether they **sell or share** your data with advertisers. Those
+> are different, and the difference favours the provider: a company can
+> truthfully say it never sends your prompts to an advertiser while still reading
+> those prompts to pick the ad it serves you itself. **When re-reading this
+> column, check which question the sentence answers before grading it.**
+
+**Grade disclosure, never conduct.** OpenAI runs the most invasive ads product
+here and gets 🟢 for describing it precisely; DeepSeek and Mistral get 🟢 for
+saying plainly that they do not advertise. **Do not grade a provider 🔴 for having
+no ads** — "we don't do this", stated, is a disclosure. Reversing that turns the
+axis into a conduct score, which this index does not do.
+
+**What rots here, fast.** This is now the second-fastest-moving column on the
+page after `allowance`. OpenAI went from no ads product to a documented one
+inside a year, and its test was still expanding at the time of writing
+("availability may continue to evolve"). Google's 🟢 rests on a promise about the
+future — "if this changes, we will clearly communicate it" — so **that cell is a
+commitment to re-check, not a settled fact.** Anthropic's 🟡 flips to 🟢 the day
+its policy says outright that conversations are not used for advertising.
+
+**Sourcing count moved 114 → 122** (42 environmental, 40 pricing, 40 data
+practices). `_meta.methodology` states that number out loud and
+`check-transparency.js` fails if it stops matching, so adding a dimension means
+updating that sentence in the same commit — see E1i.
+
+## E1k. The `allowance` column — 7 of 8 🔴, and Perplexity is the exception
+
+**Perplexity publishes an absolute consumer allowance, and has since at least
+2026-08-06.** From its help centre, "How Credits Work on Perplexity":
+
+> **"Consumer Max plans start with 10,000 credits a month."**
+
+It goes further than any other allowance disclosure on the table:
+
+- a published conversion — **"Today, 100 credits equals $1"**
+- typical consumption **by task class**: light 100–350 credits, complex 350–950,
+  heavy 875–2,275, mega 2,400–9,800
+- and the absence stated for the tier below: **"Consumer Pro plans do not start
+  with a set monthly amount"**
+
+**It is the only allowance figure on this axis a reader can do arithmetic with.**
+🟡 not 🟢 because it bounds **Computer**, Perplexity's agent product, not the plan —
+Pro Search on Max is still marketed as unlimited with no number.
+
+### The other seven were read at source and confirmed 🔴
+
+- **Google** — "Gemini Apps have compute-based usage limits … Your limit refreshes
+  every 5 hours until you reach your weekly limit." No absolute number anywhere.
+  Tiers are sold as 5× and 20× a base that is never quantified.
+- **Anthropic** — "Think of this as your 'conversation budget' … affected by the
+  length and complexity of your conversations, the features you use, which Claude
+  model you're chatting with, and the effort level you've selected." No number.
+  Its "usage credits" are pay-as-you-go top-ups **after** an unquantified limit,
+  not an included allowance — a different thing from Perplexity's, and the
+  distinction is what decides this column.
+- **xAI** — the docs FAQ describes the mechanism in unusual detail (a **weekly**
+  allowance, "shown as a percentage used", broken down by API / Build / Chat /
+  Imagine / Voice, with a progress bar) and still publishes **no figure**. A
+  percentage of an unstated total is not a disclosure. The closest any provider
+  comes, and it still fails.
+
+### How we got it wrong, because the lesson is the useful part
+
+This column was checked by reading the three providers most likely to falsify it,
+finding all three confirmed 🔴, and writing that up as a survival. **Three
+confirmations of a universal claim is not a test of it.** The fourth provider was
+never checked, and it was the one that disproved it.
+
+> **Rule: to test "all N do X", the work is enumerating N, not collecting
+> confirmations.** Stopping when the pattern is confirmed is how a universal claim
+> survives contact with the evidence that disproves it. If a column is all one
+> colour, check the cell you have least reason to suspect — it is carrying the
+> whole claim.
+
+Applied immediately afterwards to `human_review` (E1l), where enumerating five 🔴
+cells instead of sampling them turned three of them.
+
+### Pair this with `context_window`, because the two together say more
+
+> **Providers are perfectly capable of quantifying a limit.** Three publish an
+> exact context window — the size of ONE conversation (E1e). **Only one of eight
+> will say how many conversations you get.** The capability is demonstrated and
+> the allowance is still withheld, which is much harder to explain as technical
+> difficulty than a blanket silence would have been.
+
+### The cross-file work this triggered
+
+The count lived in **six** places and every one was wrong:
+
+| File | Was | Now |
+|---|---|---|
+| `plan-limits.json` `_meta.finding` | "exactly one absolute consumer usage figure … nothing else is quantified anywhere" | two figures, 25 of 27 not disclosed |
+| `plan-limits.json` Perplexity Max | `not_disclosed`, "no figure published" | `disclosed`, with a `caps` entry |
+| `pricing.html` inline `FALLBACK_LIMITS` | `not_disclosed` | `disclosed` + matching caps |
+| `transparency-index.json` pricing note | "all eight publish no usage allowance" | seven of eight |
+| `PROJECT-CONTEXT.md` §7 | "🔴 for all eight … 26 of 27" | seven of eight, 25 of 27 |
+| `PROJECT-CONTEXT.md` §0 | "still 🔴 across all eight" | corrected in place |
+
+⚠️ **`plan-limits.json` and `pricing.html` must move together** — `check-auditor.js`
+asserts the inline fallback matches the file on `provenance`, cap `n`, `window`
+and `scope_limited`. Changing one alone fails CI.
+
+**The cap is `scope_limited: true`**, so `pricing.html` skips it when computing a
+Ceiling (`if (c.scope_limited) continue;`). Deliberate: 10,000 credits bounds
+Computer, and a ceiling derived from it would describe a fraction of what Max is
+worth — the same reasoning as OpenAI Go's Thinking sub-limit. Both plans
+consequently render "not disclosed" in the Ceiling column, which is verified
+behaviour, not a bug.
+
+**Edit `plan-limits.json` as TEXT, never via a JSON round-trip.** It uses a
+hand-tuned compact style (`"p"` and `"m"` on one line, `value_models` inline) that
+`JSON.stringify` destroys — it turns a three-field change into a 470-line diff.
+Same trap as `transparency-index.json`, whose environmental matrix uses one-line
+cells while the other two axes are expanded.
+
+### Still open, and what to check first next time
+
+**Google's per-plan context window (32k / 128k / 1M) is not in `plan-limits.json`
+at all** — none of its five plans carries a `context_window`, where OpenAI's four
+do. **`pricing.html`'s Ceiling column may therefore understate what Google
+discloses.** Verified still open as of 2026-08-29.
+
+Perplexity itself says its figure is unstable: **"credit pricing, task ranges, and
+monthly allowances may change and can vary by promotion, region, or plan."** A
+disclosure carrying its own expiry notice is the one to re-check first, and it is
+the only 🟡 in this column.
+
+## E1l. `human_review` enumerated — three of five 🔴 cells fell
+
+**Ran E1k's rule on the next near-universal column: enumerate the set, do not
+collect confirmations.** `human_review` was 🔴 for five of eight. Three were wrong.
+
+| Provider | Was | Now | The sentence that decided it |
+|---|---|---|---|
+| Anthropic | 🔴 | 🟢 | "we automatically de-link your data from your user ID (like your email address) **before any review**" · "access is limited to a small number of personnel involved in model training" |
+| OpenAI | 🔴 | 🟡 | "OpenAI uses automated systems and **human review** to identify harmful or policy-violating content" · "a trained team of experts to review these reports" |
+| Microsoft | 🔴 | 🟡 | "our processing … involves both automated and **manual (human) methods** … we manually review some of the results against the underlying data" |
+| DeepSeek | 🔴 | 🔴 | nothing, and no consumer help centre exists in which it could appear |
+| Perplexity | 🔴 | 🔴 | nothing, across the notice **and all nine** Privacy & Data articles |
+
+**Anthropic's article is titled with the question itself** — *"I would like to input
+sensitive data into my chats with Claude. Who can view my conversations?"* — which
+is the strongest form this disclosure takes anywhere on the table, and we had the
+cell reading "no disclosure … in the consumer privacy policy or FAQ".
+
+**The grading line that separates 🟢 from 🟡 here, and it is worth keeping:** 🟢
+answers *who reads my conversations, and when*. 🟡 discloses that humans review
+**something** without letting the reader place their own chats inside it — OpenAI
+scopes it to reported content only; Microsoft states it for every Microsoft
+product at once, so a Copilot user cannot tell if it means them.
+
+**The claim that fell:** "Google is the only provider that tells consumers humans
+read some conversations." Google is still best on this dimension, but for a
+narrower reason — it is the only one tying review to a **retention period** (three
+years, de-identified) and to the **state of your privacy settings** (review
+continues with Activity off). Keep the narrow claim; the broad one was false.
+
+### Running score for the 2026-08-29 pass
+
+**Fourteen cells corrected across all three axes**, thirteen of them in the
+provider's favour, and every one published before we graded it. The columns that
+broke were the ones that looked most uniform: `human_review` (5×🔴 → 2×🔴),
+`context_window` (7×🔴 → 5×🔴), `allowance` (8×🔴 → 7×🔴), and xAI's all-🔴
+environmental row. **A column of one colour is not a finding until someone has
+read every cell in it.**
+
+## E1m. Google's "median prompt" — RESOLVED, and the answer is worse than a gap
+
+**The open question was: Google publishes 0.24 Wh and 0.26 mL for the "median
+Gemini Apps text prompt" but never says how many tokens that is, so the figure
+cannot be turned into a rate. Recorded since 2026-08-28 as the largest error
+source in the water model (F1c).**
+
+**Resolved 2026-08-29 by reading Google's own methodology paper — arXiv
+2508.15734, *Measuring the environmental impact of delivering AI at Google
+Scale*. `curl` the PDF and `pdftotext -layout` it; it is 5 pages, not the 98-page
+report.** The earlier pass searched this paper and concluded the token count "is
+not there". That was right, and it missed why:
+
+> **THERE IS NO DENOMINATOR BY CONSTRUCTION.** The paper defines the figure as:
+> take the average energy per prompt **for each model**, rank the models by that
+> value, build a cumulative distribution of prompts across that ranking, and find
+> the model serving the 50th-percentile prompt. "The average energy/prompt is
+> defined as the energy of the median Gemini Apps text prompt on that day."
+
+**So "median" describes the MODEL, not the prompt.** The headline number is an
+average over every prompt that one model served, and the size distribution of
+those prompts is never characterised. **It cannot be converted to a per-token
+rate even in principle** — there is nothing to divide by. A reader cannot apply
+it to their own usage, and neither can we.
+
+### What this changes for the water model (F1c)
+
+**Stop treating Google's 0.26 mL as a fixed point our per-query model should
+reconcile to.** It is not a measurement of a query of any particular size. Two
+consequences:
+
+1. Any residual between our modelled mL-per-query and Google's 0.26 mL is **not
+   evidence our model is wrong**, because the two quantities are not the same
+   kind of thing. Do not tune to close that gap.
+2. **Mistral remains the only usable anchor** — its LCA states 45 mL and 1.14 g
+   CO₂e for a **400-token response**, and Google's own paper cites it that way.
+   A published figure with a stated token count is worth more than a bigger
+   company's figure without one.
+
+### Two things that are to Google's credit, and belong in the cell
+
+- **It publishes the full methodology**, which is how this was diagnosable at all.
+- **It reports both boundaries rather than the flattering one**: 0.10 Wh / 0.12 mL
+  on the narrow "Existing Approach" against **0.24 Wh / 0.26 mL** on the
+  "Comprehensive Approach" — a **2.4× spread from a single measurement** — and the
+  figure Google quotes publicly is the **larger** one. That is the opposite of
+  cherry-picking and is why the cell stays 🟡 rather than dropping to 🔴.
+
+### The line worth quoting back
+
+The same paper faults OpenAI's 0.34 Wh disclosure for providing **"no explanation
+of the measurement boundary or methodology used to arrive at this number, making
+it impossible to compare with other estimates"** — and notes that Mistral states
+its figure per 400-token response. **Google identified the failure precisely, then
+shipped a version of it.** That is the finding, and it is more useful than the
+"no denominator" framing it replaces.
+
+**Boundary spread is a re-usable comparability test.** Where a provider publishes
+one number, ask what it would be under a narrower boundary. Google is the only
+provider here that answers that question about itself.
 
 ## E2. `datacenters.json`
 
@@ -1854,7 +2324,7 @@ delete locally. Just don't commit one.
 # Verification suite — run all seven, last
 
 ```bash
-node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/test-auditor.js && node scripts/check-clock.js && node scripts/test-cost-model.js && node scripts/calibrate-tokenizer.js && node scripts/validate-site.js
+node scripts/check-transparency.js && node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/test-auditor.js && node scripts/check-clock.js && node scripts/test-cost-model.js && node scripts/calibrate-tokenizer.js && node scripts/validate-site.js
 ```
 
 | Script | Covers | Doesn't cover |
@@ -1869,6 +2339,7 @@ node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/te
 | `calibrate-tokenizer.js` | Measures the estimator; fails if the UI band is optimistic | The two guessed bands (G3) |
 | `build-extension.js` | Packages extension/ for the store; blocks on version mismatch, brand names in the short description, missing files | Not a guard — and it cannot smoke-test |
 | `validate-site.js` | HTML/JSON well-formedness, page references | **Plausibility of any number** |
+| `check-transparency.js` | (2026-08-29) The Transparency Index's promises about ITSELF: every grade has a note and a `source_url` (114/114) and any "N of N" claim in `_meta.methodology` still holds; no maintainer-speak in copy that renders (cell notes, `water_note`s); the grade tables in `PROJECT-CONTEXT.md` match the JSON; hardcoded "N sites across N providers" counts match `datacenters.json` | **Whether a grade is RIGHT.** No script can read a provider's policy for you — that is what a re-read is for. It warns once `_meta.last_verified` passes 120 days and stops there |
 
 **In CI** (`validate-site.yml`, on PRs into `main` and pushes to `main`):
 `validate-site.js`, `check-auditor.js`, `test-auditor.js`, `check-clock.js`. The
