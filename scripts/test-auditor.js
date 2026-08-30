@@ -73,7 +73,7 @@ const pFetch = url => {
   return Promise.resolve({ ok: true, json: () => Promise.resolve(JSON.parse(fs.readFileSync(R + f, 'utf8'))) });
 };
 const P = new Function('document', 'window', 'fetch',
-  pBody + '\nreturn { breakEven, costPerMessage, state, PLAN_LIMITS: () => PLAN_LIMITS };')(pDoc, pWin, pFetch);
+  pBody + '\nreturn { breakEven, costPerMessage, state, ceiling, capPerDay, limitsFor, PLAN_LIMITS: () => PLAN_LIMITS, setPlanLimits: d => { PLAN_LIMITS = d; } };')(pDoc, pWin, pFetch);
 
 let bad = 0, ran = 0;
 const ok = (name, cond, detail) => {
@@ -549,6 +549,56 @@ async function main() {
     ok('a 7d unquantified window is recorded for the providers the caveat names',
        ['anthropic', 'google'].every(p => stated.some(l => l.p === p)),
        stated.map(l => l.p + '/' + l.m));
+  }
+
+  /* ---------- 7. the ceiling's window arithmetic ----------
+     A ceiling is the SMALLEST messages-per-day any published window permits, and the
+     math panel prints every window beside it. Two invariants therefore have to hold
+     or the panel contradicts the headline it explains: the headline equals the
+     smallest window, and no window row is below it.
+
+     No shipped plan reaches a ceiling through a multiplier — every chain has
+     base_disclosed:false or scope_unclear — so that branch is unexercised by the
+     real data, and it was wrong: it carried the BASE's per-day rates up to a
+     multiplied headline, printing 143 msgs/day under a headline of 714. Synthetic
+     plans are the only way to reach it. */
+  {
+    const live = P.PLAN_LIMITS();
+    const L = JSON.parse(JSON.stringify(live));
+    L.plans.push({ p:'openai', m:'__TestBase', provenance:'disclosed',
+      caps:[{ n:100, unit:'messages', window:'5h', soft:false, scope_limited:false },
+            { n:1000, unit:'messages', window:'7d', soft:false, scope_limited:false }],
+      value_models:{ low:'gpt-5.4-mini', high:'gpt-5.6-sol' } });
+    L.plans.push({ p:'openai', m:'__TestX5', provenance:'derived',
+      multiplier:{ of:'__TestBase', x:5 }, value_models:{ low:'gpt-5.4-mini', high:'gpt-5.6-sol' } });
+    P.setPlanLimits(L);
+    try {
+      // 1000/week is 143/day; 100/5h is 480/day if held round the clock. The weekly
+      // window binds, and picking the other one would overstate the plan by 3.4x.
+      const base = P.capPerDay(L.plans[L.plans.length - 2]);
+      ok('ceiling binds on the smallest window, not the first',
+         base && base.cap.window === '7d', base && base.cap.window);
+      ok('binding rate is the smallest window rate',
+         base && Math.abs(base.perDay - 1000 / 7) < 1e-9, base && base.perDay);
+      ok('no window row sits below the headline',
+         base && base.windows.every(w => w.perDay >= base.perDay - 1e-9),
+         base && base.windows.map(w => w.cap.window + ':' + Math.round(w.perDay)));
+      // The multiplied tier must not inherit rates that contradict its own headline.
+      const via = P.capPerDay(L.plans[L.plans.length - 1]);
+      ok('multiplier scales the headline', via && Math.abs(via.perDay - 5000 / 7) < 1e-9,
+         via && via.perDay);
+      ok('a multiplied ceiling does not print the base plan\u2019s per-day windows as its own',
+         via && !via.windows, via && via.windows && via.windows.map(w => Math.round(w.perDay)));
+      // Every SHIPPED plan with a ceiling must satisfy the same invariant.
+      P.setPlanLimits(live);
+      for (const pl of live.plans) {
+        const c = P.capPerDay(pl);
+        if (!c || !c.windows) continue;
+        ok('headline equals the smallest window on ' + pl.m,
+           Math.abs(c.perDay - Math.min(...c.windows.map(w => w.perDay))) < 1e-9,
+           { headline: c.perDay, windows: c.windows.map(w => w.perDay) });
+      }
+    } finally { P.setPlanLimits(live); }
   }
 
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'

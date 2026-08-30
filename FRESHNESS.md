@@ -1156,6 +1156,15 @@ the first Ceiling figures the site has ever printed.
   flipped, because either would raise every ceiling on a discount the reader cannot
   verify.
 
+**The size of that choice, measured, because "conservative" without a number is just a
+word:** GLM Coding Lite is **$84/mo at 0% cache, $114 at 50%, $167 at Z.ai's own stated
+95%** — so the shipped figure is roughly **half** what Z.ai's own assumption would
+produce. This is the one place the column is deliberately not an upper bound: a Ceiling
+is supposed to be the outer edge of possible, and ours is the low end of it. That is
+the right direction for this project, but **it is a real understatement and should be
+stated as one, not defended as precision.** If a reader's actual cache hit is ever
+knowable (an EcoMeter export would do it), this is the field to revisit.
+
 **Check each pass:** the figure is nearly **archetype-independent** ($82–$85 for Lite
 across light/standard/heavy), because credits and dollars are near-proportional at
 Z.ai's own rates. That stability is the strongest evidence it is a real number rather

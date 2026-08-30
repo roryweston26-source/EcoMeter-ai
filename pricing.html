@@ -996,8 +996,16 @@
         if (plans[j].p === lim.p && plans[j].m === lim.multiplier.of) {
           var base = capPerDay(plans[j], (depth || 0) + 1);
           if (!base) return null;
+          // NOT base.windows: those are the BASE's per-day rates, and the headline
+          // here is multiplied. Passing them through made the math panel print
+          // "143 msgs/day" under a headline of 714 — the panel contradicting the
+          // number it explains. Scaling them instead would be worse: the row is
+          // labelled "Published cap", and base x multiplier is not published.
+          // Without them the panel falls back to the base cap plus an explicit
+          // "5x, as stated by the provider" row, which is what it showed before
+          // two-window support existed and is still the honest presentation.
+          // `cap` is still the BINDING window, because base picked the min.
           return { perDay: base.perDay * lim.multiplier.x, cap: base.cap, via: lim.multiplier,
-                   windows: base.windows,
                    unquantified: lim.unquantified_windows || base.unquantified || null };
         }
       }
