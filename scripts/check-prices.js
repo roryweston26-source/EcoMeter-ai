@@ -222,6 +222,14 @@ for (const [prov, m] of Object.entries(p.api)) {
       fail('hosted on ' + k + ': first-party $' + (v.input * 1e6).toFixed(3) +
            ' is more than ' + OOM + 'x outside the observed host range $' + (h.low.input * 1e6).toFixed(3) +
            '-$' + (h.high.input * 1e6).toFixed(3) + ' — likely a units error in one of them');
+    // quant_native suppresses the "precision varies" caveat on the page, which is a
+    // claim about the lab's released checkpoint, not an observation about hosts. It
+    // has to be evidenced or it is just a way of deleting an inconvenient warning.
+    if (h.quant_native !== undefined) {
+      if (h.quant_native !== true) fail('hosted on ' + k + ': quant_native must be true or absent');
+      if (!h.quant_source || !/^https:\/\//.test(h.quant_source))
+        fail('hosted on ' + k + ': quant_native needs a quant_source url proving the released precision');
+    }
     if (!h.checked) fail('hosted on ' + k + ' must carry a "checked" date');
     else if (daysOld(h.checked) > STALE_DAYS)
       fail('HOST SPREAD STALE (' + daysOld(h.checked) + 'd): ' + k + ' last checked ' + h.checked +

@@ -532,12 +532,54 @@ order-of-magnitude gaps, which is the real failure mode (a units error).
 there is no second price. That is the argument for the column, and it's worth keeping
 in the copy if it ever gets rewritten.
 
+### The biggest spread in the file is DeepSeek's, and it lands on a price rise we already flagged
+
+Measured 2026-08-29, after the three Chinese labs were already shipped:
+
+| Model | first-party | cheapest host | spread | hosts cheaper than the lab |
+|---|---|---|---|---|
+| `deepseek-v4-flash` | $0.44 | **$0.068** (DigitalOcean) | **6.48×** | **16 of 17** |
+| `deepseek-v4-pro` | $1.32 | $0.507 (Baidu) | 3.77× | 7 of 17 |
+| `mistral-small-4` | $0.15 | $0.15 (Mistral) | 1.25× | 0 of 2 |
+
+**DeepSeek raised its prices on 2026-08-24 and the open-weight market did not follow,
+because the weights are MIT and it cannot be made to.** `_deepseek_increase_landed`
+records the rise: v4-flash went $0.14/$0.28 → $0.44/$1.32. The same published model is
+being served at **$0.068** — 6.5× below DeepSeek's own API. Cloudflare is the only host
+at DeepSeek's list price, matching it exactly.
+
+**It survives the off-peak objection, which is the first thing anyone will raise.**
+Stored DeepSeek rates are PEAK and off-peak is exactly half (`_deepseek_peak_offpeak`).
+At the off-peak $0.22, v4-flash is **still 16 of 17**. **v4-pro does NOT survive it**:
+7 of 17 at peak but only **2 of 17** off-peak, where Baidu and StreamLake at ~$0.507
+stay below DeepSeek's $0.66. Quote the flash number; qualify the pro one.
+
+**The quantisation caveat is weaker here than anywhere else, and that is evidence-backed.**
+DeepSeek's own released checkpoint carries `quantization_config.quant_method: "fp8"`
+with `expert_dtype: "fp4"` (`config.json` on the HF repo, read 2026-08-29). So the fp8
+and fp4 hosts are serving **the format DeepSeek itself published**, not a lossy
+re-compression of a bf16 original. **Check `config.json` before repeating the generic
+precision caveat for a given model — it is not equally true everywhere.**
+
+⚠️ **`deepseek-v3` and `deepseek-r1` have no `hosted` block on purpose.** R1 has exactly
+one priced host, which fails the `n >= 2` guard — correctly, a single host is not a
+spread. V3's three hosts are all *dearer* than its stored $0.14, but that stored figure
+is a **retired last-known rate**, not a live price, so the comparison would be
+meaningless in the other direction too.
+
+### `deepseek-v3`'s licence — resolved, and it is not MIT
+
+Previously recorded as `"not stated in model-card metadata"`, which was accurate but
+unhelpful. The repo carries **two** licence files: `LICENSE-CODE` is MIT, and
+`LICENSE-MODEL` is the **"DEEPSEEK LICENSE AGREEMENT Version 1.0, 23 October 2023"** —
+a bespoke licence governing the weights. Now recorded as such with `osi: false`.
+**"DeepSeek is MIT" is true of V4 Flash, V4 Pro and R1 and false of V3**, so the split
+is per-model here too.
+
 ### Not yet done
 
-- **No `hosted` block for DeepSeek or Mistral Small** — they are badged but their
-  spread has never been measured. Same method, ~5 minutes each.
 - **Xiaomi (MiMo) and Tencent (Hunyuan) are not tracked and outrank Kimi on OpenRouter
-  token volume** — see A10.
+  token volume** — see A10, which now carries the evidence for both.
 
 ---
 
@@ -563,6 +605,34 @@ on downloads but trails it everywhere else.
 Note that OpenRouter's top 10 is *dominated by Chinese open-weight models* — five of
 the ten, plus a stealth model at #1. That is context for how large this category has
 become relative to the eight providers the site tracked before.
+
+### The two measures are close to opposites, and that is the real finding
+
+Followed up 2026-08-29 with HF totals for the two labs that beat Kimi on tokens:
+
+| Lab | HF downloads (30d) | HF likes | OpenRouter rank | Flagship licence |
+|---|---|---|---|---|
+| Qwen | **315.5M** | 125.6k | *absent from top 10* | bespoke |
+| MiniMax | 7.5M | 15.1k | absent | — |
+| Moonshot (Kimi) | 5.2M | 25.2k | absent | bespoke |
+| Tencent | 1.5M | 30.3k | **#5** (Hy3, 6.62T) | Hy3 apache-2.0 |
+| Xiaomi (MiMo) | **0.71M** | 3.5k | **#3** (MiMo-V2.5, 9.98T) | MIT |
+
+**Xiaomi has the smallest HuggingFace footprint of every lab considered and the third
+largest API token volume on OpenRouter.** Qwen is the exact inverse. The two metrics
+are not noisy versions of one ranking — they measure **self-hosting** and **hosted API
+consumption**, and a cheap model with no community mindshare can dominate the second
+while barely registering in the first. MiMo-V2.5 is $0.14/$0.28 and Hy3 is
+$0.132/$0.528, which is most of the explanation.
+
+**So "biggest" cannot be stated without naming the measure**, and the site should
+probably never claim it flatly.
+
+**If a fourth lab is added, the open/closed pattern repeats and reinforces the badge
+design:** Tencent's newest flagship `hy4-preview` (2026-08-28) is **closed** while Hy3
+is Apache-2.0 — the same shape as Alibaba. **ByteDance Seed is closed across its entire
+line**, which makes it the cleanest counter-example to "Chinese labs open-source
+everything" if that claim ever needs rebutting. Xiaomi publishes both its models, MIT.
 
 ---
 
@@ -2144,19 +2214,42 @@ monotonicity, and both historical regressions.
 
 ### F1d. Two hosts added 2026-08-29 for the Chinese labs — one first-party, one not
 
-**`alibaba`: PUE 1.200, and it is FIRST-PARTY.** Alibaba Group's FY2024 ESG report,
-published on Alibaba Cloud's own site, gives 1.200 across self-built data centres
-(down from 1.215) with 56% clean electricity. **Alibaba is the only one of the three
-labs that publishes a PUE at all**, and the default assumption nearly cost us: had it
-been filed under the inferred Chinese average of 1.27 it would have **overstated
-Alibaba's water against a figure the company does publish** — an error against the
-provider, the exact shape of the 2026-08-29 transparency failure. Checking took two
-requests.
+**`alibaba`: PUE 1.187 and WUE 1.198 L/kWh, both FIRST-PARTY.** Alibaba Group's
+**2026** ESG Report (PDF on `alibabagroup.com`, text-extracted 2026-08-29): PUE 1.187
+across self-built data centres, down from 1.190 in FY2025; WUE published as a
+three-year series — **FY2024 1.205, FY2025 1.144, FY2026 1.198**; clean electricity
+73.6%. Only `wue_source` remains inferred (Jegham's off-site generation figure, which
+Alibaba does not publish), so the entry is still mixed provenance but far less so.
 
-⚠️ **It is the oldest first-party number in the file** — the year ended 2024-03-31.
-A newer ESG report almost certainly exists and was not looked for. **Check that before
-trusting the year.** No Alibaba WUE was found, so `wue_site` is inherited from
-`china_avg`: the entry has **mixed provenance and says so in its own `note`**.
+**NOTABLE, and it belongs in the transparency index if Alibaba ever reaches it:
+Alibaba publishes a fleet-wide WUE series for its self-built data centres and Google
+does not.** The `google` host note in the same file records that gap. A Chinese
+provider out-disclosing Google on a specific environmental metric is the kind of
+finding that only survives if we keep grading the axis and not the flag.
+
+#### ⚠️ This entry was WRONG for about an hour, and the failure is the lesson
+
+The first version said **PUE 1.200 from the FY2024 report** and **"no Alibaba WUE
+figure found"**, inheriting `china_avg`'s 1.2. **All three parts were wrong**: the
+current PUE is 1.187, Alibaba does publish a WUE, and clean electricity is 73.6% not
+56%.
+
+**Cause: I stopped at a search snippet about a two-year-old report instead of opening
+the ESG resource page, where the current PDF is two clicks away.** An asserted absence
+resting on an inadequate search — **the exact failure this file documents at E1g, and
+committed in the same change that cites it.** What makes it worse is that the entry
+*itself* flagged "a newer ESG report almost certainly exists and was not looked for",
+so the gap was known and the wording still described Alibaba's silence rather than my
+search.
+
+**`wue_site` barely moved (1.2 → 1.198). The number was never the problem; the
+provenance claim was.** In a project whose product is knowing what is published and
+what is guessed, a right number with a wrong label is still a defect.
+
+**The rule, stated so it is reusable:** when a provider publishes annual reports, find
+the *reports index* and take the newest. Never conclude "they don't publish X" from a
+search snippet, a blog summary, or a single JS-rendered marketing page. `pdftotext` on
+the actual PDF took one command and settled all three figures at once.
 
 **`china_avg`: PUE 1.27, INFERRED**, used for Z.ai and Moonshot. Numerically identical
 to the existing `deepseek` host — both are Jegham et al.'s average of the thirty most

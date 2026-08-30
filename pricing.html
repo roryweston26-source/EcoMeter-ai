@@ -938,7 +938,17 @@
     if (h.cheaper_than_first_party > 0) {
       txt += " · " + h.cheaper_than_first_party + " undercut " + provName(r.p) + "'s own API";
     }
-    if (h.quant && h.quant.length > 1) txt += " · precision varies (" + h.quant.join(", ") + ")";
+    // "Precision varies" implies a quality difference between hosts. That's true
+    // where the lab published a full-precision checkpoint and hosts compressed it,
+    // and FALSE where the lab's own released weights are already at these
+    // precisions — DeepSeek V4 ships fp8 with fp4 experts, so its hosts are running
+    // the published format, not a lossy re-compression. Saying otherwise would
+    // invent a caveat.
+    if (h.quant && h.quant.length > 1) {
+      txt += h.quant_native
+        ? " · served at " + provName(r.p) + "'s own published precision"
+        : " · precision varies (" + h.quant.join(", ") + ")";
+    }
     return '<span class="note spread">' + esc(txt) + '</span>';
   }
 
