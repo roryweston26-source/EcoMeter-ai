@@ -671,9 +671,60 @@ lesson E1g drew from xAI scoring 🔴 on all six environmental dimensions while 
 on three of five data-practice ones: **the axes are independent and must never be
 averaged, and neither must the countries.**
 
-**Shipping these would touch `plan-limits.json` (both-way parity), break-even and the
-Ceiling column — the "all three views" scope that was explicitly declined. Rory's call,
-not a silent expansion.**
+### SHIPPED 2026-08-30 — Z.ai only, and it changed a headline statistic
+
+Rory asked for "all subscription models" for the three labs. **Only Z.ai's could be
+shipped**, and the reasons the other two could not are findings in themselves:
+
+- **Z.ai — SHIPPED.** `Z.ai (Free)` plus GLM Coding **Lite $18 / Pro $80 / Max $168**,
+  with `plan-limits.json` entries carrying the real credit caps on both windows.
+- **Kimi — NOT SHIPPED.** Re-checked on 2026-08-30: **every CTA on the page is
+  "Join Waitlist"**, on every tier. The banner says "you can still buy the current
+  plan" but that plan's price is nowhere on the page. So the $19/$39/$99/$199 tiers
+  are **announced, not purchasable, and the currently purchasable price is unknown to
+  us.** Shipping them would publish prices nobody can pay. Re-check when the waitlist
+  opens.
+- **Qwen — NOT SHIPPED, ⚪.** Still login-walled, still no primary source.
+
+**The headline statistic moved, and in the right direction.** The subscriptions callout
+went from *27 plans, 2 disclosed* to **31 plans, 5 disclosed**. The finding is now
+sharper rather than weaker, and the page states it as a split:
+
+> The 2 figures that are published cover a single feature rather than the plan …
+> Only 3 publish an allowance that bounds the whole product … every one of them from
+> Z.ai, which also publishes the credit formula, the per-model multipliers and a token
+> conversion, so the allowance can actually be checked.
+
+**Both halves of that sentence are derived from `plan-limits.json`** — including the
+attribution. The first draft hardcoded "every one of them from Z.ai", which is the same
+stale-superlative bug as E3a one layer down; `check-prices.js` §10 now fails on that
+exact string.
+
+### ⚠️ Two live caveats on these rows
+
+**1. The Ceiling column deliberately refuses to price them.** Z.ai's caps are in
+**credits**, and `ceiling()` multiplies a cap by a cost *per message* — so 10,000
+credits would render as 10,000 messages, turning the best allowance data on the table
+into the worst number on the page. `capPerDay()` now skips any cap whose `unit` is not
+`messages`, on the same principle as the `scope_limited` skip beside it.
+
+**THE OPPORTUNITY, and it is real:** Z.ai publishes everything needed to convert
+credits → tokens → messages (the formula, the per-model multipliers, a token table, and
+the archetypes already give tokens/message). **Z.ai could become the first plan on the
+site with a genuinely computed Ceiling.** Two cautions: the conversion needs a
+cache-hit assumption, and Z.ai's own token range is already ~2× wide because peak
+(Mon–Fri 14:00–18:00 SGT) costs double off-peak — **quote the all-peak end**, per
+`_deepseek_peak_offpeak`.
+
+**2. Break-even for these rows has NO reasoning multiplier behind it.**
+`reasoning-measurement.json` covers four models — two Anthropic, two OpenAI — so
+`reasoningMult()` returns **1** for GLM, i.e. *no thinking at all*. GLM-5.3 has a
+documented thinking mode. An unmeasured multiplier understates output tokens, which
+lowers cost-per-message, which **raises** the break-even threshold — so the plan looks
+*harder* to justify than it is. That is the conservative direction, but it is still
+wrong, and it is the same gap that would undercount **Kimi K3, which Moonshot's docs
+say "always reasons" at default effort `max`.** Measuring it needs API keys for
+Qwen / Z.ai / Moonshot; only an OpenAI key is in `scripts/.keys.local.json`.
 
 ---
 

@@ -266,20 +266,34 @@ for (const [prov, m] of Object.entries(p.api)) {
       if (!cheapest[s.p] || blended < cheapest[s.p]) cheapest[s.p] = blended;
     }
   }
-  const order = Object.entries(cheapest).sort((a, b) => a[1] - b[1]).map(x => x[0]);
-  const rank = pr => order.indexOf(pr) + 1;
-  const fmt = () => order.map((pr, i) => (i + 1) + '. ' + pr + ' $' + cheapest[pr].toFixed(3)).join('  ');
+  // The copy is shown inside the Auditor, which prices only its OWN providers, so
+  // it must be checked against that set — not against every provider on the site.
+  // Conflating the two is what made the original sentence ambiguous enough to rot:
+  // adding Z.ai on 2026-08-30 moved DeepSeek from 3rd to 4th site-wide while leaving
+  // it 2nd of the four the Auditor can actually price. The copy now names its set
+  // explicitly ("of the four providers this tool can price") and this follows suit.
+  const AUDITOR = ['openai', 'anthropic', 'google', 'microsoft', 'deepseek'];
+  const rankIn = set => {
+    const o = Object.entries(cheapest).filter(([k]) => set.includes(k)).sort((a, b) => a[1] - b[1]);
+    return { order: o.map(x => x[0]), fmt: o.map((x, i) => (i + 1) + '. ' + x[0] + ' $' + x[1].toFixed(3)).join('  ') };
+  };
+  const aud = rankIn(AUDITOR);
+  const dsRank = aud.order.indexOf('deepseek') + 1;
 
-  // The sentence in audit.html names DeepSeek as third, behind Mistral and OpenAI.
   if (/cheapest provider we track/i.test(audit))
-    fail('audit.html still claims DeepSeek is "the cheapest provider we track" — it is #' +
-         rank('deepseek') + '. Ranking: ' + fmt());
-  if (audit.includes('third cheapest of the providers here') && rank('deepseek') !== 3)
-    fail('audit.html says DeepSeek is third cheapest; it is now #' + rank('deepseek') +
-         '. Rewrite that sentence. Ranking: ' + fmt());
-  for (const [a, b] of [['mistral', 'openai'], ['openai', 'deepseek']])
-    if (rank(a) > rank(b))
-      fail('the Auditor copy assumes ' + a + ' is cheaper than ' + b + '; that has flipped. Ranking: ' + fmt());
+    fail('audit.html reuses the retired phrase "the cheapest provider we track". Auditor ranking: ' + aud.fmt);
+  // The sentence states both a rank and a count; both must still hold.
+  if (audit.includes('second cheapest rather than the first') && dsRank !== 2)
+    fail('audit.html says DeepSeek is second cheapest of the Auditor set; it is now #' + dsRank +
+         '. Rewrite that sentence. Auditor ranking: ' + aud.fmt);
+  if (audit.includes('four providers this tool can price') && aud.order.length !== 4)
+    fail('audit.html says "four providers this tool can price" but ' + aud.order.length +
+         ' now have a priceable value_model: ' + aud.order.join(', '));
+  // It also claims Z.ai and Mistral undercut DeepSeek from outside the tool.
+  for (const outsider of ['zai', 'mistral'])
+    if (cheapest[outsider] != null && cheapest.deepseek != null && cheapest[outsider] > cheapest.deepseek)
+      fail('audit.html says ' + outsider + ' undercuts DeepSeek; it no longer does ($' +
+           cheapest[outsider].toFixed(3) + ' vs $' + cheapest.deepseek.toFixed(3) + ')');
 }
 
 // 10. The allowance callout must not hardcode a count the data contradicts.
@@ -313,9 +327,16 @@ for (const [prov, m] of Object.entries(p.api)) {
   // Testing for `provenance === "disclosed"` was too loose: that string also appears
   // in the tally a few lines above, so removing the naming logic left the guard
   // green. Anchor on the naming construct itself.
-  if (!/var named = plans/.test(html) || !/named\.join/.test(html))
+  if (!/var discPlans = plans/.test(html) || !/join\(partial\)/.test(html) || !/join\(whole\)/.test(html))
     fail('pricing.html callout no longer builds its list of disclosed plans from plan-limits — ' +
          'the sentence will go stale the next time a provider publishes an allowance');
+  // It also splits feature-scoped caps from whole-plan ones and attributes the
+  // whole-plan group to its provider(s). Both must stay derived: the first draft
+  // hardcoded "every one of them from Z.ai", which is the same bug one layer down.
+  if (!/scope_limited/.test(html))
+    fail('pricing.html callout no longer distinguishes feature-scoped caps from whole-plan ones');
+  if (/every one of them from Z\.ai/.test(html))
+    fail('pricing.html callout hardcodes Z.ai as the sole whole-plan discloser — derive it from the data');
 }
 
 console.log(bad

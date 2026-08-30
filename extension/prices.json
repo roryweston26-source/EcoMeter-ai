@@ -176,7 +176,12 @@
     { "p": "mistral", "m": "Le Chat Free", "price": 0 },
     { "p": "mistral", "m": "Le Chat Pro", "price": 14.99, "note": "$5.99/mo for students. Mistral now brands the product \"Vibe\" — plan key kept as the cross-file join." },
 
-    { "p": "deepseek", "m": "DeepSeek (Free)", "price": 0, "note": "No paid consumer tier — chat is free" }
+    { "p": "deepseek", "m": "DeepSeek (Free)", "price": 0, "note": "No paid consumer tier — chat is free" },
+
+    { "p": "zai", "m": "Z.ai (Free)", "price": 0, "note": "chat.z.ai runs GLM-5.3-Flash. Login-walled, no published limits found." },
+    { "p": "zai", "m": "GLM Coding Lite", "price": 18, "note": "Coding-tool plan, not a chat plan. $12.60/mo billed annually (-30%)" },
+    { "p": "zai", "m": "GLM Coding Pro", "price": 80, "note": "Coding-tool plan, not a chat plan. $56/mo billed annually (-30%)" },
+    { "p": "zai", "m": "GLM Coding Max", "price": 168, "note": "Coding-tool plan, not a chat plan. $117.60/mo billed annually (-30%)" }
   ],
   "free_tiers": {
     "anthropic": {

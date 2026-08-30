@@ -268,8 +268,8 @@ async function main() {
     ok('the DeepSeek price caveat reaches the user', !!line, r.why);
     ok('it does NOT claim DeepSeek is the cheapest provider',
        !!line && !/cheapest provider we track/i.test(line), line);
-    ok('it places DeepSeek third, and credits off-peak for second',
-       !!line && /third cheapest/.test(line) && /second place/.test(line), line);
+    ok('it places DeepSeek second of the Auditor set, and credits off-peak for first',
+       !!line && /second cheapest rather than the first/.test(line) && /cheapest of the four again/.test(line), line);
     ok('it still carries the peak/off-peak clock warning',
        !!line && /half price/.test(line), line);
   }

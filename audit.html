@@ -878,7 +878,7 @@ function recommend(pf,sig){
   // tie above; these two add what the reader told us they came for.
   if(sig.priority==='privacy') why.push(privacyLine(pf.provider));
   if(sig.priority==='feature'){ const fl=featureLine(pf.provider, fit); if(fl) why.push(fl); }
-  if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier, and it has given no indication that’s the end of it. That rise cost it the lead: on the models we price, DeepSeek is now the third cheapest of the providers here, behind Mistral and behind OpenAI’s cheapest tier. DeepSeek also now charges by the clock — the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price, which at off-peak puts it back into second place.`);
+  if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier, and it has given no indication that’s the end of it. That rise cost it the lead: of the four providers this tool can price, DeepSeek is now the second cheapest rather than the first, behind OpenAI’s cheapest tier. Cheaper options exist outside this tool altogether — Z.ai and Mistral both undercut it — but neither sells a plan we compare here. DeepSeek also now charges by the clock: the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price, which at off-peak makes it the cheapest of the four again.`);
   return { head, why };
 }
 

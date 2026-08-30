@@ -116,9 +116,19 @@ Plus two environmental notes (xAI `site_level`, `comparability`) whose **grades 
 
 Three guards, each validated by reintroducing the bug: `check-prices.js` §9 (price ranking), §10 (callout derives from data), and `test-auditor.js` (the caveat reaches `r.why` and says something true — 65 → 69 checks; hand-driving the wizard never reached that branch).
 
-### 2026-08-30 — the Chinese labs' consumer plans, researched but not shipped
+### 2026-08-30 — the Chinese labs' consumer plans: Z.ai SHIPPED, Kimi and Qwen could not be
 
-**Nothing from this pass is in the repo** — the per-token scope stands. Full detail in **FRESHNESS A11**. It is recorded because one finding contradicts the reasoning behind that scope: the argument for deferring subscriptions included "cap data for these labs will mostly be undisclosed", and **that is backwards for Z.ai.**
+**Z.ai's plans are now live on the site**; the other two are not, and why not is a finding in each case. Full detail in **FRESHNESS A11**. The original argument for deferring subscriptions included "cap data for these labs will mostly be undisclosed" — **that was backwards for Z.ai**, which turned out to publish more than any provider already tracked.
+
+**Shipped:** `Z.ai (Free)` plus GLM Coding **Lite $18 / Pro $80 / Max $168**, with real credit caps on both windows in `plan-limits.json`.
+
+**Not shipped — Kimi.** Every CTA on its pricing page is **"Join Waitlist"**. The banner says the current plan is still buyable but never states its price, so the $19/$39/$99/$199 tiers are **announced, not purchasable, and the live price is unknown to us.** Publishing them would be publishing prices nobody can pay.
+
+**Not shipped — Qwen.** Still login-walled, still ⚪, still no primary source.
+
+**This moved a headline statistic, in the right direction: 27 plans / 2 disclosed → 31 / 5.** The callout now states it as a split — 2 figures cover a single feature, 3 bound the whole product, all 3 from Z.ai, which alone publishes the formula to check them. **Both halves are derived from `plan-limits.json`, attribution included** — the first draft hardcoded "every one of them from Z.ai", which is the E3a bug one layer down, and `check-prices.js` §10 now fails on that string.
+
+**⚠️ Two live caveats.** The **Ceiling column deliberately refuses these rows**: the caps are in *credits* and `ceiling()` multiplies by cost *per message*, so `capPerDay()` now skips any non-`messages` unit. Converting credits→messages is possible from Z.ai's published formula and would make it **the first genuinely computed Ceiling on the site** — quote the all-peak end, since Z.ai's own range is ~2× wide. And **break-even for these rows has no reasoning multiplier**: `reasoningMult()` returns 1 for GLM, which understates output and so overstates break-even. Conservative, but wrong — and the same gap would undercount Kimi K3, which "always reasons" at `max`.
 
 - **Z.ai's GLM Coding Plan is the strongest allowance disclosure found anywhere so far** — stronger than Perplexity, which E1k records as the sole exception among the eight. Lite **$18**/mo, Pro **$80**, Max **$168**, and it publishes the *absolute* credit allowance on two windows, the **credit formula**, the **per-model multipliers**, and a **token conversion table** (Lite on GLM-5.3 ≈ 48–97M tokens/week at 95% cache hit). The allowance is independently computable, not merely illustrated. **If added, quote the MIN of the range** — its top end assumes 100% off-peak, the same discount-you-don't-control problem `_deepseek_peak_offpeak` already settled for DeepSeek.
 - **Kimi is the exact opposite and the contrast is the finding.** Tiers at $19/$39/$99/$199 sold as "more / 2x / 5x / 10x agent credits" with the base **never stated**. Its own comparison table quantifies six other limits precisely — including **project storage to the megabyte**. It is not a company that can't quantify; withholding the credit base is a choice about which number is commercially sensitive. ⚠️ All Kimi tiers are currently **"Join Waitlist"**, announced not purchasable, so they must not be recorded as live consumer prices.
