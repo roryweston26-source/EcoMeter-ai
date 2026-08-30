@@ -103,6 +103,19 @@ Plus two environmental notes (xAI `site_level`, `comparability`) whose **grades 
 
 `deepseek-v3`'s licence is resolved — the repo carries `LICENSE-CODE` (MIT) and `LICENSE-MODEL` (**DeepSeek License Agreement v1.0**, bespoke). "DeepSeek is MIT" holds for V4 Flash/Pro and R1 and **fails for V3**.
 
+### 2026-08-30 — two stale superlatives in shipped copy, both running against a provider
+
+**A number in a data file gets checked. A superlative in a sentence does not.** Sweeping the site's own claims against its own data — prompted by wondering whether adding Z.ai had invalidated anything — turned up two, and neither was caused by a provider changing anything. Both were ours. Detail in **FRESHNESS E3a**.
+
+- **`audit.html` told every DeepSeek user "It's still the cheapest provider we track."** It has been **third** since 2026-08-24, behind Mistral ($0.262 blended) and OpenAI's Luna ($0.450), at $0.660. The rise didn't narrow DeepSeek's lead, it ended it — and the 2026-08-24 pass recorded the new rates without re-running the ranking those rates invalidated. Six days in shipped advice, on the provider the code comments call the one "this engine's cheapest advice leans on hardest". Corrected copy places it third and credits off-peak for second ($0.33), which is true.
+- **`pricing.html`'s allowance callout contradicted itself inside one paragraph** — computing "2 have a usage cap the provider publishes" and then asserting ChatGPT Go's was "the only absolute figure published anywhere". Perplexity Max (10,000 credits/month) was added 2026-08-29 and the prose never followed. **The callout now enumerates the disclosed plans from `plan-limits.json`, so it cannot drift again.**
+
+**Both errors ran against a provider** — understating DeepSeek's cost relative to rivals, understating what Perplexity discloses. That is the direction E1g identifies as worst, and it is the second and third time this week.
+
+**The rule: when a number moves, re-run every ranking the old number justified.** Recording the new value is half the job. Neither error would have been caught by re-reading a provider's page.
+
+Three guards, each validated by reintroducing the bug: `check-prices.js` §9 (price ranking), §10 (callout derives from data), and `test-auditor.js` (the caveat reaches `r.why` and says something true — 65 → 69 checks; hand-driving the wizard never reached that branch).
+
 ### 2026-08-30 — the Chinese labs' consumer plans, researched but not shipped
 
 **Nothing from this pass is in the repo** — the per-token scope stands. Full detail in **FRESHNESS A11**. It is recorded because one finding contradicts the reasoning behind that scope: the argument for deferring subscriptions included "cap data for these labs will mostly be undisclosed", and **that is backwards for Z.ai.**

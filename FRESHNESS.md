@@ -2030,6 +2030,48 @@ Adding or removing a site means editing prose in at least two places:
 Same trap elsewhere: "5 of the 8 providers" (Auditor coverage), "26 plans", "all
 56,250 answer combinations". Grep for digits in prose after any structural change.
 
+### E3a. Stale superlatives — the class of bug counts don't cover (2026-08-30)
+
+**Counts rot visibly. Superlatives rot silently, and two were found in one sweep.**
+Both were prose asserting a ranking that the data had already contradicted, and in
+both cases the *number* had been updated correctly while the *sentence it justified*
+was not.
+
+| Where | Claimed | Actually | Wrong since |
+|---|---|---|---|
+| `audit.html` DeepSeek caveat | "still the cheapest provider we track" | **third** — behind Mistral $0.262 and OpenAI $0.450, at $0.660 | 2026-08-24, the day the rise landed |
+| `pricing.html` allowance callout | ChatGPT Go's is "the only absolute figure published anywhere" | **two** are disclosed; Perplexity Max publishes 10,000 credits/month | 2026-08-29, when Perplexity was added |
+
+**The callout was contradicting itself inside one paragraph** — it computed
+"2 have a usage cap the provider publishes" and then said "the only absolute figure"
+two clauses later. **Both errors ran against a provider**, understating what DeepSeek
+charges relative to rivals and understating what Perplexity discloses. That is the
+direction E1g identifies as worst.
+
+**The rule: when a number moves, re-run every ranking the old number justified.**
+Recording the new value is half the job. Neither of these would have been caught by
+re-reading the provider's page, because the provider had not changed anything — we had.
+
+**Guards, both validated by reintroducing the bug:**
+- `check-prices.js` §9 recomputes the per-provider price ranking and fails if the
+  superlative returns, if DeepSeek stops being third, or if the `mistral < openai <
+  deepseek` order the copy assumes flips.
+- `check-prices.js` §10 fails if the callout calls an allowance "the only" while more
+  than one plan is `disclosed`, if a disclosed plan lacks a nameable cap, or if the
+  callout stops deriving its list from `plan-limits.json`. **The callout now enumerates
+  the disclosed plans from the data, so that sentence cannot go stale again.**
+- `test-auditor.js` asserts the DeepSeek caveat reaches `r.why` and says something
+  true (65 → 69 checks). A string search proves the copy exists; only this proves it
+  renders.
+
+**Two traps worth remembering from writing those guards.** The first version of §10
+failed on the clean file, because the explanatory comment describing the fix quoted
+the superlative it had removed — **strip comments before grepping for prose.** And the
+first version of the "still derives from data" check matched a string that appears
+twice, so deleting the naming logic left it green; **anchor a guard on the construct
+you actually care about, and verify it fails when you remove that construct, not a
+lookalike.**
+
 ⚠️ **"8 providers" is now ambiguous and every instance needs reading before it is
 changed.** Since 2026-08-29 `prices.json` carries **10** providers, but the
 transparency index still grades **8** and the Auditor still covers **5**. Those are

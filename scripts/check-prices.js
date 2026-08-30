@@ -282,6 +282,42 @@ for (const [prov, m] of Object.entries(p.api)) {
       fail('the Auditor copy assumes ' + a + ' is cheaper than ' + b + '; that has flipped. Ranking: ' + fmt());
 }
 
+// 10. The allowance callout must not hardcode a count the data contradicts.
+//
+//     Same failure as §9, found the same day. pricing.html's callout computed
+//     "2 have a usage cap the provider publishes" and then asserted, two clauses
+//     later, that ChatGPT Go's was "the only absolute figure still published
+//     anywhere" — a paragraph disagreeing with itself, because Perplexity Max was
+//     added on 2026-08-29 and the prose was not. It understated what a provider
+//     discloses, which is the direction this project treats as worst.
+//
+//     The sentence now enumerates the disclosed plans from plan-limits.json, so it
+//     cannot drift. This guards the fix: no reintroduced superlative, and every
+//     disclosed plan must carry a cap the callout can actually name.
+{
+  const disclosed = L.plans.filter(s => s.provenance === 'disclosed' || s.provenance === 'derived');
+  // Strip comments first — the fix's own explanatory comment quotes the very
+  // superlative it removed, and the first version of this check failed on it.
+  // Only prose that can actually reach a reader counts.
+  const rendered = html.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  if (/only absolute figure/i.test(rendered) && disclosed.length !== 1)
+    fail('pricing.html calls an allowance "the only absolute figure" but ' + disclosed.length +
+         ' plans are disclosed: ' + disclosed.map(s => s.m).join(', '));
+  for (const s of disclosed) {
+    const c = (s.caps || [])[0];
+    if (!c) { fail('plan-limits: ' + s.m + ' is provenance "' + s.provenance + '" with no caps[] — the callout has nothing to name'); continue; }
+    if (typeof c.n !== 'number' || !c.unit || !c.window)
+      fail('plan-limits: ' + s.m + ' cap needs n / unit / window for the callout to render it');
+  }
+  // The callout must NAME the disclosed plans from the data, not from a sentence.
+  // Testing for `provenance === "disclosed"` was too loose: that string also appears
+  // in the tally a few lines above, so removing the naming logic left the guard
+  // green. Anchor on the naming construct itself.
+  if (!/var named = plans/.test(html) || !/named\.join/.test(html))
+    fail('pricing.html callout no longer builds its list of disclosed plans from plan-limits — ' +
+         'the sentence will go stale the next time a provider publishes an allowance');
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)'
   : '\nALL CHECKS PASS — ' + Object.keys(all).length + ' models priced, ' + promos +

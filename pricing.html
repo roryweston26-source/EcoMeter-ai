@@ -1329,6 +1329,23 @@
         if ((l.third_party[0].confidence || "low") === "low") lowConf++;
       }
     });
+    // Name the disclosed plans from the data rather than in prose. This sentence
+    // used to hardcode "The only absolute figure still published anywhere ... 10
+    // Thinking messages on ChatGPT Go" while the tally two clauses earlier already
+    // said TWO plans were disclosed — Perplexity Max was added on 2026-08-29 and
+    // the prose never followed, so one paragraph contradicted itself and
+    // understated what a provider actually publishes.
+    // Windows carry their own preposition — "every 5 hours" but "a month".
+    var WINDOW = { "5h": "every 5 hours", "24h": "a day", "7d": "a week", "30d": "a month" };
+    var named = plans
+      .filter(function (l) { return l.provenance === "disclosed" || l.provenance === "derived"; })
+      .map(function (l) {
+        var c = (l.caps || [])[0];
+        if (!c) return esc(l.m);
+        return '<b>' + fmtNum(c.n) + ' ' + esc(c.unit) + '</b> ' + (WINDOW[c.window] || 'per ' + esc(c.window)) +
+               (c.scope ? ' for ' + esc(c.scope) + ' only' : '') + ' on ' + esc(l.m);
+      });
+
     $("callout-body").innerHTML =
       'Of the <span class="tally">' + total + '</span> consumer plans tracked here, ' +
       '<span class="tally">' + disclosed + '</span> ' + (disclosed === 1 ? 'has' : 'have') +
@@ -1336,8 +1353,12 @@
       '<span class="tally">' + third + '</span> ' + (third === 1 ? 'has' : 'have') + ' only a third-party estimate' +
       (lowConf ? ', and <span class="tally">' + lowConf + '</span> of those we rate low confidence' : "") + '. ' +
       'The rest are sold on multipliers — "5× more usage than Pro", "20× higher usage than Plus", ' +
-      '"4× higher than standard limits" — against a base nobody states. The only absolute figure still ' +
-      'published anywhere covers a single feature: 10 Thinking messages every 5 hours on ChatGPT Go. ' +
+      '"4× higher than standard limits" — against a base nobody states. ' +
+      (named.length
+        ? (named.length === 1 ? 'The one absolute figure published anywhere covers ' : 'The absolute figures published anywhere each cover ') +
+          'a single feature: ' + named.join('; and ') + '. ' +
+          'Only Perplexity’s comes with the arithmetic to use it — it also publishes what a credit is worth and what a task typically costs. '
+        : '') +
       'OpenAI deleted its general cap between our July and August 2026 checks, so ChatGPT Plus at $20 ' +
       'now publishes no usage figure at all. Google reserves the right to change limits "without notice."';
   }
