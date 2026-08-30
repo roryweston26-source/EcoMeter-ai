@@ -580,6 +580,100 @@ is per-model here too.
 
 - **Xiaomi (MiMo) and Tencent (Hunyuan) are not tracked and outrank Kimi on OpenRouter
   token volume** — see A10, which now carries the evidence for both.
+- **The consumer plans for these three labs are researched but NOT in the repo** — see
+  **A11**. Z.ai's is the strongest allowance disclosure found anywhere so far.
+
+---
+
+## A11. The Chinese labs' consumer plans — researched 2026-08-30, deliberately NOT shipped
+
+**Nothing in this section is in `prices.json` or `plan-limits.json`.** The 2026-08-29
+change was scoped to the per-token view on purpose. This entry exists so the research
+survives, and because **one finding contradicts the reason the scope was drawn that
+way.**
+
+When the scope was set, the argument for leaving subscriptions out included "cap data
+for these labs will mostly be undisclosed." **That was wrong, and backwards for Z.ai.**
+
+### Z.ai's GLM Coding Plan is the best allowance disclosure in the dataset
+
+`z.ai/subscribe` (rendered) and `docs.z.ai/devpack/overview.md`, read 2026-08-30:
+
+| Plan | Monthly | Annual (−30%) | Weekly credits | 5-hour credits |
+|---|---|---|---|---|
+| Lite | **$18** | $12.60 | 10,000 | 2,000 |
+| Pro | **$80** | $56.00 | 60,000 | 12,000 |
+| Max | **$168** | $117.60 | 140,000 | 28,000 |
+
+It publishes, on its own docs, **all four** of the things this project spends its time
+saying nobody publishes:
+
+1. **Absolute credit allowances**, on two windows (rolling 5-hour *and* weekly).
+2. **The credit formula**: `(input × in-mult + cached × cached-mult + output × out-mult) / 10,000`.
+3. **Per-model multipliers** — GLM-5.3 `6.9 / 1.7 / 24`, GLM-5.3-Flash `2.3 / 0.56 / 8`;
+   MCP tool calls `1.2` per call.
+4. **A token conversion table** — e.g. Lite on GLM-5.3 at 95% cache hit is
+   **48–97M tokens/week** — with the range's two ends defined (all-peak vs all-off-peak)
+   and peak stated as **Mon–Fri 14:00–18:00 SGT**.
+
+**This is more complete than Perplexity's**, which E1k records as the only exception
+among the eight (credits + a conversion + typical task costs). Z.ai adds the raw
+formula and the multipliers, so the allowance is independently computable rather than
+illustrated. **If it is ever graded, it is a 🟢 and it is the strongest cell on the
+axis.**
+
+⚠️ **If these plans are added, quote the MIN of the token range, not the max.** The
+range's top assumes 100% off-peak. That is the same discount-you-don't-control problem
+`_deepseek_peak_offpeak` already resolved for DeepSeek by storing peak rates; be
+consistent or the plan looks better than it is.
+
+### Kimi is the exact opposite, and the contrast is the finding
+
+`kimi.com/membership/pricing` (rendered), read 2026-08-30. Personal tiers, all
+currently **"Join Waitlist"** — a banner says new plans are coming and existing
+subscribers are unaffected, so **these are announced, not purchasable, and must not be
+recorded as live consumer prices.** Free tier is "Adagio, $0".
+
+| Plan | Monthly | Annual | Allowance as published |
+|---|---|---|---|
+| Moderato | $19 | $180/yr | "more agent credits" |
+| Allegretto | $39 | $372/yr | "2x agent credits" |
+| Allegro | $99 | $948/yr | "5x agent credits" |
+| Vivace | $199 | $1,908/yr | "10x agent credits" |
+
+**Kimi's own comparison table quantifies six other limits precisely** — concurrent
+tasks (1/2/2/4/4), scheduled tasks (2/10/15/20/25), widget tasks, projects
+(2/20/20/100/100), **project storage to the megabyte** (500MB/20GB/20GB/50GB/50GB),
+swarm subagents (2/4/8/8). **The only thing it will not put a number on is the meter.**
+"More agent credits" — more than what? The base is never stated anywhere on the page.
+
+**That is the sharpest illustration of the site's central finding yet, and it is worth
+using:** this is not a company that can't quantify, or hasn't got round to it. It
+quantifies storage to the megabyte on the same table. Withholding the credit base is a
+choice about which number is commercially sensitive.
+
+### Qwen Chat — NOT ESTABLISHED, and that is the correct state
+
+`chat.qwen.ai/pricing` redirects to the chat root and requires login. No public pricing
+page was found. **Every source that surfaced was an SEO price-aggregator site**
+(`aipricing.guru`, `aitoolsatlas.ai`, `aitooltier.com`, `aiplans.dev`, `agentplans.fyi`),
+and this project does not accept those — the whole Alibaba correction in F1d came from
+trusting a secondary summary.
+
+**Record this as ⚪, not 🔴.** We could not read it; that is not the same as Alibaba
+publishing nothing. Anyone picking this up: log in, or find an Alibaba-owned page.
+
+### Why this matters beyond the three labs
+
+The three span the **full range of the disclosure axis** — 🟢 Z.ai, 🔴 Kimi, ⚪ Qwen —
+which kills any framing where disclosure quality tracks geography. It is the same
+lesson E1g drew from xAI scoring 🔴 on all six environmental dimensions while taking 🟢
+on three of five data-practice ones: **the axes are independent and must never be
+averaged, and neither must the countries.**
+
+**Shipping these would touch `plan-limits.json` (both-way parity), break-even and the
+Ceiling column — the "all three views" scope that was explicitly declined. Rory's call,
+not a silent expansion.**
 
 ---
 

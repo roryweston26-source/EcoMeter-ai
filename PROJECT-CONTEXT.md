@@ -103,6 +103,16 @@ Plus two environmental notes (xAI `site_level`, `comparability`) whose **grades 
 
 `deepseek-v3`'s licence is resolved — the repo carries `LICENSE-CODE` (MIT) and `LICENSE-MODEL` (**DeepSeek License Agreement v1.0**, bespoke). "DeepSeek is MIT" holds for V4 Flash/Pro and R1 and **fails for V3**.
 
+### 2026-08-30 — the Chinese labs' consumer plans, researched but not shipped
+
+**Nothing from this pass is in the repo** — the per-token scope stands. Full detail in **FRESHNESS A11**. It is recorded because one finding contradicts the reasoning behind that scope: the argument for deferring subscriptions included "cap data for these labs will mostly be undisclosed", and **that is backwards for Z.ai.**
+
+- **Z.ai's GLM Coding Plan is the strongest allowance disclosure found anywhere so far** — stronger than Perplexity, which E1k records as the sole exception among the eight. Lite **$18**/mo, Pro **$80**, Max **$168**, and it publishes the *absolute* credit allowance on two windows, the **credit formula**, the **per-model multipliers**, and a **token conversion table** (Lite on GLM-5.3 ≈ 48–97M tokens/week at 95% cache hit). The allowance is independently computable, not merely illustrated. **If added, quote the MIN of the range** — its top end assumes 100% off-peak, the same discount-you-don't-control problem `_deepseek_peak_offpeak` already settled for DeepSeek.
+- **Kimi is the exact opposite and the contrast is the finding.** Tiers at $19/$39/$99/$199 sold as "more / 2x / 5x / 10x agent credits" with the base **never stated**. Its own comparison table quantifies six other limits precisely — including **project storage to the megabyte**. It is not a company that can't quantify; withholding the credit base is a choice about which number is commercially sensitive. ⚠️ All Kimi tiers are currently **"Join Waitlist"**, announced not purchasable, so they must not be recorded as live consumer prices.
+- **Qwen Chat is ⚪ NOT ESTABLISHED**, not 🔴. `chat.qwen.ai/pricing` redirects to a login wall and every source that surfaced was an SEO price-aggregator — the exact class of secondary source that produced the F1d error. We could not read it; that is not Alibaba publishing nothing.
+
+**The three span the full disclosure range — 🟢 / 🔴 / ⚪ — which kills any framing where disclosure quality tracks geography.** Same lesson as xAI scoring 🔴 across environmental while taking 🟢 on three of five data-practice cells: the axes are independent, and so are the countries.
+
 **Open, and deliberately not done:** **Kimi is the weakest of the three picks on evidence** — it appears in no OpenRouter top-10 while Xiaomi's MiMo (#3) and Tencent's Hy3 (#5) both move more tokens. But the follow-up showed HF downloads and API tokens are **near-opposite measures** — Xiaomi has the smallest HF footprint of any lab considered and the third-largest token volume; Qwen is the exact inverse. "Biggest" can't be claimed without naming the measure (A10). `deepseek-r1` has one priced host so it correctly fails the `n >= 2` guard and carries no spread.
 
 ### 2026-08-28 — the two cost paths disagreed, and only one of them drove the advice
