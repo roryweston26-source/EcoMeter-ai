@@ -293,7 +293,9 @@
     /* ── Tools grid ── */
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      /* min(300px, 100%) so the track floor collapses instead of overflowing
+         once the container is narrower than 300px (320px phones). */
+      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
       gap: 20px;
     }
 
