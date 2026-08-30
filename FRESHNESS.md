@@ -286,7 +286,8 @@ provider pages.
 **The 2026-08-29 Chinese-lab addition touched only the first three**, deliberately.
 The eight Alibaba / Z.ai / Moonshot models are priced, watered and shown on
 `pricing.html`, and appear **nowhere else** — not in the extension picker, not in
-`audit.html`, not in `free_tiers`, not in `plan-limits.json`. That is a coherent
+`audit.html`, not in `plan-limits.json`. **One exception added 2026-08-30:**
+`glm-5.3-flash` is now in `free_tiers` too (see A4). The other seven are unchanged. That is a coherent
 state, not an oversight: `check-prices.js` §5 requires picker models to be priced,
 not the reverse, and no subscription plans were added so no `plan-limits` rows were
 needed. **Adding any of these models to the picker or the Auditor means doing the
@@ -377,6 +378,58 @@ a recommendation:**
 - **Gemini's free default is now 3.6 Flash**, not 3.5.
 - **xAI's free app runs Grok 4.6** — x.ai ticks 4.6 in every column including Free, so **xAI gates on rate limits, not model access.** If xAI is ever added to the Auditor it belongs in `TOP_IS_FREE`.
 - **Copilot's model mapping is now recorded as not disclosed.** Microsoft publishes no mapping for any consumer tier; GPT-5.5 is a stand-in for pricing only. Don't present it as Copilot's model.
+
+**Re-verified 2026-08-30 against the providers’ own pages — nothing had moved in six
+days.** Recording the negative because a check that found nothing is still a check,
+and the next pass should know these were looked at rather than assumed:
+- **Google** ✅ `gemini.google/subscriptions` Free card still reads "Access to 3.6 Flash"
+  and "Varying access to 3.1 Pro". Our pair is exact. Note 3.7 Flash is priced in
+  the API but is **not** on the free app — do not promote it on the strength of the
+  API list alone.
+- **OpenAI** ✅ read from the compare grid’s per-cell labels, not the visual grid.
+  Free column: Luna **Yes**, Thinking Mini **Yes**, Sol **No**, Sol Pro **No**,
+  Legacy models **No**. Terra on Free is "Limited access in Work and Codex on
+  desktop" — deliberately not listed as a free chat model, and the note says so.
+- **xAI** ✅ every plan column including Free carries a tick on Grok 4.6 (checkmark
+  path vs the dash path used for a "no"). Gates on rate limits, not model access.
+- **Anthropic** — nothing to check against. `claude.com/pricing` publishes feature
+  bullets per plan and **no model mapping at any consumer tier**, so our free line-up
+  is unverifiable from Anthropic’s own surfaces. That is a not-disclosed finding, not
+  a gap in our data. API rates on the page did confirm Sonnet 5 $2/$10 and Haiku 4.5
+  $1/$5.
+
+**Two things the same pass fixed, both in `free_tiers`:**
+- **Copilot’s stand-in rate was being printed as Copilot’s rate.** `pricing.html`’s
+  free-tier view showed "Copilot (model not disclosed)" beside **$5.00 / $30.00** —
+  GPT-5.5’s rates, an inference of ours that Microsoft has never published. The
+  subscriptions view already guarded this with `no_api_rate`; the free view had no
+  such guard. `free_tiers.microsoft.models[0]` now carries **`no_api_rate: true`**
+  and the view prints "not disclosed" across both rate cells. **If another provider
+  is ever priced against a stand-in, set this flag in the same commit.**
+- **Z.ai was missing from the free tier entirely.** `subscriptions` has carried
+  `Z.ai (Free) $0` since 2026-08-29 with the model named in its note, and
+  `plan-limits.json` has the row — but `free_tiers` did not, so the Free-tier view
+  showed eight platforms while the Subscriptions view showed nine. Added
+  `glm-5.3-flash`. **Not independently verified by us** — the model is inherited
+  from the subscriptions note (chat.z.ai is login-walled), and the entry says so.
+  Its rate is on a promo to **2026-09-09**; `check-prices.js` fails once that passes.
+
+**Open, not fixed (2026-08-30):**
+- **`pricing.html`’s `FALLBACK_LIMITS` snapshot has drifted from `plan-limits.json`.**
+  The free rows are worst: Gemini (Free) still says `gemini-2.5-flash-lite` /
+  `gemini-3.5-flash`, Grok (Free) still says `grok-3-mini` / `grok-3`, ChatGPT Free
+  still tops out at `gpt-5.5`, and Z.ai is absent. Live data overwrites all of it on
+  load, so this is only visible when the fetch fails — but nothing guards it, and
+  it will keep rotting. **No guard exists for fallback-vs-live drift.**
+- **The free-tier view has no fallback data at all.** `freeData` is built only from
+  live `prices.json`; the other two views carry snapshots. A failed fetch used to
+  render "No matches. Try a different search.", blaming the reader for a network
+  error — it now says the data did not load. A snapshot would be an eighth copy of
+  the free line-up, so this was left as an honest empty state on purpose.
+- **x.ai now brands itself SpaceXAI.** Page title "Pricing: Compare Grok Plans |
+  SpaceXAI", footer "© 2026 SpaceXAI LLC". We display the provider as "xAI" and the
+  key `xai` is a cross-file join. Same shape as the Le Chat → Vibe rename: **decide
+  whether the display name follows, and never move the key.**
 
 **Guard:** `check-auditor.js`, `test-auditor.js` (sweeps all 56,250 combinations)
 

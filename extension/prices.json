@@ -244,7 +244,14 @@
       "label": "Copilot",
       "note": "Copilot resells OpenAI, but Microsoft publishes no model mapping for any consumer tier. Priced against GPT-5.5 as a stand-in only — not a disclosed mapping, and no API-equivalent cost is quoted for Copilot anywhere in the product.",
       "models": [
-        { "key": "gpt-5.5", "name": "Copilot (model not disclosed)" }
+        { "key": "gpt-5.5", "name": "Copilot (model not disclosed)", "no_api_rate": true }
+      ]
+    },
+    "zai": {
+      "label": "Z.ai",
+      "note": "Free chat at chat.z.ai runs GLM-5.3-Flash, per the Z.ai (Free) plan record of 2026-08-29. Login-walled, so no published message limits were found — the model comes from the product, the limits Z.ai does not disclose.",
+      "models": [
+        { "key": "glm-5.3-flash", "name": "GLM-5.3 Flash", "note": "limits not published" }
       ]
     }
   }

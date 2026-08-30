@@ -262,6 +262,29 @@
 
   .free { font-family: var(--mono); color: var(--green-2); }
 
+  /* Free-tier view. The API rates sit beside models the reader pays nothing for,
+     which reads as a bill unless the $0 is stated per row and the rates are
+     visibly demoted to reference. Hence both: a "you pay" column, and dimmed
+     rate cells. */
+  .paid-nothing { font-family: var(--mono); color: var(--green-2); font-size: 15px; }
+  .paid-nothing .sub {
+    display: block; font-family: var(--body); font-size: 11px;
+    color: var(--ink-faint); margin-top: 3px; white-space: normal;
+  }
+  td.num.ref { color: var(--ink-faint); }
+
+  /* the free-tier banner — above the table, so it lands before the numbers do */
+  .freebar {
+    display: none; border: 1px solid var(--line); border-left: 2px solid var(--green);
+    background: var(--panel); border-radius: 8px; padding: 15px 18px; margin: 0 0 18px;
+  }
+  .freebar.on { display: block; }
+  .freebar h2 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--green-2); margin: 0 0 8px; font-weight: 400;
+  }
+  .freebar p { margin: 0; font-size: 13.5px; color: var(--ink-dim); max-width: 74ch; }
+
   .empty { padding: 40px 16px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 13px; }
 
   /* ---------- Break-even / ceiling columns ---------- */
@@ -390,6 +413,11 @@
 
   <div class="chips" id="chips" role="group" aria-label="Filter by provider"></div>
 
+  <div class="freebar" id="freebar">
+    <h2>You pay nothing for any of these</h2>
+    <p><strong>Every model below is free to use.</strong> No subscription, no per-message charge &mdash; $0.00 is what it costs you. The API rates in the last two columns are what the <em>same model</em> costs a developer calling it through the provider&rsquo;s API: they are here to show what the free tier is worth, not what you are charged. Free plans limit volume, not price &mdash; where a cap is published or estimated, it is in the note under the model name.</p>
+  </div>
+
   <div class="tablewrap">
     <table id="table">
       <thead id="thead"></thead>
@@ -405,7 +433,7 @@
 
   <footer>
     <p class="note-line" id="foot-token">API rates shown per 1,000,000 tokens · pulled live from prices.json</p>
-    <p class="note-line" id="foot-free" style="display:none">Models each platform's free plan exposes · API list rates shown for reference · pulled live from prices.json</p>
+    <p class="note-line" id="foot-free" style="display:none">Models each platform's free plan hands you at no charge · API rates are what the same model costs through that provider's API, for comparison only — you are not billed them · pulled live from prices.json</p>
     <p class="note-line">Subscription prices verified from official provider pages · June 2026 · USD/month</p>
     <p class="note-line" id="foot-sub" style="display:none">Break even = what the same usage would cost at that provider's own API rates. It's an estimate built on an assumed message size and, for models that think before answering, an assumed amount of thinking — open "show the math" on any row to see every input. The API isn't the product, so treat it as a floor on value, not a full accounting: the same models arrive with no chat interface, no memory or projects, no file handling, no connectors or web search wired up, and rate limits of their own. A plan that prices out at $4 of tokens can still be worth $20 &mdash; this column tells you what the tokens cost, not what the product is worth to you. Two real costs sit outside it, pulling opposite ways: prompt caching isn’t modelled, which makes real API cost lower and break-even harder to reach, and neither is the per-search fee every provider here except DeepSeek charges on top of tokens ($5–$14 per 1,000 searches), which makes it higher and break-even easier. If your chat searches the web a lot, the true figure is below the one shown.</p>
     <p class="note-line">Prices change. We refresh weekly — spotted something stale? <a href="https://github.com/roryweston26-source/EcoMeter-ai/issues" target="_blank" rel="noopener">Open an issue.</a></p>
@@ -628,7 +656,12 @@
       models.forEach(function (mo) {
         var rec = flat[mo.key];
         if (!rec || typeof rec.input !== "number") return;
-        rows.push({ p: p, m: mo.name, note: mo.note, in: rec.input * 1e6, out: rec.output * 1e6 });
+        // no_api_rate marks a free tier whose model the provider has never
+        // disclosed — Copilot. We price it against a stand-in internally, but
+        // printing that stand-in in a rate column would assert a number
+        // Microsoft has not published. Carry the flag and print the gap instead.
+        rows.push({ p: p, m: mo.name, note: mo.note, nr: !!mo.no_api_rate,
+                    in: rec.input * 1e6, out: rec.output * 1e6 });
       });
     }
     return rows;
@@ -1029,10 +1062,21 @@
         { key: "_be",     label: "Break even at", cls: "num" },
         { key: "_ceil",   label: "Ceiling",      cls: "num" }
       ];
+    } else if (state.view === "free") {
+      // The cost-to-you column sits between the model and the API rates on
+      // purpose: the reader meets the $0 before the per-token figures, so those
+      // read as the comparison they are. Not sortable — every row is the same $0.
+      cols = [
+        { key: "p",    label: "Provider",       cls: "" },
+        { key: "m",    label: "Free model",     cls: "" },
+        { key: "_you", label: "You pay",        cls: "num", nosort: true },
+        { key: "in",   label: "API input /1M",  cls: "num ref" },
+        { key: "out",  label: "API output /1M", cls: "num ref" }
+      ];
     } else {
       cols = [
         { key: "p",   label: "Provider", cls: "" },
-        { key: "m",   label: state.view === "free" ? "Free model" : "Model", cls: "" },
+        { key: "m",   label: "Model", cls: "" },
         { key: "in",  label: "Input /1M", cls: "num" },
         { key: "out", label: "Output /1M", cls: "num" }
       ];
@@ -1041,7 +1085,7 @@
     cols.forEach(function (c) {
       var dir = state.sortKey === c.key ? (state.sortDir === 1 ? "asc" : "desc") : "";
       var arrow = dir === "asc" ? "▲" : (dir === "desc" ? "▼" : "");
-      tr += '<th class="sortable ' + c.cls + '" data-key="' + c.key + '" data-dir="' + dir + '" scope="col">' +
+      tr += '<th class="' + (c.nosort ? "" : "sortable ") + c.cls + '" data-key="' + c.key + '" data-dir="' + dir + '" scope="col">' +
             c.label + '<span class="arrow">' + arrow + '</span></th>';
     });
     tr += "</tr>";
@@ -1094,8 +1138,14 @@
 
     var tbody = $("tbody");
     if (!data.length) {
-      var span = state.view === "sub" ? 5 : 4;
-      tbody.innerHTML = '<tr><td class="empty" colspan="' + span + '">No matches. Try a different search.</td></tr>';
+      var span = state.view === "token" ? 4 : 5;
+      // Free rows are built only from live prices.json — there is no fallback
+      // snapshot behind them, so an empty free table means the fetch failed, not
+      // that the search matched nothing. Say which, rather than blaming the user.
+      var msg = (state.view === "free" && !freeData.length)
+        ? "Free-tier data is pulled live from prices.json and did not load. Reload the page."
+        : "No matches. Try a different search.";
+      tbody.innerHTML = '<tr><td class="empty" colspan="' + span + '">' + msg + '</td></tr>';
       return;
     }
 
@@ -1104,6 +1154,15 @@
                  '<span class="name">' + provName(r.p) + '</span></span>';
       var model = '<span class="model">' + r.m + owBadge(r) + '</span>' +
                   (r.note ? '<span class="note">' + r.note + '</span>' : '') + spreadNote(r);
+
+      if (state.view === "free") {
+        var rate = r.nr
+          ? '<td class="num ref" colspan="2"><span class="nd">not disclosed</span></td>'
+          : '<td class="num ref">' + money(r.in) + '</td><td class="num ref">' + money(r.out) + '</td>';
+        return '<tr><td>' + prov + '</td><td>' + model + '</td>' +
+               '<td class="num"><span class="paid-nothing">$0.00<span class="sub">free to use</span></span></td>' +
+               rate + '</tr>';
+      }
 
       if (state.view !== "sub") {
         return '<tr><td>' + prov + '</td><td>' + model + '</td>' +
@@ -1309,6 +1368,7 @@
     $("foot-sub").style.display   = view === "sub"   ? "" : "none";
     $("arch").className     = view === "sub" ? "arch on" : "arch";
     $("callout").className  = view === "sub" ? "callout on" : "callout";
+    $("freebar").className  = view === "free" ? "freebar on" : "freebar";
     buildChips();
     render();
   }
