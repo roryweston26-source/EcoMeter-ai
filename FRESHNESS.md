@@ -1221,6 +1221,29 @@ data sitting next to it.
   The page now calls that directional only. **Next re-anchor, go looking for a real
   inference-opex total** and re-level, don't just re-label.
 
+- **⚠️ UNVERIFIED SUPERLATIVE, flagged 2026-08-30, not resolved.** `ai-clock.html`
+  says of the prompts counter: *"The only official disclosure is still ChatGPT's ~2.5
+  billion a day (18 billion messages a week)."* The **ChatGPT figure itself is
+  sourced** (OpenAI "How People Use ChatGPT", NBER Sept 2025) and the page correctly
+  says OpenAI has not refreshed it. **What is NOT established is the word "only."**
+  Nobody has checked whether another assistant has since published a prompt or
+  message volume — one search for Gemini app query volume returned nothing usable,
+  which is not evidence of absence.
+
+  This is the same shape as the two superlatives corrected on 2026-08-30 (E3a), and
+  it is flagged rather than fixed because settling it means checking every major
+  provider's disclosures, not one search. **Either verify it across providers or
+  soften it to "the only one we have found."** Note the claim is load-bearing in the
+  honest direction — it exists to tell the reader the counter rests on one old
+  number — so it is not urgent, but it is exactly the class of sentence that rots.
+
+- **`index.html`'s "None of the major providers show you this" (water/energy) was
+  read on 2026-08-30 and STANDS**, on the narrow reading that "show *you*" means
+  surfacing your own usage's footprint in the product, which none of them do. It is
+  close to the line: Google publishes a median per-prompt figure (0.26 ml) and
+  Alibaba now publishes fleet PUE and WUE (F1d). **If that sentence is ever
+  broadened to "publish", it becomes false.**
+
 - **An external cross-check exists for the per-unit panel and we are not allowed to use it.**
   Ornn's Token Price Index — realized $/Mtok per lab, free no-key API at
   `api.ornnai.com`, one month of daily history — is the closest external reference to
