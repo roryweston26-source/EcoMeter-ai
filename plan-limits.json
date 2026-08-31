@@ -117,6 +117,15 @@
     "credit_conversion": {
       "comment": "Turns a credit allowance into messages so the Ceiling column can price it. Every input here — the formula, the divisor, the per-model multipliers — is published by the provider, so the conversion is DERIVED, not estimated. Two choices are ours, and both make the ceiling SMALLER; see assumptions_are_conservative.",
       "assumptions_are_conservative": "Z.ai's own token table assumes a 95% cache hit, and the top end of its published token range assumes 100% off-peak use, where a credit costs half. Both would RAISE the ceiling. We take neither: cache_hit 0 and peak-rate credits. A ceiling that flatters the plan is the exact failure this column exists to avoid, and FRESHNESS A11 settled the peak/off-peak question the same way for DeepSeek — quote the end of the range you do not control.",
+      "perplexity": {
+        "usd_per_credit": 0.01,
+        "published": true,
+        "formula": "100 credits equals $1",
+        "scope": "Computer",
+        "comment": "Perplexity publishes the conversion in dollars directly, which is simpler than Z.ai's and rarer: it states what a credit is WORTH rather than what it costs in tokens. It does NOT produce a Ceiling — the allowance is scope_limited to Computer, and pricing a whole plan off one feature is the refusal that already protects ChatGPT Go. What it produces is a value the reader can check against the sticker price, which is the useful half.",
+        "source": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity",
+        "as_of": "2026-08-29"
+      },
       "zai": {
         "divisor": 10000,
         "cache_hit": 0,

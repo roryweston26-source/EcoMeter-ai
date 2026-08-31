@@ -940,6 +940,31 @@
     return (inC + outC) / (conv.divisor || 1);
   }
 
+  // What a credit allowance is WORTH in dollars, and where that figure came from.
+  //
+  // Two providers publish enough to answer this and they answer it differently.
+  // Perplexity states the conversion outright — "100 credits equals $1" — so its
+  // figure is PUBLISHED. Z.ai publishes credit multipliers and per-token rates but
+  // never the rate between them, so its figure is DERIVED: what the credits for one
+  // message cost, against what that message costs on Z.ai's own API. The labels are
+  // not decoration. A published conversion is a promise the provider made; a derived
+  // one is arithmetic we did, and the reader is entitled to know which they are
+  // reading — the same distinction the whole Transparency Index turns on.
+  function creditValue(lim, cap) {
+    if (!cap || cap.unit !== "credits" || typeof cap.n !== "number") return null;
+    var conv = ((PLAN_LIMITS._meta || {}).credit_conversion || {})[lim.p];
+    if (!conv) return null;
+    if (typeof conv.usd_per_credit === "number")
+      return { usd: cap.n * conv.usd_per_credit, perCredit: conv.usd_per_credit,
+               published: true, formula: conv.formula, source: conv.source, conv: conv };
+    // Derived: cost of one message ÷ credits for one message = dollars per credit.
+    var per = creditsPerMessage(lim);
+    var cpm = costPerMessage(lim.p, (lim.value_models || {}).high);
+    if (!per || !cpm) return null;
+    return { usd: cap.n * (cpm / per), perCredit: cpm / per,
+             published: false, source: conv.source, conv: conv };
+  }
+
   // One cap, expressed in messages. Units we cannot convert are refused rather than
   // assumed — pricing 10,000 credits as 10,000 messages would turn the best allowance
   // data on the table into the worst number on the page.
@@ -1468,6 +1493,44 @@
                    ? 'That is longer than a person is awake, so this plan\'s cap is not what limits its value to you — your time is. The headline multiple is arithmetic, not an opportunity.'
                    : 'Treat it as the outer edge of possible, not a forecast.')) +
              (ceil.cap.soft ? ' This cap is also a downgrade rather than a cut-off, so usage continues on a cheaper model past this point.' : "") + '</p>';
+    }
+
+    // What the allowance is worth. Deliberately outside the ceiling block, because the
+    // plan this was built for has no ceiling: Perplexity Max's 10,000 credits bound
+    // Computer, not the plan, and `capPerDay` refuses scope_limited caps on purpose.
+    // Refusing to compute a ceiling is not a reason to withhold the one number the
+    // provider did publish — it is a reason to print it without calling it a ceiling.
+    if (lim && lim.caps) {
+      var cvRows = lim.caps.map(function (c) { return { c: c, v: creditValue(lim, c) }; })
+                           .filter(function (x) { return x.v; });
+      if (cvRows.length) {
+        var v0 = cvRows[0].v;
+        out += '<dl>' + cvRows.map(function (x) {
+          return '<dt>What ' + fmtNum(x.c.n) + ' credits buy</dt><dd>' +
+                 money0(x.v.usd) + ' of usage' +
+                 (x.c.scope ? ' on ' + esc(x.c.scope) : '') + ', per ' + esc(x.c.window) +
+                 // Only set this against the price when the WINDOW is monthly. "$20 per
+                 // 7d against an $18/mo plan" invites a comparison between two
+                 // different periods, and annualising the shorter window to fix that
+                 // would recreate the exact error the two-window ceiling exists to
+                 // avoid. The ceiling row already makes this comparison properly.
+                 ((sub.price && (x.c.window === '30d' || x.c.window === '1mo'))
+                   ? ' — against a ' + money0(sub.price) + '/mo plan' : '') + '</dd>';
+        }).join('') + '</dl>' +
+        '<p class="why">' + (v0.published
+          ? '<strong>' + esc(provName(sub.p)) + ' publishes this conversion itself</strong> (' +
+            esc(v0.formula || '') + '), which almost nobody does. '
+          : '<strong>Derived, not published.</strong> ' + esc(provName(sub.p)) + ' publishes the credit ' +
+            'multipliers and its own per-token rates but never the rate between them, so this is what ' +
+            'the credits for one message cost against what that message costs on its API. ') +
+        'A credit here is worth about ' + (v0.perCredit >= 0.01 ? '$' + v0.perCredit.toFixed(2)
+                                                                 : (v0.perCredit * 100).toFixed(2) + ' cents') + '. ' +
+        '<em>Credits are not a unit</em> — every provider mints its own, and the same word buys ' +
+        'different amounts from each. That is worth knowing before comparing two plans that both quote them.' +
+        (cvRows[0].c.scope_limited
+          ? ' This allowance covers ' + esc(cvRows[0].c.scope) + ' only, not the whole plan, so it is not a ceiling and we do not print one.'
+          : '') + '</p>';
+      }
     }
 
     // A window the provider admits to and will not size. This is deliberately OUTSIDE

@@ -1179,6 +1179,44 @@ about 4% across the archetype range and is not currently stated anywhere user-fa
 **Still zero for everyone else, and that is still the finding.** Nobody else publishes
 an allowance that bounds a whole plan.
 
+## B7. Credit allowances — valued, not turned into ceilings (added 2026-08-31)
+
+**Two providers publish enough to say what a credit is worth, and they publish
+different things.** The distinction is the point, and it is labelled on the page:
+
+| Provider | What they publish | Our figure | Provenance |
+|---|---|---|---|
+| Perplexity | "100 credits equals $1" | **$0.01/credit** | **published** |
+| Z.ai | credit multipliers + per-token rates, never the rate between them | **~0.20 cents/credit** | **derived** |
+
+**So a Perplexity credit is worth about 5× a Z.ai credit.** That is the finding, and
+it is why the panel says *credits are not a unit*: every provider mints its own and
+the same word buys different amounts. Anyone comparing two plans that both quote
+"credits" is comparing nothing until someone does this arithmetic.
+
+**Perplexity Max's allowance is VALUED but gets NO ceiling, and that refusal is
+load-bearing.** The 10,000 credits bound Computer, not the plan — `scope_limited:
+true` — and Pro Search on Max is still marketed as unlimited. Pricing the plan off
+one feature is the same error the ChatGPT Go refusal already prevents. What changed
+on 2026-08-31 is only that refusing to compute a ceiling stopped being a reason to
+withhold the number the provider *did* publish: **$100 of published value against a
+$200/mo plan**, printed without calling it a ceiling.
+
+**Source of truth:** `plan-limits.json` → `_meta.credit_conversion.<provider>`. A
+block with `usd_per_credit` must carry `published: true`, the quoted `formula` and a
+source; a block without one must NOT claim `published`. `check-prices.js` §11 fails
+both ways — putting our arithmetic in a provider's mouth is the worst thing this
+file could do, because it is the distinction the whole Transparency Index turns on.
+
+**Re-verify:** Perplexity's conversion is worded "**Today**, 100 credits equals $1",
+which is a provider telling you it reserves the right to change it. Re-read it, and
+expect the dollar figure to move.
+
+**Watch for:** the price comparison beside a valued allowance is deliberately shown
+only for a **monthly** window. "$20 per 7d against an $18/mo plan" invites a
+comparison between two different periods, and annualising the shorter window to fix
+that would recreate the exact error B4's two-window ceiling exists to avoid.
+
 ## B6. Unquantified windows — the bias we label rather than guess (added 2026-08-30)
 
 **Anthropic, Google and Perplexity each state that a weekly cap exists and none
@@ -1997,6 +2035,52 @@ It goes further than any other allowance disclosure on the table:
 **It is the only allowance figure on this axis a reader can do arithmetic with.**
 🟡 not 🟢 because it bounds **Computer**, Perplexity's agent product, not the plan —
 Pro Search on Max is still marketed as unlimited with no number.
+
+### ⚠️ The count in the cell prose went stale, and it came back to the right number by accident (2026-08-31)
+
+Six of the eight allowance cells shared a lede: *"Across 27 consumer plans from 8
+providers, 26 publish no usage allowance at all."* True when written on 2026-08-25.
+**Then this entry happened.** Perplexity's own cell was corrected to 🟡 on 2026-08-29
+and the other six were not — so for a day the table asserted a count that only holds
+if Perplexity is still inside it. **One table disagreeing with itself.**
+
+**Why it survived a second reading is the part worth remembering.** Adding Z.ai's
+three tiers on 2026-08-30 took the data to 31 plans and 5 disclosed — and 31 − 5 = 26
+made the number **accidentally correct again**, against a denominator that was still
+wrong. A stale figure that has drifted back into coincidental correctness is the
+hardest kind to catch by eye.
+
+**The ratio is the finding, not the count: 96% → 84%**, while the sentence stating it
+never changed. Quote the ratio.
+
+**Both corrections came from looking harder. Neither came from a provider publishing
+anything.** That is the honest framing for any future movement on this axis.
+
+### ⚠️ Z.ai is not graded on this axis, and it is the strongest discloser in the dataset
+
+The index covers eight providers; `plan-limits.json` tracks nine. **The missing one
+publishes more about its allowance than anything on this table** — absolute credit
+caps on two windows, the formula, the per-model multipliers and a token conversion
+(B4, A11). An axis about non-disclosure that omits the best discloser is making the
+omission it grades others for.
+
+**Not fixed by inventing a row.** Grading Z.ai means reading its privacy, retention
+and environmental disclosures, not assuming them — E1g is exactly what happens when
+an absence is asserted on an inadequate look. **What shipped instead is the gap,
+stated in `pricing.note`:** read "seven of eight" as a claim about these eight and
+not about the market.
+
+**To close it:** grade Z.ai on all five pricing dimensions plus data practices. Its
+`allowance` cell is a 🟢 and would be the only one on the axis.
+
+**Guard:** `check-transparency.js` §4b recomputes plans / providers / no-allowance
+from `plan-limits.json` and fails on any of the three, fails if the claim is deleted
+rather than corrected, and fails if a tracked provider is neither graded nor named as
+a gap in the note. All five paths validated by reintroducing the bug — including a
+replay of the 2026-08-29 failure itself. **The guard's own first version was broken
+the same way it guards against:** `matrices()` yields tuples, not objects, so it
+iterated nothing and passed on an empty set. Only the "claim not found at all" check
+caught it.
 
 ### The other seven were read at source and confirmed 🔴
 
