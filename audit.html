@@ -973,8 +973,16 @@ function unquantifiedWindow(prov, tier, depth){
   if(plans && (depth||0) <= 4){
     const row = plans.find(l => l.p===prov && l.m===tier.m);
     if(row){
-      if(row.unquantified_windows && row.unquantified_windows.length)
-        return row.unquantified_windows[0].window;
+      if(row.unquantified_windows && row.unquantified_windows.length){
+        // A window SCOPED to one product surface is not this tool's to repeat.
+        // OpenAI states a weekly window for Codex and the agentic features sharing
+        // its allowance — not for ChatGPT chat, which is what the Auditor prices.
+        // Telling a Plus subscriber "OpenAI caps you weekly" on the strength of a
+        // Codex disclosure asserts about a surface we do not measure, which is the
+        // same category error as pricing a whole plan off a feature sub-limit.
+        // pricing.html covers every surface and shows it there, with its scope named.
+        return row.unquantified_windows[0].scope ? null : row.unquantified_windows[0].window;
+      }
       if(row.multiplier && row.multiplier.of)
         return unquantifiedWindow(prov, {m:row.multiplier.of}, (depth||0)+1);
       return null;   // live data says no window; it beats a stale inline marker

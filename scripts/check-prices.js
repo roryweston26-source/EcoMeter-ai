@@ -423,6 +423,27 @@ for (const [prov, m] of Object.entries(p.api)) {
     fail('pricing.html no longer tells the reader that a scope-limited credit allowance ' +
          'is not a ceiling. Valuing one without that sentence prices a whole plan off a feature.');
 
+  // A scope-limited cap is PUBLISHED. The ceiling refuses to price it, and for one
+  // day the cell underneath that refusal said "not disclosed" — or, on the Mistral
+  // row, "~150 messages/day ... not published by Mistral" directly above a note
+  // recording that Mistral published exactly 150/day. Refusing to compute is right;
+  // describing the provider as silent because we refused is a false statement about
+  // them, and it is the direction this project keeps having to correct.
+  // A plain substring, not a regex: the source being matched is itself JavaScript full
+  // of quotes, parens and a '+', and the first version of this line was a regex whose
+  // metacharacters made it match nothing while looking exactly right.
+  if (!html.includes('<b>published by ' + "' + provName(r.p)"))
+    fail('pricing.html no longer credits a scope-limited cap to the provider that published ' +
+         'it. A cap we decline to price is still a cap they published.');
+  {
+    // A published figure must also OUTRANK a third-party guess in that cell.
+    const iScoped = html.indexOf('scope_limited; })) {');
+    const iThird  = html.indexOf('lim.third_party && lim.third_party.length) {');
+    if (iScoped < 0 || iThird < 0 || iScoped > iThird)
+      fail('pricing.html checks third-party estimates before published scope-limited caps, ' +
+           'so a plan with both will credit the estimate and call the provider silent');
+  }
+
   // An unquantified window is a claim about a provider. It needs a source like any
   // other, and an effect, because the whole point is that it biases a number.
   for (const s of L.plans) for (const u of (s.unquantified_windows || [])) {

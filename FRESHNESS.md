@@ -1179,6 +1179,94 @@ about 4% across the archetype range and is not currently stated anywhere user-fa
 **Still zero for everyone else, and that is still the finding.** Nobody else publishes
 an allowance that bounds a whole plan.
 
+## B8. The window survey — all nine providers, asked the same question (2026-08-31)
+
+**The question nobody had asked: does this provider name a usage WINDOW, and does it
+size it?** That is not the allowance question. Anthropic proves it: 🔴 on allowance
+and it still states a weekly window. Before this pass, four of nine providers had
+window data and three of those four had arrived incidentally.
+
+| Provider | Window named? | Sized? | Read at source |
+|---|---|---|---|
+| Z.ai | 5h + **7d** | **both, in credits** | ✅ |
+| OpenAI | 5h + **7d** (Codex only) | 5h yes (ranges), 7d **no** | ✅ |
+| Anthropic | 5h + **7d** | neither | ✅ |
+| Google | 5h + **7d** | neither | ✅ |
+| Perplexity | **7d** + 30d | 30d yes (credits), 7d **no** | ✅ |
+| Microsoft | **1d + 30d** | yes, per feature | ✅ |
+| Mistral | **1d** | yes, one feature | ✅ |
+| xAI | **none** | — | ✅ |
+| DeepSeek | **⚪ unknown** | — | ❌ could not read |
+
+**Five of nine name a weekly or monthly window. Only Z.ai sizes the long one.**
+
+### The three corrections, all against the provider
+
+Same direction as the 2026-08-29 pass, and that is now a pattern rather than an
+incident: **when this project is wrong about disclosure, it is wrong by understating
+what the provider published.** Disclosed plans went 5 → 10 of 31.
+
+- **OpenAI** publishes a per-model, per-plan table of local messages per five-hour
+  window for Codex (Sol 10–100 on Plus, 50–500 Pro 5×, 200–2,000 Pro 20×), a
+  credits-per-1M-tokens rate card with cached rates, and "GPT-5.6 usage averages
+  5–30 credits per message". **It also names a weekly window twice** — hedged on the
+  pricing page ("Additional weekly limits may apply") and unhedged in the help
+  centre (a banked reset "refreshes your 5-hour and weekly Codex usage windows").
+  **All of it bounds Codex, not chat** — the ChatGPT Free FAQ and Pro tiers article
+  name no window at all. ⚠️ **It is also the only place OpenAI has quantified the
+  base its "5×/20× more usage" marketing multiplies:** the Pro columns are exactly
+  5× and 20× the Plus column.
+- **Microsoft** publishes Agents 25 tasks/month, Vision 10/10/15 min/day, Voice
+  30/30/60 min/day, and 60 AI credits/month on Personal and Family — then makes
+  Chat "Extensive use" and Premium's credits "Extensive usage beyond standard credit
+  limits". **Quantified to the minute everywhere except the thing you upgrade for.**
+- **Mistral** publishes exactly one absolute figure — "Flash answers: 200 / day on
+  Team vs. 150 / day on Pro" — **in an FAQ answer to a different question**, while
+  the plan comparison table it built for comparing plans is relative throughout.
+
+### The two that did not move, and why they are different
+
+- **xAI is 🔴 and read at source.** Three pages (`x.ai/pricing`, `x.ai/grok`,
+  `help.x.com` X Premium). Every reference to Grok volume is relative AND unwindowed
+  — "higher rate limits", "increased usage limits on Grok" — no base, no period, no
+  reset. **Of nine providers it is the only one naming neither a number nor a
+  window.**
+- **DeepSeek is ⚪ and that is a correction to US.** Its allowance cell had been
+  graded 🔴 off the shared aggregate sentence, never off a DeepSeek page. Checked
+  properly: `deepseek.com` renders as a JS shell (599 chars to a plain fetch),
+  `chat.deepseek.com` returns an empty 202. **The readable API doc covers per-account
+  CONCURRENCY, which is not a consumer usage window and must not be quoted as one.**
+  To close it: open `chat.deepseek.com` in a logged-in browser.
+
+### Tooling notes for the next pass
+
+- **`curl -sL -A "<browser UA>"` reached help.openai.com fine.** The standing note
+  that OpenAI docs 403 applies to WebFetch, not to curl. Worth knowing before
+  reaching for the browser.
+- **Retry once.** `help.x.com` served a Cloudflare interstitial on the first request
+  and the real page on the second. Check `<title>` before trusting a body.
+- **microsoft.com blocked curl outright** ("Your request has been blocked"), but
+  `support.microsoft.com` did not. A blocked host is not a silent provider — try its
+  other hosts before recording anything.
+- **Read the primary source even when a search result summarises it.** The search
+  summary for Microsoft was roughly right and would still have cost us the exact
+  per-day figures, which is what makes the cell worth anything.
+
+**Re-verify:** OpenAI's Codex table is on a developer page that changes often, and
+the weekly window is the thing to watch — if OpenAI ever sizes it, that is the first
+whole-plan weekly figure from a Western provider and it moves B4, B6 and this entry.
+
+**Guard:** `check-prices.js` §11 (window/scope shape and sources), `check-auditor.js`
+§18 (scoped windows are excluded from the Auditor — see below), `check-transparency.js`
+§4b (the allowance counts).
+
+⚠️ **A scoped window must NOT reach the Auditor.** OpenAI's weekly window is real and
+bounds Codex; the Auditor prices chat. Repeating it at a Plus subscriber asserts about
+a surface the tool does not measure — the same category error as pricing a whole plan
+off a feature sub-limit. `unquantified_windows[].scope` is what suppresses it, in both
+the live resolver and the guard. `pricing.html` covers every surface and does show it,
+with the scope named.
+
 ## B7. Credit allowances — valued, not turned into ceilings (added 2026-08-31)
 
 **Two providers publish enough to say what a credit is worth, and they publish

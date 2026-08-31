@@ -211,10 +211,20 @@ for (const m of fbBlock.matchAll(/\{\s*p:"(\w+)",\s*m:"([^"]+)",\s*provenance:"(
   if (inlineCap !== fileCap)
     fail('pricing.html fallback caps mismatch: ' + name + (fileCap ? ' (inline is missing them)' : ' (inline has caps the file does not)'));
   if (inlineCap && fileCap) {
-    const n = rest.match(/n:\s*(\d+)/), win = rest.match(/window:\s*"([^"]+)"/);
+    // Match INSIDE the caps block, not anywhere in `rest`. A plan now also carries
+    // unquantified_windows, whose `window:"7d"` sits before caps in the generated
+    // snapshot — so the loose regex compared the weekly non-disclosure against the
+    // 5-hour cap and reported drift on three correct rows.
+    const capsBlock = (rest.match(/caps:\s*\[([\s\S]*?)\]/) || [, ''])[1];
+    const n = capsBlock.match(/\bn:\s*(\d+)/), win = capsBlock.match(/window:\s*"([^"]+)"/);
     if (!n || +n[1] !== lim.caps[0].n || !win || win[1] !== lim.caps[0].window)
       fail('pricing.html fallback cap figure drift: ' + name);
-    if (/scope_limited:\s*true/.test(rest) !== !!lim.caps[0].scope_limited)
+    // A published RANGE must survive the round trip: dropping the high end would
+    // silently turn "10-100 messages per 5h" into "10", understating the provider.
+    const hi = capsBlock.match(/n_high:\s*(\d+)/);
+    if (!!hi !== (lim.caps[0].n_high != null) || (hi && +hi[1] !== lim.caps[0].n_high))
+      fail('pricing.html fallback cap range drift: ' + name + ' (n_high)');
+    if (/scope_limited:\s*true/.test(capsBlock) !== !!lim.caps[0].scope_limited)
       fail('pricing.html fallback scope_limited drift: ' + name);
   }
 }
@@ -601,7 +611,16 @@ for (const r of S.routes) {
       fallback. Two copies of one fact is the drift this repo keeps paying for, so
       assert they agree in BOTH directions: a marker with nothing behind it in the
       data is a claim we invented, and a window in the data with no marker silently
-      disappears the moment a fetch fails. */
+      disappears the moment a fetch fails.
+
+      SCOPED WINDOWS ARE EXCLUDED, and the reason is the point. On 2026-08-31 OpenAI
+      turned out to state a weekly window — for Codex and the agentic features that
+      share its allowance, not for ChatGPT chat. The Auditor prices CHAT. Telling a
+      Plus subscriber "OpenAI caps you weekly" on the strength of a Codex disclosure
+      would assert about a surface this tool does not measure, which is the same
+      category error as pricing a whole plan off a feature sub-limit. pricing.html
+      covers every surface and does show it, with its scope named. So: a window
+      carrying a `scope` needs no Auditor marker; an unscoped one still does. */
 {
   const L = JSON.parse(fs.readFileSync(R + 'plan-limits.json', 'utf8'));
   // Resolve the way audit.html does: the plan's own window, else its multiplier
@@ -610,6 +629,9 @@ for (const r of S.routes) {
     if ((depth || 0) > 4) return null;
     const row = (L.plans || []).find(l => l.p === p && l.m === m);
     if (!row) return null;
+    // A window scoped to one product surface is not a claim about the whole plan,
+    // so it is not the Auditor's to repeat.
+    if ((row.unquantified_windows || []).length && row.unquantified_windows[0].scope) return null;
     if ((row.unquantified_windows || []).length) return row.unquantified_windows[0].window;
     if (row.multiplier && row.multiplier.of) return resolve(p, row.multiplier.of, (depth || 0) + 1);
     return null;

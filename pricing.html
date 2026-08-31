@@ -768,9 +768,12 @@
       { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
       { p:"openai", m:"ChatGPT Go", provenance:"disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" },
         caps:[{ n:10, unit:"messages", window:"5h", scope:"Thinking", soft:false, scope_limited:true }] },
-      { p:"openai", m:"ChatGPT Plus", provenance:"not_disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
-      { p:"openai", m:"ChatGPT Pro", provenance:"not_disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
-      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"not_disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
+      { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
+        caps:[{ n:10, n_high:100, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
+      { p:"openai", m:"ChatGPT Pro", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
+        caps:[{ n:50, n_high:500, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
+        caps:[{ n:200, n_high:2000, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
 
       { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5" } },
       { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-opus-5" },
@@ -798,11 +801,15 @@
         caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }] },
 
       { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed" },
-      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"not_disclosed" },
+      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"disclosed",
+        caps:[{ n:25, unit:"agent tasks", window:"30d", scope:"Agents", soft:false, scope_limited:true },
+              { n:15, unit:"minutes", window:"1d", scope:"Vision", soft:false, scope_limited:true },
+              { n:60, unit:"minutes", window:"1d", scope:"Voice", soft:false, scope_limited:true }] },
 
       { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
         third_party:[{ n:25, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
-      { p:"mistral", m:"Le Chat Pro", provenance:"not_disclosed", value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
+      { p:"mistral", m:"Le Chat Pro", provenance:"disclosed", value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
+        caps:[{ n:150, unit:"Flash answers", window:"1d", scope:"Flash answers", soft:false, scope_limited:true }],
         third_party:[{ n:150, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
 
       { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{ low:"deepseek-v4-flash", high:"deepseek-v4-pro" } },
@@ -1067,6 +1074,8 @@
   // keeps its own phrasing map because it needs a preposition rather than an
   // adjective: "every 5 hours" reads as prose where "5-hour" reads as a label.
   var WINDOW_LONG = { "1h":"hourly", "3h":"3-hourly", "5h":"5-hour", "1d":"daily", "24h":"daily", "7d":"weekly", "30d":"monthly" };
+  // Short form for a rate, where "/1d" reads as a typo and "/day" reads as English.
+  var WINDOW_SHORT = { "1h":"hour", "3h":"3h", "5h":"5h", "1d":"day", "24h":"day", "7d":"week", "30d":"month" };
 
   function fmtNum(n) {
     if (n === null || n === undefined) return "—";
@@ -1354,13 +1363,28 @@
         // A window the provider admits to but will not size makes any figure derived
         // from a SHORTER window an over-estimate. Say so on the number itself.
         if (ceil.unquantified && ceil.unquantified.length) {
-          tail += ' · ' + provName(r.p) + ' says a ' +
-                  (WINDOW_LONG[ceil.unquantified[0].window] || ceil.unquantified[0].window) +
-                  ' cap also applies and does not publish it, so this is an over-estimate';
+          var u0 = ceil.unquantified[0];
+          tail += ' · ' + provName(r.p) + ' says a ' + (WINDOW_LONG[u0.window] || u0.window) +
+                  ' cap also applies' + (u0.scope ? ' to ' + esc(u0.scope) : '') +
+                  ' and does not publish it, so this is an over-estimate';
         }
         ceilCell = '<span class="' + (unreachable && !ceil.agentic ? "tp" : "be") + '">' + money0(ceil.perMonth) + ' /mo' +
                    '<span class="sub">' + (ceil.multiple ? "up to " + Math.round(ceil.multiple) + "× the price · " : "") +
                    tail + '</span></span>';
+      } else if (lim && (lim.caps || []).some(function (c) { return c.scope_limited; })) {
+        // Published, and deliberately not priced. Say both halves.
+        var sc = (lim.caps || []).filter(function (c) { return c.scope_limited; });
+        var figures = sc.map(function (c) {
+          return fmtNum(c.n) + (c.n_high != null ? '\u2013' + fmtNum(c.n_high) : '') + ' ' +
+                 esc(c.unit) + '/' + esc(WINDOW_SHORT[c.window] || c.window);
+        });
+        var scopes = [];
+        sc.forEach(function (c) { var s = c.scope || c.unit; if (s && scopes.indexOf(s) === -1) scopes.push(s); });
+        ceilCell = '<span class="tp">' + figures.slice(0, 2).join(' · ') +
+                   (figures.length > 2 ? ' +' + (figures.length - 2) + ' more' : '') +
+                   '<span class="sub"><b>published by ' + provName(r.p) + '</b> · bounds ' +
+                   esc(scopes.join(', ')) + ', not the plan — so there is no honest ceiling to ' +
+                   'compute from it</span></span>';
       } else if (lim && lim.third_party && lim.third_party.length) {
         var t = lim.third_party[0];
         var conf = t.confidence || "low";
@@ -1370,8 +1394,11 @@
         // neither. Printing the short-window number alone let a reader take it for a
         // sustainable rate, which overstates the plan — so the cell now carries the
         // longer window the provider has admitted to but never sized.
+        // An unquantified window only undermines a figure it actually sits above,
+        // and only if it covers the same thing. OpenAI's weekly window is real but
+        // bounds Codex, so it says nothing about a third-party estimate of chat.
         var uq = (lim.unquantified_windows || []).filter(function (u) {
-          return (WINDOW_HOURS[u.window] || 0) > (WINDOW_HOURS[t.window] || 0);
+          return !u.scope && (WINDOW_HOURS[u.window] || 0) > (WINDOW_HOURS[t.window] || 0);
         })[0];
         ceilCell = '<span class="tp ' + (conf === "low" ? "tp-low" : "") + '">~' + t.n + ' ' + t.unit + '/' + win +
                    '<span class="sub"><b>' + conf + ' confidence</b> · not published by ' + provName(r.p) +
@@ -1541,7 +1568,8 @@
     if (lim && lim.unquantified_windows && lim.unquantified_windows.length) {
       out += lim.unquantified_windows.filter(function (u) { return u.stated; }).map(function (u) {
         return '<p class="why"><strong>A ' + esc(WINDOW_LONG[u.window] || u.window) +
-               ' cap exists that ' + esc(provName(sub.p)) + ' will not size.</strong> ' +
+               ' cap' + (u.scope ? ' on ' + esc(u.scope) : '') +
+               ' exists that ' + esc(provName(sub.p)) + ' will not size.</strong> ' +
                esc(u.stated) + ' ' + esc(u.effect || '') +
                (u.source ? ' <a href="' + esc(u.source) + '" target="_blank" rel="noopener">Source</a>.' : '') +
                '</p>';
@@ -1637,7 +1665,8 @@
     // the prose never followed, so one paragraph contradicted itself and
     // understated what a provider actually publishes.
     // Windows carry their own preposition — "every 5 hours" but "a month".
-    var WINDOW = { "5h": "every 5 hours", "24h": "a day", "7d": "a week", "30d": "a month" };
+    var WINDOW = { "1h": "an hour", "3h": "every 3 hours", "5h": "every 5 hours",
+                   "1d": "a day", "24h": "a day", "7d": "a week", "30d": "a month" };
     // Split feature-scoped caps from whole-plan ones. Until 2026-08-30 both
     // disclosed caps were feature-scoped, so the sentence said they "each cover a
     // single feature" — which stopped being true the moment Z.ai's plans landed,
@@ -1650,7 +1679,11 @@
       var cs = (l.caps || []);
       if (!cs.length) return esc(l.m);
       var parts = cs.map(function (c, i) {
-        return '<b>' + fmtNum(c.n) + (i === 0 || c.unit !== cs[0].unit ? ' ' + esc(c.unit) : '') + '</b> ' +
+        // OpenAI publishes its Codex allowance as a RANGE and says why: tasks that
+        // look alike consume different amounts. Printing the low end alone would
+        // understate the provider, the high end alone would overstate it.
+        var figure = fmtNum(c.n) + (c.n_high != null ? '\u2013' + fmtNum(c.n_high) : '');
+        return '<b>' + figure + (i === 0 || c.unit !== cs[0].unit ? ' ' + esc(c.unit) : '') + '</b> ' +
                (WINDOW[c.window] || 'per ' + esc(c.window)) +
                (c.scope ? ' for ' + esc(c.scope) + ' only' : '');
       });
@@ -1664,7 +1697,21 @@
     });
     var partialP = discPlans.filter(function (l) { return ((l.caps || [])[0] || {}).scope_limited; });
     var wholeP   = discPlans.filter(function (l) { return !((l.caps || [])[0] || {}).scope_limited; });
-    var partial = partialP.map(describe);
+    // Feature-scoped figures are summarised by plan rather than listed one by one.
+    // With seven of them across five plans the full enumeration ran to a paragraph
+    // nobody would read, and the finding is WHICH SURFACES get a number, not the
+    // numbers. Still derived: the feature names are the caps' own `scope` values.
+    var describeScoped = function (l) {
+      var scopes = [];
+      (l.caps || []).forEach(function (c) {
+        var s = c.scope || c.unit;
+        // Mistral's cap is "150 Flash answers per day" scoped to Flash answers —
+        // printing both gives "Flash answers for Flash answers only".
+        if (s && scopes.indexOf(s) === -1) scopes.push(s);
+      });
+      return '<b>' + esc(scopes.join(', ')) + '</b> on ' + esc(l.m);
+    };
+    var partial = partialP.map(describeScoped);
     var whole   = wholeP.map(describe);
     // Derive who they belong to. Hardcoding "all from Z.ai" here would be the exact
     // stale-superlative bug this callout was rewritten to eliminate.
@@ -1683,8 +1730,10 @@
       'The rest are sold on multipliers — "5× more usage than Pro", "20× higher usage than Plus", ' +
       '"4× higher than standard limits" — against a base nobody states. ' +
       (partial.length
-        ? (partial.length === 1 ? 'The one figure that ' : 'The ' + partial.length + ' figures that ') +
-          (partial.length === 1 ? 'is published covers a single feature rather than the plan: ' : 'are published cover a single feature rather than the plan: ') +
+        ? (partial.length === 1
+            ? 'The one plan with a published figure bounds a single feature rather than the plan itself: '
+            : 'Most of what is published bounds a single feature rather than the plan. ' +
+              'Across ' + partial.length + ' plans that is: ') +
           join(partial) + '. '
         : '') +
       (whole.length
@@ -1692,8 +1741,11 @@
             'Only ' + whole.length + ' publish an allowance that bounds the whole product: ') +
           join(whole) + wholeAttrib + '. '
         : '') +
-      'OpenAI deleted its general cap between our July and August 2026 checks, so ChatGPT Plus at $20 ' +
-      'now publishes no usage figure at all. Google reserves the right to change limits "without notice."';
+      'OpenAI deleted its GENERAL cap between our July and August 2026 checks — the figure that ' +
+      'covered ordinary chat — and has published nothing to replace it. What it does publish, found ' +
+      'on 2026-08-31, bounds Codex rather than chat: a per-model table of messages per five-hour ' +
+      'window, plus a weekly window it names and never sizes. Google reserves the right to change ' +
+      'limits "without notice."';
   }
 
   // ---- Wire up ----

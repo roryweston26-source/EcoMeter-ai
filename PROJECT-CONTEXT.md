@@ -138,6 +138,61 @@ Three guards, each validated by reintroducing the bug: `check-prices.js` §9 (pr
 
 **Open, and deliberately not done:** **Kimi is the weakest of the three picks on evidence** — it appears in no OpenRouter top-10 while Xiaomi's MiMo (#3) and Tencent's Hy3 (#5) both move more tokens. But the follow-up showed HF downloads and API tokens are **near-opposite measures** — Xiaomi has the smallest HF footprint of any lab considered and the third-largest token volume; Qwen is the exact inverse. "Biggest" can't be claimed without naming the measure (A10). `deepseek-r1` has one priced host so it correctly fails the `n >= 2` guard and carries no spread.
 
+### 2026-08-31 — the window survey: three providers publish figures we graded them 🔴 for, and disclosed plans went 5 to 10
+
+**Asked all nine providers one question nobody had asked: do you name a usage WINDOW,
+and do you size it?** That is not the allowance question — Anthropic proves it, being
+🔴 on allowance while still stating a weekly window. Before this pass four of nine had
+window data and three of those four had arrived incidentally. Full detail in FRESHNESS
+**B8**.
+
+**Five of nine name a weekly or monthly window. Only Z.ai sizes the long one.**
+
+**Three corrections, all against the provider — the same direction as 2026-08-29, which
+makes it a pattern rather than an incident.** When this project is wrong about
+disclosure, it is wrong by understating what the provider published.
+
+- **OpenAI** publishes a per-model, per-plan table of local messages per five-hour
+  window for Codex, a credits-per-1M-tokens rate card, and **names a weekly window
+  twice** — hedged on the pricing page, unhedged in the help centre. All of it bounds
+  **Codex, not chat**. ⚠️ It is also **the only place OpenAI has ever quantified the base
+  its "5x/20x more usage" marketing multiplies**: the Pro columns are exactly 5x and 20x
+  the Plus column.
+- **Microsoft** quantifies Agents, Vision and Voice to the task and the minute — then
+  makes Chat "Extensive use" and Premium's credits "Extensive usage beyond standard
+  credit limits". **Quantified everywhere except the thing you upgrade for.**
+- **Mistral** publishes one absolute figure, "150 / day on Pro", **in an FAQ answer to a
+  different question**, while the comparison table it built for comparing plans is
+  relative throughout.
+
+**Two did not move, and the difference between them is the whole discipline.** xAI is
+🔴 **read at source** on three pages — the only provider of nine naming neither a number
+nor a window. DeepSeek went 🔴 → **⚪**, which is a correction to US: that cell had been
+graded off the shared aggregate sentence, never off a DeepSeek page, and the site is a
+JS shell we could not read. The readable API doc covers per-account CONCURRENCY, which
+is not a consumer window and must not be quoted as one.
+
+**This forced a shipped superlative to be rewritten, again.** The pricing callout said
+"ChatGPT Plus at $20 now publishes no usage figure at all" — true on 2026-08-08, false
+once the Codex table was found. The deletion of the general cap is still the finding;
+the absolute claim around it was not. **E3a, third occurrence.**
+
+**The finding got sharper, not weaker.** Four of eight index providers now publish
+something and **all four bound a single feature** — Codex, Copilot's Agents/Vision/Voice,
+Flash answers, Computer. Not that providers cannot quantify: **the quantified surface is
+never the one you are buying.**
+
+⚠️ **A scoped window must not reach the Auditor.** OpenAI's weekly window bounds Codex;
+the Auditor prices chat. Repeating it at a Plus subscriber asserts about a surface the
+tool does not measure — the same category error as pricing a plan off a feature
+sub-limit. `unquantified_windows[].scope` suppresses it in the live resolver and in the
+guard; `pricing.html` shows it with the scope named.
+
+**Both new guards fired on this change before I touched the prose** — check-transparency
+§4b on the moved counts, check-auditor §18 on the missing Auditor markers. That is the
+first time a guard written in this repo has caught a real drift rather than a replayed
+one.
+
 ### 2026-08-30 — weekly limits: the Ceiling column printed its first number in three weeks, and it is 6.72x lower than the old model would have said
 
 **The models were single-window, and weekly caps are where that breaks.** `capPerDay()`
@@ -827,14 +882,14 @@ Lives in `transparency-index.json` under a **top-level `pricing` key** (`title`,
 
 | Provider | rate card | allowance | ctx window | price notice | retirement |
 |---|---|---|---|---|---|
-| OpenAI | 🟢 | 🔴 | 🟢 | 🟢 | 🟢 |
+| OpenAI | 🟢 | 🟡 | 🟢 | 🟢 | 🟢 |
 | Anthropic | 🟢 | 🔴 | 🟢 | 🟢 | 🟢 |
 | Google | 🟢 | 🔴 | 🟢 | 🟢 | 🟡 |
 | xAI | 🟢 | 🔴 | 🔴 | 🟢 | 🟡 |
 | Perplexity | 🟡 | 🟡 | 🔴 | 🟡 | 🔴 |
-| Microsoft | ⚪ | 🔴 | 🔴 | 🟢 | 🔴 |
-| Mistral | 🟢 | 🔴 | 🔴 | 🟢 | 🟢 |
-| DeepSeek | 🟢 | 🔴 | 🔴 | 🟡 | 🟡 |
+| Microsoft | ⚪ | 🟡 | 🔴 | 🟢 | 🔴 |
+| Mistral | 🟢 | 🟡 | 🔴 | 🟢 | 🟢 |
+| DeepSeek | 🟢 | ⚪ | 🔴 | 🟡 | 🟡 |
 
 **This table is generated from `transparency-index.json`, because the hand-typed one had drifted.** It was written before the 2026-08-25 backlog pass and never updated: it showed ⚪ on price notice for Google, xAI, Mistral, Perplexity and Microsoft, and on retirement for DeepSeek, xAI, Mistral and Perplexity — nine cells that the JSON had already graded. Open thread 18 recorded the axis as finished while this table still said it was not. **Regenerate it rather than editing it by hand.**
 

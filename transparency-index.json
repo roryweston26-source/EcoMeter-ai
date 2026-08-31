@@ -6,16 +6,47 @@
     "status": "ok",
     "status_note": "",
     "axes": [
-      { "key": "environmental", "label": "Environmental impact", "state": "scored",  "note": "Capacity-weighted water & energy disclosure across known AI data center sites. Scored below." },
-      { "key": "pricing",       "label": "Pricing",             "state": "scored",  "note": "Five dimensions of what a provider tells you about what you are buying, all read from primary sources. Scored below. Providers tell you the price and when it will change; none tells you what you get for it." },
-      { "key": "data",          "label": "Data practices",      "state": "scored",  "note": "Four dimensions of what a provider tells you about what happens to your conversations. Scored below. Business customers are opted out of training by default; consumers are opted in and must find the toggle." }
+      {
+        "key": "environmental",
+        "label": "Environmental impact",
+        "state": "scored",
+        "note": "Capacity-weighted water & energy disclosure across known AI data center sites. Scored below."
+      },
+      {
+        "key": "pricing",
+        "label": "Pricing",
+        "state": "scored",
+        "note": "Five dimensions of what a provider tells you about what you are buying, all read from primary sources. Scored below. Providers tell you the price and when it will change; none tells you what you get for it."
+      },
+      {
+        "key": "data",
+        "label": "Data practices",
+        "state": "scored",
+        "note": "Four dimensions of what a provider tells you about what happens to your conversations. Scored below. Business customers are opted out of training by default; consumers are opted in and must find the toggle."
+      }
     ],
     "methodology": "We grade three independent axes — pricing, data practices, and environmental impact — separately, and never average them into one score. Four-state system: 🟢 Transparent (the company discloses it itself) · 🟡 Partial (a real figure is public, but only via a regulator, utility, or watchdog — not the company) · 🔴 Opaque (nothing public) · ⚪ Not yet assessed (we haven't checked yet — which is not the same as opaque). For environmental impact specifically: we track each provider's known AI data center sites and grade every site on water/energy disclosure, then roll them up into a capacity-weighted average — bigger sites carry more weight. That means a large opaque site can't hide behind a small transparent one, and one bad site doesn't sink an otherwise-open provider either. Every grade links to its sources — 122 of 122 across all three matrices (42 environmental, 40 pricing, 40 data practices), every URL checked. The pricing axis was defined and scored on 2026-08-25 across five independent dimensions — API rate card, consumer allowance, consumer context window, price-change notice and model-retirement notice — graded separately and never averaged, on the same 4-state scale. Its provider set deliberately differs from the environmental one: it covers the eight companies selling AI directly to consumers or developers. The data-practices axis was defined and scored on 2026-08-25 across five dimensions — whether the training default is stated, whether an opt-out is documented, whether a retention period is published, whether human review is disclosed, and (added 2026-08-29) whether advertising use is disclosed — read from each provider's consumer-facing documents. All three axes are now scored, and all three remain separate: a provider can be open about billing and silent about water, and several are.",
     "grade_legend": [
-      { "grade": "green",   "symbol": "🟢", "label": "Transparent — company discloses itself" },
-      { "grade": "yellow",  "symbol": "🟡", "label": "Partial — public only via regulator, utility or watchdog" },
-      { "grade": "red",     "symbol": "🔴", "label": "Opaque — nothing public" },
-      { "grade": "pending", "symbol": "⚪", "label": "Not yet assessed" }
+      {
+        "grade": "green",
+        "symbol": "🟢",
+        "label": "Transparent — company discloses itself"
+      },
+      {
+        "grade": "yellow",
+        "symbol": "🟡",
+        "label": "Partial — public only via regulator, utility or watchdog"
+      },
+      {
+        "grade": "red",
+        "symbol": "🔴",
+        "label": "Opaque — nothing public"
+      },
+      {
+        "grade": "pending",
+        "symbol": "⚪",
+        "label": "Not yet assessed"
+      }
     ],
     "caveats": [
       "Site coverage is currently 12 sites across 7 providers and expanding over time — that reflects our research pace, not a judgment on any provider we haven't listed yet. Early-stage campuses with no meaningful operating capacity yet (e.g. Meta's Hyperion, the Stargate expansion sites) are tracked but shown without a capacity weight until they're running. Pure-play colocation landlords (e.g. Equinix, NTT, CyrusOne) aren't scored here yet — they publish fleet-wide efficiency rather than per-AI-site figures, and need their own treatment.",
@@ -28,9 +59,21 @@
       "title": "Disclosure quality by dimension",
       "note": "A closer look at how complete each company's own environmental reporting is, across six disclosure dimensions. This lens grades a company's self-reporting rather than the 'can the public find out at all' question the site scores above answer — so here 🟢 means good disclosure, 🟡 partial, 🔴 none or poor. We grade what each company DISCLOSES about the AI compute it controls, not the footprint itself. Rented-vs-owned rule: each company is graded only on what IT publishes, regardless of who owns the building — so a renter that stays silent has disclosed nothing, while one that publishes facility detail gets credit. That rule used to name OpenAI, Anthropic and xAI together as silent; on 2026-08-29 we corrected it, because xAI is not. It publishes a Memphis site with turbine counts, permit dates, emissions-control specification and a water-recycling plant with a projected annual volume — which moved two of its cells to 🟡. What it still does not publish, and what this table grades, is a single figure for the water or electricity Colossus actually uses. Anthropic and OpenAI remain silent on the environment in the ordinary sense: a full-text search of Anthropic's Transparency Hub returns zero hits for water, energy, carbon, emissions, climate and electricity. Cross-board: no company separates AI-specific from general data-center footprint AT FACILITY LEVEL — Google is the one partial exception, publishing AI-specific per-prompt energy, carbon and water while leaving the AI share of its 13,562 Mgal data-centre withdrawal unknowable, which is why its cell is 🟡 and not 🔴. None discloses indirect (power-generation) water — LBNL estimates indirect ≈ 12× direct — and there is no U.S. federal water-disclosure mandate as of mid-2026. TWO DATES TO WATCH, one voluntary and one legal. On 23 June 2026 the UN Secretary-General launched the AI Environmental Transparency Initiative, asking every major AI company to disclose its full carbon, water and land footprint and to power its data centres with renewables by 2030; as of this check, more than two months on, no provider on this table has been named as having signed up, and none of these grades has moved because of it. California's SB 253 is the harder deadline: Scope 1 and 2 reporting is due from November 2026 for large companies operating in the state, with Scope 3 not due until 2027.",
       "grade_legend": [
-        { "grade": "green",  "symbol": "🟢", "label": "Good disclosure" },
-        { "grade": "yellow", "symbol": "🟡", "label": "Partial" },
-        { "grade": "red",    "symbol": "🔴", "label": "None or poor" }
+        {
+          "grade": "green",
+          "symbol": "🟢",
+          "label": "Good disclosure"
+        },
+        {
+          "grade": "yellow",
+          "symbol": "🟡",
+          "label": "Partial"
+        },
+        {
+          "grade": "red",
+          "symbol": "🔴",
+          "label": "None or poor"
+        }
       ],
       "caveats": [
         "We grade DISCLOSURE quality, not true environmental performance. A low grade means opacity, not necessarily high impact — a genuine closed-loop site (e.g. Abilene) may use little water yet still score 🔴 for not publishing numbers.",
@@ -43,7 +86,7 @@
   },
   "pricing": {
     "title": "Pricing transparency — by dimension",
-    "note": "What a provider tells you about what you are buying. Same 4-state scale as the page above, applied to five independent dimensions and never averaged. THE HEADLINE FINDING: providers are good at telling you the price and when it will change, and almost uniformly silent on what you get for it. Six of eight commit to a quantified price-change notice and five of those land on exactly 30 days with a cancel-before-renewal right — the most standardised disclosure in the industry. Set against that, SEVEN OF EIGHT publish no usage allowance whatsoever. The eighth is Perplexity, and it is the exception that shows the rest is a choice: “Consumer Max plans start with 10,000 credits a month”, with “100 credits equals $1” and typical consumption published by task class — the only allowance figure on this table a reader can do arithmetic with. It covers one product surface on one tier, which is why it is 🟡 rather than 🟢, and it is still more than the other seven manage. The 2026-08-29 re-read also found THREE providers publishing a consumer context window, not one — OpenAI per tier (27K to 128K instant), Google per tier (32k / 128k / 1M) and Anthropic per model (200K / 500K / 1M). Put those together and the pattern is not incapacity: providers quantify the size of ONE conversation precisely, and all but one refuse to say HOW MANY you get. Note the provider set differs from the environmental axis above: this table covers the eight companies that sell AI to consumers or developers directly, so Amazon and Meta are absent and Perplexity, Mistral, DeepSeek and Microsoft appear. IT ALSO EXCLUDES Z.AI, WHICH PUBLISHES MORE ABOUT ITS ALLOWANCE THAN ANY PROVIDER ON THIS TABLE — absolute credit caps on two windows, the credit formula, the per-model multipliers and a token conversion. It was added to Legerly's price tracking on 2026-08-30 and has not been graded on any axis here, because grading it means reading its privacy, retention and environmental disclosures rather than assuming them. Until that happens, read “seven of eight” as a statement about these eight and not about the market: the strongest counter-example to this axis is one we have not yet scored.",
+    "note": "What a provider tells you about what you are buying. Same 4-state scale as the page above, applied to five independent dimensions and never averaged. THE HEADLINE FINDING: providers are good at telling you the price and when it will change, and almost uniformly silent on what you get for it. Six of eight commit to a quantified price-change notice and five of those land on exactly 30 days with a cancel-before-renewal right — the most standardised disclosure in the industry. Set against that, THREE OF EIGHT publish no usage allowance whatsoever — Anthropic, Google and xAI — and a fourth, DeepSeek, we have not been able to read. That count moved on 2026-08-31 and it moved because we went looking, not because anyone published anything: OpenAI, Microsoft and Mistral all turned out to publish absolute figures we had graded them 🔴 for. FOUR OF EIGHT NOW PUBLISH SOMETHING AND ALL FOUR BOUND A SINGLE FEATURE — Codex, Copilot’s Agents/Vision/Voice, Flash answers, Computer — WHICH IS THE REAL FINDING: not that providers cannot quantify, but that the quantified surface is never the one you are buying. Perplexity remains the most usable of the four: “Consumer Max plans start with 10,000 credits a month”, with “100 credits equals $1” and typical consumption published by task class — the only allowance figure on this table a reader can do arithmetic with. It covers one product surface on one tier, which is why it is 🟡 rather than 🟢, and it is still more than the other seven manage. The 2026-08-29 re-read also found THREE providers publishing a consumer context window, not one — OpenAI per tier (27K to 128K instant), Google per tier (32k / 128k / 1M) and Anthropic per model (200K / 500K / 1M). Put those together and the pattern is not incapacity: providers quantify the size of ONE conversation precisely, and all but one refuse to say HOW MANY you get. Note the provider set differs from the environmental axis above: this table covers the eight companies that sell AI to consumers or developers directly, so Amazon and Meta are absent and Perplexity, Mistral, DeepSeek and Microsoft appear. IT ALSO EXCLUDES Z.AI, WHICH PUBLISHES MORE ABOUT ITS ALLOWANCE THAN ANY PROVIDER ON THIS TABLE — absolute credit caps on two windows, the credit formula, the per-model multipliers and a token conversion. It was added to Legerly's price tracking on 2026-08-30 and has not been graded on any axis here, because grading it means reading its privacy, retention and environmental disclosures rather than assuming them. Until that happens, read “seven of eight” as a statement about these eight and not about the market: the strongest counter-example to this axis is one we have not yet scored.",
     "grade_legend": [
       {
         "grade": "green",
@@ -108,11 +151,11 @@
             "source_date": "Aug 24 2026"
           },
           "allowance": {
-            "grade": "red",
-            "note": "The only absolute consumer figure any provider publishes is OpenAI's, and it is a feature sub-limit rather than an allowance: Go users get 10 messages every 5 hours after enabling Thinking. Worse, between our 2026-07-28 and 2026-08-08 checks OpenAI DELETED the one general cap anyone published — '160 GPT-5.5 Instant messages per 3 hours' — replacing it with limits that 'can be dynamic and may vary'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind.",
-            "source": "openai.com/chatgpt/pricing; Legerly plan-limits.json",
-            "source_url": "https://openai.com/chatgpt/pricing",
-            "source_date": "Aug 25 2026"
+            "grade": "yellow",
+            "note": "Corrected 2026-08-31, and it is the second time this axis has been wrong against OpenAI in the harmful direction. This cell said \"the only absolute consumer figure any provider publishes is OpenAI’s, and it is a feature sub-limit\" — by then Perplexity, Microsoft, Mistral and Z.ai all published one, and OpenAI itself published far more than the Thinking sub-limit we credited it with. On developers.openai.com OpenAI publishes a per-model, per-plan table of local messages per FIVE-HOUR window for Codex — GPT-5.6 Sol 10-100 on Plus, 50-500 on Pro 5x, 200-2,000 on Pro 20x, with Terra and Luna rows too — plus a credits-per-1M-tokens rate card carrying cached-input rates, and \"GPT-5.6 usage averages 5-30 credits per message\". Two consequences worth stating. First, this is the only place OpenAI has ever quantified the base its \"5x/20x more usage\" marketing multiplies: the Pro columns are exactly 5x and 20x the Plus column. Second, it names a WEEKLY window and never sizes it — \"Additional weekly limits may apply\", and unhedged in the help centre, where a banked reset \"refreshes your 5-hour and weekly Codex usage windows\". 🟡 not 🟢 because every figure bounds Codex and the agentic features sharing its allowance, not ordinary chat: the ChatGPT Free FAQ and the Pro tiers article still name no window of any kind. The deletion of the general cap in August 2026 stands; what is new is that the silence is narrower than we said.",
+            "source": "developers.openai.com/codex/pricing; help.openai.com Using Codex with your ChatGPT plan",
+            "source_url": "https://developers.openai.com/codex/pricing#what-are-the-usage-limits-for-my-plan",
+            "source_date": "Aug 31 2026"
           },
           "context_window": {
             "grade": "green",
@@ -149,7 +192,7 @@
           },
           "allowance": {
             "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 26 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the five exceptions are Z.ai's GLM Coding tiers, which these eight rows do not cover at all. Anthropic's four consumer plans all sit in that 26. Max is sold as '5x/20x more usage than Pro' with Pro itself unquantified, and the Consumer Terms say plan limits are 'described in the order process' while the terms themselves specify none.",
+            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 21 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. Anthropic's four consumer plans all sit in that 26. Max is sold as '5x/20x more usage than Pro' with Pro itself unquantified, and the Consumer Terms say plan limits are 'described in the order process' while the terms themselves specify none.",
             "source": "claude.com/pricing; Anthropic Consumer Terms; Legerly plan-limits.json",
             "source_url": "https://www.anthropic.com/legal/consumer-terms",
             "source_date": "Aug 25 2026"
@@ -189,7 +232,7 @@
           },
           "allowance": {
             "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 26 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the five exceptions are Z.ai's GLM Coding tiers, which these eight rows do not cover at all. Google's five consumer tiers are sold as '2x/4x/20x higher than standard limits', with its own footnote clarifying that the base is non-AI subscribers. It also reserves the right to change limits 'without notice, including due to capacity constraints'.",
+            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 21 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. Google's five consumer tiers are sold as '2x/4x/20x higher than standard limits', with its own footnote clarifying that the base is non-AI subscribers. It also reserves the right to change limits 'without notice, including due to capacity constraints'.",
             "source": "gemini.google/subscriptions; Legerly plan-limits.json",
             "source_url": "https://gemini.google/subscriptions",
             "source_date": "Aug 25 2026"
@@ -229,10 +272,10 @@
           },
           "allowance": {
             "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 26 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the five exceptions are Z.ai's GLM Coding tiers, which these eight rows do not cover at all. All five xAI consumer tiers are in that count.",
+            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 21 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. All five xAI consumer tiers are in that count. Re-read 2026-08-31 across x.ai/pricing, x.ai/grok and help.x.com’s X Premium page specifically to ask whether xAI names a usage WINDOW, after OpenAI, Google, Anthropic and Perplexity all turned out to. It does not. Every reference to Grok volume is relative and unwindowed — \"higher rate limits\", \"increased usage limits on Grok\", \"higher limits on Grok\" — with no base, no period and no reset. Of the nine providers tracked, xAI is the only one that names neither a number nor a window. This is 🔴 and not ⚪ because all three pages rendered and were read; help.x.com served a Cloudflare interstitial first and the real page on a retry.",
             "source": "x.ai/pricing; Legerly plan-limits.json",
             "source_url": "https://x.ai/pricing",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 31 2026"
           },
           "context_window": {
             "grade": "red",
@@ -308,11 +351,11 @@
             "source_date": "Not assessed"
           },
           "allowance": {
-            "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 26 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the five exceptions are Z.ai's GLM Coding tiers, which these eight rows do not cover at all. Both Microsoft consumer tiers are in that count.",
-            "source": "microsoft.com Copilot plans; Legerly plan-limits.json",
-            "source_url": "https://www.microsoft.com/en-us/microsoft-365/copilot/",
-            "source_date": "Aug 25 2026"
+            "grade": "yellow",
+            "note": "Corrected 2026-08-31. Microsoft publishes a per-plan limits table and it carries real absolute numbers: Agents 25 tasks per month on Premium, Vision 10/10/15 minutes per day and Voice 30/30/60 minutes per day across Personal/Family/Premium, and 60 AI credits per month on Personal and Family with a worked example (\"asking Copilot to summarize my inbox would deduct one AI credit\"). It also distinguishes the two mechanisms in writing: \"feature limits are the total number of times you can use a specific feature within a specific timeframe, while AI credits are monthly usage allotments.\" 🟡 rather than 🟢 for one reason, and it is the same reason as Kimi in Legerly’s price notes: the numbers stop exactly where the money is. Chat on every tier is \"Extensive use\", and the credit line on Premium — the paid upgrade — is \"Extensive usage beyond standard credit limits\" against a Personal/Family figure of 60. A company that quantifies voice to the minute is not unable to quantify; it is choosing which number is commercially sensitive.",
+            "source": "support.microsoft.com, AI credits and limits for Microsoft 365 subscriptions (updated July 2026)",
+            "source_url": "https://support.microsoft.com/en-us/microsoft-365-copilot/ai-credits-and-limits-for-microsoft-365-subscriptions",
+            "source_date": "Aug 31 2026"
           },
           "context_window": {
             "grade": "red",
@@ -348,11 +391,11 @@
             "source_date": "Aug 24 2026"
           },
           "allowance": {
-            "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 26 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the five exceptions are Z.ai's GLM Coding tiers, which these eight rows do not cover at all. Both Mistral consumer tiers are in that count.",
-            "source": "mistral.ai/pricing; Legerly plan-limits.json",
+            "grade": "yellow",
+            "note": "Corrected 2026-08-31. Mistral publishes exactly one absolute consumer figure and it is not in the plan table: \"Flash answers: 200 / day on Team vs. 150 / day on Pro\", in an FAQ answer to a different question. The comparison table itself is relative throughout — messages \"Up to 6x free\", web searches \"Up to 5x free\", image generation \"Up to 40x free\" — all against a Free base that is never quantified anywhere, with \"Subject to fair usage limits\" attached to the unlimited rows. So the only number a reader can act on is the one Mistral did not put in the table it built for comparing plans. 🟡 not 🔴 because the figure is real, published and dated; 🟡 not 🟢 because it covers one feature and the plan’s actual message allowance stays a multiple of an unknown.",
+            "source": "mistral.ai/pricing, plan comparison table and FAQ",
             "source_url": "https://mistral.ai/pricing",
-            "source_date": "Aug 25 2026"
+            "source_date": "Aug 31 2026"
           },
           "context_window": {
             "grade": "red",
@@ -388,11 +431,11 @@
             "source_date": "Aug 24 2026"
           },
           "allowance": {
-            "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 26 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the five exceptions are Z.ai's GLM Coding tiers, which these eight rows do not cover at all. DeepSeek's consumer tier is in that count.",
-            "source": "deepseek.com; Legerly plan-limits.json",
-            "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
-            "source_date": "Aug 25 2026"
+            "grade": "pending",
+            "note": "Downgraded from 🔴 to ⚪ on 2026-08-31, which is a correction to US, not a change by DeepSeek. This cell was graded off the shared aggregate sentence rather than off a DeepSeek page — exactly the failure this index recorded against xAI on 2026-08-29. Checked properly: deepseek.com renders as a JavaScript shell (599 characters of text to a plain fetch), chat.deepseek.com returns an empty 202, and the only readable DeepSeek documentation is the API rate-limit page, which covers per-account CONCURRENCY — a different thing from a consumer usage window and not quotable as one. No consumer-facing limits page was read, so no absence can be asserted. DeepSeek also has no paid consumer tier, so there may be no allowance to publish; that too is unestablished rather than known. To close this, open chat.deepseek.com in a logged-in browser.",
+            "source": "deepseek.com; api-docs.deepseek.com rate limit and FAQ pages",
+            "source_url": "https://api-docs.deepseek.com/quick_start/rate_limit",
+            "source_date": "Aug 31 2026"
           },
           "context_window": {
             "grade": "red",
@@ -797,69 +840,360 @@
     ]
   },
   "columns": [
-    { "key": "site_level",    "label": "Site-level disclosure" },
-    { "key": "ai_split",      "label": "AI-vs-total split" },
-    { "key": "comparability", "label": "Comparability / no cherry-picking" },
-    { "key": "replenishment", "label": "Replenishment honesty" },
-    { "key": "energy_source", "label": "Energy-source transparency" },
-    { "key": "verification",  "label": "Independent verification" }
+    {
+      "key": "site_level",
+      "label": "Site-level disclosure"
+    },
+    {
+      "key": "ai_split",
+      "label": "AI-vs-total split"
+    },
+    {
+      "key": "comparability",
+      "label": "Comparability / no cherry-picking"
+    },
+    {
+      "key": "replenishment",
+      "label": "Replenishment honesty"
+    },
+    {
+      "key": "energy_source",
+      "label": "Energy-source transparency"
+    },
+    {
+      "key": "verification",
+      "label": "Independent verification"
+    }
   ],
   "rows": [
-    { "provider": "Google", "cells": {
-      "site_level":    { "grade": "green", "note": "Re-read 2026-08-25 against the 2026 Environmental Report (FY2025) — our previous note was a reporting cycle out of date and understated this. Google publishes withdrawal, discharge AND consumption for 36 named data center locations across eight countries (US, Ireland, Netherlands, Denmark, Finland, Belgium, Chile, Canada), plus an aggregated “other locations” bucket — up from 24 locations. It remains the most complete site-level disclosure of any provider, and it is stronger than Microsoft's on the two points that matter: Google publishes consumption, not just withdrawal, and the table sits inside the third-party limited-assurance scope rather than outside it.", "source": "Google 2026 Environmental Report, “Water use by data center location” (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
-      "ai_split":      { "grade": "yellow", "note": "Re-checked 2026-08-25: the per-prompt figures are unchanged — median Gemini Apps text prompt at 0.24 Wh, 0.03 gCO₂e and 0.26 mL water, measured as of May 2025. The 2026 report adds that per-prompt energy and carbon fell 33× and 44× over twelve months, but facility reporting still does not split AI from general load, so the AI share of that 13,562 Mgal data-center withdrawal remains unknowable.", "source": "Google 2026 Environmental Report (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "yellow", "note": "Resolved 2026-08-29 by reading Google's own methodology paper (arXiv 2508.15734) rather than the report. We used to record that the per-prompt figures had “no published denominator”. The truth is sharper: THERE IS NO DENOMINATOR BY CONSTRUCTION. The paper defines the “median Gemini Apps text prompt” by taking the average energy per prompt for each model, ranking the models by that value, and finding the model that serves the 50th-percentile prompt — “the average energy/prompt is defined as the energy of the median Gemini Apps text prompt on that day.” So “median” describes the MODEL, not the prompt, and the headline number is an average across every prompt that model served, whose size distribution is never characterised. It cannot be converted to a per-token rate even in principle, which is why a reader cannot apply it to their own usage. Two things keep this at 🟡 rather than 🔴, and both are to Google's credit: the methodology is published in full, and the paper reports BOTH boundaries rather than the flattering one — 0.10 Wh / 0.12 mL on the narrow “Existing Approach” against 0.24 Wh / 0.26 mL on the “Comprehensive” one, a 2.4× spread from a single measurement, with the larger figure the one Google quotes publicly. The irony is worth recording: the same paper faults OpenAI's 0.34 Wh for giving “no explanation of the measurement boundary or methodology … making it impossible to compare with other estimates”, and notes that Mistral states its own figure per 400-token response. Google identified the failure precisely and then shipped a version of it.", "source": "Google, “Measuring the environmental impact of delivering AI at Google Scale” (arXiv 2508.15734), read directly; plus the 2026 Environmental Report", "source_url": "https://arxiv.org/abs/2508.15734", "source_date": "Aug 29 2026" },
-      "replenishment": { "grade": "yellow", "note": "Replenished 78% of the freshwater it consumed in 2025 (9,947 Mgal consumed, 7,717 Mgal replenished), against a stated goal of 120% by 2030 — a real number, published, and trending up. Still graded 🟡 because replenishment is reported by watershed but returned water often sits in different watersheds than those drawn down, so the fleet figure does not mean local supply was made whole.", "source": "Google 2026 Environmental Report, freshwater replenishment table (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
-      "energy_source": { "grade": "yellow", "note": "Achieved ~65% global average carbon-free energy in 2025 (up from 64%), and at least 80% CFE in 9 of 22 grid regions — reported by region, which is better than any peer. But it is still a market-based accounting method, and total emissions are now 62% above the 2019 base year, up from the ~51% we recorded last cycle. The trend line and the headline percentage point in opposite directions.", "source": "Google 2026 Environmental Report (read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" },
-      "verification":  { "grade": "yellow", "note": "2025 metrics were subject to third-party limited-assurance procedures, and — unlike Microsoft — that scope covers the granular per-location water table, not just the headline aggregates. Held at 🟡 rather than 🟢 because limited assurance is the weakest form of it and covers selected metrics only; we are not going to call limited assurance “good” for anyone.", "source": "Google 2026 (FY2025) Independent Accountants’ Review Report (scope legend read directly)", "source_url": "https://sustainability.google/reports/google-2026-environmental-report/", "source_date": "Aug 25 2026" }
-    } },
-    { "provider": "Amazon (AWS)", "cells": {
-      "site_level":    { "grade": "yellow", "note": "Re-read 2026-08-25; our previous note said “no site-level and no historical tables” and both halves were wrong. AWS publishes a public per-Region table giving PUE for 2022–2025 and WUE for 2024–2025 by named Region (e.g. US East N. Virginia 1.15 PUE / 0.06 WUE; Europe Ireland 1.10 / 0.02). That is company-published, dated and comparable — but it is efficiency ratios only, with no absolute water or energy volume per Region, and many Regions still show N/A for WUE. Absolute figures exist as a single global total (2.5B gal withdrawn, 2025) and, at Region/service/account granularity, only inside a paying customer's AWS Sustainability Console — visible to customers about their own workloads, not to the public. Graded 🟡: real named-location disclosure, but ratios for everyone and volumes only for customers.", "source": "AWS Region PUE and WUE table (read directly); AWS Sustainability Console blog", "source_url": "https://sustainability.aboutamazon.com/products-services/aws-cloud", "source_date": "Aug 25 2026" },
-      "ai_split":      { "grade": "red", "note": "Re-checked 2026-08-25 against the 2025 Amazon Sustainability Report: still no AI-vs-total breakout. The report discusses AI-driven cooling load at length — the In-Row Heat Exchanger, a projected 9% water reduction versus evaporative cooling — without ever attributing a volume or a kWh to AI.", "source": "Amazon 2025 Sustainability Report (read directly)", "source_url": "https://sustainability.aboutamazon.com/2025-amazon-sustainability-report.pdf", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "yellow", "note": "Now publishes a consistent multi-year efficiency series — global WUE 0.25 → 0.19 → 0.18 → 0.15 → 0.12 L/kWh across 2021–2025, global PUE 1.14, plus the per-Region table — which is genuine year-on-year comparability and moves this off 🔴. The cherry-pick stands, though: the headline claim that 0.12 is “over 7× better” than an 0.84 industry average sets Amazon's whole fleet against other operators' power-intensive AI-specific facilities, and Amazon publishes no AI-specific figure of its own to compare like for like.", "source": "Amazon 2025 Sustainability Report + AWS Region table (read directly); DCD", "source_url": "https://sustainability.aboutamazon.com/products-services/aws-cloud", "source_date": "Aug 25 2026" },
-      "replenishment": { "grade": "yellow", "note": "Reports 75% progress toward its water-positive-by-2030 goal (up from 53% and 41% in the two prior years), 45 replenishment projects, an expected 22B+ litres returned annually and $1B committed to public water infrastructure. Moved 🔴→🟡 for consistency: the offsets-in-other-communities critique that keeps Google and Microsoft at 🟡 applies here too, and it should not cost Amazon an extra grade. Worth remembering how it got here — a leaked internal plan showed intent to keep data-center water use secret, and the global total only appeared in 2026. What would earn 🟢 is watershed-level reporting that matches what was returned against what was drawn down.", "source": "Amazon 2025 Sustainability Report (read directly); SourceMaterial", "source_url": "https://sustainability.aboutamazon.com/2025-amazon-sustainability-report.pdf", "source_date": "Aug 25 2026" },
-      "energy_source": { "grade": "yellow", "note": "Publishes global PUE 1.14 (2025) and per-Region PUE back to 2022, names ISO 50001-certified Regions, and counts its portfolio (264 solar, 109 wind, two nuclear projects). Matched to Microsoft's 🟡 for the same reason and the same limitation: the renewable claims rest on market-based energy attribute credits, and the actual grid mix at any given AI facility is not disclosed. Efficiency is well covered here; energy *source* is not.", "source": "Amazon 2025 Sustainability Report + AWS Region PUE table (read directly)", "source_url": "https://sustainability.aboutamazon.com/products-services/aws-cloud", "source_date": "Aug 25 2026" },
-      "verification":  { "grade": "yellow", "note": "Limited assurance over selected metrics, with a Data Tables and Assurance Statements section in the 2025 report, and a separately published assurance statement covering the water-withdrawal methodology behind the Sustainability Console. Same ceiling as every peer — selected metrics, limited assurance, not the whole inventory.", "source": "Amazon 2025 Sustainability Report, Data Tables and Assurance Statements; AWS assurance statement", "source_url": "https://aws.amazon.com/blogs/infrastructure-sustainability/advancing-water-stewardship-at-aws-new-water-withdrawals-data-now-available-in-the-aws-sustainability-console/", "source_date": "Aug 25 2026" }
-    } },
-    { "provider": "Microsoft", "cells": {
-      "site_level":    { "grade": "green", "note": "Confirmed 2026-08-24 by reading Microsoft's own 2026 Environmental Data Fact Sheet. Table 15, “FY25 Datacenter water and electricity use by location”, publishes electricity consumption (MWh), water withdrawal (ML), the non-potable share and replenishment volume for 29 named locations. That is the company disclosing it itself, so this row moves 🔴→🟢 — the first grade movement this index has recorded, and it makes Microsoft the second provider after Google to publish location-level figures. Four limits stop it short of Google's: the unit is a metropolitan area or regional cluster, not an individual building; the water metric is withdrawal, not consumption (consumption stays global/regional in Table 14); scope is Microsoft-owned datacenters under its own operational control, so leased and colocation capacity — including the QTS-built Fairwater Atlanta — is excluded; and Table 15 sits in Section 2, which the fact sheet states was outside Deloitte's limited-assurance review. Some values are Microsoft's own estimates where utility data was unavailable, by a disclosed methodology.", "source": "Microsoft 2026 Environmental Data Fact Sheet, Table 15 (read directly)", "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf", "source_date": "Aug 24 2026" },
-      "ai_split":      { "grade": "red", "note": "Re-checked 2026-08-24 against both the full report and the fact sheet: still no AI-vs-total split. The new per-location table reports total datacenter electricity and water, not the AI share of either.", "source": "Microsoft 2026 Environmental Data Fact Sheet (read directly)", "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf", "source_date": "Aug 24 2026" },
-      "comparability": { "grade": "yellow", "note": "Reports WUE consistently (0.27 L/kWh, 2025; down from 2.3 historically) and now publishes withdrawal per location, but still declares “water positive” while keeping consumption global and regional only (Table 14). Withdrawal is not consumption, so the new table does not close this gap.", "source": "Microsoft 2026 Environmental Data Fact Sheet; Trellis", "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf", "source_date": "Aug 24 2026" },
-      "replenishment": { "grade": "yellow", "note": "Still claims fleet-wide “water positive” via replenishment offsets, many in watersheds other than those drawn down. But the 2026 fact sheet now reports replenishment volume per named location and marks with an asterisk the priority locations that have delivered no volumetric benefit yet. Publishing the split — including where it is still zero — is what moves this off 🔴: the watershed mismatch is now checkable by anyone instead of buried in one global figure.", "source": "Microsoft 2026 Environmental Data Fact Sheet, Table 15 (read directly)", "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf", "source_date": "Aug 24 2026" },
-      "energy_source": { "grade": "yellow", "note": "Now publishes electricity consumption (MWh) per named location, which is new and real. Still no per-site grid mix: renewable matching and hydrogen-backup pilots are described, but what actually powers the AI sites stays opaque.", "source": "Microsoft 2026 Environmental Data Fact Sheet, Table 15 (read directly)", "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf", "source_date": "Aug 24 2026" },
-      "verification":  { "grade": "yellow", "note": "Deloitte & Touche LLP performed a limited-assurance review of Section 1 of the fact sheet only. The per-location datacenter table is in Section 2, which the fact sheet states was not subject to that review — so the most granular figures Microsoft publishes are also its least assured. WUE methodology is published.", "source": "Microsoft 2026 Environmental Data Fact Sheet, §1.11 + scope note (read directly)", "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf", "source_date": "Aug 24 2026" }
-    } },
-    { "provider": "Meta", "cells": {
-      "site_level":    { "grade": "yellow", "note": "Re-read 2026-08-25 against the 2025 Sustainability Report and its Environmental Data Index; our previous note was materially out of date. Meta does now report by site: per-facility electricity consumption (MWh) and per-facility market- and location-based GHG emissions for every named data center back to 2020, and the Index states owned, online data centers are always reported by site. Water is the gap — sections 3.1–3.4 give withdrawal, consumption and discharge by source, by intensity and by water-stress area, but there is no per-facility water table. Held at 🟡 because per-site water is the disclosure every 🟢 in this column was earned on. This is now a strong 🟡, not the near-🔴 it used to be.", "source": "Meta 2025 Environmental Data Index, §2.1 and §3.1–3.4 (read directly)", "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/", "source_date": "Aug 25 2026" },
-      "ai_split":      { "grade": "red", "note": "Re-checked 2026-08-25 across both the 2025 Sustainability Report and the Environmental Data Index: no AI-vs-total split anywhere. Per-facility electricity gets you closer than most — you can see which campus draws what — but nothing attributes any of it to AI.", "source": "Meta 2025 Sustainability Report + Environmental Data Index (read directly)", "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "yellow", "note": "Reports both PUE (1.08) and annual data-center WUE (0.19 in 2024, down from 0.30 in 2020) on a consistent multi-year basis — more comparable efficiency reporting than Google, which publishes no fleet WUE. Held at 🟡 for two reasons: absolute water is still aggregate-only, and Meta's latest data is calendar 2024, a full year behind Google's FY2025, so a like-for-like comparison isn't actually available.", "source": "Meta 2025 Environmental Data Index, §2.4 and §3.1 (read directly)", "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/", "source_date": "Aug 25 2026" },
-      "replenishment": { "grade": "yellow", "note": "The strongest replenishment framing of any provider here: Meta states it restores water in the same watersheds where its data centers are located, which is precisely the mismatch that keeps Google and Microsoft at 🟡. Volumetric restoration benefits are reported annually and independently verified by LimnoTech. Held at 🟡 rather than 🟢 because it is a commitment plus a verified volume, not yet a demonstrated match of restored volume to drawn-down volume basin by basin.", "source": "Meta 2025 Environmental Data Index, §3.4 + water stewardship note (read directly)", "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/", "source_date": "Aug 25 2026" },
-      "energy_source": { "grade": "yellow", "note": "Re-checked 2026-08-25. Large contracted renewable portfolio and per-facility market-based emissions showing near-zero at most campuses, but the Louisiana Hyperion campus relies on roughly 10 new gas plants — the disclosed portfolio and the marginal build tell different stories, and Meta does not reconcile them.", "source": "Meta 2025 Sustainability Report; Data Center Frontier", "source_url": "https://sustainability.atmeta.com/2025-sustainability-report/", "source_date": "Aug 25 2026" },
-      "verification":  { "grade": "yellow", "note": "Ernst & Young LLP provides limited assurance over selected environmental metrics, with a published Independent Accountants' Review Report; water-restoration volumes are separately verified by LimnoTech. Same ceiling as every peer — limited assurance on a selected subset, not the whole inventory.", "source": "Meta 2025 Environmental Data Index, assurance note + Independent Accountants’ Review Report", "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/", "source_date": "Aug 25 2026" }
-    } },
-    { "provider": "xAI", "cells": {
-      "site_level":    { "grade": "red", "note": "Still 🔴, but the old note overstated it and is corrected here. It said there was “no corporate environmental disclosure of any kind” and that every Colossus figure “comes from Memphis utility records, regulators or environmental groups, never from xAI.” That is not true: xAI runs a public Memphis site publishing turbine counts and permit dates, emissions-control specification, substation spend and a water-recycling plant capacity. What it does not publish is the thing this column grades — how much water the site withdraws or consumes, and how much electricity it uses. Not one such figure exists from xAI, so the grade holds. The operating figures in circulation do still come from others, and they disagree: reported aquifer draw runs roughly 1.3M to 5M gallons per day depending on source, facility and period, so we show the range rather than pick.", "source": "xAI (SpaceXAI) Memphis pages read directly; SELC; utility MLGW records via press", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
-      "ai_split":      { "grade": "red", "note": "Nothing to split — re-verified 2026-08-29. xAI publishes no environmental total for Colossus (no water volume withdrawn, no electricity consumed), so there is no denominator from which an AI-specific share could be separated. It is the only provider here whose whole business is AI, which would make the split trivial if any total existed.", "source": "xAI (SpaceXAI) Memphis pages read directly; Stanford Foundation Model Transparency Index", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
-      "comparability": { "grade": "red", "note": "Still 🔴, note corrected 2026-08-29 — “no figures published, so nothing to compare” is no longer accurate. xAI publishes figures on its Memphis pages (13M gallons/day of processing capacity, 4.745B gallons/year conserved, NOx at 2 ppm, turbine counts, substation spend). None of them is comparable: they are projections and equipment specifications, published without methodology, boundary or period, on a page whose stated purpose is rebutting critics rather than reporting. There is no denominator, no prior year, and nothing another provider's figure could be set against. A number you cannot check is not a disclosure, which is the same finding this table makes against OpenAI's 0.32 ml.", "source": "xAI (SpaceXAI) Memphis pages read directly; Fortune/Bloomberg, “AI giants are quiet on climate”", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
-      "replenishment": { "grade": "yellow", "note": "Moved 🔴→🟡 on 2026-08-29, correcting a note that said xAI “has not even asserted a goal.” It has, on its own Memphis site: the Colossus Water Recycle Plant, an $80M facility that “will process up to 13 million gallons of wastewater daily, eliminating the need to draw from the Memphis Aquifer for industrial use”, and which xAI says “will conserve approximately 4.745 billion gallons of water annually.” That is a named project with a volume attached, which is more than OpenAI or Anthropic offer. It is 🟡 and not 🟢 for three reasons, all of them on the page itself: the plant was “scheduled to begin operations in 2026”, so the figure is a projection rather than a delivered volume; conserving water others would have drawn is not the same as replenishing what the datacenter consumes; and no volume xAI actually withdraws is published, so the saving cannot be set against a usage figure.", "source": "xAI (SpaceXAI) Memphis site, “Fact v. Fiction” (read directly)", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
-      "energy_source": { "grade": "yellow", "note": "Moved 🔴→🟡 on 2026-08-29. The enforcement history stands and matters: xAI ran on-site methane turbines without air permits, and in January 2026 the EPA determined the trailer-mounted units had sat in one place long enough to count as stationary sources, closing the “non-road engine” loophole; litigation brought by SELC on behalf of the NAACP continues. What was wrong was the last sentence — that xAI “discloses no energy mix.” On its own Memphis pages it now states what powers the site: temporary turbines “have now been permanently removed from the Electrolux site”; it applied for 15 permanent turbines in January 2025, approved by the Shelby County Health Department on 2 July 2025, and expects to need only 12, “eventually only be used for backup power”; it is “securing additional power from the grid”; and the permitted turbines carry SoLoNOx dry-low-emissions and selective catalytic reduction bringing NOx “to 2 ppm.” Still 🟡, not 🟢: that is equipment and permits, not an energy mix — no generation split, no MWh, no Scope 1/2 inventory. Reported turbine counts still differ across sources, so we quote xAI's own numbers as its claims rather than as findings.", "source": "xAI (SpaceXAI) Memphis “Fact v. Fiction” read directly; SELC; EPA applicability determination", "source_url": "https://x.ai/memphis/fact-v-fiction", "source_date": "Aug 29 2026" },
-      "verification":  { "grade": "red", "note": "No third-party-verified environmental data and no CDP response — re-verified 2026-08-29. The Memphis figures xAI does publish carry no assurance statement, no auditor and no standard; the only external scrutiny of this site has come from regulators and litigation, which is oversight rather than verification of a disclosure.", "source": "xAI (SpaceXAI) Memphis pages read directly; Stanford Foundation Model Transparency Index", "source_url": "https://crfm.stanford.edu/fmti/", "source_date": "Aug 29 2026" }
-    } },
-    { "provider": "OpenAI", "cells": {
-      "site_level":    { "grade": "red", "note": "Re-verified 2026-08-25: still no numeric site data. Abilene is described qualitatively — closed-loop, an initial fill of “about two Olympic pools” — with no ongoing consumption figure. What is known about the site's scale comes from Epoch AI's facility tracking, not from OpenAI.", "source": "OpenAI blog (qualitative only); Epoch AI facility data", "source_url": "https://epoch.ai/data/ai-data-centers", "source_date": "Aug 25 2026" },
-      "ai_split":      { "grade": "red", "note": "No AI-vs-total disclosure — re-verified 2026-08-25. OpenAI is an AI-only company, so this would simply be its footprint, and it publishes none.", "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026)", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "red", "note": "Re-verified 2026-08-29. Sam Altman stated 0.32 ml per average ChatGPT query in a June 2025 blog post, and that sentence is now widely cited as though it were a disclosure. It stays 🔴 because it is not one — no methodology, no measurement boundary, no token count, no scope, nothing to audit it against. The Stargate Community page adds a second uncheckable comparison: it relays that “the water use at the Abilene site in a year will be half as much as Abilene uses in a single day”, attributed to the city's mayor rather than measured by OpenAI, and expressed as a ratio to a quantity the reader also does not know. Both numbers are the same shape — vivid, quotable, and impossible to verify. OpenAI has a sustainability steering committee and says it coordinates with its data center partners, but publishes no emissions or energy figures and has made no net-zero pledge.", "source": "OpenAI “Stargate Community” read directly; Altman blog post; Fortune/Bloomberg", "source_url": "https://openai.com/index/stargate-community/", "source_date": "Aug 29 2026" },
-      "replenishment": { "grade": "red", "note": "No replenishment volume — re-verified 2026-08-29. The Stargate Community page commits to “minimizing water use … by prioritizing closed-loop or low-water cooling systems” and notes that in Wisconsin “our partners will invest a minimum of $175M in local infrastructure upgrades and water restoration projects.” That is a dollar figure from partners, not a volume from OpenAI, and no target, baseline or replenished quantity is stated anywhere. A spend is not a replenishment disclosure.", "source": "OpenAI, “Stargate Community” (read directly)", "source_url": "https://openai.com/index/stargate-community/", "source_date": "Aug 29 2026" },
-      "energy_source": { "grade": "red", "note": "Abilene runs on gas plus grid power per third-party tracking; OpenAI publishes no energy mix and no Scope 1/2/3 data — re-verified 2026-08-25.", "source": "Epoch AI facility data; Legerly check of OpenAI materials", "source_url": "https://epoch.ai/data/ai-data-centers", "source_date": "Aug 25 2026" },
-      "verification":  { "grade": "red", "note": "No sustainability report, no CDP response, nothing assured — re-verified 2026-08-25 and directly checkable from the absence of any such document. California's SB 253 requires Scope 1 and 2 reporting from large companies operating in the state starting November 2026, so this cell has a real chance of moving within a year — though reporting the bulk as Scope 3 would push most of it to 2027.", "source": "Fortune/Bloomberg (Aug 12 2026); California SB 253", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" }
-    } },
-    { "provider": "Anthropic", "cells": {
-      "site_level":    { "grade": "red", "note": "Re-verified 2026-08-29, and this time counted rather than asserted. We pulled the full Transparency Hub — 121,341 characters — and searched it: “water” 0, “energy” 0, “carbon” 0, “emissions” 0, “climate” 0, “electricity” 0, “sustainability” 0. It is an AI-safety document, and the only “environment” hits are about model deployment environments. No site is named and no figure is given. We publish the counts so the absence is a measurement you can repeat at the linked page, rather than a claim you have to take on trust.", "source": "Anthropic Transparency Hub, full-text keyword census (read directly)", "source_url": "https://www.anthropic.com/transparency", "source_date": "Aug 29 2026" },
-      "ai_split":      { "grade": "red", "note": "Nothing disclosed — re-verified 2026-08-25. FMTI records that water use has been described as proprietary. As with OpenAI, an AI-only company's total *is* its AI footprint, and none is published.", "source": "Stanford Foundation Model Transparency Index", "source_url": "https://crfm.stanford.edu/fmti/", "source_date": "Aug 25 2026" },
-      "comparability": { "grade": "red", "note": "No figures published — re-verified 2026-08-25. Anthropic is working with Watershed to measure its footprint for compliance purposes and joined the Frontier carbon-removal coalition in June 2026, but neither has produced a published number yet. Measuring is not disclosing.", "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026)", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" },
-      "replenishment": { "grade": "red", "note": "No water claim, target or data — re-verified 2026-08-25.", "source": "Legerly check of Anthropic public materials", "source_url": "https://www.anthropic.com/transparency", "source_date": "Aug 25 2026" },
-      "energy_source": { "grade": "red", "note": "No clean-power PPA to date and no disclosed energy mix; third-party analysis puts its data-center carbon intensity among the highest of its peers. The only quantified commitment is on electricity cost (Feb 11 2026), not on source. Joining Frontier in June 2026 buys carbon removal; it says nothing about what powers the compute.", "source": "Anthropic news; Heatmap; Fortune/Bloomberg (Aug 2026)", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" },
-      "verification":  { "grade": "red", "note": "No third-party-verified environmental data and no CDP response — re-verified 2026-08-25. Same SB 253 clock as OpenAI: Scope 1 and 2 reporting is due from November 2026 for large companies operating in California, with Scope 3 not due until 2027.", "source": "Fortune/Bloomberg (Aug 12 2026); California SB 253", "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm", "source_date": "Aug 25 2026" }
-    } }
+    {
+      "provider": "Google",
+      "cells": {
+        "site_level": {
+          "grade": "green",
+          "note": "Re-read 2026-08-25 against the 2026 Environmental Report (FY2025) — our previous note was a reporting cycle out of date and understated this. Google publishes withdrawal, discharge AND consumption for 36 named data center locations across eight countries (US, Ireland, Netherlands, Denmark, Finland, Belgium, Chile, Canada), plus an aggregated “other locations” bucket — up from 24 locations. It remains the most complete site-level disclosure of any provider, and it is stronger than Microsoft's on the two points that matter: Google publishes consumption, not just withdrawal, and the table sits inside the third-party limited-assurance scope rather than outside it.",
+          "source": "Google 2026 Environmental Report, “Water use by data center location” (read directly)",
+          "source_url": "https://sustainability.google/reports/google-2026-environmental-report/",
+          "source_date": "Aug 25 2026"
+        },
+        "ai_split": {
+          "grade": "yellow",
+          "note": "Re-checked 2026-08-25: the per-prompt figures are unchanged — median Gemini Apps text prompt at 0.24 Wh, 0.03 gCO₂e and 0.26 mL water, measured as of May 2025. The 2026 report adds that per-prompt energy and carbon fell 33× and 44× over twelve months, but facility reporting still does not split AI from general load, so the AI share of that 13,562 Mgal data-center withdrawal remains unknowable.",
+          "source": "Google 2026 Environmental Report (read directly)",
+          "source_url": "https://sustainability.google/reports/google-2026-environmental-report/",
+          "source_date": "Aug 25 2026"
+        },
+        "comparability": {
+          "grade": "yellow",
+          "note": "Resolved 2026-08-29 by reading Google's own methodology paper (arXiv 2508.15734) rather than the report. We used to record that the per-prompt figures had “no published denominator”. The truth is sharper: THERE IS NO DENOMINATOR BY CONSTRUCTION. The paper defines the “median Gemini Apps text prompt” by taking the average energy per prompt for each model, ranking the models by that value, and finding the model that serves the 50th-percentile prompt — “the average energy/prompt is defined as the energy of the median Gemini Apps text prompt on that day.” So “median” describes the MODEL, not the prompt, and the headline number is an average across every prompt that model served, whose size distribution is never characterised. It cannot be converted to a per-token rate even in principle, which is why a reader cannot apply it to their own usage. Two things keep this at 🟡 rather than 🔴, and both are to Google's credit: the methodology is published in full, and the paper reports BOTH boundaries rather than the flattering one — 0.10 Wh / 0.12 mL on the narrow “Existing Approach” against 0.24 Wh / 0.26 mL on the “Comprehensive” one, a 2.4× spread from a single measurement, with the larger figure the one Google quotes publicly. The irony is worth recording: the same paper faults OpenAI's 0.34 Wh for giving “no explanation of the measurement boundary or methodology … making it impossible to compare with other estimates”, and notes that Mistral states its own figure per 400-token response. Google identified the failure precisely and then shipped a version of it.",
+          "source": "Google, “Measuring the environmental impact of delivering AI at Google Scale” (arXiv 2508.15734), read directly; plus the 2026 Environmental Report",
+          "source_url": "https://arxiv.org/abs/2508.15734",
+          "source_date": "Aug 29 2026"
+        },
+        "replenishment": {
+          "grade": "yellow",
+          "note": "Replenished 78% of the freshwater it consumed in 2025 (9,947 Mgal consumed, 7,717 Mgal replenished), against a stated goal of 120% by 2030 — a real number, published, and trending up. Still graded 🟡 because replenishment is reported by watershed but returned water often sits in different watersheds than those drawn down, so the fleet figure does not mean local supply was made whole.",
+          "source": "Google 2026 Environmental Report, freshwater replenishment table (read directly)",
+          "source_url": "https://sustainability.google/reports/google-2026-environmental-report/",
+          "source_date": "Aug 25 2026"
+        },
+        "energy_source": {
+          "grade": "yellow",
+          "note": "Achieved ~65% global average carbon-free energy in 2025 (up from 64%), and at least 80% CFE in 9 of 22 grid regions — reported by region, which is better than any peer. But it is still a market-based accounting method, and total emissions are now 62% above the 2019 base year, up from the ~51% we recorded last cycle. The trend line and the headline percentage point in opposite directions.",
+          "source": "Google 2026 Environmental Report (read directly)",
+          "source_url": "https://sustainability.google/reports/google-2026-environmental-report/",
+          "source_date": "Aug 25 2026"
+        },
+        "verification": {
+          "grade": "yellow",
+          "note": "2025 metrics were subject to third-party limited-assurance procedures, and — unlike Microsoft — that scope covers the granular per-location water table, not just the headline aggregates. Held at 🟡 rather than 🟢 because limited assurance is the weakest form of it and covers selected metrics only; we are not going to call limited assurance “good” for anyone.",
+          "source": "Google 2026 (FY2025) Independent Accountants’ Review Report (scope legend read directly)",
+          "source_url": "https://sustainability.google/reports/google-2026-environmental-report/",
+          "source_date": "Aug 25 2026"
+        }
+      }
+    },
+    {
+      "provider": "Amazon (AWS)",
+      "cells": {
+        "site_level": {
+          "grade": "yellow",
+          "note": "Re-read 2026-08-25; our previous note said “no site-level and no historical tables” and both halves were wrong. AWS publishes a public per-Region table giving PUE for 2022–2025 and WUE for 2024–2025 by named Region (e.g. US East N. Virginia 1.15 PUE / 0.06 WUE; Europe Ireland 1.10 / 0.02). That is company-published, dated and comparable — but it is efficiency ratios only, with no absolute water or energy volume per Region, and many Regions still show N/A for WUE. Absolute figures exist as a single global total (2.5B gal withdrawn, 2025) and, at Region/service/account granularity, only inside a paying customer's AWS Sustainability Console — visible to customers about their own workloads, not to the public. Graded 🟡: real named-location disclosure, but ratios for everyone and volumes only for customers.",
+          "source": "AWS Region PUE and WUE table (read directly); AWS Sustainability Console blog",
+          "source_url": "https://sustainability.aboutamazon.com/products-services/aws-cloud",
+          "source_date": "Aug 25 2026"
+        },
+        "ai_split": {
+          "grade": "red",
+          "note": "Re-checked 2026-08-25 against the 2025 Amazon Sustainability Report: still no AI-vs-total breakout. The report discusses AI-driven cooling load at length — the In-Row Heat Exchanger, a projected 9% water reduction versus evaporative cooling — without ever attributing a volume or a kWh to AI.",
+          "source": "Amazon 2025 Sustainability Report (read directly)",
+          "source_url": "https://sustainability.aboutamazon.com/2025-amazon-sustainability-report.pdf",
+          "source_date": "Aug 25 2026"
+        },
+        "comparability": {
+          "grade": "yellow",
+          "note": "Now publishes a consistent multi-year efficiency series — global WUE 0.25 → 0.19 → 0.18 → 0.15 → 0.12 L/kWh across 2021–2025, global PUE 1.14, plus the per-Region table — which is genuine year-on-year comparability and moves this off 🔴. The cherry-pick stands, though: the headline claim that 0.12 is “over 7× better” than an 0.84 industry average sets Amazon's whole fleet against other operators' power-intensive AI-specific facilities, and Amazon publishes no AI-specific figure of its own to compare like for like.",
+          "source": "Amazon 2025 Sustainability Report + AWS Region table (read directly); DCD",
+          "source_url": "https://sustainability.aboutamazon.com/products-services/aws-cloud",
+          "source_date": "Aug 25 2026"
+        },
+        "replenishment": {
+          "grade": "yellow",
+          "note": "Reports 75% progress toward its water-positive-by-2030 goal (up from 53% and 41% in the two prior years), 45 replenishment projects, an expected 22B+ litres returned annually and $1B committed to public water infrastructure. Moved 🔴→🟡 for consistency: the offsets-in-other-communities critique that keeps Google and Microsoft at 🟡 applies here too, and it should not cost Amazon an extra grade. Worth remembering how it got here — a leaked internal plan showed intent to keep data-center water use secret, and the global total only appeared in 2026. What would earn 🟢 is watershed-level reporting that matches what was returned against what was drawn down.",
+          "source": "Amazon 2025 Sustainability Report (read directly); SourceMaterial",
+          "source_url": "https://sustainability.aboutamazon.com/2025-amazon-sustainability-report.pdf",
+          "source_date": "Aug 25 2026"
+        },
+        "energy_source": {
+          "grade": "yellow",
+          "note": "Publishes global PUE 1.14 (2025) and per-Region PUE back to 2022, names ISO 50001-certified Regions, and counts its portfolio (264 solar, 109 wind, two nuclear projects). Matched to Microsoft's 🟡 for the same reason and the same limitation: the renewable claims rest on market-based energy attribute credits, and the actual grid mix at any given AI facility is not disclosed. Efficiency is well covered here; energy *source* is not.",
+          "source": "Amazon 2025 Sustainability Report + AWS Region PUE table (read directly)",
+          "source_url": "https://sustainability.aboutamazon.com/products-services/aws-cloud",
+          "source_date": "Aug 25 2026"
+        },
+        "verification": {
+          "grade": "yellow",
+          "note": "Limited assurance over selected metrics, with a Data Tables and Assurance Statements section in the 2025 report, and a separately published assurance statement covering the water-withdrawal methodology behind the Sustainability Console. Same ceiling as every peer — selected metrics, limited assurance, not the whole inventory.",
+          "source": "Amazon 2025 Sustainability Report, Data Tables and Assurance Statements; AWS assurance statement",
+          "source_url": "https://aws.amazon.com/blogs/infrastructure-sustainability/advancing-water-stewardship-at-aws-new-water-withdrawals-data-now-available-in-the-aws-sustainability-console/",
+          "source_date": "Aug 25 2026"
+        }
+      }
+    },
+    {
+      "provider": "Microsoft",
+      "cells": {
+        "site_level": {
+          "grade": "green",
+          "note": "Confirmed 2026-08-24 by reading Microsoft's own 2026 Environmental Data Fact Sheet. Table 15, “FY25 Datacenter water and electricity use by location”, publishes electricity consumption (MWh), water withdrawal (ML), the non-potable share and replenishment volume for 29 named locations. That is the company disclosing it itself, so this row moves 🔴→🟢 — the first grade movement this index has recorded, and it makes Microsoft the second provider after Google to publish location-level figures. Four limits stop it short of Google's: the unit is a metropolitan area or regional cluster, not an individual building; the water metric is withdrawal, not consumption (consumption stays global/regional in Table 14); scope is Microsoft-owned datacenters under its own operational control, so leased and colocation capacity — including the QTS-built Fairwater Atlanta — is excluded; and Table 15 sits in Section 2, which the fact sheet states was outside Deloitte's limited-assurance review. Some values are Microsoft's own estimates where utility data was unavailable, by a disclosed methodology.",
+          "source": "Microsoft 2026 Environmental Data Fact Sheet, Table 15 (read directly)",
+          "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf",
+          "source_date": "Aug 24 2026"
+        },
+        "ai_split": {
+          "grade": "red",
+          "note": "Re-checked 2026-08-24 against both the full report and the fact sheet: still no AI-vs-total split. The new per-location table reports total datacenter electricity and water, not the AI share of either.",
+          "source": "Microsoft 2026 Environmental Data Fact Sheet (read directly)",
+          "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf",
+          "source_date": "Aug 24 2026"
+        },
+        "comparability": {
+          "grade": "yellow",
+          "note": "Reports WUE consistently (0.27 L/kWh, 2025; down from 2.3 historically) and now publishes withdrawal per location, but still declares “water positive” while keeping consumption global and regional only (Table 14). Withdrawal is not consumption, so the new table does not close this gap.",
+          "source": "Microsoft 2026 Environmental Data Fact Sheet; Trellis",
+          "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf",
+          "source_date": "Aug 24 2026"
+        },
+        "replenishment": {
+          "grade": "yellow",
+          "note": "Still claims fleet-wide “water positive” via replenishment offsets, many in watersheds other than those drawn down. But the 2026 fact sheet now reports replenishment volume per named location and marks with an asterisk the priority locations that have delivered no volumetric benefit yet. Publishing the split — including where it is still zero — is what moves this off 🔴: the watershed mismatch is now checkable by anyone instead of buried in one global figure.",
+          "source": "Microsoft 2026 Environmental Data Fact Sheet, Table 15 (read directly)",
+          "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf",
+          "source_date": "Aug 24 2026"
+        },
+        "energy_source": {
+          "grade": "yellow",
+          "note": "Now publishes electricity consumption (MWh) per named location, which is new and real. Still no per-site grid mix: renewable matching and hydrogen-backup pilots are described, but what actually powers the AI sites stays opaque.",
+          "source": "Microsoft 2026 Environmental Data Fact Sheet, Table 15 (read directly)",
+          "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf",
+          "source_date": "Aug 24 2026"
+        },
+        "verification": {
+          "grade": "yellow",
+          "note": "Deloitte & Touche LLP performed a limited-assurance review of Section 1 of the fact sheet only. The per-location datacenter table is in Section 2, which the fact sheet states was not subject to that review — so the most granular figures Microsoft publishes are also its least assured. WUE methodology is published.",
+          "source": "Microsoft 2026 Environmental Data Fact Sheet, §1.11 + scope note (read directly)",
+          "source_url": "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/msc/documents/presentations/CSR/2026-Microsoft-Environmental-Data-Fact-Sheet-PDF.pdf",
+          "source_date": "Aug 24 2026"
+        }
+      }
+    },
+    {
+      "provider": "Meta",
+      "cells": {
+        "site_level": {
+          "grade": "yellow",
+          "note": "Re-read 2026-08-25 against the 2025 Sustainability Report and its Environmental Data Index; our previous note was materially out of date. Meta does now report by site: per-facility electricity consumption (MWh) and per-facility market- and location-based GHG emissions for every named data center back to 2020, and the Index states owned, online data centers are always reported by site. Water is the gap — sections 3.1–3.4 give withdrawal, consumption and discharge by source, by intensity and by water-stress area, but there is no per-facility water table. Held at 🟡 because per-site water is the disclosure every 🟢 in this column was earned on. This is now a strong 🟡, not the near-🔴 it used to be.",
+          "source": "Meta 2025 Environmental Data Index, §2.1 and §3.1–3.4 (read directly)",
+          "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/",
+          "source_date": "Aug 25 2026"
+        },
+        "ai_split": {
+          "grade": "red",
+          "note": "Re-checked 2026-08-25 across both the 2025 Sustainability Report and the Environmental Data Index: no AI-vs-total split anywhere. Per-facility electricity gets you closer than most — you can see which campus draws what — but nothing attributes any of it to AI.",
+          "source": "Meta 2025 Sustainability Report + Environmental Data Index (read directly)",
+          "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/",
+          "source_date": "Aug 25 2026"
+        },
+        "comparability": {
+          "grade": "yellow",
+          "note": "Reports both PUE (1.08) and annual data-center WUE (0.19 in 2024, down from 0.30 in 2020) on a consistent multi-year basis — more comparable efficiency reporting than Google, which publishes no fleet WUE. Held at 🟡 for two reasons: absolute water is still aggregate-only, and Meta's latest data is calendar 2024, a full year behind Google's FY2025, so a like-for-like comparison isn't actually available.",
+          "source": "Meta 2025 Environmental Data Index, §2.4 and §3.1 (read directly)",
+          "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/",
+          "source_date": "Aug 25 2026"
+        },
+        "replenishment": {
+          "grade": "yellow",
+          "note": "The strongest replenishment framing of any provider here: Meta states it restores water in the same watersheds where its data centers are located, which is precisely the mismatch that keeps Google and Microsoft at 🟡. Volumetric restoration benefits are reported annually and independently verified by LimnoTech. Held at 🟡 rather than 🟢 because it is a commitment plus a verified volume, not yet a demonstrated match of restored volume to drawn-down volume basin by basin.",
+          "source": "Meta 2025 Environmental Data Index, §3.4 + water stewardship note (read directly)",
+          "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/",
+          "source_date": "Aug 25 2026"
+        },
+        "energy_source": {
+          "grade": "yellow",
+          "note": "Re-checked 2026-08-25. Large contracted renewable portfolio and per-facility market-based emissions showing near-zero at most campuses, but the Louisiana Hyperion campus relies on roughly 10 new gas plants — the disclosed portfolio and the marginal build tell different stories, and Meta does not reconcile them.",
+          "source": "Meta 2025 Sustainability Report; Data Center Frontier",
+          "source_url": "https://sustainability.atmeta.com/2025-sustainability-report/",
+          "source_date": "Aug 25 2026"
+        },
+        "verification": {
+          "grade": "yellow",
+          "note": "Ernst & Young LLP provides limited assurance over selected environmental metrics, with a published Independent Accountants' Review Report; water-restoration volumes are separately verified by LimnoTech. Same ceiling as every peer — limited assurance on a selected subset, not the whole inventory.",
+          "source": "Meta 2025 Environmental Data Index, assurance note + Independent Accountants’ Review Report",
+          "source_url": "https://sustainability.atmeta.com/asset/2025-environmental-data-index/",
+          "source_date": "Aug 25 2026"
+        }
+      }
+    },
+    {
+      "provider": "xAI",
+      "cells": {
+        "site_level": {
+          "grade": "red",
+          "note": "Still 🔴, but the old note overstated it and is corrected here. It said there was “no corporate environmental disclosure of any kind” and that every Colossus figure “comes from Memphis utility records, regulators or environmental groups, never from xAI.” That is not true: xAI runs a public Memphis site publishing turbine counts and permit dates, emissions-control specification, substation spend and a water-recycling plant capacity. What it does not publish is the thing this column grades — how much water the site withdraws or consumes, and how much electricity it uses. Not one such figure exists from xAI, so the grade holds. The operating figures in circulation do still come from others, and they disagree: reported aquifer draw runs roughly 1.3M to 5M gallons per day depending on source, facility and period, so we show the range rather than pick.",
+          "source": "xAI (SpaceXAI) Memphis pages read directly; SELC; utility MLGW records via press",
+          "source_url": "https://x.ai/memphis/fact-v-fiction",
+          "source_date": "Aug 29 2026"
+        },
+        "ai_split": {
+          "grade": "red",
+          "note": "Nothing to split — re-verified 2026-08-29. xAI publishes no environmental total for Colossus (no water volume withdrawn, no electricity consumed), so there is no denominator from which an AI-specific share could be separated. It is the only provider here whose whole business is AI, which would make the split trivial if any total existed.",
+          "source": "xAI (SpaceXAI) Memphis pages read directly; Stanford Foundation Model Transparency Index",
+          "source_url": "https://x.ai/memphis/fact-v-fiction",
+          "source_date": "Aug 29 2026"
+        },
+        "comparability": {
+          "grade": "red",
+          "note": "Still 🔴, note corrected 2026-08-29 — “no figures published, so nothing to compare” is no longer accurate. xAI publishes figures on its Memphis pages (13M gallons/day of processing capacity, 4.745B gallons/year conserved, NOx at 2 ppm, turbine counts, substation spend). None of them is comparable: they are projections and equipment specifications, published without methodology, boundary or period, on a page whose stated purpose is rebutting critics rather than reporting. There is no denominator, no prior year, and nothing another provider's figure could be set against. A number you cannot check is not a disclosure, which is the same finding this table makes against OpenAI's 0.32 ml.",
+          "source": "xAI (SpaceXAI) Memphis pages read directly; Fortune/Bloomberg, “AI giants are quiet on climate”",
+          "source_url": "https://x.ai/memphis/fact-v-fiction",
+          "source_date": "Aug 29 2026"
+        },
+        "replenishment": {
+          "grade": "yellow",
+          "note": "Moved 🔴→🟡 on 2026-08-29, correcting a note that said xAI “has not even asserted a goal.” It has, on its own Memphis site: the Colossus Water Recycle Plant, an $80M facility that “will process up to 13 million gallons of wastewater daily, eliminating the need to draw from the Memphis Aquifer for industrial use”, and which xAI says “will conserve approximately 4.745 billion gallons of water annually.” That is a named project with a volume attached, which is more than OpenAI or Anthropic offer. It is 🟡 and not 🟢 for three reasons, all of them on the page itself: the plant was “scheduled to begin operations in 2026”, so the figure is a projection rather than a delivered volume; conserving water others would have drawn is not the same as replenishing what the datacenter consumes; and no volume xAI actually withdraws is published, so the saving cannot be set against a usage figure.",
+          "source": "xAI (SpaceXAI) Memphis site, “Fact v. Fiction” (read directly)",
+          "source_url": "https://x.ai/memphis/fact-v-fiction",
+          "source_date": "Aug 29 2026"
+        },
+        "energy_source": {
+          "grade": "yellow",
+          "note": "Moved 🔴→🟡 on 2026-08-29. The enforcement history stands and matters: xAI ran on-site methane turbines without air permits, and in January 2026 the EPA determined the trailer-mounted units had sat in one place long enough to count as stationary sources, closing the “non-road engine” loophole; litigation brought by SELC on behalf of the NAACP continues. What was wrong was the last sentence — that xAI “discloses no energy mix.” On its own Memphis pages it now states what powers the site: temporary turbines “have now been permanently removed from the Electrolux site”; it applied for 15 permanent turbines in January 2025, approved by the Shelby County Health Department on 2 July 2025, and expects to need only 12, “eventually only be used for backup power”; it is “securing additional power from the grid”; and the permitted turbines carry SoLoNOx dry-low-emissions and selective catalytic reduction bringing NOx “to 2 ppm.” Still 🟡, not 🟢: that is equipment and permits, not an energy mix — no generation split, no MWh, no Scope 1/2 inventory. Reported turbine counts still differ across sources, so we quote xAI's own numbers as its claims rather than as findings.",
+          "source": "xAI (SpaceXAI) Memphis “Fact v. Fiction” read directly; SELC; EPA applicability determination",
+          "source_url": "https://x.ai/memphis/fact-v-fiction",
+          "source_date": "Aug 29 2026"
+        },
+        "verification": {
+          "grade": "red",
+          "note": "No third-party-verified environmental data and no CDP response — re-verified 2026-08-29. The Memphis figures xAI does publish carry no assurance statement, no auditor and no standard; the only external scrutiny of this site has come from regulators and litigation, which is oversight rather than verification of a disclosure.",
+          "source": "xAI (SpaceXAI) Memphis pages read directly; Stanford Foundation Model Transparency Index",
+          "source_url": "https://crfm.stanford.edu/fmti/",
+          "source_date": "Aug 29 2026"
+        }
+      }
+    },
+    {
+      "provider": "OpenAI",
+      "cells": {
+        "site_level": {
+          "grade": "red",
+          "note": "Re-verified 2026-08-25: still no numeric site data. Abilene is described qualitatively — closed-loop, an initial fill of “about two Olympic pools” — with no ongoing consumption figure. What is known about the site's scale comes from Epoch AI's facility tracking, not from OpenAI.",
+          "source": "OpenAI blog (qualitative only); Epoch AI facility data",
+          "source_url": "https://epoch.ai/data/ai-data-centers",
+          "source_date": "Aug 25 2026"
+        },
+        "ai_split": {
+          "grade": "red",
+          "note": "No AI-vs-total disclosure — re-verified 2026-08-25. OpenAI is an AI-only company, so this would simply be its footprint, and it publishes none.",
+          "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026)",
+          "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm",
+          "source_date": "Aug 25 2026"
+        },
+        "comparability": {
+          "grade": "red",
+          "note": "Re-verified 2026-08-29. Sam Altman stated 0.32 ml per average ChatGPT query in a June 2025 blog post, and that sentence is now widely cited as though it were a disclosure. It stays 🔴 because it is not one — no methodology, no measurement boundary, no token count, no scope, nothing to audit it against. The Stargate Community page adds a second uncheckable comparison: it relays that “the water use at the Abilene site in a year will be half as much as Abilene uses in a single day”, attributed to the city's mayor rather than measured by OpenAI, and expressed as a ratio to a quantity the reader also does not know. Both numbers are the same shape — vivid, quotable, and impossible to verify. OpenAI has a sustainability steering committee and says it coordinates with its data center partners, but publishes no emissions or energy figures and has made no net-zero pledge.",
+          "source": "OpenAI “Stargate Community” read directly; Altman blog post; Fortune/Bloomberg",
+          "source_url": "https://openai.com/index/stargate-community/",
+          "source_date": "Aug 29 2026"
+        },
+        "replenishment": {
+          "grade": "red",
+          "note": "No replenishment volume — re-verified 2026-08-29. The Stargate Community page commits to “minimizing water use … by prioritizing closed-loop or low-water cooling systems” and notes that in Wisconsin “our partners will invest a minimum of $175M in local infrastructure upgrades and water restoration projects.” That is a dollar figure from partners, not a volume from OpenAI, and no target, baseline or replenished quantity is stated anywhere. A spend is not a replenishment disclosure.",
+          "source": "OpenAI, “Stargate Community” (read directly)",
+          "source_url": "https://openai.com/index/stargate-community/",
+          "source_date": "Aug 29 2026"
+        },
+        "energy_source": {
+          "grade": "red",
+          "note": "Abilene runs on gas plus grid power per third-party tracking; OpenAI publishes no energy mix and no Scope 1/2/3 data — re-verified 2026-08-25.",
+          "source": "Epoch AI facility data; Legerly check of OpenAI materials",
+          "source_url": "https://epoch.ai/data/ai-data-centers",
+          "source_date": "Aug 25 2026"
+        },
+        "verification": {
+          "grade": "red",
+          "note": "No sustainability report, no CDP response, nothing assured — re-verified 2026-08-25 and directly checkable from the absence of any such document. California's SB 253 requires Scope 1 and 2 reporting from large companies operating in the state starting November 2026, so this cell has a real chance of moving within a year — though reporting the bulk as Scope 3 would push most of it to 2027.",
+          "source": "Fortune/Bloomberg (Aug 12 2026); California SB 253",
+          "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm",
+          "source_date": "Aug 25 2026"
+        }
+      }
+    },
+    {
+      "provider": "Anthropic",
+      "cells": {
+        "site_level": {
+          "grade": "red",
+          "note": "Re-verified 2026-08-29, and this time counted rather than asserted. We pulled the full Transparency Hub — 121,341 characters — and searched it: “water” 0, “energy” 0, “carbon” 0, “emissions” 0, “climate” 0, “electricity” 0, “sustainability” 0. It is an AI-safety document, and the only “environment” hits are about model deployment environments. No site is named and no figure is given. We publish the counts so the absence is a measurement you can repeat at the linked page, rather than a claim you have to take on trust.",
+          "source": "Anthropic Transparency Hub, full-text keyword census (read directly)",
+          "source_url": "https://www.anthropic.com/transparency",
+          "source_date": "Aug 29 2026"
+        },
+        "ai_split": {
+          "grade": "red",
+          "note": "Nothing disclosed — re-verified 2026-08-25. FMTI records that water use has been described as proprietary. As with OpenAI, an AI-only company's total *is* its AI footprint, and none is published.",
+          "source": "Stanford Foundation Model Transparency Index",
+          "source_url": "https://crfm.stanford.edu/fmti/",
+          "source_date": "Aug 25 2026"
+        },
+        "comparability": {
+          "grade": "red",
+          "note": "No figures published — re-verified 2026-08-25. Anthropic is working with Watershed to measure its footprint for compliance purposes and joined the Frontier carbon-removal coalition in June 2026, but neither has produced a published number yet. Measuring is not disclosing.",
+          "source": "Fortune/Bloomberg, “AI giants are quiet on climate” (Aug 12 2026)",
+          "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm",
+          "source_date": "Aug 25 2026"
+        },
+        "replenishment": {
+          "grade": "red",
+          "note": "No water claim, target or data — re-verified 2026-08-25.",
+          "source": "Legerly check of Anthropic public materials",
+          "source_url": "https://www.anthropic.com/transparency",
+          "source_date": "Aug 25 2026"
+        },
+        "energy_source": {
+          "grade": "red",
+          "note": "No clean-power PPA to date and no disclosed energy mix; third-party analysis puts its data-center carbon intensity among the highest of its peers. The only quantified commitment is on electricity cost (Feb 11 2026), not on source. Joining Frontier in June 2026 buys carbon removal; it says nothing about what powers the compute.",
+          "source": "Anthropic news; Heatmap; Fortune/Bloomberg (Aug 2026)",
+          "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm",
+          "source_date": "Aug 25 2026"
+        },
+        "verification": {
+          "grade": "red",
+          "note": "No third-party-verified environmental data and no CDP response — re-verified 2026-08-25. Same SB 253 clock as OpenAI: Scope 1 and 2 reporting is due from November 2026 for large companies operating in California, with Scope 3 not due until 2027.",
+          "source": "Fortune/Bloomberg (Aug 12 2026); California SB 253",
+          "source_url": "https://www.insurancejournal.com/news/national/2026/08/12/881245.htm",
+          "source_date": "Aug 25 2026"
+        }
+      }
+    }
   ]
 }

@@ -207,7 +207,30 @@
     {
       "p": "openai",
       "m": "ChatGPT Plus",
-      "provenance": "not_disclosed",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 10,
+          "n_high": 100,
+          "unit": "messages",
+          "window": "5h",
+          "scope": "Codex (GPT-5.6 Sol, local messages)",
+          "soft": false,
+          "scope_limited": true,
+          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers \u2014 which is the first time OpenAI has quantified the base its \u201C5x/20x more usage\u201D marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
+        }
+      ],
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "scope": "Codex and agentic features",
+          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: \u201COn ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.\u201D The help article on using Codex with a ChatGPT plan is unhedged: a banked reset \u201Crefreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date\u201D. Neither sizes it.",
+          "source": "https://developers.openai.com/codex/pricing#what-are-the-usage-limits-for-my-plan",
+          "corroborated_by": ["https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"],
+          "effect": "SCOPE MATTERS AND IS THE WHOLE FINDING: this is Codex and the agentic features that share its allowance, NOT ChatGPT chat. The ChatGPT Free FAQ and the Pro tiers article name no window of any kind, so nothing here licenses a claim about ordinary chat. What it does mean is that OpenAI's published five-hour Codex table is a burst rate on the same terms as Anthropic's: a weekly cap sits above it that OpenAI has said exists and will not size.",
+          "as_of": "2026-08-31"
+        }
+      ],
       "stated": "'Expanded messages and uploads' over Go, and 'Limits apply'. No absolute MESSAGE figure. The '160 GPT-5.5 Instant messages / 3h' cap recorded here until 2026-08-08 is no longer published — see the note on ChatGPT Go. Plus remains the most expensive consumer tier of any provider publishing no usage allowance of any kind. It does now publish a context window (54K Instant / 256K Reasoning) — a real disclosure, but a per-conversation size limit, not an allowance.",
       "context_window": {
         "instant_tokens": 54000,
@@ -225,7 +248,30 @@
     {
       "p": "openai",
       "m": "ChatGPT Pro",
-      "provenance": "not_disclosed",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 50,
+          "n_high": 500,
+          "unit": "messages",
+          "window": "5h",
+          "scope": "Codex (GPT-5.6 Sol, local messages)",
+          "soft": false,
+          "scope_limited": true,
+          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers \u2014 which is the first time OpenAI has quantified the base its \u201C5x/20x more usage\u201D marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
+        }
+      ],
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "scope": "Codex and agentic features",
+          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: \u201COn ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.\u201D The help article on using Codex with a ChatGPT plan is unhedged: a banked reset \u201Crefreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date\u201D. Neither sizes it.",
+          "source": "https://developers.openai.com/codex/pricing#what-are-the-usage-limits-for-my-plan",
+          "corroborated_by": ["https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"],
+          "effect": "SCOPE MATTERS AND IS THE WHOLE FINDING: this is Codex and the agentic features that share its allowance, NOT ChatGPT chat. The ChatGPT Free FAQ and the Pro tiers article name no window of any kind, so nothing here licenses a claim about ordinary chat. What it does mean is that OpenAI's published five-hour Codex table is a burst rate on the same terms as Anthropic's: a weekly cap sits above it that OpenAI has said exists and will not size.",
+          "as_of": "2026-08-31"
+        }
+      ],
       "context_window": {
         "instant_tokens": 128000,
         "reasoning_tokens": 400000,
@@ -247,7 +293,30 @@
     {
       "p": "openai",
       "m": "ChatGPT Pro (20×)",
-      "provenance": "not_disclosed",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 200,
+          "n_high": 2000,
+          "unit": "messages",
+          "window": "5h",
+          "scope": "Codex (GPT-5.6 Sol, local messages)",
+          "soft": false,
+          "scope_limited": true,
+          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers \u2014 which is the first time OpenAI has quantified the base its \u201C5x/20x more usage\u201D marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
+        }
+      ],
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "scope": "Codex and agentic features",
+          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: \u201COn ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.\u201D The help article on using Codex with a ChatGPT plan is unhedged: a banked reset \u201Crefreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date\u201D. Neither sizes it.",
+          "source": "https://developers.openai.com/codex/pricing#what-are-the-usage-limits-for-my-plan",
+          "corroborated_by": ["https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"],
+          "effect": "SCOPE MATTERS AND IS THE WHOLE FINDING: this is Codex and the agentic features that share its allowance, NOT ChatGPT chat. The ChatGPT Free FAQ and the Pro tiers article name no window of any kind, so nothing here licenses a claim about ordinary chat. What it does mean is that OpenAI's published five-hour Codex table is a burst rate on the same terms as Anthropic's: a weekly cap sits above it that OpenAI has said exists and will not size.",
+          "as_of": "2026-08-31"
+        }
+      ],
       "multiplier": {
         "of": "ChatGPT Plus",
         "x": 20,
@@ -457,6 +526,12 @@
       "p": "xai",
       "m": "SuperGrok",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "none stated",
+        "checked": "2026-08-31",
+        "pages_read": ["https://x.ai/pricing", "https://x.ai/grok", "https://help.x.com/en/using-x/x-premium"],
+        "note": "Read at source on three xAI- and X-owned pages. Every reference to Grok volume is relative and unwindowed \u2014 \u201Chigher rate limits\u201D, \u201Cincreased usage limits on Grok\u201D, \u201Chigher limits on Grok\u201D \u2014 with no base, no period and no reset. This is the only provider of the five checked on 2026-08-31 that names no window at all, and it is a 🔴 rather than a \u26aa because the pages rendered and were read. help.x.com served a Cloudflare interstitial on the first request and the real page on a retry; check the <title> before trusting a body."
+      },
       "value_models": {
         "low": "grok-4.6",
         "high": "grok-4.6"
@@ -569,7 +644,16 @@
     {
       "p": "microsoft",
       "m": "Microsoft 365 Premium",
-      "provenance": "not_disclosed",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 25, "unit": "agent tasks", "window": "30d", "scope": "Agents",
+          "soft": false, "scope_limited": true,
+          "note": "\u201C25 tasks per month shared amongst all agents\u201D. Microsoft's table quantifies four things on Premium and refuses the fifth: Agents 25/month, Vision 15 minutes/day, Voice 60 minutes/day \u2014 and then Chat, the thing most people buy it for, is \u201CExtensive use\u201D. The Copilot-in-apps credit line is \u201CExtensive usage beyond standard credit limits\u201D against a Personal/Family figure of 60 credits per month, so the paid tier is the one whose allowance is unquantified. Same shape as Kimi (FRESHNESS A11): a company that clearly can quantify, declining to on the one number that would let you price the upgrade."
+        },
+        { "n": 15, "unit": "minutes", "window": "1d", "scope": "Vision", "soft": false, "scope_limited": true },
+        { "n": 60, "unit": "minutes", "window": "1d", "scope": "Voice", "soft": false, "scope_limited": true }
+      ],
       "no_api_rate": true,
       "stated": "'Extensive use' beyond the standard credit limit. Microsoft publishes a hard 60 AI credits/month for the cheaper Personal and Family plans but no figure for Premium — disclosure decreasing as price rises.",
       "source": "https://support.microsoft.com/en-us/office/ai-credits-and-limits-for-microsoft-365-personal-family-and-premium-68530f1a-4459-4d02-9818-8233c1f673b8",
@@ -601,7 +685,14 @@
     {
       "p": "mistral",
       "m": "Le Chat Pro",
-      "provenance": "not_disclosed",
+      "provenance": "disclosed",
+      "caps": [
+        {
+          "n": 150, "unit": "Flash answers", "window": "1d", "scope": "Flash answers",
+          "soft": false, "scope_limited": true,
+          "note": "\u201CFlash answers: 200 / day on Team vs. 150 / day on Pro.\u201D It is worth noting WHERE this lives: not in the plan table, which is relative multipliers throughout (\u201CUp to 6x free\u201D messages, \u201CUp to 5x free\u201D web searches, \u201CUp to 40x free\u201D image generations, all against a Free base that is never quantified), but buried in an FAQ answer about a different question. The only absolute consumer number Mistral publishes is the one it did not put in the comparison table."
+        }
+      ],
       "stated": "Messages are 'subject to fair usage limits and Mistral's Terms of Service' — unquantified. Mistral does publish one number on its pricing page: 150 Flash answers per day on Pro (200 on Team). Flash answers are one feature, not the general message allowance.",
       "third_party": [
         {
@@ -625,6 +716,12 @@
       "p": "deepseek",
       "m": "DeepSeek (Free)",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "not established",
+        "checked": "2026-08-31",
+        "pages_read": ["https://www.deepseek.com/", "https://api-docs.deepseek.com/quick_start/rate_limit", "https://api-docs.deepseek.com/faq"],
+        "note": "\u26aa NOT ESTABLISHED, not 🔴. deepseek.com renders as a JS shell (599 characters of text to a plain fetch) and chat.deepseek.com returned an empty 202; the in-app browser was not permitted to load it. So no consumer-facing limits page was actually READ, and an unread page is not a silent provider \u2014 that is the E1g failure exactly. What IS readable is the API rate-limit doc, and it covers CONCURRENCY per account, which is a different thing from a consumer usage window and must not be quoted as one. To close this: open chat.deepseek.com in a logged-in browser."
+      },
       "stated": "No paid consumer tier and no published chat usage limits.",
       "value_models": {
         "low": "deepseek-v4-flash",
