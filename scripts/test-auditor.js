@@ -534,11 +534,23 @@ async function main() {
       // reader is noise, and noise is how a real warning stops being read.
       ok('weekly-window caveat stays quiet for a rarely-' + prov + ' user', !WEEKLY.test(ask(prov, 'rarely')));
     }
-    // OpenAI deleted its general cap and states no weekly window, so asserting one
-    // about them would be inventing a disclosure. This is the check that stops the
-    // caveat from being pasted onto every provider because it reads well.
-    ok('weekly-window caveat does not fire for a provider that states no such window',
+    // OpenAI DOES state a weekly window as of 2026-08-31 — for Codex and the agentic
+    // features sharing its allowance, not for ChatGPT chat. The Auditor prices chat,
+    // so it must stay silent: repeating a Codex disclosure at a Plus subscriber
+    // asserts about a surface this tool does not measure. pricing.html shows it,
+    // scope named. This check changed meaning on that date and the comment says so,
+    // because a green check whose reason has silently moved is worse than a red one.
+    ok('weekly-window caveat does not fire for a window scoped to another product',
        !WEEKLY.test(ask('openai', 'mostDays')));
+    {
+      const oai = JSON.parse(fs.readFileSync(R + 'plan-limits.json', 'utf8')).plans
+        .find(p => p.p === 'openai' && p.m === 'ChatGPT Plus');
+      ok('the OpenAI weekly window is still recorded, and still scoped',
+         !!(oai && (oai.unquantified_windows || [])[0] &&
+            oai.unquantified_windows[0].window === '7d' &&
+            oai.unquantified_windows[0].scope),
+         oai && oai.unquantified_windows);
+    }
     // The claim must trace to the data, not to the copy. Read plan-limits.json off
     // DISK: P.PLAN_LIMITS() falls back to pricing.html's inline snapshot, which mirrors
     // the same field — so emptying the real file left this check green while the two

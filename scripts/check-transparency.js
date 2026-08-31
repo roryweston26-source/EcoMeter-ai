@@ -273,6 +273,83 @@ if (fs.existsSync(pcPath)) {
 }
 
 // ---------------------------------------------------------------------------
+// 4b. Allowance counts in prose must match plan-limits.json.
+// ---------------------------------------------------------------------------
+// Same class of failure as §3, against a different data file, and it shipped.
+//
+// Six allowance cells shared a lede reading "Across 27 consumer plans from 8
+// providers, 26 publish no usage allowance at all." It was true when written on
+// 2026-08-25. On 2026-08-29 Perplexity's own cell was corrected to 🟡 — and the
+// other six kept asserting a count that only holds if Perplexity is still inside
+// it, so one table disagreed with itself for a day. Then on 2026-08-30 Z.ai's
+// three tiers were added, and 31 - 5 = 26 made the number accidentally right
+// again against a denominator that was still wrong. That is why it survived a
+// second reading: a stale figure that has drifted back into coincidental
+// correctness is the hardest kind to spot by eye, and the ratio it implies had
+// gone from 96% to 84% while the sentence stayed put.
+//
+// The absolute count is not the finding. The RATIO is, so both are checked.
+const PL = readJson('plan-limits.json');
+{
+  const plans = PL.plans || [];
+  const planCount = plans.length;
+  const provCount = new Set(plans.map((p) => p.p)).size;
+  const noAllowance = plans.filter(
+    (p) => p.provenance !== 'disclosed' && p.provenance !== 'derived'
+  ).length;
+
+  const re = /(\d+)\s+consumer plans[^.]*?from\s+(\d+)\s+providers?,\s*(\d+)\s+publish no usage allowance/gi;
+  let seen = 0;
+  function checkAllowanceProse(label, text) {
+    if (!text) return;
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      seen++;
+      const [, n, p, k] = m;
+      if (Number(n) !== planCount || Number(p) !== provCount || Number(k) !== noAllowance)
+        fail(
+          `${label} says "${m[0]}" but plan-limits.json has ${planCount} plans from ` +
+            `${provCount} providers with ${noAllowance} publishing no allowance ` +
+            `(${Math.round((noAllowance / planCount) * 100)}%). Re-run the ratio, not just the count.`
+        );
+    }
+  }
+  // matrices() yields [key, columns, rows] TUPLES, not objects. Iterating it as
+  // objects reached nothing, and the guard sailed through on an empty set — which is
+  // exactly what the "no allowance count found" check below exists to catch, and did.
+  for (const [mkey, , rows] of matrices())
+    for (const row of rows || [])
+      for (const [col, cell] of Object.entries(row.cells || {}))
+        checkAllowanceProse(`${mkey} ${row.provider} ${col}`, cell && cell.note);
+  for (const c of (TI.pricing && TI.pricing.caveats) || [])
+    checkAllowanceProse('transparency-index.json pricing.caveats', c);
+  checkAllowanceProse('transparency-index.json pricing.note', TI.pricing && TI.pricing.note);
+
+  // The sentence is load-bearing for the whole axis, so losing it should be as loud
+  // as getting it wrong. Deleting the prose must not be the way to make this pass.
+  if (!seen)
+    fail('no allowance count found in any transparency-index prose. The axis states a ' +
+         'count as its headline finding; if the wording changed, update this guard rather ' +
+         'than leaving the claim unchecked.');
+
+  // The index grades 8 providers; plan-limits tracks more. Whenever a tracked
+  // provider is NOT graded here, the axis must say so — an axis about
+  // non-disclosure that quietly omits the best discloser in the dataset is making
+  // the same omission it grades others for.
+  const graded = new Set((TI.pricing.rows || []).map((r) => String(r.provider || '').toLowerCase()));
+  const NAMES = { zai: 'z.ai', openai: 'openai', anthropic: 'anthropic', google: 'google',
+                  xai: 'xai', perplexity: 'perplexity', microsoft: 'microsoft',
+                  mistral: 'mistral', deepseek: 'deepseek' };
+  const ungraded = [...new Set(plans.map((p) => p.p))].filter((p) => !graded.has(NAMES[p] || p));
+  for (const p of ungraded) {
+    const label = NAMES[p] || p;
+    if (!new RegExp(label.replace('.', '\\.'), 'i').test(TI.pricing.note || ''))
+      fail(`plan-limits.json tracks ${label} but the pricing axis neither grades it nor ` +
+           `mentions the gap in its note. Say what the table does not cover.`);
+  }
+}
+
 // 5. Soft checks — worth a look, never a merge blocker.
 // ---------------------------------------------------------------------------
 const lastVerified = TI._meta && TI._meta.last_verified;

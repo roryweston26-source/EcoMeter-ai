@@ -1179,6 +1179,132 @@ about 4% across the archetype range and is not currently stated anywhere user-fa
 **Still zero for everyone else, and that is still the finding.** Nobody else publishes
 an allowance that bounds a whole plan.
 
+## B8. The window survey — all nine providers, asked the same question (2026-08-31)
+
+**The question nobody had asked: does this provider name a usage WINDOW, and does it
+size it?** That is not the allowance question. Anthropic proves it: 🔴 on allowance
+and it still states a weekly window. Before this pass, four of nine providers had
+window data and three of those four had arrived incidentally.
+
+| Provider | Window named? | Sized? | Read at source |
+|---|---|---|---|
+| Z.ai | 5h + **7d** | **both, in credits** | ✅ |
+| OpenAI | 5h + **7d** (Codex only) | 5h yes (ranges), 7d **no** | ✅ |
+| Anthropic | 5h + **7d** | neither | ✅ |
+| Google | 5h + **7d** | neither | ✅ |
+| Perplexity | **7d** + 30d | 30d yes (credits), 7d **no** | ✅ |
+| Microsoft | **1d + 30d** | yes, per feature | ✅ |
+| Mistral | **1d** | yes, one feature | ✅ |
+| xAI | **none** | — | ✅ |
+| DeepSeek | **⚪ unknown** | — | ❌ could not read |
+
+**Five of nine name a weekly or monthly window. Only Z.ai sizes the long one.**
+
+### The three corrections, all against the provider
+
+Same direction as the 2026-08-29 pass, and that is now a pattern rather than an
+incident: **when this project is wrong about disclosure, it is wrong by understating
+what the provider published.** Disclosed plans went 5 → 10 of 31.
+
+- **OpenAI** publishes a per-model, per-plan table of local messages per five-hour
+  window for Codex (Sol 10–100 on Plus, 50–500 Pro 5×, 200–2,000 Pro 20×), a
+  credits-per-1M-tokens rate card with cached rates, and "GPT-5.6 usage averages
+  5–30 credits per message". **It also names a weekly window twice** — hedged on the
+  pricing page ("Additional weekly limits may apply") and unhedged in the help
+  centre (a banked reset "refreshes your 5-hour and weekly Codex usage windows").
+  **All of it bounds Codex, not chat** — the ChatGPT Free FAQ and Pro tiers article
+  name no window at all. ⚠️ **It is also the only place OpenAI has quantified the
+  base its "5×/20× more usage" marketing multiplies:** the Pro columns are exactly
+  5× and 20× the Plus column.
+- **Microsoft** publishes Agents 25 tasks/month, Vision 10/10/15 min/day, Voice
+  30/30/60 min/day, and 60 AI credits/month on Personal and Family — then makes
+  Chat "Extensive use" and Premium's credits "Extensive usage beyond standard credit
+  limits". **Quantified to the minute everywhere except the thing you upgrade for.**
+- **Mistral** publishes exactly one absolute figure — "Flash answers: 200 / day on
+  Team vs. 150 / day on Pro" — **in an FAQ answer to a different question**, while
+  the plan comparison table it built for comparing plans is relative throughout.
+
+### The two that did not move, and why they are different
+
+- **xAI is 🔴 and read at source.** Three pages (`x.ai/pricing`, `x.ai/grok`,
+  `help.x.com` X Premium). Every reference to Grok volume is relative AND unwindowed
+  — "higher rate limits", "increased usage limits on Grok" — no base, no period, no
+  reset. **Of nine providers it is the only one naming neither a number nor a
+  window.**
+- **DeepSeek is ⚪ and that is a correction to US.** Its allowance cell had been
+  graded 🔴 off the shared aggregate sentence, never off a DeepSeek page. Checked
+  properly: `deepseek.com` renders as a JS shell (599 chars to a plain fetch),
+  `chat.deepseek.com` returns an empty 202. **The readable API doc covers per-account
+  CONCURRENCY, which is not a consumer usage window and must not be quoted as one.**
+  To close it: open `chat.deepseek.com` in a logged-in browser.
+
+### Tooling notes for the next pass
+
+- **`curl -sL -A "<browser UA>"` reached help.openai.com fine.** The standing note
+  that OpenAI docs 403 applies to WebFetch, not to curl. Worth knowing before
+  reaching for the browser.
+- **Retry once.** `help.x.com` served a Cloudflare interstitial on the first request
+  and the real page on the second. Check `<title>` before trusting a body.
+- **microsoft.com blocked curl outright** ("Your request has been blocked"), but
+  `support.microsoft.com` did not. A blocked host is not a silent provider — try its
+  other hosts before recording anything.
+- **Read the primary source even when a search result summarises it.** The search
+  summary for Microsoft was roughly right and would still have cost us the exact
+  per-day figures, which is what makes the cell worth anything.
+
+**Re-verify:** OpenAI's Codex table is on a developer page that changes often, and
+the weekly window is the thing to watch — if OpenAI ever sizes it, that is the first
+whole-plan weekly figure from a Western provider and it moves B4, B6 and this entry.
+
+**Guard:** `check-prices.js` §11 (window/scope shape and sources), `check-auditor.js`
+§18 (scoped windows are excluded from the Auditor — see below), `check-transparency.js`
+§4b (the allowance counts).
+
+⚠️ **A scoped window must NOT reach the Auditor.** OpenAI's weekly window is real and
+bounds Codex; the Auditor prices chat. Repeating it at a Plus subscriber asserts about
+a surface the tool does not measure — the same category error as pricing a whole plan
+off a feature sub-limit. `unquantified_windows[].scope` is what suppresses it, in both
+the live resolver and the guard. `pricing.html` covers every surface and does show it,
+with the scope named.
+
+## B7. Credit allowances — valued, not turned into ceilings (added 2026-08-31)
+
+**Two providers publish enough to say what a credit is worth, and they publish
+different things.** The distinction is the point, and it is labelled on the page:
+
+| Provider | What they publish | Our figure | Provenance |
+|---|---|---|---|
+| Perplexity | "100 credits equals $1" | **$0.01/credit** | **published** |
+| Z.ai | credit multipliers + per-token rates, never the rate between them | **~0.20 cents/credit** | **derived** |
+
+**So a Perplexity credit is worth about 5× a Z.ai credit.** That is the finding, and
+it is why the panel says *credits are not a unit*: every provider mints its own and
+the same word buys different amounts. Anyone comparing two plans that both quote
+"credits" is comparing nothing until someone does this arithmetic.
+
+**Perplexity Max's allowance is VALUED but gets NO ceiling, and that refusal is
+load-bearing.** The 10,000 credits bound Computer, not the plan — `scope_limited:
+true` — and Pro Search on Max is still marketed as unlimited. Pricing the plan off
+one feature is the same error the ChatGPT Go refusal already prevents. What changed
+on 2026-08-31 is only that refusing to compute a ceiling stopped being a reason to
+withhold the number the provider *did* publish: **$100 of published value against a
+$200/mo plan**, printed without calling it a ceiling.
+
+**Source of truth:** `plan-limits.json` → `_meta.credit_conversion.<provider>`. A
+block with `usd_per_credit` must carry `published: true`, the quoted `formula` and a
+source; a block without one must NOT claim `published`. `check-prices.js` §11 fails
+both ways — putting our arithmetic in a provider's mouth is the worst thing this
+file could do, because it is the distinction the whole Transparency Index turns on.
+
+**Re-verify:** Perplexity's conversion is worded "**Today**, 100 credits equals $1",
+which is a provider telling you it reserves the right to change it. Re-read it, and
+expect the dollar figure to move.
+
+**Watch for:** the price comparison beside a valued allowance is deliberately shown
+only for a **monthly** window. "$20 per 7d against an $18/mo plan" invites a
+comparison between two different periods, and annualising the shorter window to fix
+that would recreate the exact error B4's two-window ceiling exists to avoid.
+
 ## B6. Unquantified windows — the bias we label rather than guess (added 2026-08-30)
 
 **Anthropic, Google and Perplexity each state that a weekly cap exists and none
@@ -1997,6 +2123,52 @@ It goes further than any other allowance disclosure on the table:
 **It is the only allowance figure on this axis a reader can do arithmetic with.**
 🟡 not 🟢 because it bounds **Computer**, Perplexity's agent product, not the plan —
 Pro Search on Max is still marketed as unlimited with no number.
+
+### ⚠️ The count in the cell prose went stale, and it came back to the right number by accident (2026-08-31)
+
+Six of the eight allowance cells shared a lede: *"Across 27 consumer plans from 8
+providers, 26 publish no usage allowance at all."* True when written on 2026-08-25.
+**Then this entry happened.** Perplexity's own cell was corrected to 🟡 on 2026-08-29
+and the other six were not — so for a day the table asserted a count that only holds
+if Perplexity is still inside it. **One table disagreeing with itself.**
+
+**Why it survived a second reading is the part worth remembering.** Adding Z.ai's
+three tiers on 2026-08-30 took the data to 31 plans and 5 disclosed — and 31 − 5 = 26
+made the number **accidentally correct again**, against a denominator that was still
+wrong. A stale figure that has drifted back into coincidental correctness is the
+hardest kind to catch by eye.
+
+**The ratio is the finding, not the count: 96% → 84%**, while the sentence stating it
+never changed. Quote the ratio.
+
+**Both corrections came from looking harder. Neither came from a provider publishing
+anything.** That is the honest framing for any future movement on this axis.
+
+### ⚠️ Z.ai is not graded on this axis, and it is the strongest discloser in the dataset
+
+The index covers eight providers; `plan-limits.json` tracks nine. **The missing one
+publishes more about its allowance than anything on this table** — absolute credit
+caps on two windows, the formula, the per-model multipliers and a token conversion
+(B4, A11). An axis about non-disclosure that omits the best discloser is making the
+omission it grades others for.
+
+**Not fixed by inventing a row.** Grading Z.ai means reading its privacy, retention
+and environmental disclosures, not assuming them — E1g is exactly what happens when
+an absence is asserted on an inadequate look. **What shipped instead is the gap,
+stated in `pricing.note`:** read "seven of eight" as a claim about these eight and
+not about the market.
+
+**To close it:** grade Z.ai on all five pricing dimensions plus data practices. Its
+`allowance` cell is a 🟢 and would be the only one on the axis.
+
+**Guard:** `check-transparency.js` §4b recomputes plans / providers / no-allowance
+from `plan-limits.json` and fails on any of the three, fails if the claim is deleted
+rather than corrected, and fails if a tracked provider is neither graded nor named as
+a gap in the note. All five paths validated by reintroducing the bug — including a
+replay of the 2026-08-29 failure itself. **The guard's own first version was broken
+the same way it guards against:** `matrices()` yields tuples, not objects, so it
+iterated nothing and passed on an empty set. Only the "claim not found at all" check
+caught it.
 
 ### The other seven were read at source and confirmed 🔴
 

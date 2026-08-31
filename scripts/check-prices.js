@@ -393,6 +393,57 @@ for (const [prov, m] of Object.entries(p.api)) {
       'credits. Off-peak is the end of the range you do not control (FRESHNESS A11).');
   }
 
+  // A credit→dollar conversion is either the provider's promise or our arithmetic,
+  // and the page says which. Perplexity states "100 credits equals $1" outright;
+  // Z.ai publishes multipliers and rates but never the rate between them, so its
+  // figure is derived. Mislabelling the derived one as published would put our
+  // arithmetic in a provider's mouth, which is the single worst thing this file
+  // could do — it is the distinction the whole Transparency Index turns on.
+  for (const [prov, cc] of Object.entries(conv)) {
+    if (typeof cc !== 'object') continue;
+    if (typeof cc.usd_per_credit === 'number') {
+      if (cc.published !== true)
+        fail('plan-limits: credit_conversion.' + prov + ' has a usd_per_credit but is not ' +
+             'marked published:true. Only a rate the provider states may be presented as its own.');
+      if (!cc.formula)
+        fail('plan-limits: credit_conversion.' + prov + ' claims a published conversion without ' +
+             'quoting it. The reader has to be able to check the sentence we are citing.');
+      if (!cc.source || !/^https:\/\//.test(cc.source))
+        fail('plan-limits: credit_conversion.' + prov + ' claims a published conversion with no source');
+    } else if (cc.published === true) {
+      fail('plan-limits: credit_conversion.' + prov + ' is marked published:true but carries no ' +
+           'usd_per_credit, so the value shown is derived from our own arithmetic. Drop the flag.');
+    }
+  }
+
+  // A scope-limited allowance may be VALUED but must never be priced as a ceiling.
+  // Perplexity Max's 10,000 credits bound Computer, not the plan; the whole reason
+  // it is safe to print $100 beside a $200 plan is that the page says what it covers.
+  if (!/not a ceiling and we do not print one/.test(html))
+    fail('pricing.html no longer tells the reader that a scope-limited credit allowance ' +
+         'is not a ceiling. Valuing one without that sentence prices a whole plan off a feature.');
+
+  // A scope-limited cap is PUBLISHED. The ceiling refuses to price it, and for one
+  // day the cell underneath that refusal said "not disclosed" — or, on the Mistral
+  // row, "~150 messages/day ... not published by Mistral" directly above a note
+  // recording that Mistral published exactly 150/day. Refusing to compute is right;
+  // describing the provider as silent because we refused is a false statement about
+  // them, and it is the direction this project keeps having to correct.
+  // A plain substring, not a regex: the source being matched is itself JavaScript full
+  // of quotes, parens and a '+', and the first version of this line was a regex whose
+  // metacharacters made it match nothing while looking exactly right.
+  if (!html.includes('<b>published by ' + "' + provName(r.p)"))
+    fail('pricing.html no longer credits a scope-limited cap to the provider that published ' +
+         'it. A cap we decline to price is still a cap they published.');
+  {
+    // A published figure must also OUTRANK a third-party guess in that cell.
+    const iScoped = html.indexOf('scope_limited; })) {');
+    const iThird  = html.indexOf('lim.third_party && lim.third_party.length) {');
+    if (iScoped < 0 || iThird < 0 || iScoped > iThird)
+      fail('pricing.html checks third-party estimates before published scope-limited caps, ' +
+           'so a plan with both will credit the estimate and call the provider silent');
+  }
+
   // An unquantified window is a claim about a provider. It needs a source like any
   // other, and an effect, because the whole point is that it biases a number.
   for (const s of L.plans) for (const u of (s.unquantified_windows || [])) {
