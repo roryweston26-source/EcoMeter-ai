@@ -1179,6 +1179,60 @@ about 4% across the archetype range and is not currently stated anywhere user-fa
 **Still zero for everyone else, and that is still the finding.** Nobody else publishes
 an allowance that bounds a whole plan.
 
+## B9. The "Longer window" column (added 2026-09-01)
+
+**A sixth column on the subscriptions table, answering two questions per plan: is
+there a window longer than a day, and does it bind harder than the short one.**
+
+**The ratio is computed in the cap's OWN unit** — credits against credits, messages
+against messages — so it never touches the token model and inherits none of its
+assumptions. It is a pure statement about two numbers the provider published.
+
+**Six states, and the boring ones carry the most weight:**
+
+| State | Rows | Reads |
+|---|---|---|
+| `ratio` | 3 (Z.ai) | **6.7× tighter** + both figures |
+| `sized` | 2 | the long window, published, with nothing comparable to set against it |
+| `named` | 12 | *weekly — not published* |
+| `none` | 10 | *none published* + **the date it was read** |
+| `unchecked` | 3 | *not checked — our gap, not their silence* |
+| `unknown` | 1 (DeepSeek) | *not established* |
+
+**These six counts are guarded** (`test-auditor.js` §8) because the first version of
+this table was written from a mid-build snapshot and was wrong in three of six rows
+by the time the work finished — the stale-number bug, committed inside the entry
+documenting a stale-number guard. The three `unchecked` rows are the free tiers of
+Anthropic, Perplexity and Z.ai: providers the 2026-08-31 survey did not re-sweep.
+**They are the whole to-do list for the next pass.**
+
+⚠️ **`none` and `unchecked` are different claims and must stay that way.** "None
+published" asserts something about a provider; it may only be rendered where a
+`window_check` records the date and the pages. Everything else says we have not
+looked. This is the ⚪-versus-🔴 rule from E1g applied one column over, and
+`test-auditor.js` §8 fails if a `none` ever appears without sources behind it.
+
+⚠️ **Two windows are only comparable when they bound the SAME THING.** Microsoft
+publishes 25 agent tasks a month and 15 minutes of Vision a day; dividing one by the
+other yields a confident number about nothing. The unit AND the scope must match, and
+the guard fails if that check is loosened. That row renders as `sized` with the
+reason stated instead.
+
+**`window_check` is provider-wide.** The survey read provider pages — `x.ai/pricing`
+covers every SuperGrok tier — so a check recorded on one row speaks for its siblings.
+An unscoped check wins; a scoped one (`"ChatGPT chat surfaces"`) is the fallback.
+Safe because any plan with a long window of its own resolves before the check is
+consulted, which is why Microsoft 365 Premium never inherits Copilot Free's entry.
+
+**Re-verify:** the 6.72× is pinned by `test-auditor.js` §8 and quoted in B4, B8,
+PROJECT-CONTEXT and two commit messages. If Z.ai changes either cap, that number moves
+and every one of those copies is stale — the guard will say so.
+
+**Known cosmetic limit:** the subscriptions table is now 1,184px wide on a 375px
+phone. It scrolls inside `.tablewrap` and the page itself does not overflow, which is
+correct behaviour, but it is a long drag. The Ceiling column (398px) is the widest and
+predates this one. If it needs fixing, fix it there.
+
 ## B8. The window survey — all nine providers, asked the same question (2026-08-31)
 
 **The question nobody had asked: does this provider name a usage WINDOW, and does it

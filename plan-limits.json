@@ -161,6 +161,13 @@
       "p": "openai",
       "m": "ChatGPT Free",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "none stated",
+        "scope": "ChatGPT chat surfaces",
+        "checked": "2026-08-31",
+        "pages_read": ["https://openai.com/chatgpt/pricing", "https://help.openai.com/en/articles/9275245-chatgpt-free-tier-faq", "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"],
+        "note": "Read specifically to ask whether OpenAI names a usage WINDOW for ordinary chat. It does not — no window of any kind appears on the pricing page, the Free Tier FAQ or the Pro tiers article. This is what makes the Codex weekly window a scoped finding rather than a general one: OpenAI names windows for its agentic product and none for the chat product these plans are sold as."
+      },
       "stated": "The plans page advertises 'Unlimited text chats with GPT-5.6 Luna' — 'subject to abuse guardrails' — alongside limited messages, uploads, image generation and voice. So the headline is unlimited-on-the-cheapest-model rather than a capped allowance on the default one. GPT-5.5 has now FINISHED leaving this tier: it sits in the plan table's single 'Legacy models' row, marked No for Free and No for Go, and the Free Tier FAQ updated 2026-08-13 lists only Luna. On 2026-08-08 that rollout was still in progress and 5.5 was correctly recorded as present then. No absolute message figure either way. Free gets no GPT-5.6 Sol at any reasoning level; its Think button runs Thinking Mini.",
       "context_window": {
         "instant_tokens": 27000,
@@ -638,6 +645,13 @@
       "p": "microsoft",
       "m": "Copilot (Free)",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "none stated",
+        "scope": "the free Copilot tier",
+        "checked": "2026-08-31",
+        "pages_read": ["https://support.microsoft.com/en-us/microsoft-365-copilot/ai-credits-and-limits-for-microsoft-365-subscriptions"],
+        "note": "Microsoft\u2019s limits table names daily and monthly windows, but its columns are Personal, Family and Premium \u2014 the free Copilot tier is not on it, so no window is stated for THIS plan. The paid row is a different matter and carries real caps."
+      },
       "no_api_rate": true,
       "as_of": "2026-07-28"
     },
@@ -663,6 +677,12 @@
       "p": "mistral",
       "m": "Le Chat Free",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "none stated",
+        "checked": "2026-08-31",
+        "pages_read": ["https://mistral.ai/pricing"],
+        "note": "The full plan table and FAQ were read. Mistral names exactly one window and it is DAILY — \u201CFlash answers: 200 / day on Team vs. 150 / day on Pro\u201D. No weekly or monthly window appears anywhere; the unlimited rows carry \u201CSubject to fair usage limits\u201D instead, which is a window-shaped absence rather than a window."
+      },
       "stated": "'Limited messages and web searches' — no number.",
       "third_party": [
         {

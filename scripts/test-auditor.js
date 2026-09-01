@@ -73,7 +73,7 @@ const pFetch = url => {
   return Promise.resolve({ ok: true, json: () => Promise.resolve(JSON.parse(fs.readFileSync(R + f, 'utf8'))) });
 };
 const P = new Function('document', 'window', 'fetch',
-  pBody + '\nreturn { breakEven, costPerMessage, state, ceiling, capPerDay, limitsFor, PLAN_LIMITS: () => PLAN_LIMITS, setPlanLimits: d => { PLAN_LIMITS = d; } };')(pDoc, pWin, pFetch);
+  pBody + '\nreturn { breakEven, costPerMessage, state, ceiling, capPerDay, limitsFor, longWindow, PLAN_LIMITS: () => PLAN_LIMITS, setPlanLimits: d => { PLAN_LIMITS = d; } };')(pDoc, pWin, pFetch);
 
 let bad = 0, ran = 0;
 const ok = (name, cond, detail) => {
@@ -611,6 +611,77 @@ async function main() {
            { headline: c.perDay, windows: c.windows.map(w => w.perDay) });
       }
     } finally { P.setPlanLimits(live); }
+  }
+
+  /* ---------- 8. the longer-window column ----------
+     It answers two questions per plan: is there a window longer than a day, and does
+     it bind harder than the short one. Both answers are claims about a PROVIDER, so
+     the failure modes are the ones this repo keeps paying for: asserting an absence
+     nobody checked, and dividing two numbers that do not measure the same thing. */
+  {
+    // Load the FILE, not whatever the engine happens to hold. pricing.html falls back
+    // to an inline snapshot that mirrors only what the cells render, and window_check's
+    // provenance is not part of that — so reading the engine's copy made every 'none'
+    // look like an 'unchecked' and the guard passed on an empty set. Second time this
+    // exact trap has been hit in this file; the tell is a count assertion reading 0.
+    const L = JSON.parse(fs.readFileSync(R + 'plan-limits.json', 'utf8'));
+    P.setPlanLimits(L);
+    let ratios = 0, nones = 0;
+    for (const pl of L.plans) {
+      const w = P.longWindow(pl);
+
+      // "none published" is an assertion about the provider. It may only be made where
+      // a check was actually recorded — otherwise the cell must say we have not looked.
+      // This is the ⚪-versus-🔴 rule from the Transparency Index, one column over.
+      if (w.state === 'none') {
+        nones++;
+        ok('"none published" on ' + pl.m + ' is backed by a recorded check',
+           !!(w.read && w.read.checked && (w.read.pages_read || []).length), w.read);
+      }
+
+      // A ratio between two windows is meaningless unless they measure the same thing.
+      // Microsoft publishes 25 agent tasks a month and 15 minutes of Vision a day;
+      // dividing those would produce a confident number about nothing.
+      if (w.state === 'ratio') {
+        ratios++;
+        ok('ratio on ' + pl.m + ' compares like with like',
+           w.long.cap.unit === w.short.cap.unit &&
+           (w.long.cap.scope || '') === (w.short.cap.scope || ''),
+           { long: w.long.cap, short: w.short.cap });
+        ok('ratio on ' + pl.m + ' is the SHORT window over the LONG one',
+           Math.abs(w.ratio - (w.short.perDay / w.long.perDay)) < 1e-9 && w.ratio > 0);
+        // A long window that is LOOSER than the short one would not be the binding
+        // constraint, and calling it "tighter" would be backwards.
+        ok('the long window on ' + pl.m + ' actually binds harder', w.ratio >= 1, w.ratio);
+      }
+    }
+    // Z.ai is the only plan on the table with both windows sized, and the figure is
+    // quoted in FRESHNESS B4, PROJECT-CONTEXT and the commit history. Pin it.
+    const lite = P.longWindow(L.plans.find(p => p.m === 'GLM Coding Lite'));
+    ok('the Z.ai binding ratio is still 6.72x', lite.state === 'ratio' &&
+       Math.abs(lite.ratio - 6.72) < 0.005, lite.ratio);
+    ok('exactly the plans with two sized windows get a ratio', ratios === 3, ratios);
+    ok('at least one plan is recorded as having no longer window', nones > 0, nones);
+
+    // FRESHNESS B9 tabulates how many plans land in each state. That table was wrong
+    // in three of six rows on the day it was written, because it was typed from a
+    // mid-build snapshot — a stale number inside the entry documenting a stale-number
+    // guard. Recompute it and fail on drift, the same way check-transparency §4b does
+    // for the allowance counts.
+    {
+      const counts = {};
+      for (const pl of L.plans) { const s = P.longWindow(pl).state; counts[s] = (counts[s] || 0) + 1; }
+      const fresh = fs.readFileSync(R + 'FRESHNESS.md', 'utf8');
+      for (const st of ['ratio', 'sized', 'named', 'none', 'unchecked', 'unknown']) {
+        const m = fresh.match(new RegExp('\\| `' + st + '` \\| (\\d+)'));
+        if (!m) { ok('FRESHNESS B9 tabulates the ' + st + ' state', false); continue; }
+        ok('FRESHNESS B9 count for ' + st + ' matches the engine',
+           Number(m[1]) === (counts[st] || 0), { doc: Number(m[1]), actual: counts[st] || 0 });
+      }
+      ok('every plan lands in exactly one longer-window state',
+         Object.values(counts).reduce((a, b) => a + b, 0) === L.plans.length, counts);
+    }
+    P.setPlanLimits(P.PLAN_LIMITS());
   }
 
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'
