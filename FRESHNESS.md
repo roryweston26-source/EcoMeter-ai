@@ -1392,6 +1392,35 @@ it changes.
   cannot bite a four-days-a-month user. This is the one thing a per-day model cannot
   express: the same daily number is sustainable for one reader and not another.
 
+### ⚠️ Anthropic METERS the weekly cap and shows you a percentage of it (observed 2026-09-01)
+
+**Seen in the Claude Pro usage panel, which no amount of page-reading would have
+surfaced:** two live meters side by side — a *5-hour limit* with a countdown, and
+*Weekly · all models* with a named reset (Saturday 02:00 local). **Both are rendered as
+a percentage consumed. Neither ever states the denominator.**
+
+**This sharpens the finding rather than softening it.** Anthropic is not failing to
+quantify the weekly cap — it quantifies it precisely enough to render a live percentage
+against it, several times a session. What it withholds is only the number that
+percentage is *of*. **A consumer can watch themselves reach 43% of something they will
+never be told the size of.** That is a design decision, not an omission, and it is the
+clearest example on this file of the gap between *metering* and *disclosing*.
+
+⚠️ **The label reads "Weekly · all models".** The qualifier implies a sibling meter
+scoped to a subset — most plausibly a separate weekly budget for the priciest model.
+**Not asserted:** only seen on Pro, no sibling visible there. **Check a Max account**,
+where an Opus-specific weekly meter is the obvious candidate.
+
+**Evidence quality:** one account, one moment, from a screenshot. It establishes that
+the mechanism exists and what shape it takes. It establishes **nothing** about the size
+of the cap, and no percentage from it is recorded in `plan-limits.json`.
+
+**The structural point this confirms, and it needs no provider's numbers:** a week holds
+**33.6** rolling five-hour windows. For the 5-hour cap to ever be the binding one, a
+provider would have to set the weekly at 33.6× it. Z.ai — the only provider that
+publishes both — sets it at **5×**. So the short window is a speed bump that clears
+itself in hours, and **the weekly is the actual budget for anyone who is not bursting.**
+
 **Re-verify:** if a provider ever *publishes* the weekly figure, this becomes a real
 cap and the row moves to `caps[]`. Watch Anthropic's usage-limits article — it already
 describes the mechanism, so quantifying it is one sentence away.

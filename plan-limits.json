@@ -378,11 +378,20 @@
         {
           "window": "7d",
           "stated": "Anthropic says usage resets every 5 hours and that a weekly limit sits above that. It publishes no number for either.",
+          "surfaced_in_product": {
+            "observed": "2026-09-01",
+            "plan": "Claude Pro",
+            "evidence": "single account, screenshot",
+            "detail": "The Claude Pro usage panel shows TWO live meters side by side — a \"5-hour limit\" with a countdown to reset, and \"Weekly \u00b7 all models\" with a named reset day and time (Saturday 02:00 local). Both are rendered as a PERCENTAGE CONSUMED. Neither ever states the denominator.",
+            "why_it_matters": "This changes the character of the non-disclosure and sharpens it. Anthropic is not failing to quantify the weekly cap: it quantifies it precisely enough to render a live percentage against it, several times a session. What it withholds is only the number that percentage is OF. A consumer can watch themselves reach 43% of something they will never be told the size of. That is a deliberate design, not an omission, and it is the strongest illustration on this file of the difference between metering and disclosing.",
+            "open_question": "The label reads \"Weekly \u00b7 all models\", and the qualifier implies a sibling meter scoped to a SUBSET of models — most plausibly a separate weekly budget for the most expensive model. Not asserted: it has only been seen on Pro, where no sibling was visible. Check a Max account, where an Opus-specific weekly meter would be the obvious candidate.",
+            "caveat": "One account at one moment. It establishes that the mechanism EXISTS and what form it takes. It establishes nothing about the size of the cap, which is what would actually be worth publishing, and no percentage from it is recorded here."
+          },
           "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
           "effect": "The ~45/5h third-party figure therefore describes a BURST, not a sustained rate, and any per-day number derived from it is an upper bound Anthropic has itself said cannot be held for 30 days. Biased high, and high on a cap flatters the plan."
         }
       ],
-      "note": "A weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit every day for 30 days. Anthropic does not size it — see unquantified_windows, and _meta.caveats for why we label the bias instead of inventing the missing number.",
+      "note": "Two INDEPENDENT meters, confirmed in-product 2026-09-01: a rolling 5-hour window and a weekly one, each shown as its own percentage. The weekly is what binds anyone who is not bursting — a week holds 33.6 five-hour windows, and no provider that publishes both sets the weekly anywhere near 33.6x the short one (Z.ai, the only one that does publish both, sets it at 5x). So the 5-hour limit is a speed bump that clears itself in hours; the weekly is the actual budget. Anthropic sizes neither. See unquantified_windows, and _meta.caveats for why we label the bias rather than invent the missing number.",
       "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
       "as_of": "2026-07-28"
     },
