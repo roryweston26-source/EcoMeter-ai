@@ -1394,6 +1394,11 @@ it changes.
 
 ### ⚠️ Anthropic METERS the weekly cap and shows you a percentage of it (observed 2026-09-01)
 
+> **This is measurable, and there is a protocol for it: [`MEASURE-CLAUDE-LIMITS.md`](MEASURE-CLAUDE-LIMITS.md).**
+> A first provisional ratio is already in there — **weekly ≈ 9× the five-hour cap**, range 7.2–12×,
+> against Z.ai's published 5×. It rests on one 2% reading and an unverified assumption; the
+> protocol says how to replace it with something worth quoting.
+
 **Seen in the Claude Pro usage panel, which no amount of page-reading would have
 surfaced:** two live meters side by side — a *5-hour limit* with a countdown, and
 *Weekly · all models* with a named reset (Saturday 02:00 local). **Both are rendered as

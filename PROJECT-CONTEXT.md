@@ -138,6 +138,26 @@ Three guards, each validated by reintroducing the bug: `check-prices.js` §9 (pr
 
 **Open, and deliberately not done:** **Kimi is the weakest of the three picks on evidence** — it appears in no OpenRouter top-10 while Xiaomi's MiMo (#3) and Tencent's Hy3 (#5) both move more tokens. But the follow-up showed HF downloads and API tokens are **near-opposite measures** — Xiaomi has the smallest HF footprint of any lab considered and the third-largest token volume; Qwen is the exact inverse. "Biggest" can't be claimed without naming the measure (A10). `deepseek-r1` has one priced host so it correctly fails the `n >= 2` guard and carries no spread.
 
+### 2026-09-01 — Anthropic's weekly cap is MEASURABLE, and there is a protocol for it
+
+**Two findings closed the gap between "metered" and "knowable".** Anthropic shows a live
+percentage of the weekly cap in-product, and it prices the overage at **standard API rates** —
+the same rates `prices.json` carries. Percentage + token count + published rate = the weekly
+cap in dollars, in the unit the whole site uses, **with no further disclosure from Anthropic**.
+
+**The protocol is [`MEASURE-CLAUDE-LIMITS.md`](MEASURE-CLAUDE-LIMITS.md).** It carries a first
+provisional ratio — **weekly ≈ 9× the five-hour cap** (range 7.2–12×) against Z.ai's published
+5× — resting on a single 2% reading and one unverified assumption. **The ratio matters more
+than the cap:** every other provider's weekly estimate currently rests on Z.ai's 5× alone, so a
+measured Anthropic ratio improves rows we can never measure directly.
+
+⚠️ **A measured cap must not silently drive the Auditor.** Its fit test reads `cap` to decide
+whether a tier is big enough, and one account's long-context habit is not a population figure.
+Ship it as a displayed, labelled figure on `pricing.html` first.
+
+**Also corrected:** the source we cited for the weekly window did not contain the word
+"weekly". Right claim, wrong link — as good as unsourced to anyone who follows it.
+
 ### 2026-09-01 — the "Longer window" column, and the answer to "does every plan have one" is no
 
 **Asked for a weekly-limit column showing whether the weekly binds harder than the
