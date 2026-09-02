@@ -161,6 +161,13 @@
       "p": "openai",
       "m": "ChatGPT Free",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "none stated",
+        "scope": "ChatGPT chat surfaces",
+        "checked": "2026-08-31",
+        "pages_read": ["https://openai.com/chatgpt/pricing", "https://help.openai.com/en/articles/9275245-chatgpt-free-tier-faq", "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"],
+        "note": "Read specifically to ask whether OpenAI names a usage WINDOW for ordinary chat. It does not — no window of any kind appears on the pricing page, the Free Tier FAQ or the Pro tiers article. This is what makes the Codex weekly window a scoped finding rather than a general one: OpenAI names windows for its agentic product and none for the chat product these plans are sold as."
+      },
       "stated": "The plans page advertises 'Unlimited text chats with GPT-5.6 Luna' — 'subject to abuse guardrails' — alongside limited messages, uploads, image generation and voice. So the headline is unlimited-on-the-cheapest-model rather than a capped allowance on the default one. GPT-5.5 has now FINISHED leaving this tier: it sits in the plan table's single 'Legacy models' row, marked No for Free and No for Go, and the Free Tier FAQ updated 2026-08-13 lists only Luna. On 2026-08-08 that rollout was still in progress and 5.5 was correctly recorded as present then. No absolute message figure either way. Free gets no GPT-5.6 Sol at any reasoning level; its Think button runs Thinking Mini.",
       "context_window": {
         "instant_tokens": 27000,
@@ -370,12 +377,29 @@
       "unquantified_windows": [
         {
           "window": "7d",
-          "stated": "Anthropic says usage resets every 5 hours and that a weekly limit sits above that. It publishes no number for either.",
-          "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
+          "stated": "Anthropic documents BOTH meters in \"Usage limit best practices\" step 7: Settings > Usage shows \"progress bars showing how much of your five-hour session and weekly usage limits you\u2019ve consumed\". It sizes neither. Note the article this claim used to cite \u2014 \"Understanding usage and length limits\" \u2014 does not contain the word \"weekly\" at all; re-read 2026-09-01, zero occurrences. The claim was right and the citation was wrong, which is as good as unsourced to anyone following the link.",
+          "surfaced_in_product": {
+            "observed": "2026-09-01",
+            "plan": "Claude Pro",
+            "evidence": "single account, screenshot",
+            "detail": "The Claude Pro usage panel shows TWO live meters side by side — a \"5-hour limit\" with a countdown to reset, and \"Weekly \u00b7 all models\" with a named reset day and time (Saturday 02:00 local). Both are rendered as a PERCENTAGE CONSUMED. Neither ever states the denominator.",
+            "why_it_matters": "This changes the character of the non-disclosure and sharpens it. Anthropic is not failing to quantify the weekly cap: it quantifies it precisely enough to render a live percentage against it, several times a session. What it withholds is only the number that percentage is OF. A consumer can watch themselves reach 43% of something they will never be told the size of. That is a deliberate design, not an omission, and it is the strongest illustration on this file of the difference between metering and disclosing.",
+            "open_question": "The label reads \"Weekly \u00b7 all models\", and the qualifier implies a sibling meter scoped to a SUBSET of models — most plausibly a separate weekly budget for the most expensive model. Not asserted: it has only been seen on Pro, where no sibling was visible. Check a Max account, where an Opus-specific weekly meter would be the obvious candidate.",
+            "caveat": "One account at one moment. It establishes that the mechanism EXISTS and what form it takes. It establishes nothing about the size of the cap, which is what would actually be worth publishing, and no percentage from it is recorded here."
+          },
+          "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
+          "corroborated_by": ["https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits"],
           "effect": "The ~45/5h third-party figure therefore describes a BURST, not a sustained rate, and any per-day number derived from it is an upper bound Anthropic has itself said cannot be held for 30 days. Biased high, and high on a cap flatters the plan."
         }
       ],
-      "note": "A weekly cap sits under the 5-hour window and binds first, so the limit cannot be hit every day for 30 days. Anthropic does not size it — see unquantified_windows, and _meta.caveats for why we label the bias instead of inventing the missing number.",
+      "overage_pricing": {
+        "stated": "Usage credits let a Pro / Max 5x / Max 20x subscriber keep working past the included limit, and Anthropic states the rate plainly: \"Usage credits are billed at standard API rates.\" Spend is capped by a user-set monthly limit.",
+        "source": "https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans",
+        "as_of": "2026-09-01",
+        "why_it_matters": "It does not size the allowance, but it settles the UNIT, which is the thing that has been missing. Past the cap, compute costs standard API rates \u2014 the same rates prices.json already carries. So the included allowance is denominated in dollars-of-API-compute, exactly the unit this site computes every other figure in. Pair that with the in-product percentage meter and the weekly cap becomes MEASURABLE rather than guessable: tokens per percentage point, priced at the published rate. That is the route to the first non-Z.ai Ceiling figure on the table, and it needs no disclosure from Anthropic at all.",
+        "caveat": "\"Standard API rates\" is a pointer to a page that moves, not a number, and Anthropic reserves the right to change it. Re-read alongside the rate card rather than treating the link as a constant."
+      },
+      "note": "Two INDEPENDENT meters, confirmed in-product 2026-09-01: a rolling 5-hour window and a weekly one, each shown as its own percentage. The weekly is what binds anyone who is not bursting — a week holds 33.6 five-hour windows, and no provider that publishes both sets the weekly anywhere near 33.6x the short one (Z.ai, the only one that does publish both, sets it at 5x). So the 5-hour limit is a speed bump that clears itself in hours; the weekly is the actual budget. Anthropic sizes neither. See unquantified_windows, and _meta.caveats for why we label the bias rather than invent the missing number.",
       "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
       "as_of": "2026-07-28"
     },
@@ -638,6 +662,13 @@
       "p": "microsoft",
       "m": "Copilot (Free)",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "none stated",
+        "scope": "the free Copilot tier",
+        "checked": "2026-08-31",
+        "pages_read": ["https://support.microsoft.com/en-us/microsoft-365-copilot/ai-credits-and-limits-for-microsoft-365-subscriptions"],
+        "note": "Microsoft\u2019s limits table names daily and monthly windows, but its columns are Personal, Family and Premium \u2014 the free Copilot tier is not on it, so no window is stated for THIS plan. The paid row is a different matter and carries real caps."
+      },
       "no_api_rate": true,
       "as_of": "2026-07-28"
     },
@@ -663,6 +694,12 @@
       "p": "mistral",
       "m": "Le Chat Free",
       "provenance": "not_disclosed",
+      "window_check": {
+        "result": "none stated",
+        "checked": "2026-08-31",
+        "pages_read": ["https://mistral.ai/pricing"],
+        "note": "The full plan table and FAQ were read. Mistral names exactly one window and it is DAILY — \u201CFlash answers: 200 / day on Team vs. 150 / day on Pro\u201D. No weekly or monthly window appears anywhere; the unlimited rows carry \u201CSubject to fair usage limits\u201D instead, which is a window-shaped absence rather than a window."
+      },
       "stated": "'Limited messages and web searches' — no number.",
       "third_party": [
         {

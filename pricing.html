@@ -765,7 +765,7 @@
       } }
     },
     plans: [
-      { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
+      { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"ChatGPT chat surfaces" }, value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
       { p:"openai", m:"ChatGPT Go", provenance:"disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" },
         caps:[{ n:10, unit:"messages", window:"5h", scope:"Thinking", soft:false, scope_limited:true }] },
       { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
@@ -789,7 +789,7 @@
 
       { p:"xai", m:"Grok (Free)", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
       { p:"xai", m:"SuperGrok Lite", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
-      { p:"xai", m:"SuperGrok", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"SuperGrok", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31" }, value_models:{ low:"grok-4.6", high:"grok-4.6" } },
       { p:"xai", m:"SuperGrok Plus", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
       { p:"xai", m:"SuperGrok Heavy", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
 
@@ -800,19 +800,19 @@
       { p:"perplexity", m:"Perplexity Max", provenance:"disclosed", value_models:{ low:"openai:gpt-5.6-sol", high:"anthropic:claude-opus-5" },
         caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }] },
 
-      { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed" },
+      { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"the free Copilot tier" } },
       { p:"microsoft", m:"Microsoft 365 Premium", provenance:"disclosed",
         caps:[{ n:25, unit:"agent tasks", window:"30d", scope:"Agents", soft:false, scope_limited:true },
               { n:15, unit:"minutes", window:"1d", scope:"Vision", soft:false, scope_limited:true },
               { n:60, unit:"minutes", window:"1d", scope:"Voice", soft:false, scope_limited:true }] },
 
-      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
+      { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31" }, value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
         third_party:[{ n:25, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
       { p:"mistral", m:"Le Chat Pro", provenance:"disclosed", value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
         caps:[{ n:150, unit:"Flash answers", window:"1d", scope:"Flash answers", soft:false, scope_limited:true }],
         third_party:[{ n:150, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
 
-      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", value_models:{ low:"deepseek-v4-flash", high:"deepseek-v4-pro" } },
+      { p:"deepseek", m:"DeepSeek (Free)", provenance:"not_disclosed", window_check:{ result:"not established", checked:"2026-08-31" }, value_models:{ low:"deepseek-v4-flash", high:"deepseek-v4-pro" } },
 
       { p:"zai", m:"Z.ai (Free)", provenance:"not_disclosed", value_models:{ low:"zai:glm-5.3-flash", high:"zai:glm-5.3-flash" } },
       { p:"zai", m:"GLM Coding Lite", provenance:"disclosed", agentic:true, value_models:{ low:"zai:glm-5.3-flash", high:"zai:glm-5.3" },
@@ -1045,6 +1045,81 @@
     return null;
   }
 
+  // Follow a plan's multiplier chain looking for a window the provider names and never
+  // sizes. Every paid Gemini tier multiplies a base whose weekly window Google states,
+  // and Claude Max multiplies Claude Pro the same way, so the non-disclosure is
+  // inherited even though only the base row records it.
+  function longUnquantified(lim, depth) {
+    if (!lim || (depth || 0) > 4) return null;
+    var own = (lim.unquantified_windows || []).filter(function (u) {
+      return (WINDOW_HOURS[u.window] || 0) > 24;
+    })[0];
+    if (own) return own;
+    if (!lim.multiplier || !lim.multiplier.of) return null;
+    var plans = PLAN_LIMITS.plans || [];
+    for (var i = 0; i < plans.length; i++)
+      if (plans[i].p === lim.p && plans[i].m === lim.multiplier.of)
+        return longUnquantified(plans[i], (depth || 0) + 1);
+    return null;
+  }
+
+  // What the LONG window (a week, a month) does to this plan, and whether it binds
+  // harder than the short one.
+  //
+  // The ratio is computed in the cap's OWN unit — credits against credits, messages
+  // against messages — so it never needs the token model and never inherits its
+  // assumptions. It is a pure statement about the provider's two published numbers.
+  //
+  // Two windows are only comparable when they bound the SAME THING. Microsoft
+  // publishes 25 agent tasks a month and 15 minutes of Vision a day; dividing one by
+  // the other would produce a number with no meaning, so that case is named and left
+  // uncomputed. Same refusal as the ceiling's, one level down.
+  // The survey read PROVIDER pages — x.ai/pricing covers every SuperGrok tier, the
+  // Microsoft limits table covers the whole ladder — so a check recorded on one row
+  // speaks for its siblings. Without this, four of five xAI rows claimed nothing had
+  // been checked when the pages covering them had been read line by line.
+  function windowCheckFor(lim) {
+    if (lim.window_check) return lim.window_check;
+    var plans = PLAN_LIMITS.plans || [];
+    var scoped = null;
+    for (var i = 0; i < plans.length; i++) {
+      if (plans[i].p !== lim.p || !plans[i].window_check) continue;
+      if (!plans[i].window_check.scope) return plans[i].window_check;
+      if (!scoped) scoped = plans[i].window_check;
+    }
+    return scoped;
+  }
+
+  function longWindow(lim) {
+    if (!lim) return { state: 'unchecked' };
+    var wc = windowCheckFor(lim);
+    if (wc && wc.result === 'not established')
+      return { state: 'unknown', why: wc };
+    var caps = lim.caps || [], longs = [], shorts = [];
+    for (var i = 0; i < caps.length; i++) {
+      var h = WINDOW_HOURS[caps[i].window];
+      if (!h || typeof caps[i].n !== 'number') continue;
+      (h > 24 ? longs : shorts).push({ cap: caps[i], perDay: caps[i].n * (24 / h) });
+    }
+    if (longs.length) {
+      longs.sort(function (a, b) { return a.perDay - b.perDay; });
+      var L = longs[0];
+      var same = shorts.filter(function (s) {
+        return s.cap.unit === L.cap.unit && (s.cap.scope || '') === (L.cap.scope || '');
+      });
+      if (same.length) {
+        same.sort(function (a, b) { return b.perDay - a.perDay; });
+        return { state: 'ratio', long: L, short: same[0], ratio: same[0].perDay / L.perDay };
+      }
+      return { state: 'sized', long: L,
+               others: shorts.length ? shorts : null };
+    }
+    var uq = longUnquantified(lim);
+    if (uq) return { state: 'named', uq: uq };
+    if (wc && wc.result === 'none stated') return { state: 'none', read: wc };
+    return { state: 'unchecked' };
+  }
+
   // Upper bound on what a plan could be worth: cap hit in every window, every day.
   function ceiling(sub, lim) {
     var c = capPerDay(lim);
@@ -1195,6 +1270,7 @@
         { key: "m",       label: "Plan",         cls: "" },
         { key: "price",   label: "Per month",    cls: "num" },
         { key: "_be",     label: "Break even at", cls: "num" },
+        { key: "_wk",     label: "Longer window", cls: "num" },
         { key: "_ceil",   label: "Ceiling",      cls: "num" }
       ];
     } else if (state.view === "free") {
@@ -1260,11 +1336,22 @@
         var lim = limitsFor(r);
         if (k === "_be")   { var b = breakEven(r, lim); return b && b.few  !== null ? b.few  : Infinity; }
         if (k === "_ceil") { var c = ceiling(r, lim);   return c ? c.perMonth : -Infinity; }
+        // Sort by how much the long window actually costs you: a measured ratio first,
+        // then windows that exist but cannot be compared, then the ones nobody sized,
+        // then silence. "Not established" sorts last because it is not a finding.
+        if (k === "_wk") {
+          var w = longWindow(lim);
+          return w.state === "ratio"     ? w.ratio
+               : w.state === "sized"     ? 1.0001
+               : w.state === "named"     ? 0.5
+               : w.state === "none"      ? 0
+               : w.state === "unchecked" ? -0.5 : -1;
+        }
         return null;
       };
       data.sort(function (a, b) {
         var av, bv;
-        if (k === "_be" || k === "_ceil") { av = derive(a); bv = derive(b); }
+        if (k === "_be" || k === "_ceil" || k === "_wk") { av = derive(a); bv = derive(b); }
         else { av = a[k]; bv = b[k]; if (k === "p") { av = provName(a.p); bv = provName(b.p); } }
         if (typeof av === "string") { return av.localeCompare(bv) * dir; }
         return (av - bv) * dir;
@@ -1273,7 +1360,7 @@
 
     var tbody = $("tbody");
     if (!data.length) {
-      var span = state.view === "token" ? 4 : 5;
+      var span = state.view === "token" ? 4 : (state.view === "sub" ? 6 : 5);
       // Free rows are built only from live prices.json — there is no fallback
       // snapshot behind them, so an empty free table means the fetch failed, not
       // that the search matched nothing. Say which, rather than blaming the user.
@@ -1411,15 +1498,53 @@
         ceilCell = '<span class="nd">not disclosed</span>';
       }
 
+      // --- longer-window cell ---
+      var lw = longWindow(lim), wkCell;
+      var capFig = function (c) {
+        return fmtNum(c.n) + (c.n_high != null ? '\u2013' + fmtNum(c.n_high) : '') + ' ' + esc(c.unit);
+      };
+      if (lw.state === 'ratio') {
+        // The headline number the reader came for: how much harder the long window
+        // bites than the short one, both figures the provider's own.
+        wkCell = '<span class="be">' + (lw.ratio >= 10 ? Math.round(lw.ratio) : lw.ratio.toFixed(1)) + '× tighter' +
+                 '<span class="sub">' + capFig(lw.long.cap) + ' per ' + esc(WINDOW_SHORT[lw.long.cap.window] || lw.long.cap.window) +
+                 ' vs ' + capFig(lw.short.cap) + ' per ' + esc(WINDOW_SHORT[lw.short.cap.window] || lw.short.cap.window) +
+                 ' · the ' + esc(WINDOW_LONG[lw.long.cap.window] || '') + ' one is what stops sustained use</span></span>';
+      } else if (lw.state === 'sized') {
+        wkCell = '<span class="be">' + capFig(lw.long.cap) + '/' + esc(WINDOW_SHORT[lw.long.cap.window] || lw.long.cap.window) +
+                 '<span class="sub">published' + (lw.long.cap.scope ? ' for ' + esc(lw.long.cap.scope) : '') +
+                 (lw.others
+                   ? ' · the shorter windows here bound different features, so the two cannot be compared'
+                   : ' · no shorter window published to compare it against') + '</span></span>';
+      } else if (lw.state === 'named') {
+        wkCell = '<span class="tp">' + esc((WINDOW_LONG[lw.uq.window] || lw.uq.window)) + ' — not published' +
+                 '<span class="sub">' + provName(r.p) + ' says it exists and never sizes it' +
+                 (lw.uq.scope ? ' · ' + esc(lw.uq.scope) + ' only' : '') + '</span></span>';
+      } else if (lw.state === 'unknown') {
+        wkCell = '<span class="nd">not established' +
+                 '<span class="sub">we could not read a consumer page — not the same as silence</span></span>';
+      } else if (lw.state === 'none') {
+        wkCell = '<span class="nd">none published' +
+                 '<span class="sub">read at source on ' + lw.read.checked + ' · no weekly or monthly window stated' +
+                 (lw.read.scope ? ' for ' + esc(lw.read.scope) : '') + '</span></span>';
+      } else {
+        // Not "none". Nobody has asked this plan the question, and saying otherwise
+        // would put an absence in a provider's mouth on the strength of our backlog.
+        wkCell = '<span class="nd">not checked' +
+                 '<span class="sub">we have not read this plan\u2019s pages for a longer window — ' +
+                 'that is our gap, not their silence</span></span>';
+      }
+
       var mathBtn = '<button class="mathbtn" type="button" data-math="' + rid + '" aria-expanded="false">show the math</button>';
 
       var main = '<tr><td>' + prov + '</td>' +
                  '<td>' + model + mathBtn + '</td>' +
                  '<td class="num">' + priceCell + '</td>' +
                  '<td class="num">' + beCell + '</td>' +
+                 '<td class="num">' + wkCell + '</td>' +
                  '<td class="num">' + ceilCell + '</td></tr>';
 
-      return main + '<tr class="mathrow" id="' + rid + '"><td colspan="5"><div class="inner">' +
+      return main + '<tr class="mathrow" id="' + rid + '"><td colspan="6"><div class="inner">' +
              mathHTML(r, lim, be, ceil) + '</div></td></tr>';
     });
     tbody.innerHTML = rows.join("");
