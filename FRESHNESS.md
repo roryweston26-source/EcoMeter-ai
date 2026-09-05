@@ -3031,6 +3031,14 @@ Three numbers that should agree: `extension/manifest.json` → `version` ·
 current version as a duplicate, so manual bumps are respected and never
 double-bumped. Don't pre-emptively bump.
 
+**`bump-version.js` maintains the first two of those three** as of 2026-08-29. Before
+that it rewrote `manifest.json` alone, so every reactive bump silently desynced
+`prices.json._meta.version` — harmless only because nothing checked. It does now:
+`build-extension.js` refuses to package the two out of step, so the old behaviour
+would have hard-failed the Monday publish on its first retry. The bumper also refuses
+to write anything if the two files disagree *before* it starts — fix that by hand
+rather than letting a bump paper over it.
+
 ---
 
 # H. Store listing and policy
@@ -3045,6 +3053,15 @@ node scripts/build-extension.js          # build + verify
 node scripts/build-extension.js --check  # verify only, writes nothing
 ```
 
+**`release.yml` and `publish.yml` call this same script as of 2026-08-29.** Until then
+both workflows zipped `extension/` inline with `zip -r . --exclude "*.DS_Store"
+--exclude "*/.gitkeep"`, which meant three different definitions of "the package" and
+two real consequences: the Release asset carried `STORE-LISTING.md` and
+`STORE-SUBMISSION.md` (24 entries, not 22), and **the store upload ran none of the
+checks below** — including the one guarding the field that got v6.12 rejected. If you
+ever add a packaging rule, it goes in this script and CI inherits it. Don't reintroduce
+an inline `zip`.
+
 It writes `ecometer-ai-v<version>.zip` at the repo root (gitignored — packages are
 build artifacts, not history) and **refuses to build** if any of these fail:
 
@@ -3058,6 +3075,16 @@ build artifacts, not history) and **refuses to build** if any of these fail:
 PowerShell's `Compress-Archive` can emit entry names with **backslashes**, which
 Chrome rejects. The script deflates through `zlib` and writes forward slashes.
 Zero dependencies, like everything else here.
+
+**"Reproducible" only became true on 2026-08-29.** The first version stamped each
+entry with the file's own **mtime**, so the archive was a function of the checkout,
+not the commit: `actions/checkout` rewrites every mtime to the moment it ran, so no CI
+build could ever match a local one and two CI runs of the same commit differed from
+each other. Entries now carry the **HEAD commit time, read in UTC** (so the builder's
+timezone drops out too); `SOURCE_DATE_EPOCH` overrides it. Checked by building, running
+`find extension -type f -exec touch {} +`, and rebuilding under `TZ=Pacific/Auckland` —
+all three byte-identical. **If you ever reintroduce a per-file timestamp, this claim
+dies with it.**
 
 **Verify a build independently** — don't trust the writer just because it ran:
 

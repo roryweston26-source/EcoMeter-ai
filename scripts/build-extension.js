@@ -11,6 +11,10 @@
  * Chrome rejects. So the archive is written here, with forward slashes,
  * deflated through zlib.
  *
+ * Reproducible in the real sense as of 2026-08-29: every entry is stamped with
+ * the HEAD commit's time in UTC, not the file's mtime, so the same commit builds
+ * to the same bytes on any machine and in CI. Override with SOURCE_DATE_EPOCH.
+ *
  * Run:  node scripts/build-extension.js          # build + verify
  *       node scripts/build-extension.js --check  # verify only, write nothing
  */
@@ -89,8 +93,26 @@ const crc32 = zlib.crc32 ? (buf => zlib.crc32(buf) >>> 0) : (() => {
   return buf => { let c = 0xFFFFFFFF; for (let i = 0; i < buf.length; i++) c = T[(c ^ buf[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
 })();
 
-const dosTime = d => ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() / 2)) & 0xFFFF;
-const dosDate = d => (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+// Zip entries carry a modification time, and stamping each file's own mtime made
+// the archive a function of the CHECKOUT rather than the commit: actions/checkout
+// rewrites every mtime to the moment it ran, so CI could never reproduce a local
+// build of the same commit, and two CI runs of one commit differed too. Stamp a
+// single commit-derived time on every entry instead, read in UTC so the building
+// machine's timezone drops out as well.
+function sourceDate() {
+  if (process.env.SOURCE_DATE_EPOCH) return new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000);
+  try {
+    const ct = require('child_process')
+      .execSync('git log -1 --format=%ct', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString().trim();
+    if (/^\d+$/.test(ct)) return new Date(Number(ct) * 1000);
+  } catch { /* no git, or no commits yet — fall through */ }
+  return new Date(Date.UTC(2026, 0, 1));   // last resort: fixed, so still deterministic
+}
+const STAMP = sourceDate();
+
+const dosTime = d => ((d.getUTCHours() << 11) | (d.getUTCMinutes() << 5) | (d.getUTCSeconds() / 2)) & 0xFFFF;
+const dosDate = d => (((d.getUTCFullYear() - 1980) << 9) | ((d.getUTCMonth() + 1) << 5) | d.getUTCDate()) & 0xFFFF;
 
 const locals = [], central = [];
 let offset = 0;
@@ -98,7 +120,7 @@ for (const f of files) {
   const data = fs.readFileSync(f.full);
   const comp = zlib.deflateRawSync(data, { level: 9 });
   const name = Buffer.from(f.rel, 'utf8');          // forward slashes: walk() built them
-  const crc = crc32(data), t = dosTime(f.mtime), d = dosDate(f.mtime);
+  const crc = crc32(data), t = dosTime(STAMP), d = dosDate(STAMP);
 
   const lh = Buffer.alloc(30);
   lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(20, 4); lh.writeUInt16LE(0, 6);
