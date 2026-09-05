@@ -337,15 +337,17 @@ Two shape details worth keeping. **An empty five-hour meter prints no reset inst
 
 ### Steps
 
+0. **⚠️ No claude.ai and no phone until the run ends.** This is not hygiene, it is the difference between a bracket and a guess: browser and mobile usage burn the same meters and are invisible to the transcripts, and on this account they have already been measured doing exactly that (see the quiet column). One touch of the app mid-run silently drags every bracket downward.
 1. **Keep the usage popover where you can glance at it.** Work normally, one model only — the bar says *all models*, so a Sonnet/Opus mix pools things that cost different amounts per token and will not decompose.
 2. **Copy the report about every three minutes while working hard**, and stop when six ticks have been caught. Not every three minutes for a week — six ticks is the target, and the table above is why. Idle time costs nothing, so glance only while requests are actually going out.
-3. **Record every reading**, in a JSON file — the same format as before, one row per glance:
-   ```json
-   [{"ts":"2026-09-05T14:03:00Z","fiveHourPct":17,"weeklyPct":4,"weeklyReset":"2026-09-12T06:00:00Z"}]
+3. **Never hand-type a reading.** Paste the copy-button output straight into the parser:
    ```
-   then `node scripts/measure-claude-limits.js --readings <file>`. Rows at the same level are what build a bracket, so **do not skip a glance because the number has not changed** — an unchanged reading is the evidence, not a wasted one.
-4. **Prefer the exact reset instant from the copy button** over the "Sat 2:00 AM" label. The script compares them as instants where it can, but only the exact form detects a reset that lands on a number the bar was already showing.
-5. **Don't enable usage credits.** That spends real money to learn what the percentage gives free — and `isUsingOverage` shows it would make every window an observation of a purchase instead of the plan.
+   node scripts/parse-usage-report.js --into readings.json --file paste.txt
+   ```
+   It keeps the exact reset instants (the "Sat 2:00 AM" label throws them away, and only the exact form detects a reset landing on a number the bar already showed), records the client version and the Local activity counts, and **shouts if a meter appears that this plan has never shown** — the `-0`/`-1` indices are positions in a list, so a third one would simply turn up. Hand-copying percentages into JSON dozens of times is exactly how a wrong number gets into a dataset that is later defended as measured.
+4. **Rows at the same level are the point, so never skip a glance because the number has not changed.** An unchanged reading is what pins the lower end of that level's bracket. The parser says so each time rather than letting it feel wasted.
+5. **The parser checks each interval while it is still cheap to fix.** It prints what the last gap implies and flags the impossible: a bar that moved while this machine sent nothing, an implied cap far below every clean reading, or anything above the 33.6× ceiling. **Finding contamination during the run is worth far more than finding it afterwards** — which is the whole lesson of 2026-09-02.
+6. **Don't enable usage credits.** That spends real money to learn what the percentage gives free — and `isUsingOverage` shows it would make every window an observation of a purchase instead of the plan.
 
 ### What still bites
 
