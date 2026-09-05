@@ -1179,6 +1179,138 @@ about 4% across the archetype range and is not currently stated anywhere user-fa
 **Still zero for everyone else, and that is still the finding.** Nobody else publishes
 an allowance that bounds a whole plan.
 
+## B10. Anthropic's five-hour cap is MEASURED, and the limit is not the bill (added 2026-09-02)
+
+**Instrument: `scripts/measure-claude-limits.js`. Protocol and full working:
+[`MEASURE-CLAUDE-LIMITS.md`](MEASURE-CLAUDE-LIMITS.md), rebuilt the same day.**
+
+**The 2026-09-01 protocol named the wrong tool.** It said to pair panel readings with an
+**EcoMeter export** — but EcoMeter watches the claude.ai DOM and **Claude Code usage never
+touches a browser**. On a Claude Code account that export measures nothing that is burning
+the limit. The right instrument was already on disk: `~/.claude/projects/**/*.jsonl` records
+every API request with exact input / cache-write (5m and 1h split) / cache-read / output
+counts. **Caching stops being the protocol's headline caveat and becomes a measured field.**
+
+**A 429 is a 100% observation and needs no percentage reading at all.** Six exist in the
+transcripts, all pure Opus 5; `resetsAt − 5h` gives each window's exact start. Five survive
+the contamination test.
+
+**The finding: the meter is not the invoice.** Six observations of one cap that disagree by
+3.8× in raw tokens are six observations of the wrong unit. Grid-searching for the unit in
+which they agree gives `input + cache_write + α·cache_read + β·output`:
+
+| unit | spread |
+|---|---|
+| raw tokens | 3.84× |
+| API dollars | 2.12× |
+| **fitted, α = 0, β = 7.75** | **1.25×** (CV 8.3%) |
+
+- **Cache reads weigh ZERO.** Forcing them to their billing weight of 0.1 — with β
+  re-optimised in their favour so the comparison is fair — degrades the fit to 27% CV.
+  **Re-sent context is close to free against the limit**, the opposite of what a naive
+  token model says, and the opposite of what our own cost model assumes for billing.
+- **Output weighs ~8×, against 5× on the price list.** Range 4.3–15 on this sample.
+
+**FIVE-HOUR CAP = 3.09M units** (n=5, spread 1.25×). The same windows span **$35–$74** of
+API-equivalent billing, which is why no dollar figure is quoted as *the* cap.
+
+**It predicts out of sample**, which is the reason to believe any of it. Four checks, none of
+them fitted: mid-scale levels of **18% vs 17%** and **45% vs 43%**, and caps of **3.43M** and
+**3.21M** back-derived from 12- and 14-point moves against the fitted 3.09M (+11%, +4%). On
+the first level, raw tokens would have said 4% and API dollars 13%.
+
+**⚠️ Two counting traps, both live, both found by being wrong first.**
+1. **The transcript writes one assistant message once per content block**, every copy
+   carrying the identical complete usage object. Summing lines over-counts. Dedupe on
+   `message.id` — not `requestId`, not lines. **Claude Code's own usage panel gets this
+   wrong**: its token rows show the summed figure (Input 122 / cache read 6M / cache write
+   235.9k) where the truth is 56 / 2.85M / 104k, while its **Cost row shows the deduped one
+   and matched us to the cent ($3.27)**. That cost agreement is what validated the parser.
+   Never quote the panel's Breakdown as token counts. **⚠️ And never "correct" for the
+   over-count either — the factor is the mean content-blocks-per-message and therefore
+   varies with how tool-heavy the work was: 2.1–2.6× on tool-dense stretches, 1.2–1.7× on
+   long prose, same session, same day.** **Also check the client version**, which the copy
+   report prints: `1.44121.1` rendered Output as 186 / 361 / 555 — wrong by three orders of
+   magnitude while every neighbouring row over-counted consistently — and `1.44121.2` fixed
+   it (191.2k against an actual 138.5k).
+2. **Anthropic rounds a window's reset up to the next 10-minute mark**, so `resetsAt − 5h`
+   can precede the true first request by up to ten minutes. A larger gap means unseen usage
+   opened the window. One of six samples failed at 83 minutes and is dropped, not averaged.
+
+**⚠️ Scope is load-bearing: one machine's Claude Code transcripts.** claude.ai, mobile or a
+second machine count against the same meters and are invisible here, biasing every cap
+**downward**. Claude Code's panel says the same of itself — *"this machine only, excludes
+claude.ai"*. **Rory confirmed on 2026-09-02 that Claude Code on one machine is all he uses**,
+which is the only reason these figures are quotable at all. That confirmation is a fact about
+an account, not about the product, and it expires the moment his habits change.
+
+**USE THE COPY BUTTON, NOT A SCREENSHOT.** The usage panel's copy icon emits exact percentages
+*and exact reset instants* — `session-0: 4% (resets 2026-09-03T02:50:00.618709+00:00)`,
+`weekly_all-1: 8% (resets 2026-09-05T06:00:00.618731+00:00)`, plus a **Local activity** request
+count. **That count validated the parser exactly: 72 (24h) and 2138 (7d), both matching the
+`message.id` dedupe to the request.** So the app counts requests right and tokens wrong — it
+dedupes for the activity line and not for the Breakdown, which settles which side trap 1 is on.
+The `-0`/`-1` indices also imply a *list* of meters, so a third one would show up here.
+
+**⚠️ An exact reset instant is a DETECTOR for unseen usage, and it fired immediately.** A
+five-hour window opens on its first request, so `resets − 5h` names a moment something was sent.
+The 22:08:50Z report puts a window open at **21:50Z**; the transcripts hold **nothing between
+20:25:06Z and 22:09Z** — no requests, no sidechains, no file writes. 4% (~124k units) we did not
+spend. **Until that is explained the one-machine scope is unproven and every cap here is a
+floor, not a centre.** Ask Rory: phone, browser, second machine, Claude Code on the web?
+
+**The weekly is NOT solved, and must not be published yet.** Best estimate **~10.2× the
+five-hour cap, band 8.1–13.6**, from a four-point move (31.5M units, readings C→F) — and that
+is a **floor**, because the unseen usage above sits inside the interval.
+
+**Derive the weekly from Δ between two readings, NEVER from cumulative usage since a stated
+reset.** A Δ needs no window start, which is what makes it immune to the item below.
+
+- **Parked at Rory's direction 2026-09-02: the weekly bar reset on a TUESDAY**, and Anthropic's
+  Max-plan article says it cannot — *"The weekly limit resets at a fixed time each week that is
+  assigned to your account. Your reset day and time stay the same regardless of when you start
+  using Claude."* Two independent methods date it to within eleven minutes: the observed
+  **43% → 2%** drop brackets 2026-09-01 17:00–20:05Z, and back-solving the measured cap lands at
+  **2026-09-01T20:16Z**. Cause unknown — a credit top-up, a plan change, an Anthropic-side
+  adjustment, or docs that differ from behaviour. **Recorded, not pursued, and nothing about it
+  may be published until someone establishes which**: "Anthropic's docs are wrong" and "the user
+  bought credits" are one question apart and only one is a finding.
+
+**⚠️ PRO ONLY, and the ratio does NOT transfer — Anthropic's own wording is the evidence.**
+The Max article quantifies the multiplier on **one** meter: *"Max 5x provides five times more
+usage **per session**"*, *"Max 20x provides 20 times more usage **per session**"*, and then
+*"Max plans **also** have a weekly usage limit"* — introduced separately, with no multiple, no
+size, and no stated relation to the 5×/20×. If the weekly does not scale with the session, our
+Pro ~10.2× becomes **2.0× on Max 5× and 0.5× on Max 20×**, and **a ratio below 1 means the
+weekly is exhausted before one five-hour window can be filled.** The truth lies between "scales
+identically" and "does not scale", and nothing published narrows it. **This is sayable today
+without measuring a Max account: Anthropic quantifies the multiplier on the window that clears
+itself in five hours and leaves the window that governs your month unquantified, in the same
+paragraph.** The same paragraph also reserves further meters — *"we may limit your usage in
+other ways, such as weekly and monthly caps or model and feature usage, at our discretion"* —
+so even the two-meter picture is not guaranteed complete.
+
+**Next step is a precision one and it is cheap: catch ticks, not levels.** Percentage
+quantisation is the only error term left, so time the moment the bar changes 5%→6%: between
+two consecutive ticks exactly one point of the cap is spent and the usage between them is
+exact on disk. At the observed burn rate a tick is ~20 minutes of heavy work.
+
+**A contrast worth keeping, and B9 supplies the other half.** Z.ai's credit multipliers
+weight output *less* against input than its own API prices do (4.9× vs 5.5×), so long-output
+use is marginally better value on its plan than on its API. Anthropic's limit weights output
+*more* than its price list (~8× vs 5×). **The only two providers whose limit unit is knowable
+lean in opposite directions**, so "the plan's unit tracks the price list" is not a safe
+default for the seven we cannot see.
+
+**Not yet in `plan-limits.json`, deliberately.** Nothing here has moved a shipped number.
+When it does, it lands as `provenance: "measured"` (a value that does not exist yet) with
+sample size, date, model and the one-account scope attached — and **displayed on
+`pricing.html` before it is ever allowed near the Auditor's `cap` fit test**, per B6.
+
+**Re-verify:** re-run the script after any new 429; every rejection is a free extra sample
+and the fit tightens on its own. If a re-fit ever moves α off 0, the "re-sent context is
+free" claim must come down everywhere it has been repeated.
+
 ## B9. The "Longer window" column (added 2026-09-01)
 
 **A sixth column on the subscriptions table, answering two questions per plan: is
@@ -1395,9 +1527,11 @@ it changes.
 ### ⚠️ Anthropic METERS the weekly cap and shows you a percentage of it (observed 2026-09-01)
 
 > **This is measurable, and there is a protocol for it: [`MEASURE-CLAUDE-LIMITS.md`](MEASURE-CLAUDE-LIMITS.md).**
-> A first provisional ratio is already in there — **weekly ≈ 9× the five-hour cap**, range 7.2–12×,
-> against Z.ai's published 5×. It rests on one 2% reading and an unverified assumption; the
-> protocol says how to replace it with something worth quoting.
+> **Superseded 2026-09-02 — see B10.** The five-hour cap is now measured from 429s rather
+> than estimated from a percentage, the weekly ratio stands at **~10×** (range 8.1–13.6×) against
+> Z.ai's published 5×, and the instrument is `scripts/measure-claude-limits.js`. The old
+> provisional **9× (7.2–12×)** rested on one 2% reading and an assumption that has since been
+> contradicted: the weekly window did **not** run Saturday to Saturday.
 
 **Seen in the Claude Pro usage panel, which no amount of page-reading would have
 surfaced:** two live meters side by side — a *5-hour limit* with a countdown, and
