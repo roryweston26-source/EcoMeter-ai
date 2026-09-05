@@ -36,6 +36,12 @@
  *   node scripts/measure-claude-limits.js --json             # machine-readable
  *   node scripts/measure-claude-limits.js --readings f.json  # + panel readings
  *
+ * READINGS ARE NOW WORTH TAKING OFTEN. Two readings far apart give a level pair, whose
+ * error is +/-1 rounded point at BOTH ends -- about +/-50% on a one-point move, and no
+ * amount of token precision improves it. Readings taken every few minutes instead let
+ * the bar be caught TICKING, and a tick carries no rounding error at all. Same file,
+ * same fields; just more rows. See tickBrackets below.
+ *
  * SCOPE, AND IT IS THE LOAD-BEARING CAVEAT: this reads one machine's Claude Code
  * transcripts. Any use of claude.ai, mobile, or a second machine on the same
  * account counts against the same meters and is invisible here, which biases every
@@ -87,7 +93,18 @@ function load(dir) {
       let o;
       try { o = JSON.parse(line); } catch { continue; }
       if (o.quotaLimits && o.quotaLimits.resetsAt) {
-        rejections.push({ ts: o.timestamp, type: o.quotaLimits.rateLimitType, resetsAt: o.quotaLimits.resetsAt });
+        // rateLimitType names WHICH meter fired, and it is the field that makes the
+        // weekly closable the same way the five-hour was. Every rejection on disk so
+        // far reads "five_hour"; a weekly-flavoured one would be a 100% observation of
+        // the weekly cap carrying NO percentage rounding at all, so it must never be
+        // dropped quietly. The overage fields say whether paid credits were topping the
+        // window up -- if they were, the window is not a clean read of the plan cap.
+        const q = o.quotaLimits;
+        rejections.push({
+          ts: o.timestamp, type: q.rateLimitType, resetsAt: q.resetsAt,
+          overageStatus: q.overageStatus, usingOverage: q.isUsingOverage,
+          overageDisabledReason: q.overageDisabledReason,
+        });
       }
       const u = o.message && o.message.usage;
       if (o.type !== 'assistant' || !u) continue;
@@ -141,11 +158,16 @@ function totalsOf(rs) {
 const modelMix = rs => rs.reduce((m, r) => (m[r.model] = (m[r.model] || 0) + 1, m), {});
 
 // ---------------------------------------------------------------- windows
+// An untyped rejection predates the field and is assumed five-hour, which is what
+// every typed one on disk has been. Anything else is the prize, so the caller reports
+// the leftovers rather than letting this filter swallow them.
+const isFiveHour = r => r.type === 'five_hour' || !r.type;
+
 function fiveHourWindows(requests, rejections) {
   const seen = new Set();
   const out = [];
   const rs = rejections
-    .filter(r => r.type === 'five_hour' || !r.type)
+    .filter(isFiveHour)
     .sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
   for (const rj of rs) {
     if (!rj.resetsAt || seen.has(rj.resetsAt)) continue;   // two hits in one window are one observation
@@ -224,11 +246,22 @@ function pairReadings(readings, requests, model) {
     const span = requests.filter(r => { const t = Date.parse(r.ts); return t > t0 && t <= t1; });
     if (!span.length) continue;
     const t = totalsOf(span);
+    // The longest stretch inside the pair with no visible request. A meter that climbs
+    // through a long silence is being fed from somewhere this machine cannot see, and
+    // that pair's cap will come out far too low. Ends count: silence after the last
+    // request is exactly the case that matters.
+    let quiet = 0, cursor = t0;
+    for (const r of span) {
+      quiet = Math.max(quiet, Date.parse(r.ts) - cursor);
+      cursor = Date.parse(r.ts);
+    }
+    quiet = Math.max(quiet, t1 - cursor) / 60000;
+
     const units = unitsOf(t, model.alpha, model.beta);
     const d5 = b.fiveHourPct - a.fiveHourPct;
     const dw = b.weeklyPct - a.weeklyPct;
     out.push({
-      from: a.ts, to: b.ts, n: span.length, units, cost: t.cost, d5, dw,
+      from: a.ts, to: b.ts, n: span.length, units, cost: t.cost, d5, dw, quiet,
       fiveHourCap: d5 > 0 ? units / (d5 / 100) : null,
       // Each reading is rounded, so a delta of d carries +/-1 point either way.
       weeklyCap: dw > 0 ? units / (dw / 100) : null,
@@ -244,6 +277,89 @@ function pairReadings(readings, requests, model) {
   return out;
 }
 
+// ------------------------------------------------------------- tick brackets
+// A pair of LEVEL readings cannot beat about +/-50%, because both ends are rounded to
+// a whole percent. Ticks carry no such error: between the instant the bar turns
+// v-1 -> v and the instant it turns v -> v+1, exactly one point of the cap is spent.
+//
+// A tick is never seen directly, only inferred from the bar reading v at one glance
+// and v+1 at the next, so both the tick and the usage between two of them are
+// BRACKETED rather than known:
+//
+//   certainly INSIDE the one-point span : first sighting of v  -> last sighting of v
+//   certainly CONTAINS it               : last sighting of v-1 -> first sighting of v+1
+//
+// so the cap lies in [100 * inside, 100 * contains]. Nothing is assumed about rounding,
+// and the bracket tightens by itself as glances get denser -- keep the popover open and
+// the two bounds converge. Intersecting several brackets is what beats quantisation.
+const METERS = {
+  weekly:   { name: 'weekly',    pct: 'weeklyPct',   reset: 'weeklyReset' },
+  fiveHour: { name: 'five-hour', pct: 'fiveHourPct', reset: 'fiveHourReset' },
+};
+
+function tickBrackets(readings, requests, model, meter) {
+  const unitsBetween = (t0, t1) => unitsOf(
+    totalsOf(requests.filter(r => { const t = Date.parse(r.ts); return t > t0 && t <= t1; })),
+    model.alpha, model.beta);
+
+  // Split into runs sharing one window. A fall in the level, or a changed reset
+  // instant, means the meter reset and levels either side of it are incomparable.
+  const runs = [[]];
+  for (const r of readings) {
+    if (typeof r[meter.pct] !== 'number' || isNaN(Date.parse(r.ts))) continue;
+    const cur = runs[runs.length - 1], prev = cur[cur.length - 1];
+    if (prev && (r[meter.pct] < prev[meter.pct] ||
+        sameWeeklyWindow(prev[meter.reset], r[meter.reset]) === false)) runs.push([]);
+    runs[runs.length - 1].push(r);
+  }
+
+  const out = [];
+  for (const run of runs) {
+    const first = new Map(), last = new Map();
+    for (const r of run) {
+      const v = r[meter.pct], t = Date.parse(r.ts);
+      if (!first.has(v)) first.set(v, t);
+      last.set(v, t);
+    }
+    for (const v of [...first.keys()].sort((a, b) => a - b)) {
+      if (!first.has(v + 1)) continue;                       // closing tick never seen
+      const inside = last.get(v) > first.get(v) ? unitsBetween(first.get(v), last.get(v)) : 0;
+      const contains = last.has(v - 1) ? unitsBetween(last.get(v - 1), first.get(v + 1)) : null;
+      if (!inside && contains === null) continue;            // one glance says nothing
+      out.push({
+        meter: meter.name, level: v,
+        heldFrom: new Date(first.get(v)).toISOString(),
+        heldTo: new Date(last.get(v)).toISOString(),
+        capLo: inside * 100,
+        capHi: contains === null ? null : contains * 100,
+      });
+    }
+  }
+  return out;
+}
+
+// The tightest claim several brackets support is their intersection. If that comes out
+// empty -- a lower bound above an upper one -- the brackets CONTRADICT, and the usual
+// cause is usage this machine cannot see inflating one of the intervals. Say so; do
+// not average the contradiction away.
+function intersectBrackets(bs) {
+  const los = bs.map(b => b.capLo).filter(x => x > 0);
+  const his = bs.map(b => b.capHi).filter(x => x != null);
+  if (!los.length && !his.length) return null;
+  const lo = los.length ? Math.max(...los) : null;
+  const hi = his.length ? Math.min(...his) : null;
+  return { lo, hi, contradiction: lo != null && hi != null && lo > hi, n: bs.length };
+}
+
+// Exported so scripts/test-limit-ticks.js can exercise the estimator against a meter
+// whose answer is known. Top-level return is legal in CommonJS and keeps the report
+// below un-indented, so the diff stays readable.
+module.exports = {
+  load, totalsOf, unitsOf, fit, fiveHourWindows, isFiveHour,
+  pairReadings, sameWeeklyWindow, tickBrackets, intersectBrackets, METERS, CACHE,
+};
+if (require.main !== module) return;
+
 // ---------------------------------------------------------------- report
 const { requests, rejections, lines, blockDupes } = load(projectsDir);
 if (!requests.length) {
@@ -258,6 +374,13 @@ const model = fit(clean.length >= 2 ? clean : windows);
 
 const readings = readingsFile ? JSON.parse(fs.readFileSync(readingsFile, 'utf8')) : [];
 const pairs = model ? pairReadings(readings, requests, model) : [];
+const ticks = {
+  weekly: model ? tickBrackets(readings, requests, model, METERS.weekly) : [],
+  fiveHour: model ? tickBrackets(readings, requests, model, METERS.fiveHour) : [],
+};
+// Rejections carry their own meter name; anything not five-hour is the observation
+// this whole file is waiting for, so it is surfaced rather than filtered away.
+const otherMeter = rejections.filter(r => !isFiveHour(r));
 
 if (asJson) {
   console.log(JSON.stringify({
@@ -281,7 +404,17 @@ if (asJson) {
       cvIfCacheReadAtBillingWeight: model.cvAtBillingCacheRead,
       n: (clean.length >= 2 ? clean : windows).length,
     },
-    weekly: { arithmeticCeilingRatio: HOURS_PER_WEEK / 5, pairs },
+    rejectionMeters: rejections.map(r => ({
+      ts: r.ts, rateLimitType: r.type || null, usingOverage: r.usingOverage ?? null,
+      overageStatus: r.overageStatus ?? null, overageDisabledReason: r.overageDisabledReason ?? null,
+    })),
+    weekly: {
+      arithmeticCeilingRatio: HOURS_PER_WEEK / 5, pairs,
+      tickBrackets: ticks.weekly, tickBracketIntersection: intersectBrackets(ticks.weekly),
+    },
+    fiveHourTickControl: {
+      brackets: ticks.fiveHour, intersection: intersectBrackets(ticks.fiveHour),
+    },
   }, null, 2));
   process.exit(0);
 }
@@ -306,6 +439,38 @@ for (const w of windows) {
     (w.unseenMin >= MAX_UNSEEN_MIN ? '   <- contaminated, excluded' : ''));
 }
 
+// The rejections self-describe, and two of those fields are load-bearing. rateLimitType
+// says which meter fired -- so "these are five-hour observations" is read off the record
+// rather than assumed. The overage fields say whether paid credits were extending the
+// window, which would make it an observation of a purchase and not of the plan.
+if (windows.length) {
+  const typed = rejections.filter(r => r.type);
+  const kinds = [...new Set(typed.map(r => r.type))];
+  const overaged = rejections.filter(r => r.usingOverage);
+  console.log('\n  Self-labelled: ' + typed.length + '/' + rejections.length +
+    ' rejections carry rateLimitType' +
+    (kinds.length ? ' = ' + kinds.map(k => '"' + k + '"').join(', ') : '') + ',');
+  console.log('  so these are five-hour observations by the record, not by assumption.');
+  if (overaged.length) {
+    console.log('  !! ' + overaged.length + ' ran on paid overage - not a clean read of the plan cap.');
+  } else {
+    const why = [...new Set(rejections.map(r => r.overageDisabledReason).filter(Boolean))];
+    console.log('  None ran on paid overage, so no credit purchase inflated any window' +
+      (why.length ? ' (' + why.join(', ') + ').' : '.'));
+  }
+}
+
+if (otherMeter.length) {
+  console.log('\n  ** A REJECTION FROM ANOTHER METER IS ON DISK - this is the prize. **');
+  for (const r of otherMeter) {
+    console.log('     ' + r.ts + '  rateLimitType="' + r.type + '"  resets ' +
+      new Date(r.resetsAt * 1000).toISOString());
+  }
+  console.log('     A non-five-hour 429 is a 100% observation of that meter, carrying NO');
+  console.log('     percentage rounding. If it says weekly, the weekly cap can be read the');
+  console.log('     same way the five-hour one was. Teach fiveHourWindows about it and refit.');
+}
+
 if (model) {
   const n = (clean.length >= 2 ? clean : windows).length;
   const opus = rate('claude-opus-5');
@@ -327,12 +492,13 @@ if (!pairs.length) {
   console.log('  No panel readings supplied. Pass --readings <file.json>:');
   console.log('    [{"ts":"2026-09-02T16:26:35Z","fiveHourPct":17,"weeklyPct":4,"weeklyReset":"Sat 2:00 AM"}]');
 } else {
-  console.log('  from  -> to      reqs     units    d5h    dwk     5h cap    weekly cap (ratio)');
+  console.log('  from  -> to      reqs     units    d5h    dwk    quiet     5h cap    weekly cap (ratio)');
   for (const p of pairs) {
     const ratio = p.weeklyCap && model ? (p.weeklyCap / model.cap).toFixed(1) + 'x' : '-';
     console.log('  ' + p.from.slice(11, 16) + ' -> ' + p.to.slice(11, 16) +
       String(p.n).padStart(6) + M(p.units).padStart(10) +
       String(p.d5 + 'pp').padStart(7) + String(p.dw + 'pp').padStart(7) +
+      String(p.quiet.toFixed(0) + 'm').padStart(9) +
       (p.fiveHourCap ? M(p.fiveHourCap) : '-').padStart(11) +
       '   ' + (p.weeklyCap ? M(p.weeklyCap) : '-') + ' (' + ratio + ')' +
       (p.reset ? '   <- window reset between readings, ratio meaningless' : ''));
@@ -340,15 +506,73 @@ if (!pairs.length) {
   const usable = pairs.filter(p => p.weeklyCap && !p.reset && model);
   if (usable.length) {
     const rs = usable.map(p => p.weeklyCap / model.cap);
+    const best = Math.max(...rs);
     console.log(`\n  weekly/five-hour from ${usable.length} pair(s): ` +
       `${Math.min(...rs).toFixed(1)}x - ${Math.max(...rs).toFixed(1)}x` +
       (rs.some(r => r > HOURS_PER_WEEK / 5)
         ? '\n  !! ABOVE THE CEILING - a window reset, or the two meters count different things'
         : ''));
+    // Unseen usage can only ever make a pair read LOW: the bar moves by usage we did
+    // not see, and we divide the usage we did see by that larger move. So this is not
+    // a range to average across -- the HIGHEST pair is the least contaminated floor,
+    // and a pair far below it is a detector rather than a smaller answer.
+    if (usable.length > 1 && Math.min(...rs) < best * 0.6) {
+      console.log('  Off-machine usage biases every pair DOWNWARD, so this is not a range to');
+      console.log('  average. The floor is the HIGHEST pair: ' + best.toFixed(1) +
+        'x. Pairs far below it are reporting');
+      console.log('  usage this machine could not see, and the quiet column says which.');
+      for (const p of usable) {
+        const r = p.weeklyCap / model.cap;
+        if (r < best * 0.6) {
+          console.log('    !! ' + p.from.slice(0, 16) + ' -> ' + p.to.slice(0, 16) +
+            ' reads ' + r.toFixed(1) + 'x with ' + p.quiet.toFixed(0) +
+            ' min of transcript silence while the');
+          console.log('       weekly climbed ' + p.dw + 'pp. Something spent that elsewhere.');
+        }
+      }
+    }
   }
-  console.log('\n  A one-point move on the weekly bar carries +/-1 point of rounding, so a single');
-  console.log('  pair cannot beat about +/-50%. Catch the bar TICKING instead: between two');
-  console.log('  consecutive ticks exactly one point of the cap is spent, and the usage between');
-  console.log('  them is exact here. Ticks, not levels.');
+}
+
+if (ticks.weekly.length || ticks.fiveHour.length) {
+  console.log('\n  TICK BRACKETS - exactly one point of the bar, with no rounding assumed');
+  console.log('  meter       level  held (UTC)      cap at least    cap at most');
+  for (const b of [...ticks.fiveHour, ...ticks.weekly]) {
+    console.log('  ' + b.meter.padEnd(12) + (b.level + '%').padStart(5) + '  ' +
+      b.heldFrom.slice(11, 16) + '->' + b.heldTo.slice(11, 16) +
+      (b.capLo ? M(b.capLo) : '-').padStart(14) +
+      (b.capHi != null ? M(b.capHi) : '-').padStart(15));
+  }
+  // The five-hour meter is the CONTROL. Its cap is already known from the 429s, so a
+  // bracket that fails to contain it condemns the tick method rather than the fit.
+  const f = intersectBrackets(ticks.fiveHour);
+  if (f && model) {
+    const ok = (f.lo == null || model.cap >= f.lo) && (f.hi == null || model.cap <= f.hi);
+    console.log('\n  Five-hour ticks are the CONTROL, not a measurement - that cap is already known.');
+    console.log('  Bracket ' + (f.lo ? M(f.lo) : '?') + ' - ' + (f.hi != null ? M(f.hi) : '?') +
+      ' vs the fitted ' + M(model.cap) + ': ' +
+      (ok ? 'contains it, so the tick method holds.' : '!! DOES NOT - distrust the ticks.'));
+  }
+  const w = intersectBrackets(ticks.weekly);
+  if (w && model) {
+    const asRatio = x => (x / model.cap).toFixed(1) + 'x';
+    if (w.contradiction) {
+      console.log('\n  !! WEEKLY TICK BRACKETS CONTRADICT: at least ' + M(w.lo) +
+        ' and at most ' + M(w.hi) + '.');
+      console.log('  One interval holds usage this machine cannot see. Do not average them.');
+    } else {
+      console.log('\n  WEEKLY CAP from ' + w.n + ' tick bracket(s): ' +
+        (w.lo ? M(w.lo) : 'unbounded below') + ' - ' +
+        (w.hi != null ? M(w.hi) : 'unbounded above'));
+      console.log('  = ' + (w.lo ? asRatio(w.lo) : '?') + ' - ' +
+        (w.hi != null ? asRatio(w.hi) : '?') + ' the five-hour cap.' +
+        (w.lo && w.lo / model.cap > HOURS_PER_WEEK / 5
+          ? '\n  !! LOWER BOUND IS ABOVE THE 33.6x CEILING - wrong, not merely high.' : ''));
+    }
+  }
+} else if (pairs.length) {
+  console.log('\n  No tick brackets: no level was seen twice with its neighbours around it. A');
+  console.log('  level pair cannot beat about +/-50%, because both ends are rounded. Read the');
+  console.log('  bar every few minutes instead - two ticks bracket one point with no rounding.');
 }
 console.log('');

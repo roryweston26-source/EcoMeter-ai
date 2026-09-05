@@ -16,6 +16,8 @@ on:
       - 'scripts/test-auditor.js'
       - 'scripts/check-clock.js'
       - 'scripts/check-transparency.js'
+      - 'scripts/measure-claude-limits.js'
+      - 'scripts/test-limit-ticks.js'
       - '.github/workflows/validate-site.yml'
   push:
     branches: [main]        # backstop: also verify what actually landed
@@ -61,3 +63,13 @@ jobs:
       # passed validate-site.js. This gates the promises, not the syntax.
       - name: Check Transparency Index consistency
         run: node scripts/check-transparency.js
+
+      # The tick-bracket estimator is how the weekly usage cap gets measured, and its
+      # entire claim is "the true cap lies inside this bracket" -- a claim worth nothing
+      # unless it has been run against a cap that is already known. The test simulates a
+      # meter of known size over a token stream and checks the bracket contains it, then
+      # breaks each assumption in turn and checks it stops. It prefers Rory's real
+      # transcripts when they are present and falls back to a seeded synthetic stream,
+      # so it is not a test that only runs on one machine.
+      - name: Test usage-limit tick brackets
+        run: node scripts/test-limit-ticks.js

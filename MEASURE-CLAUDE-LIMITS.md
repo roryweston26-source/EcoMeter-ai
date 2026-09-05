@@ -45,6 +45,36 @@ The report's own **Local activity** line is the best cross-check available, beca
 
 **Exact, both windows.** So the app counts *requests* correctly and *tokens* incorrectly — it dedupes for the activity line and not for the Breakdown. That closes the question of which side the content-block over-count is on.
 
+### The rejections say which meter fired, and whether money was involved
+
+Every 429 in the transcripts carries a `quotaLimits` object alongside the error text.
+Found 2026-09-05 by grepping the transcripts for it; it had been sitting there the whole time:
+
+```json
+{"status":"rejected","resetsAt":1788070200,"rateLimitType":"five_hour",
+ "overageStatus":"rejected","overageDisabledReason":"org_level_disabled",
+ "isUsingOverage":false,"unifiedRateLimitFallbackAvailable":false}
+```
+
+Three things fall out, and none of them needed a percentage reading.
+
+**`rateLimitType` names the meter.** All seven rejections on disk say `"five_hour"`. The
+five-hour measurement's load-bearing assumption — that these are five-hour rejections and
+not weekly ones — is now **read off the record rather than assumed**.
+
+**So a weekly 429 would announce itself.** It would be a 100% observation of the weekly
+window carrying *no percentage rounding at all*: the weekly cap could be read exactly the
+way the five-hour one was, and `resetsAt` would hand over the window's exact end. **That is
+the cheapest route left to closing the weekly and it costs nothing but waiting.** The script
+used to discard non-five-hour rejections silently; it now prints one as the prize it is.
+
+**`isUsingOverage: false` on all seven**, with `overageDisabledReason: "org_level_disabled"`
+— no paid credit topped up any of the six windows, so each is an observation of the plan and
+not of a purchase. That also bears on the parked mid-week reset below: as of the last 429 on
+2026-08-30, overage was disabled at org level on this account, which **weakens the
+"usage-credit top-up" explanation for the 2026-09-01 reset without killing it** — nothing
+here covers what may have changed in the two days between.
+
 ### The first version of this protocol named the wrong tool
 
 It said to pair panel readings with an **EcoMeter export**. That is wrong for this job, and wrong in a way worth recording: EcoMeter watches the claude.ai DOM, and **Claude Code usage never touches a browser**. On an account that uses Claude Code, an EcoMeter export measures nothing that is burning the limit.
@@ -168,11 +198,30 @@ All five screenshots label the weekly reset "Sat 2:00 AM"; **F states it exactly
 
 Quote **~10×** with the band, never a point estimate. Narrower slices give 7.3× (D→E) and 12.9× (E→F), which is what ±1 point on a one- or two-point move looks like and is the reason to pool.
 
-**⚠️ This is a floor, not a centre.** The unseen-usage detector fired inside this very interval (see above), so the true units spent between C and F are **higher** than 1.259M and the cap is correspondingly higher. Adding the ~124k units implied by F's unexplained 4% moves it to ~11.2×.
+**⚠️ This is a floor, not a centre.** The unseen-usage detector fired inside this very interval (see above), so the true units spent between C and F are **higher** than 1.259M and the cap is correspondingly higher.
 
 **C, D, E and F carry usable timestamps; A and B do not**, and B sits within minutes of a weekly reset. The B → C pair reads **19.4×**, the highest of any, which is exactly what a few minutes of pre-reset usage wrongly attributed to the new window would do. **Pairs anchored on B are excluded, not averaged in** — and the reason to distrust B is structural, not that it disagreed.
 
-**C, D and E carry exact timestamps; A and B do not**, and B sits within minutes of the reset. The B → C pair reads **19.4×**, the highest of the four, which is exactly what a few minutes of pre-reset usage wrongly attributed to the new window would do. **Pairs anchored on B are excluded from the estimate, not averaged into it** — and the reason to distrust B is structural, not that it disagreed.
+### The quiet column, and why ~10.2× is worse than a floor (2026-09-05)
+
+The script now reports, for every pair, **the longest stretch inside it with no request in the transcripts at all**. Adding the 2026-09-03T03:31 baseline as a fifth reading — it had been set aside as "a starting line, not a data point", and pairing it is what exposed this — the four pairs line up like this:
+
+| pair | quiet | weekly Δ | reads |
+|---|---|---|---|
+| C → D | **11m** | 1pp | **13.3×** |
+| E → F | 104m | 1pp | 12.8× |
+| D → E | 197m | 2pp | 7.3× |
+| F → baseline | **317m** | 4pp | **3.1×** |
+
+**The more silence, the lower the answer, monotonically.** That is not a coincidence and it is not noise: unseen usage can only ever bias a pair *downward*, because the bar moves on usage we did not see and we divide the usage we did see by that larger move. A pair with five hours of silence and a four-point climb is not measuring a smaller cap; it is measuring how much was spent elsewhere.
+
+**The F → baseline pair is the loudest evidence this project has that the one-machine scope is being violated.** Eighteen requests, all inside a five-minute burst ending 22:14:08Z, then **nothing for 5h17m** — while the weekly climbed four points. Percentage rounding cannot rescue it: even the most generous reading of "8% to 12%" as a three-point move gives 13M, still 2.4× below the C→F figure. And the transcripts are not the thing at fault — the copy report's own **Local activity** count of 4637 all-time straddles our parse exactly (4631 at 03:31:10Z, 4639 at 03:33:10Z), so this machine's record is complete. **Roughly 0.9M units were spent somewhere else that night.**
+
+**Consequences, and they are not small.**
+
+- **~10.2× is not merely a floor, it is a floor dragged down by contamination.** C → F pools intervals carrying 104 and 197 minutes of silence. The cleanest pair on record, C → D with eleven minutes of quiet, reads **13.3×**.
+- **But C → D is a one-point move**, so on rounding alone its honest band is 6.7× to unbounded above. A clean pair and a tight pair are not the same thing, and we currently have neither together.
+- **Take the maximum across pairs, never the mean.** The script says so now and names the offending pairs rather than averaging them into the answer.
 
 ### Parked: the mid-week reset
 
@@ -217,13 +266,53 @@ From the Max-plan article (fetched 2026-09-02):
 
 ---
 
-## Closing the weekly: catch ticks, not levels
+## Closing the weekly: catch ticks, not levels — built, and its price is measured
 
-A one-point move on the weekly bar carries ±1 point of rounding, so a single pair cannot beat about ±50%, no matter how exact the token side is. **Percentage quantisation is now the only error term left**, and the way to beat it is to stop reading levels.
+A one-point move on the weekly bar carries ±1 point of rounding **at both ends**, so a single pair cannot beat about ±50%, no matter how exact the token side is. **Percentage quantisation is the only error term left**, and the way to beat it is to stop reading levels.
 
-**Between two consecutive ticks — 5%→6% and then 6%→7% — exactly one point of the cap is spent, and the usage between them is exact on disk.** Timing the tick replaces reading the bar. Two ticks bracket 1% with no rounding error at either end.
+**Between the instant the bar turns v−1 → v and the instant it turns v → v+1, exactly one point of the cap is spent**, and the usage between those instants is exact on disk. Neither instant is ever *seen* — only that the bar read v at one glance and v+1 at the next — so the estimator brackets rather than pretends:
+
+```
+capLo = 100 × units(first sighting of v   → last sighting of v)     ≤ cap
+capHi = 100 × units(last sighting of v−1  → first sighting of v+1)  ≥ cap
+```
+
+Nothing is assumed about how the product rounds — floor, round and ceil all satisfy it — and several brackets combine by **intersection**. Live in `scripts/measure-claude-limits.js`; the readings file format is unchanged, it just wants more rows.
+
+**When the brackets do not intersect, that is a finding, not an error to smooth.** A lower bound above an upper bound means one interval holds usage the transcripts cannot see, or that α and β are wrong for that stretch. The script says `CONTRADICT` and refuses to average.
+
+### What the precision costs, measured rather than guessed
+
+**⚠️ These are simulation figures, not measurements of Anthropic.** They replay the real 2026-08-24 → 09-01 token stream against a *hypothetical* 31.5M cap and ask how tightly the estimator recovers it. They say what glancing buys. They say nothing about what the cap is.
+
+| glance every | median single bracket | six in a row | the whole run (34 ticks) |
+|---|---|---|---|
+| 30 min | — | — | 14.6× — useless |
+| 15 min | 6.2× | — | 2.34× |
+| 10 min | 4.6× | — | 1.54× |
+| 5 min | 3.4× | — | 1.18× |
+| **3 min** | 2.08× | **1.22× (worst 1.47×)** | **1.06×** |
+| 1 min | 1.40× | — | 1.06× |
+
+**Three things to take from it, and the second one is the one that changes the plan.**
+
+- **Three minutes is the cadence.** Below it nothing improves, because the floor is set by how far apart the *requests* are and not the glances — one request is about 4% of a point at this burn rate.
+- **Six ticks is the target, not two.** Two consecutive ticks read a median 1.46× and can be as bad as **6.05×**; six read a median **1.22×** with a worst case of 1.47×, which already beats the 8.1–13.6 band we have now. The doc used to say two ticks bracket a point — true, and not sufficient.
+- **Every window tested contained the true cap** — all 33 pairs, 32 triples, 31 quads and 29 six-runs. The method varies in how tight it is. It does not lie.
+
+### It breaks when its assumptions break, which is the point
+
+`scripts/test-limit-ticks.js` — 24 assertions, run against a cap it already knows, then each assumption violated in turn. It prefers the real transcripts and falls back to a seeded synthetic stream, so CI runs it too.
+
+- **20% of usage hidden off-machine** → the bracket lands *below* the true cap and stays there. This is the scope caveat made mechanical, and it is why every figure here is a floor.
+- **A mid-run meter reset** → the readings split into runs; no bracket spans the boundary.
+- **A changed reset instant with the level still rising** → also splits, because the label is the only clue a reset leaves when it lands on the same number.
+- **A bar advancing slower than the unit model predicts** (a wrong α or β) → reported as a contradiction. This is the one failure the five-hour fit cannot catch on its own.
+- **A level glimpsed once** → no bracket at all, rather than a confident-looking one.
 
 ### Anchor for the next run
+
+**⚠️ EXPIRED.** The baseline below was taken in the weekly window that ended at **2026-09-05T06:00:00Z**. That window has closed, so this reading can no longer be paired with anything. Kept for its shape details, which still hold.
 
 **Baseline, deliberately excluded from every estimate above — it is a starting line, not a data point.**
 
@@ -236,18 +325,19 @@ A one-point move on the weekly bar carries ±1 point of rounding, so a single pa
 
 Two shape details worth keeping. **An empty five-hour meter prints no reset instant at all** — `session-0: 0%` with nothing after it — so the unseen-usage detector simply has nothing to check while the window is closed; it works only once a window is open. And the weekly reset instant is **unchanged** from the 22:08Z report, confirming no weekly reset in between.
 
-The next sub-session starts from this line. Pair it with a second copy report once the weekly has moved **four or more points** and the estimate tightens without any new machinery.
+**A fresh weekly window opened at 2026-09-05T06:00:00Z**, which is the good news buried in the expiry: the run below can start from an almost-empty bar, and the first ticks are the cheapest ones to catch.
 
 ### Steps
 
 1. **Keep the usage popover where you can glance at it.** Work normally, one model only — the bar says *all models*, so a Sonnet/Opus mix pools things that cost different amounts per token and will not decompose.
-2. **Say the moment the weekly number changes, and the new value.** Nothing else. Timestamp precision of a minute or two is plenty; at the burn rate observed on 2026-09-02, one point of the weekly took about 20 minutes of heavy work.
-3. **Record every reading anyway**, in a JSON file:
+2. **Copy the report about every three minutes while working hard**, and stop when six ticks have been caught. Not every three minutes for a week — six ticks is the target, and the table above is why. Idle time costs nothing, so glance only while requests are actually going out.
+3. **Record every reading**, in a JSON file — the same format as before, one row per glance:
    ```json
-   [{"ts":"2026-09-02T16:26:35Z","fiveHourPct":17,"weeklyPct":4,"weeklyReset":"Sat 2:00 AM"}]
+   [{"ts":"2026-09-05T14:03:00Z","fiveHourPct":17,"weeklyPct":4,"weeklyReset":"2026-09-12T06:00:00Z"}]
    ```
-   then `node scripts/measure-claude-limits.js --readings <file>`. Consecutive pairs give a ratio without needing to know when any window opened, and a changed `weeklyReset` or a negative delta marks the pair unusable automatically.
-4. **Don't enable usage credits.** That spends real money to learn what the percentage gives free.
+   then `node scripts/measure-claude-limits.js --readings <file>`. Rows at the same level are what build a bracket, so **do not skip a glance because the number has not changed** — an unchanged reading is the evidence, not a wasted one.
+4. **Prefer the exact reset instant from the copy button** over the "Sat 2:00 AM" label. The script compares them as instants where it can, but only the exact form detects a reset that lands on a number the bar was already showing.
+5. **Don't enable usage credits.** That spends real money to learn what the percentage gives free — and `isUsingOverage` shows it would make every window an observation of a purchase instead of the plan.
 
 ### What still bites
 
@@ -267,7 +357,7 @@ The next sub-session starts from this line. Pair it with a second copy report on
 
 ## Evidence quality, stated plainly
 
-**One account, one machine, one model, six 429s and four panel readings.** The five-hour cap and its unit are on reasonably firm ground: five independent 100% observations, a 1.25× spread, and a successful out-of-sample prediction. The weekly is not: it rests on a single one-point move and a hypothesis about when its window reset.
+**One account, one machine, one model, six 429s and four panel readings.** The five-hour cap and its unit are on reasonably firm ground: five independent 100% observations, a 1.25× spread, a successful out-of-sample prediction, and — since 2026-09-05 — every one of those rejections confirmed as a *five-hour* rejection by its own `rateLimitType`, on a plan with overage disabled. The weekly is not: it still rests on a single one-point move and a hypothesis about when its window reset. **The instrument for fixing that now exists and is tested; what it lacks is readings.**
 
 Nothing here establishes a **population** figure. It establishes what one heavy Claude Code user's limits are, in a unit we can defend, and a ratio worth one anchor beside Z.ai's.
 
@@ -275,12 +365,13 @@ Nothing here establishes a **population** figure. It establishes what one heavy 
 
 ## Still open, and cheap to close
 
-- **BLOCKING: what opened the five-hour window at 2026-09-02T21:50Z?** The transcripts are silent for the 104 minutes around it. Until this is explained the scope caveat is unproven and every cap here is a floor. One question to the account holder: phone, browser, second machine, Claude Code on the web, or a background task?
-- **Parked at Rory's direction: what reset the weekly bar on 2026-09-01 at ~20:16Z?** Two independent methods agree it happened; none says why. Not being pursued; the Δ-based method routes around it.
+- **BLOCKING, and much larger than it looked: what is spending this account's limit while the machine is idle?** Originally one question about the five-hour window that opened at 2026-09-02T21:50Z with 104 minutes of silence around it. The quiet column has since turned that single anomaly into a **monotonic pattern across four intervals** — 11m of silence reads 13.3×, 317m reads 3.1× — and the worst case is roughly **0.9M units spent between 22:14Z and 03:31Z with the transcripts completely silent**, on a machine whose record we have verified complete against the copy report's own request count. Until this is explained the one-machine scope is not merely unproven, it is **contradicted**, and every cap here is a contaminated floor. The candidates are not equivalent and only the account holder can say which: claude.ai in a browser, the mobile app, a second machine, **Claude Code on the web**, **a cloud or scheduled agent**, or another session left running.
+- **Wait for a weekly 429 — the cheapest route of all, and it costs nothing but patience.** `rateLimitType` on the rejection record self-labels the meter, so a weekly rejection would be a 100% observation of the weekly cap with no percentage rounding whatsoever. The script now shouts when one appears. Nobody has to do anything for this except not stop working.
+- **Parked at Rory's direction: what reset the weekly bar on 2026-09-01 at ~20:16Z?** Two independent methods agree it happened; none says why. Not being pursued; the Δ-based method routes around it. **Narrowed 2026-09-05:** all seven 429s carry `isUsingOverage: false` with `overageDisabledReason: "org_level_disabled"`, so overage was off at org level through 2026-08-30 — which makes a usage-credit top-up a *worse* explanation than it was, without ruling out something changing in the two days after.
 - **Does the published 5×/20× apply to the weekly, or only to the session?** Anthropic states it only of the session. One Max account and one run of the script would settle both the multiplier and the ratio, and nobody appears to have tested the claim.
 - **Does a Max account show a sibling bar?** "Weekly · **all models**" implies a meter scoped to a subset — most plausibly a separate weekly budget for the priciest model. Only ever seen on Pro, where no sibling appeared.
 - **Test the α = 0 vs "above 150k context" tension** directly: two matched sessions, same output volume, very different context sizes.
-- **The desktop app persists `{"resetsAt":…,"utilization":…}` in its localStorage** — but snappy-compressed, and only one record survives compaction. Not a reliable live source. Recorded so nobody re-treads it.
+- **The desktop app persists `{"resetsAt":…,"utilization":…}` in its localStorage** — but snappy-compressed, and only one record survives compaction. Not a reliable live source. Recorded so nobody re-treads it. **Also checked and also dead ends (2026-09-05):** `~/.claude/.claude.json` and its five rotating backups carry no utilization at all, and `quotaLimits` rides only on *rejections* — there is no per-request quota field on a successful response. The copy button remains the only source of levels.
 
 ---
 
@@ -290,4 +381,6 @@ Nothing here establishes a **population** figure. It establishes what one heavy 
 >
 > Here are my panel readings: [paste, or point at a readings JSON].
 >
-> Derive the five-hour cap in the fitted unit and the weekly-to-five-hour ratio. Check every ratio against the 33.6× arithmetic ceiling before believing it. State the error bars from percentage quantisation, and say which of the two counting traps you verified rather than assumed. Then propose — don't apply — the `plan-limits.json` change.
+> Derive the five-hour cap in the fitted unit and the weekly-to-five-hour ratio. **Prefer tick brackets to level pairs** — if my readings are dense enough the script produces them, and they carry no rounding error; a level pair cannot beat ±50%. Check every ratio against the 33.6× arithmetic ceiling before believing it. If the brackets contradict, say so and stop rather than averaging. Say which of the two counting traps you verified rather than assumed. Then propose — don't apply — the `plan-limits.json` change.
+>
+> Run `node scripts/test-limit-ticks.js` before trusting any bracket it prints.
