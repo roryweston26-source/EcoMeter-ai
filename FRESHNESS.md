@@ -1237,12 +1237,26 @@ the first level, raw tokens would have said 4% and API dollars 13%.
    can precede the true first request by up to ten minutes. A larger gap means unseen usage
    opened the window. One of six samples failed at 83 minutes and is dropped, not averaged.
 
-**⚠️ Scope is load-bearing: one machine's Claude Code transcripts.** claude.ai, mobile or a
-second machine count against the same meters and are invisible here, biasing every cap
-**downward**. Claude Code's panel says the same of itself — *"this machine only, excludes
-claude.ai"*. **Rory confirmed on 2026-09-02 that Claude Code on one machine is all he uses**,
-which is the only reason these figures are quotable at all. That confirmation is a fact about
-an account, not about the product, and it expires the moment his habits change.
+**⚠️ SCOPE: VIOLATED, MEASURED, AND THE OLD CONFIRMATION IS RETRACTED (2026-09-05).** This
+reads one machine's Claude Code transcripts. claude.ai, mobile or a second machine count
+against the same meters and are invisible here, biasing every cap **downward**; Claude Code's
+panel says the same of itself — *"this machine only, excludes claude.ai"*. B10 used to rest on
+**"Rory confirmed on 2026-09-02 that Claude Code on one machine is all he uses"**, called here
+"the only reason these figures are quotable at all". **That confirmation was wrong.** Asked
+again on 2026-09-05, after the quiet column turned a single anomaly into a four-interval
+pattern, the answer was **claude.ai and the mobile app are also in use**.
+
+So this is no longer a caveat with a mitigation attached. **Every cap in B10 is a contaminated
+floor by measurement**, and nothing here may be quoted as a figure for Claude Pro — only as a
+lower bound on one account's, seen through a partial window. **The five-hour cap survives
+better than the weekly** (a 429 is a 100% observation and the contamination test already drops
+windows opened by usage we cannot see — one of six failed and was excluded); the weekly has no
+such anchor and is hit hard. **The fitted unit is barely touched**, because α and β come from
+the ratio *between* windows and browser use would have to be systematically cache-read-heavy
+to move them. **Any future run states "no claude.ai, no phone" as a precondition** — it costs
+nothing and it is what makes a bracket mean what it says. **And EcoMeter is the missing half:**
+the tool this protocol correctly rejected for measuring Claude Code is exactly right for the
+browser, so the two are complementary rather than rival. Neither sees the phone.
 
 **USE THE COPY BUTTON, NOT A SCREENSHOT.** The usage panel's copy icon emits exact percentages
 *and exact reset instants* — `session-0: 4% (resets 2026-09-03T02:50:00.618709+00:00)`,

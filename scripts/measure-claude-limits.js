@@ -42,12 +42,19 @@
  * the bar be caught TICKING, and a tick carries no rounding error at all. Same file,
  * same fields; just more rows. See tickBrackets below.
  *
- * SCOPE, AND IT IS THE LOAD-BEARING CAVEAT: this reads one machine's Claude Code
- * transcripts. Any use of claude.ai, mobile, or a second machine on the same
+ * SCOPE, AND ON THIS ACCOUNT IT IS ALREADY VIOLATED: this reads one machine's Claude
+ * Code transcripts. Any use of claude.ai, mobile, or a second machine on the same
  * account counts against the same meters and is invisible here, which biases every
  * cap DOWNWARD. Claude Code's own panel says the same of itself ("this machine
- * only, excludes claude.ai"). Only quote these figures for an account whose owner
- * confirms Claude Code on one machine is all they use.
+ * only, excludes claude.ai").
+ *
+ * On 2026-09-02 the account holder confirmed Claude Code on one machine was all he
+ * used, and every figure here rested on that. On 2026-09-05 the `quiet` column made
+ * the claim testable -- pairs sort monotonically by how long the transcripts fall
+ * silent, 11 minutes reading 13.3x and 317 minutes reading 3.1x -- and asked again,
+ * he confirmed claude.ai and the phone. THE CONFIRMATION IS RETRACTED. Everything
+ * this script prints is a contaminated floor, not a measurement of the plan, until a
+ * run is done with the browser and phone deliberately untouched.
  */
 const fs = require('fs');
 const path = require('path');
@@ -424,6 +431,9 @@ const K = x => (x / 1e3).toFixed(0) + 'k';
 
 console.log('\nCLAUDE USAGE LIMITS - measured from Claude Code transcripts');
 console.log('  Claude Code on this machine only; excludes claude.ai and any other device.');
+console.log('  !! This account ALSO uses claude.ai and mobile (confirmed 2026-09-05), so every');
+console.log('     figure below is a contaminated FLOOR, not a measurement of the plan. A clean');
+console.log('     run means not touching the browser or the phone while it is in progress.');
 console.log(`  ${requests.length} requests over ${lines} lines (${blockDupes} content-block duplicates skipped)`);
 console.log(`  ${requests[0].ts.slice(0, 10)} .. ${requests[requests.length - 1].ts.slice(0, 10)}   ` +
   `${M(all.input + all.cacheWrite + all.cacheRead + all.output)} tokens, $${all.cost.toFixed(2)} at prices.json rates`);
