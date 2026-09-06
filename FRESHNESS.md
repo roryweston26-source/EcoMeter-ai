@@ -1384,8 +1384,40 @@ When it does, it lands as `provenance: "measured"` (a value that does not exist 
 sample size, date, model and the one-account scope attached — and **displayed on
 `pricing.html` before it is ever allowed near the Auditor's `cap` fit test**, per B6.
 
-**Re-verify:** re-run the script after any new 429; every rejection is a free extra sample
-and the fit tightens on its own. If a re-fit ever moves α off 0, the "re-sent context is
+**⚠️ 2026-09-06 — A SEVENTH WINDOW LANDED AND THE FIT GOT WORSE, NOT BETTER. The 3.09M
+above is stale; do not quote it without reading this.** A new 429 on **2026-09-05T11:00**
+(still `rateLimitType: "five_hour"`, still no overage) refits the model to:
+
+| | 6 windows to 2026-08-30 | 7 windows, incl. 2026-09-05 |
+|---|---|---|
+| output weight β | 7.75 | **18** |
+| spread | 1.25× | **2.24×** |
+| CV | 8.3% | **23.4%** |
+| **five-hour cap** | **3.09M** | **5.05M** |
+
+**The new window is tiny — 96 requests, $16 of API-equivalent, against $35–$74 for every
+other one.** A 429 at a fifth of the usage is what a window looks like when most of it was
+spent somewhere this machine cannot see, which since 2026-09-05 we know happens on this
+account. **The existing contamination test cannot catch it:** `unseenMin` checks only the
+gap before the window's FIRST visible request, and this window scored a clean 3 minutes.
+Contamination arriving *mid-window* is invisible to it.
+
+**Do not fix this by dropping the sample.** The principled reading is the one the quiet
+column already forced on the weekly: **every 429 is a LOWER bound on the cap**, because
+unseen usage can only ever make the visible units too small. So the estimator should fit
+the **upper envelope** of the windows, not minimise spread across their mean — and a
+window far below the others is a contamination detector rather than evidence of a smaller
+cap. Minimising CV across a contaminated sample is what dragged β from 7.75 to 18.
+
+**Deliberately not implemented yet.** It changes the five-hour methodology, the α = 0 and
+"output weighs ~8×" findings both hang off the current fit, and it deserves its own pass
+rather than a hurried edit. **Until then, quote neither 3.09M nor 5.05M** — the honest
+statement is that the five-hour cap is somewhere around 3–5M units for one contaminated
+account, and that a clean run (no claude.ai, no phone) is the prerequisite for better.
+
+**Re-verify:** re-run the script after any new 429; every rejection is a free extra sample —
+**but check the spread and CV, not just the cap.** A new sample that widens the spread is
+telling you the sample is dirty, not that the model needs a bigger β. If a re-fit ever moves α off 0, the "re-sent context is
 free" claim must come down everywhere it has been repeated. **Check the `rateLimitType` line
 in the output every time** — the day it stops reading `"five_hour"` for all of them is the
 day the weekly becomes directly measurable. And run `node scripts/test-limit-ticks.js`
