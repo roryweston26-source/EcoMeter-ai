@@ -1436,9 +1436,62 @@ An unscoped check wins; a scoped one (`"ChatGPT chat surfaces"`) is the fallback
 Safe because any plan with a long window of its own resolves before the check is
 consulted, which is why Microsoft 365 Premium never inherits Copilot Free's entry.
 
+### 2026-09-06 — Anthropic names TWO weekly limits, and the multiplier covers neither
+
+**Read at source the same day, both pages current.** The column gave all three paid
+Claude rows one flat cell — *"weekly — not published · Anthropic says it exists and never
+sizes it"*. Two things Anthropic **does** publish were missing from it.
+
+**(1) There are two weekly meters.** The usage-limit best-practices article says the panel
+shows *"when your plan's weekly usage limit resets **for Opus only and all other models**"*
+— naming Pro, Max, Team and seat-based Enterprise in the same sentence. `plan-limits.json`
+had carried this since 2026-09-01 as an **open question**: it inferred a sibling meter from
+the *"Weekly · all models"* label and deliberately declined to assert it. **Anthropic has
+now asserted it**, so it stops being our inference and becomes their disclosure. Both rows
+render as `2 weekly limits — neither sized`.
+
+**⚠️ Anthropic's own two pages disagree on how many weekly meters exist**, and both are
+current: the Max article calls it a single limit *"that applies across all models"*, the
+best-practices article says it resets *"for Opus only and all other models"*. Recorded
+both rather than the tidier one. **And the product does not match either:** the one Pro
+account we have read showed exactly two meters — `session-0`, `weekly_all-1` — with no
+Opus sibling on 2026-09-02 and 2026-09-03. So the docs over-describe Pro, or the meter
+appears conditionally. **Unresolved, and recorded as unresolved.** A Max account or heavier
+Opus use on Pro would settle it; see B10, where the copy-report parser now shouts if a
+third meter ever appears.
+
+**(2) The 5×/20× multiplier covers the SESSION and nothing else.** *"Max 5x provides five
+times more usage **per session**"*, then immediately *"Max plans **also** have a weekly
+usage limit"* — introduced separately, with no multiple and no size. The Max cells now say
+so directly: **"the 5-hour window is a stated 5× Claude Pro's · the weekly one carries no
+stated multiple"**. That is the honest answer to the question Z.ai answers with 6.7×, and
+**the asymmetry is published, not inferred.**
+
+**⚠️ A GUARD CAUGHT A REAL REGRESSION, and the near-miss is the lesson.** Labelling the
+weekly `scope: "all models"` made `audit.html` **drop the caveat entirely** — because both
+`audit.html`'s `unquantifiedWindow()` and `check-auditor.js` §18 treat *any* `scope` as
+narrowing the window to one product surface. That is right for OpenAI's Codex-only weekly
+and exactly wrong for a phrase meaning the opposite. **Both now test for plan-wide wording
+(`/^all(\s+models?)?$/i`), and the predicate is a TWO-COPY FACT** — if one moves and the
+other does not, §18's two-way diff is what catches it. Do not "simplify" either copy.
+
+**Claude Free deliberately left as `not checked`.** Anthropic's weekly sentence enumerates
+only the paid plans, and rendering `none published` for Free would put an absence in their
+mouth on the strength of a list Free was never in. Closing it needs a deliberate read of
+Free's own pages, which nobody has done.
+
+**Citation drift, checked and still sound.** `plan-limits.json` cites
+`support.anthropic.com/…/11647753-understanding-usage-and-length-limits`; the article has
+been **retitled** to *"How do usage and length limits work"* and the old slug now takes two
+301s to reach it. It still resolves. **The negative claim attached to it was re-verified
+2026-09-06 and holds: zero occurrences of "weekly" in the current text**, which is why the
+weekly disclosure is sourced to the best-practices article instead.
+
 **Re-verify:** the 6.72× is pinned by `test-auditor.js` §8 and quoted in B4, B8,
 PROJECT-CONTEXT and two commit messages. If Z.ai changes either cap, that number moves
-and every one of those copies is stale — the guard will say so.
+and every one of those copies is stale — the guard will say so. **For Anthropic, re-read
+both pages together** — the contradiction above means checking only one will make the
+other look settled.
 
 **Known cosmetic limit:** the subscriptions table is now 1,184px wide on a 375px
 phone. It scrolls inside `.tablewrap` and the page itself does not overflow, which is
@@ -1456,7 +1509,7 @@ window data and three of those four had arrived incidentally.
 |---|---|---|---|
 | Z.ai | 5h + **7d** | **both, in credits** | ✅ |
 | OpenAI | 5h + **7d** (Codex only) | 5h yes (ranges), 7d **no** | ✅ |
-| Anthropic | 5h + **7d** | neither | ✅ |
+| Anthropic | 5h + **7d ×2** | neither | ✅ |
 | Google | 5h + **7d** | neither | ✅ |
 | Perplexity | **7d** + 30d | 30d yes (credits), 7d **no** | ✅ |
 | Microsoft | **1d + 30d** | yes, per feature | ✅ |
@@ -1465,6 +1518,12 @@ window data and three of those four had arrived incidentally.
 | DeepSeek | **⚪ unknown** | — | ❌ could not read |
 
 **Five of nine name a weekly or monthly window. Only Z.ai sizes the long one.**
+
+**Updated 2026-09-06 — Anthropic names *two* weekly windows, not one** (Opus-only and
+all-models), and sizes neither; see B9. That makes it the only provider on this table
+admitting to more hidden meters than it has ever sized, and the count is still a floor —
+the same Max paragraph reserves *"weekly and monthly caps or model and feature usage, at
+our discretion"*.
 
 ### The three corrections, all against the provider
 
