@@ -207,13 +207,13 @@ let PLANS = {
     { m:'ChatGPT Go',   price:8,   cap:null, capSource:'disclosed',
       models:['gpt-5.6-luna','gpt-5.4-mini'], features:['image-gen','ads'], seats:1 },
     { m:'ChatGPT Plus', price:20,  cap:null, capSource:'not_disclosed',
-      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research'], seats:1 },
     // Pro's differentiator is Sol at Extra High plus Sol Pro — reasoning levels, not
     // a distinct model key. There is no gpt-5.6-sol-pro rate to price, so it stays a
     // feature rather than an invented model.
     { m:'ChatGPT Pro',  price:100, cap:null, capSource:'not_disclosed',
-      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research','sol-pro'], seats:1 },
   ],
   anthropic: [
@@ -279,6 +279,7 @@ let PLANS = {
 // unnoticed for ten days in Aug 2026 (gemini-3.5-flash was a third of the real
 // rate), which made pay-per-token look cheaper than it is whenever the fetch broke.
 let API = {
+  'gpt-6-astra':{in:1e-5,out:5e-5},
   'gpt-5.6-luna':{in:2e-7,out:1.2e-6}, 'gpt-5.6-sol':{in:4e-6,out:2e-5}, 'gpt-5.6-terra':{in:2e-6,out:1.2e-5},
   'gpt-5.5':{in:5e-6,out:3e-5}, 'gpt-5.4':{in:2.5e-6,out:1.5e-5}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
   'o3':{in:2e-6,out:8e-6}, 'o4-mini':{in:1.1e-6,out:4.4e-6}, 'gpt-4.1':{in:2e-6,out:8e-6},
@@ -355,6 +356,7 @@ function advancedModels(){
   return s;
 }
 const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus 4.8', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
+  'gpt-6-astra':'GPT-6 Astra',
   'gpt-5.6-sol':'GPT-5.6 Sol', 'gpt-5.6-terra':'GPT-5.6 Terra', 'gpt-5.6-luna':'GPT-5.6 Luna',
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
   'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-3.5-flash':'Gemini 3.5 Flash',
@@ -981,7 +983,15 @@ function unquantifiedWindow(prov, tier, depth){
         // Codex disclosure asserts about a surface we do not measure, which is the
         // same category error as pricing a whole plan off a feature sub-limit.
         // pricing.html covers every surface and shows it there, with its scope named.
-        return row.unquantified_windows[0].scope ? null : row.unquantified_windows[0].window;
+        //
+        // But a scope NARROWS only when it names a subset. "all models" does the
+        // opposite: it is Anthropic's own phrase for a window covering the entire
+        // plan, and reading it as a narrowing would silently delete the very caveat
+        // it exists to carry. Added 2026-09-06, when labelling Anthropic's weekly
+        // "all models" made this line drop the caveat from Pro, Max 5x and Max 20x.
+        // check-auditor.js section 18 carries the same predicate and catches the drift.
+        var uqs = row.unquantified_windows[0].scope;
+        return (uqs && !/^all(\s+models?)?$/i.test(uqs)) ? null : row.unquantified_windows[0].window;
       }
       if(row.multiplier && row.multiplier.of)
         return unquantifiedWindow(prov, {m:row.multiplier.of}, (depth||0)+1);

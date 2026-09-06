@@ -473,6 +473,7 @@
     { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
     { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
+    { p:"openai", key:"gpt-6-astra",  m:"GPT-6 Astra", note:"powers GPT-6 Pro · Pro plans in chat, Plus in Work and Codex" },
     { p:"openai", key:"gpt-5.6-sol",   m:"GPT-5.6 Sol", note:"powers Medium / High / Extra High reasoning in ChatGPT" },
     { p:"openai", key:"gpt-5.6-terra", m:"GPT-5.6 Terra" },
     { p:"openai", key:"gpt-5.6-luna",  m:"GPT-5.6 Luna" },
@@ -550,6 +551,7 @@
       "claude-mythos-5":           { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
+      "gpt-6-astra":   { input: 1e-5,   output: 5e-5, long: { over: 272000, input: 2e-5, output: 7.5e-5 } },
       "gpt-5.6-sol":   { input: 4e-6,   output: 2e-5, long: { over: 272000, input: 0.000008, output: 0.00003 } },
       "gpt-5.6-terra": { input: 2e-6,   output: 1.2e-5, long: { over: 272000, input: 4e-6, output: 1.8e-5 } },
       "gpt-5.6-luna":  { input: 2e-7,   output: 1.2e-6, long: { over: 272000, input: 4e-7, output: 1.8e-6 } },
@@ -1063,6 +1065,36 @@
     return null;
   }
 
+  // How MANY unsized long windows a plan has. Anthropic names two weekly meters — one
+  // for Opus, one for all models — and "a weekly limit" undercounts that. The number of
+  // meters a provider admits to but will not size is itself a disclosure fact.
+  function longUnquantifiedAll(lim, depth) {
+    if (!lim || (depth || 0) > 4) return [];
+    var own = (lim.unquantified_windows || []).filter(function (u) {
+      return (WINDOW_HOURS[u.window] || 0) > 24;
+    });
+    if (own.length) return own;
+    if (!lim.multiplier || !lim.multiplier.of) return [];
+    var plans = PLAN_LIMITS.plans || [];
+    for (var i = 0; i < plans.length; i++)
+      if (plans[i].p === lim.p && plans[i].m === lim.multiplier.of)
+        return longUnquantifiedAll(plans[i], (depth || 0) + 1);
+    return [];
+  }
+
+  // A multiplier the provider attaches to the SHORT window only. This is the sharpest
+  // thing the column can say about a plan nobody has sized: the provider is willing to
+  // quantify how much bigger the five-hour window gets, and says nothing at all about
+  // the window that actually governs the month. Only asserted where the data records
+  // both the scope and that no longer-window multiple was stated.
+  function shortOnlyMultiplier(lim) {
+    var m = lim && lim.multiplier;
+    if (!m || !m.x || !m.applies_to) return null;
+    if ((WINDOW_HOURS[m.applies_to] || 0) > 24) return null;
+    if (m.longer_window_multiple_stated !== false) return null;
+    return m;
+  }
+
   // What the LONG window (a week, a month) does to this plan, and whether it binds
   // harder than the short one.
   //
@@ -1115,7 +1147,7 @@
                others: shorts.length ? shorts : null };
     }
     var uq = longUnquantified(lim);
-    if (uq) return { state: 'named', uq: uq };
+    if (uq) return { state: 'named', uq: uq, all: longUnquantifiedAll(lim), mult: shortOnlyMultiplier(lim) };
     if (wc && wc.result === 'none stated') return { state: 'none', read: wc };
     return { state: 'unchecked' };
   }
@@ -1517,9 +1549,29 @@
                    ? ' · the shorter windows here bound different features, so the two cannot be compared'
                    : ' · no shorter window published to compare it against') + '</span></span>';
       } else if (lw.state === 'named') {
-        wkCell = '<span class="tp">' + esc((WINDOW_LONG[lw.uq.window] || lw.uq.window)) + ' — not published' +
-                 '<span class="sub">' + provName(r.p) + ' says it exists and never sizes it' +
-                 (lw.uq.scope ? ' · ' + esc(lw.uq.scope) + ' only' : '') + '</span></span>';
+        // The provider admits the window exists and will not size it. Two things sharpen
+        // that when the data supports them: how many such windows there are, and whether
+        // the provider was willing to quantify the SHORT one in the same breath.
+        var all = lw.all && lw.all.length > 1 ? lw.all : null;
+        var word = WINDOW_LONG[lw.uq.window] || lw.uq.window;
+        var head = all
+          ? all.length + ' ' + esc(word) + ' limits — ' + (all.length === 2 ? 'neither' : 'none') + ' sized'
+          : esc(word) + ' — not published';
+        var sub;
+        if (lw.mult) {
+          // The comparison the reader came for, and the answer is that there isn't one.
+          sub = 'the ' + esc(WINDOW_LONG[lw.mult.applies_to] || lw.mult.applies_to) +
+                ' window is a stated ' + lw.mult.x + '× ' + esc(lw.mult.of) +
+                '’s · the ' + esc(word) + ' one carries no stated multiple';
+        } else {
+          sub = provName(r.p) + (all ? ' says they exist and sizes neither' : ' says it exists and never sizes it');
+        }
+        if (all) {
+          sub += ' · ' + all.map(function (u) { return esc(u.scope || 'unscoped'); }).join(' and ');
+        } else if (lw.uq.scope) {
+          sub += ' · ' + esc(lw.uq.scope) + ' only';
+        }
+        wkCell = '<span class="tp">' + head + '<span class="sub">' + sub + '</span></span>';
       } else if (lw.state === 'unknown') {
         wkCell = '<span class="nd">not established' +
                  '<span class="sub">we could not read a consumer page — not the same as silence</span></span>';

@@ -630,8 +630,12 @@ for (const r of S.routes) {
     const row = (L.plans || []).find(l => l.p === p && l.m === m);
     if (!row) return null;
     // A window scoped to one product surface is not a claim about the whole plan,
-    // so it is not the Auditor's to repeat.
-    if ((row.unquantified_windows || []).length && row.unquantified_windows[0].scope) return null;
+    // so it is not the Auditor's to repeat. But a scope only NARROWS when it names a
+    // subset: "all models" is Anthropic's own phrase for a window covering the whole
+    // plan, and reading it as a narrowing deletes the caveat it exists to carry. This
+    // predicate must stay identical to the one in audit.html's unquantifiedWindow().
+    const narrowing = s => !!s && !/^all(\s+models?)?$/i.test(s);
+    if ((row.unquantified_windows || []).length && narrowing(row.unquantified_windows[0].scope)) return null;
     if ((row.unquantified_windows || []).length) return row.unquantified_windows[0].window;
     if (row.multiplier && row.multiplier.of) return resolve(p, row.multiplier.of, (depth || 0) + 1);
     return null;
