@@ -66,6 +66,7 @@
   },
 
   "openai": {
+    "gpt-6-astra":   { "class": "large", "host": "azure" },
     "gpt-5.6-sol":   { "class": "large", "host": "azure" },
     "gpt-5.6-terra": { "class": "medium", "host": "azure" },
     "gpt-5.6-luna":  { "class": "small", "host": "azure" },

@@ -69,6 +69,7 @@ const FALLBACK_API = {
     'claude-haiku-4-5-20251001': { input: 1.00/1e6, output:  5.00/1e6 },
   },
   openai: {
+    'gpt-6-astra':  { input: 10.00/1e6, output: 50.00/1e6 },
     'gpt-5.5':      { input: 5.00/1e6, output: 30.00/1e6 },
     'gpt-5.4-mini': { input: 0.75/1e6, output:  4.50/1e6 },
   },
@@ -91,6 +92,7 @@ const MODEL_CATALOG = [
     { key:'claude-mythos-5', name:'Claude Mythos 5' },
   ]},
   { label:'ChatGPT', models:[
+    { key:'gpt-6-astra', name:'GPT-6 Astra' },
     { key:'gpt-5.6-sol', name:'GPT-5.6 Sol' },
     { key:'gpt-5.6-terra', name:'GPT-5.6 Terra' },
     { key:'gpt-5.6-luna', name:'GPT-5.6 Luna' },

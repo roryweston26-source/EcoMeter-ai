@@ -206,6 +206,15 @@ let PLANS = {
       models:['gpt-5.6-luna','gpt-5.4-mini'], features:[], seats:1 },
     { m:'ChatGPT Go',   price:8,   cap:null, capSource:'disclosed',
       models:['gpt-5.6-luna','gpt-5.4-mini'], features:['image-gen','ads'], seats:1 },
+    // GPT-6 Astra is on Plus and Pro, and the two OpenAI surfaces do NOT agree on
+    // where. The plan comparison table says Astra: Free "No", Go "No", Plus "Yes",
+    // Pro "Expanded". The help centre is narrower: GPT-6 Pro, "powered by GPT-6
+    // Astra", is rolling out to Pro $100 / Pro $200 / Business / Enterprise, and
+    // Plus gets Astra "in ChatGPT Work and Codex" — Chat is named for Pro and
+    // omitted for Plus. Both agree Plus HAS it, so it is listed; the surface is
+    // open. Deliberately NOT in plan-limits.json value_models yet: pricing a Plus
+    // break-even on $10/$50 when the plan may serve Sol at $4/$20 in chat would
+    // lower the break-even and flatter the subscription — the harmful direction.
     { m:'ChatGPT Plus', price:20,  cap:null, capSource:'not_disclosed',
       models:['gpt-6-astra','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research'], seats:1 },

@@ -348,6 +348,37 @@ models priced, 47 shown, 13 with long-context tiers, 27 plans as of that refresh
 those counts come from `check-prices.js` output and are worth pasting into a pass
 report, since a change in them is the fastest signal that structure moved.
 
+**Added 2026-09-06:** `gpt-6-astra` — OpenAI's new flagship, sitting above
+`gpt-5.6-sol` on its pricing page at **$10/$50** per 1M short-context and
+**$20/$75** long (>272k, the same threshold as the 5.6 family, read from that
+page's own tooltip). It is ONE model, not a Sol/Terra/Luna-style family. **Six of
+the seven places are done**, with the `water.json` tier in the same commit per the
+pattern above: `prices.json` `api`, `water.json` (large / azure — INFERRED, OpenAI
+discloses nothing), `pricing.html` `MODEL_REGISTRY`, `sidepanel.js`
+`MODEL_CATALOG`, `audit.html` (`API`, `LABELS`, and `PLANS[].models` for Plus and
+Pro), and `update-prices.js` `fetchOpenAI()`. Not in `free_tiers`: the plan table
+says Free "No", Go "No".
+
+**The seventh place is deliberately NOT done, and neither is `MODELS.openai.top`.**
+`plan-limits.json` → `value_models` still points at `gpt-5.6-sol`, because the two
+OpenAI surfaces disagree about which SURFACE Plus gets Astra on. The plan
+comparison table says Plus "Yes" and Pro "Expanded". The help centre says GPT-6
+Pro, "powered by GPT-6 Astra", is Pro $100 / Pro $200 / Business / Enterprise, and
+that Plus gets Astra "in ChatGPT Work and Codex" — it names Chat for Pro and omits
+it for Plus. Pricing a Plus break-even on $10/$50 when the plan may serve Sol at
+$4/$20 in chat LOWERS the break-even and flatters the subscription — the harmful
+direction, and exactly the Gemini Flash mistake recorded above. **Settle the
+surface question before touching `value_models` or `top`.** The reasoning
+multiplier is absent for the same reason: unmeasured, and every guess checked so
+far has been too high.
+
+**Two hand-maintained copies no guard opens are still stale, found the same day:**
+`index.html`'s ticker had `GPT-5.5 $5.00` and now reads Astra $10.00, but it still
+carries **Grok 4.3 $1.25** — a key this very section records as appearing nowhere
+on x.ai's page — and **DeepSeek V3 $0.14**, a legacy key at a rate that rose ~3x on
+2026-08-24. The `README.md` provider table is stale the same way outside its
+OpenAI row (no 5.6 family before this pass, no Grok 4.6, no Chinese labs at all).
+
 **Guard:** `check-prices.js` (water parity + "shown on page but unpriced"),
 `check-auditor.js`
 
@@ -495,6 +526,19 @@ rejects a "promo" equal to its own standard rate, and **fails once `until` is in
 the past**, naming the standard rate to restore. Its pass line reports the count
 (`68 models priced, 2 on promotional rates, …`), so a promo silently disappearing
 is visible too.
+
+**Found 2026-09-06, NOT actioned — `gpt-5.6-sol` is on a promotional rate and this
+file does not know it.** developers.openai.com/docs/pricing states, under the
+flagship table: "GPT-5.6 Sol's promotional pricing is available at least through
+November 21, 2026." The stored $4/$20 carries no `promo` block, so Sol is the one
+promotional rate in the file with no expiry guard — `check-prices.js` will not warn
+when it reverts. Two things need deciding before it can be recorded honestly. The
+wording is a FLOOR ("at least through"), not an expiry, so `until: 2026-11-21`
+would fire the guard as a RE-CHECK prompt rather than a known revert date. And
+`standard` would have to be $5/$30 — what the rate was before 2026-08-24, but NOT
+something OpenAI publishes as the revert target. Recording that as the standard
+rate is the inference rule 8 forbids, so it is flagged here rather than guessed
+into the file.
 
 This is the one entry in this file that **cannot** go stale unnoticed, and it's
 the model for the rest: a dated figure with a machine-readable expiry and a script
