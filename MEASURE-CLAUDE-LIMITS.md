@@ -141,39 +141,75 @@ This is the strongest reason to use the copy button. **A five-hour window opens 
 | 2026-08-30 01:10 | 8m | 373 | 1.16M | 111.0M | 296k | $74 |
 | 2026-08-30 13:30 | 10m | 298 | 1.48M | 72.3M | 220k | $56 |
 
+### The estimator: the upper envelope, not the mean (rebuilt 2026-09-06)
+
+**The old fit took the mean of the windows and chose (α, β) to minimise their spread.** That is correct when errors are symmetric. They are not: usage on claude.ai, a phone or a second machine burns the same meter and is invisible here, so **a window's visible units can only ever be too SMALL**. Every 429 is a **lower bound** on the cap, and a window far below the others is measuring contamination, not a smaller limit.
+
+**The damage was not hypothetical.** A seventh window arrived on 2026-09-05 at a fifth of the usage of any other. Minimising spread answered by dragging β from 7.75 to **21.5** and the cap from 3.09M to **5.05M** — distorting the unit to accommodate a window that was mostly spent somewhere else.
+
+**So the cap is `max_i units_i`, and nothing is discarded.** A contaminated window sits below the envelope, and its distance below estimates what was spent off-machine. The `unseenMin` exclusion is gone: the 83-minute window is back in, sitting 28% short instead of being dropped.
+
+**β is fixed by reconciling two independent families, not by internal spread.** β is badly identified by the rejections alone — on the same seven windows, minimising CV says 21.5 and minimising one-sided shortfall says 4.75. A **panel delta** ("the five-hour bar moved 12 points while we spent these tokens") implies a cap from data the rejection fit never sees. Both families are lower bounds, so if β is right their highest members name the same cap. **They agree to 0.0% at β = 8.2**, and to within 2% over **β ∈ 6.8–10.1**.
+
+**⚠️ α is IMPOSED at 0, not fitted, and that correction came out of testing.** Cache reads run 16M–111M per window against 0.9–1.7M of cache writes and 0.14–0.30M of output — one to two orders of magnitude larger than everything else, so a hair of α swamps the unit and buys agreement for free. Left free, the search wandered to α = 0.04 on synthetic data with a known answer and returned a β less than half the truth. **That α came back 0 on the real rejections was partly luck.** It is now imposed, and the claim is carried by evidence beside the fit: a free one-sided search does put it at 0 and holds it there when the contaminated window is added; at the billing weight of 0.1 the two families disagree by **36%** instead of 0.0%; and the one exact-agreement branch off zero needs α = 0.02 with **β = 36** — output weighing seven times the price list — which is the degeneracy, not a rival answer.
+
+**⚠️ THE LOWER-BOUND GUARANTEE IS CONDITIONAL, and the condition is not met on this account.** Measured over synthetic samples with a known answer:
+
+| | result |
+|---|---|
+| at the true β | envelope ≤ truth, always |
+| one clean window **and** one clean panel delta | fitted cap ≤ truth, always |
+| **nothing clean in either family** | **overshoots in about a third of samples, badly** — and the β band does not rescue it |
+
+So "the cap is at least X" holds only if at least one observation in each family was uncontaminated. **We do not know that any window here is clean.** The way to earn it is a run with the browser and phone deliberately untouched.
+
+**Guarded by `scripts/test-limit-envelope.js` — 20 assertions.** It builds windows from a known cap and known β, hides known fractions of them, and checks the estimator recovers β, the cap and each window's hidden fraction exactly; then checks it **refuses to move** when a badly contaminated window is added. The superseded estimator runs on the same data and is **required to fail** that test, because a change nobody can demonstrate the need for is not an improvement.
+
 ### The limit is not the bill
 
-Six observations of one cap that disagree by 3.8× in raw tokens are six observations of the wrong unit. The script grid-searches for the unit in which they agree:
+Observations of one cap that disagree by 3.8× in raw tokens are observations of the wrong unit. The script solves for the unit in which they agree:
 
 ```
 units = input + cache_write + α·cache_read + β·output
 ```
 
-| unit | spread across windows |
-|---|---|
-| raw tokens | 3.84× |
-| API dollars | 2.12× |
-| **fitted (α = 0, β = 7.75)** | **1.25×** (CV 8.3%) |
+**Two findings, and both survived the estimator being rebuilt** — which is the main reason to believe them, because the rebuild moved the method underneath them and they did not move:
 
-**Two findings, and both are user-facing:**
+- **Cache reads weigh nothing.** α = 0. At their *billing* weight of 0.1, with β re-optimised in their favour so the comparison is fair, the two independent families disagree by **36%** instead of 0.0%. **Re-sent context is close to free against the limit**, the opposite of what a naive token model says — and the opposite of what our own cost model assumes for billing.
+- **Output weighs about 8×**, against **5×** on the price list. The reconciled value is **β = 8.2**, with the two families agreeing to within 2% over **6.8–10.1**. The old mean-spread fit said 7.75 on five windows and 21.5 on seven; the reconciled figure is stable because it is anchored on data the rejection fit never sees.
 
-- **Cache reads weigh nothing.** α fits to 0. Forcing them to their *billing* weight of 0.1 — with β re-optimised in their favour, so the comparison is fair — degrades the fit from 8.3% to 27% CV. **Re-sent context is close to free against the limit**, which is the opposite of what a naive token model says.
-- **Output weighs about 8×**, against **5×** on the price list. Indistinguishable anywhere in 4.3–15 on this sample, so quote it as "roughly 8, certainly more than the 5× the price list uses".
+**FIVE-HOUR CAP ≥ 3.58M units**, band **3.17M–4.14M** across the β range — and the **≥** is doing real work, not hedging: see the conditional above. The seven windows span **$16–$74** of API-equivalent billing, which is the point: **the meter is not the invoice.**
 
-**FIVE-HOUR CAP = 3.09M units** (n=5, spread 1.25×, CV 8.3%). The same five windows span **$35–$74** of API-equivalent billing — a 2.1× spread, which is the point: the meter is not the invoice.
+**What each window's shortfall below the envelope says about off-machine usage:**
+
+| window start (UTC) | units | short of the envelope |
+|---|---|---|
+| 2026-08-30 01:10 | 3.58M | **0%** — sets the envelope |
+| 2026-08-30 13:30 | 3.28M | 8% |
+| 2026-08-28 18:30 | 3.19M | 11% |
+| 2026-08-28 23:30 | 3.09M | 14% |
+| 2026-08-24 16:40 | 2.86M | 20% |
+| 2026-08-26 00:00 | 2.59M | 28% |
+| 2026-09-05 11:00 | 1.56M | **56%** — most of that window was spent elsewhere |
+
+Under a one-sided error model these are not residuals. **They are estimates of how much of each window went to claude.ai or the phone**, and they say this account's Claude Code transcripts see roughly 80–90% of a good window and **under half of a bad one**.
 
 ### It predicts out of sample
 
-Fitted only on 100% points, the model has since been asked four times for something it had never seen:
+**⚠️ This section has been WEAKENED by the 2026-09-06 rebuild, and saying so is the point.** The old fit used only the 429s, so the panel readings were genuinely out of sample:
 
-| check | model | panel | error |
+| check | old model | panel | error |
 |---|---|---|---|
 | mid-scale level, 2026-09-02 16:26 | 18% | 17% | 1pp |
 | mid-scale level, 2026-09-02 20:18 | 45% | 43% | 2pp |
 | cap from a 12-point move (C→D) | 3.43M | — | +11% |
 | cap from a 14-point move (D→E) | 3.21M | — | +4% |
 
-For the first two, raw tokens would have said 4% and API dollars 13% against an actual 17%. **The unit is doing the work, not the fitting.**
+Those were real checks and they passed: raw tokens would have said 4% and API dollars 13% against an actual 17%, so the unit was doing the work rather than the fitting.
+
+**But the new estimator uses the C→D and D→E deltas to identify β.** They are inputs now, not tests. **The two families agreeing to 0.0% is therefore not evidence of anything on its own** — it is the criterion being satisfied, which is what fitting means. What the agreement *does* buy is different and still worth having: β is anchored by a second observation type instead of by the internal spread of a contaminated sample, which is why it stopped moving when the seventh window landed.
+
+**So the honest position: the model currently has NO out-of-sample check.** Restoring one is cheap and the next reading does it — any new panel delta, or any new 429, can be predicted before it is added. **Do that before quoting the cap as anything but a floor.**
 
 ---
 

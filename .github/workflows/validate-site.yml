@@ -18,6 +18,7 @@ on:
       - 'scripts/check-transparency.js'
       - 'scripts/measure-claude-limits.js'
       - 'scripts/test-limit-ticks.js'
+      - 'scripts/test-limit-envelope.js'
       - '.github/workflows/validate-site.yml'
   push:
     branches: [main]        # backstop: also verify what actually landed
@@ -73,3 +74,13 @@ jobs:
       # so it is not a test that only runs on one machine.
       - name: Test usage-limit tick brackets
         run: node scripts/test-limit-ticks.js
+
+      # The five-hour cap is estimated as an UPPER ENVELOPE, because off-machine usage
+      # can only ever make a window's visible units too small. This builds windows from
+      # a known cap and a known output weight, hides known fractions of them, and checks
+      # the estimator recovers what it should -- then checks it refuses to move when a
+      # badly contaminated window is added, which is the whole reason the method changed.
+      # The superseded mean-spread estimator runs alongside and is REQUIRED to fail that
+      # test, because a change nobody can demonstrate the need for is not an improvement.
+      - name: Test five-hour upper-envelope estimator
+        run: node scripts/test-limit-envelope.js

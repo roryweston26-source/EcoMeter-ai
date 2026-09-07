@@ -1439,6 +1439,10 @@ above is stale; do not quote it without reading this.** A new 429 on **2026-09-0
 | CV | 8.3% | **23.4%** |
 | **five-hour cap** | **3.09M** | **5.05M** |
 
+_(Both columns are the SUPERSEDED mean-spread estimator, kept to show what went wrong.
+The envelope estimator that replaced it the same day gives β 8.2 and a cap of ≥3.58M on
+all seven windows, and does not move when the seventh is added — see below.)_
+
 **The new window is tiny — 96 requests, $16 of API-equivalent, against $35–$74 for every
 other one.** A 429 at a fifth of the usage is what a window looks like when most of it was
 spent somewhere this machine cannot see, which since 2026-09-05 we know happens on this
@@ -1453,11 +1457,54 @@ the **upper envelope** of the windows, not minimise spread across their mean —
 window far below the others is a contamination detector rather than evidence of a smaller
 cap. Minimising CV across a contaminated sample is what dragged β from 7.75 to 18.
 
-**Deliberately not implemented yet.** It changes the five-hour methodology, the α = 0 and
-"output weighs ~8×" findings both hang off the current fit, and it deserves its own pass
-rather than a hurried edit. **Until then, quote neither 3.09M nor 5.05M** — the honest
-statement is that the five-hour cap is somewhere around 3–5M units for one contaminated
-account, and that a clean run (no claude.ai, no phone) is the prerequisite for better.
+**IMPLEMENTED 2026-09-06, and both findings survived the rebuild** — which is the main
+reason to believe them, since the method moved underneath them and they did not.
+
+**The cap is now `max_i units_i`, and nothing is discarded.** A contaminated window sits
+below the envelope and its distance below estimates what was spent off-machine. The
+`unseenMin` exclusion is gone: the 83-minute window is back in, sitting 28% short.
+**β is fixed by RECONCILING TWO INDEPENDENT FAMILIES** rather than by internal spread —
+the rejections give a cap, the panel deltas give a cap, and β is where they agree
+(**0.0% at β = 8.2**, within 2% over **6.8–10.1**). β from the rejections alone is
+worthless: on the same seven windows minimising CV says **21.5** and minimising one-sided
+shortfall says **4.75**.
+
+**FIVE-HOUR CAP ≥ 3.58M units** (band 3.17M–4.14M). Per-window shortfall below the
+envelope — an estimate of off-machine usage — runs **0% / 8% / 11% / 14% / 20% / 28%** and
+then **56%** for 2026-09-05, i.e. this account's transcripts see 80–90% of a good window
+and under half of a bad one.
+
+**⚠️ α IS NOW IMPOSED AT 0, NOT FITTED, and that correction came out of testing the
+estimator rather than from the data.** Cache reads run 16M–111M per window against 0.9–1.7M
+of cache write and 0.14–0.30M of output — one to two orders of magnitude larger — so a hair
+of α swamps the unit and buys agreement for free. Left free, the search wandered to α = 0.04
+on synthetic data with a known answer and returned a β less than half the truth. **α coming
+back 0 on the real rejections was partly luck.** The claim now rests on evidence beside the
+fit: a free one-sided search does put it at 0 and holds it there when the contaminated
+window is added; at the billing weight of 0.1 the two families disagree by **36%** instead
+of 0.0%; and the one exact-agreement branch off zero needs α = 0.02 with **β = 36**, output
+weighing seven times the price list, which is a degeneracy and not a rival answer.
+
+**⚠️ THE ">=" IS CONDITIONAL AND THE CONDITION IS UNMET HERE.** Measured on synthetic
+samples with a known answer: at the true β the envelope never exceeds the truth; with one
+clean window AND one clean panel delta the fitted cap never exceeds it; **with nothing clean
+in either family it overshoots in about a third of samples, badly, and the β band does not
+rescue it.** We do not know that any window on this account is clean. **A clean run — browser
+and phone untouched — is what earns the lower bound**, and until then 3.58M is a figure with
+a condition attached, not a floor.
+
+**⚠️ AND THE OUT-OF-SAMPLE CHECK IS GONE.** B10 used to lean on it: the old fit used only
+429s, so the panel levels (18% vs 17%, 45% vs 43%) were genuine predictions. **The new fit
+consumes those deltas to identify β, so they are inputs now, not tests**, and "the two
+families agree to 0.0%" is the criterion being satisfied rather than evidence. Restoring a
+check is cheap — predict the next 429 or the next panel delta *before* adding it. **Do that
+before quoting the cap as anything but a floor.**
+
+**Guarded by `scripts/test-limit-envelope.js` — 20 assertions, in CI.** It recovers a known
+cap, a known β and each window's hidden fraction exactly; checks the fit refuses to move
+when a badly contaminated window is added; and **requires the superseded mean-spread
+estimator to FAIL that same test**, because a change nobody can demonstrate the need for is
+not an improvement.
 
 **Re-verify:** re-run the script after any new 429; every rejection is a free extra sample —
 **but check the spread and CV, not just the cap.** A new sample that widens the spread is
