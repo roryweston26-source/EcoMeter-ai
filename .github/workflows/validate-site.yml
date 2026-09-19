@@ -39,6 +39,39 @@ jobs:
       - name: Validate the static site
         run: node scripts/validate-site.js
 
+      # THE PRICE GUARD, and it should have been here from the start. check-prices.js
+      # is what holds prices.json, pricing.html's fallback, sidepanel.js, audit.html and
+      # update-prices.js to the same numbers, and it carries the promotional-rate expiry
+      # check that exists so "an expired promo cannot quietly become a wrong price".
+      # It ran in NO workflow until 2026-09-19. The cost of that was measured: Z.ai's
+      # glm-5.3-flash promo expired on 2026-09-09 and the site quoted half the real price
+      # for ten days, because the guard was correct and simply never ran. FRESHNESS's own
+      # "get the live answer, don't read it" section tells you to run this and
+      # check-auditor together; only one of the two was gated.
+      - name: Check price data consistency and promo expiry
+        run: node scripts/check-prices.js
+
+      # The cost model decides what the Auditor tells someone to pay. Same omission.
+      - name: Test cost model
+        run: node scripts/test-cost-model.js
+
+      # The water model's PRESENTATION guards live here too -- the range must not
+      # collapse to a single number, neither end may exceed two significant figures, and
+      # the deleted scope toggle must not return. Those pin the gap between what
+      # CLAUDE.md requires and what the panel renders, and they were ungated as well.
+      - name: Test water model
+        run: node scripts/test-water-model.js
+
+      # The extension's manifest and its PLATFORMS table are a two-copy fact, and the
+      # failure mode is silent: a platform in content.js with no content_scripts match
+      # never runs, so the panel just stops counting there -- indistinguishable from the
+      # DOM-selector rot G1 warns about, except self-inflicted. It also pins the x.com
+      # carve-out, which is a PRIVACY property, not an oversight: x.com is Twitter/X and
+      # is reached by programmatic injection so the extension is not granted the whole
+      # domain. Without a guard, "fixing" that by adding it to matches looks like tidying.
+      - name: Check extension manifest consistency
+        run: node scripts/check-extension.js
+
       # The Auditor's data lives in six files that must agree, and its engine
       # recommends what people should pay for. Both are gated here: check-auditor
       # catches price/plan drift between the files, test-auditor sweeps every

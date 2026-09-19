@@ -7,7 +7,11 @@ each thing lives, what to check it against, and which script proves the fix.
 **It exists so one prompt can re-verify the whole project.** Everything below is
 written to be executed, not just read.
 
-_Last full pass: **2026-08-25** — A, B, C, D, F verified 2026-08-24 and current.
+_Last full pass: **2026-09-19** — A through H, all eleven guards passing. The
+2026-08-25 entry below is kept because its detail is still the reference for E.
+Update this line when a pass completes._
+
+_Previous full pass: **2026-08-25** — A, B, C, D, F verified 2026-08-24 and current.
 **E is now fully verified**: all 12 datacenter sites re-checked (backlog cleared,
 `last_updated` earned for the first time since 2026-07-13), and the Transparency
 Index completed — Microsoft's per-site disclosure found in the fact sheet (the
@@ -80,6 +84,34 @@ almost nobody reports. **Homepage reordered** so the Transparency Index sits in
 the top three; both "Coming soon" cards moved to the end, since nothing that
 exists should rank below something that does not._
 
+_**2026-09-19 — FULL PASS, A through H.** The first since 2026-08-25. **Exactly one of
+79 API rates had moved** (DeepSeek cut Flash $0.44/$1.32 → $0.30/$1.20 and renamed it
+deepseek-flash / V4.1-Flash), every student offer held, and the water anchors did not
+budge. What the pass actually found was **rot in the machinery rather than the numbers**.
+**check-prices.js ran in no workflow at all** — the guard carrying the promo-expiry check
+written so "an expired promo cannot quietly become a wrong price" had never run
+automatically, and the cost was measured: Z.ai's glm-5.3-flash promo expired 2026-09-09
+and the site quoted half the real price for ten days. It is in CI now, with
+test-cost-model and test-water-model, which were also ungated. **derive-archetypes.js
+--write had been dead** since the archetypes gained nested rows, so check-auditor kept
+naming a remedy that crashed; fixed, and extended to write all three copies it claimed to
+own. **check-prices.js asserted `ctf < n`**, encoding "a lab is never dearer than every
+host" — the exact finding the column exists to surface — and it had already corrupted a
+shipped value. **`modified-mit` was whitelisted as OSI**, rendering a green "open" badge
+for two licences that mean opposite things (Kimi's asks for a logo above $20M revenue;
+Mistral Medium 3.5's forbids use entirely); all six bespoke licences read at source and a
+required `restriction` field added. **DISCLOSURE GOT WORSE FOR THE FIRST TIME IN ONE
+PASS**: OpenAI deleted ChatGPT Go's Thinking figure and Microsoft deleted all four of its
+published limits, dropping the disclosed count 10 → 8. OpenAI also **paused new sign-ups
+to Pro $200**, so the table was showing a price nobody could pay. New this pass: promo
+and sunset warnings that fire BEFORE the date, `promo.standard: null` for a promo whose
+reverting rate the provider won't publish (GPT-5.6 Sol is the first), a machine-checked
+`sunset` block (Perplexity's Sonar, 2026-09-27), an `availability` block with a two-copy
+guard, `check-extension.js` pinning the manifest and the x.com privacy carve-out, and the
+Jegham benchmark version pinned after it turned out to be **four revisions ahead of our
+citation** (transcription re-read from v6 and correct). Claude Fable 5.1 and Mythos 5.1
+added across all six files. **Eleven guards, all in CI, all passing.**_
+
 ---
 
 ## The one prompt
@@ -147,10 +179,13 @@ wrong number in front of a user.
 
 | Date | What | Entry |
 |---|---|---|
+| **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. | [A1](#a1-per-token-api-prices) |
+| **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** v6.14 bundles the Gemini Flash promo rate and a build freezes its prices; after the promo reverts, a still-live v6.14 understates Gemini cost by 2×. No guard can reach the store. | [H4](#h4-the-shipped-build-vs-main) |
+| ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
 | **2026-12-31** | **Google's promotional rate on `gemini-3.7-flash` and `gemini-3.6-flash` expires** — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
-| **2026-09-27** | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. | [A1](#a1-per-token-api-prices) |
+| **2026-09-27** | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices) |
 | 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
 | Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
 | June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
@@ -3654,6 +3689,21 @@ that regardless.
 justifications), `STORE-LISTING.md` (the platform list — see H1), and possibly
 `privacy-policy.html`.
 
+**Guard added 2026-09-19: `scripts/check-extension.js`, and it is in CI.** This was
+unguarded, and the failure is silent in the worst way — a platform in `PLATFORMS` with no
+`content_scripts` match never runs, so the panel simply stops counting there, which looks
+exactly like the DOM-selector rot G1 warns about except that we caused it.
+
+**The rule it encodes is deliberately not "every platform must be in `matches`".** `x.com`
+*is* in `PLATFORMS` and is deliberately **not** in `matches`, because x.com is Twitter/X
+and granting the whole domain to reach Grok would be a privacy regression; it is reached
+by programmatic injection from `background.js` instead. Writing the naive rule would have
+invited someone to "fix" x.com by adding it, quietly widening the extension's reach across
+all of X while looking like tidying. So the guard carries an explicit programmatic-injection
+list with the reason attached, **fails if x.com ever appears in `matches`**, fails if a
+declared platform is missing one, fails on a match with no platform behind it, and fails if
+`manifest.json` and `prices.json._meta.version` disagree. All four verified by injection.
+
 ## G3. Tokenizer accuracy bands
 
 `extension/sidepanel.js` → `METHOD_ACCURACY`. These are user-facing claims about
@@ -3782,6 +3832,34 @@ If G2 or the token-count behaviour changes, this file and its effective date
 change with it.
 
 ## H4. The shipped build vs `main`
+
+### 2026-09-19 — the drift is now MEASURED, and it has a January deadline
+
+Diffed the shipped `ecometer-ai-v6.14.zip` bundle against `extension/prices.json` on
+`main`. The store build carries `last_updated: 2026-08-24` and seven providers.
+
+| | Store (v6.14) | `main` today |
+|---|---|---|
+| `deepseek-v4-flash` | **$0.44 / $1.32** | $0.30 / $1.20 |
+| Chinese labs (Alibaba, Z.ai, Moonshot) | **absent** | 8 models |
+| `gpt-6-astra` | **absent** | $10 / $50 |
+| Claude Fable 5.1 / Mythos 5.1 | **absent** | $10 / $50 |
+
+**One price wrong, eleven models missing.** The wrong one errs in the *safe* direction —
+overstating DeepSeek's API cost makes "drop your plan and pay per token" look worse than
+it is — but it is still a number we know to be wrong sitting in front of users.
+
+⚠️ **The dated risk is the Gemini promos, and it turns harmful on 2027-01-01.** v6.14
+bundles `gemini-3.7-flash` and `gemini-3.6-flash` at the promotional $0.75/$3.75. Those
+revert to $1.50/$7.50 on **2026-12-31** (A6). A build frozen at the promo rate after that
+date **understates Gemini cost by 2×** — the direction that costs the reader money.
+`check-prices.js` now fails on this in the repo (and, since 2026-09-19, actually runs in
+CI) but it cannot reach the store. **If no build ships before January, the live extension
+becomes wrong in the harmful direction on a known date.**
+
+**This is Rory's step and cannot be automated away from here** — the store upload is
+manual. The standing fix H4 already names is the right one: exercise the weekly
+`publish.yml` cadence instead of shipping every few months.
 
 **This is a freshness item because what users have is not what this repo says.**
 
