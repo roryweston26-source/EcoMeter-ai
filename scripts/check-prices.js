@@ -219,6 +219,32 @@ for (const [prov, m] of Object.entries(p.api)) {
   }
 }
 
+// 7c. A plan you cannot buy must say so, in BOTH copies of the subscription list.
+//     OpenAI paused new sign-ups to ChatGPT Pro $200 (Pro 20x) on 2026-09-10 and
+//     dropped $200 from its pricing page, while this project went on listing it at
+//     $200 like any other option. The row is kept — existing subscribers still need
+//     to know whether to keep paying — but a price with no way to pay it is exactly
+//     the kind of thing the Kimi decision (FRESHNESS A11) refused to publish.
+for (const pl of L.plans) {
+  const av = pl.availability;
+  if (!av || av.status === 'open') continue;
+  if (!av.since || !av.stated || !av.source)
+    fail('availability on ' + pl.m + ' needs { status, since, stated, source }');
+  const sub = p.subscriptions.find(s => s.p === pl.p && s.m === pl.m);
+  if (!sub) { fail('availability on ' + pl.m + ' but no subscription row'); continue; }
+  const says = s => s && /closed to new|cannot (start|buy)|paused/i.test(s);
+  if (!says(sub.note))
+    fail('plan-limits says ' + pl.m + ' is ' + av.status + ' but its prices.json subscription row carries no note saying so');
+  // Plain string search, not a regex: the plan name contains a multiplication sign
+  // and parentheses, and building a pattern out of it is how this check first broke.
+  const marker = 'm:"' + pl.m + '"';
+  const k = html.indexOf(marker);
+  const row = k < 0 ? null : html.slice(k, html.indexOf(String.fromCharCode(10), k));
+  if (!row) fail('no pricing.html fallback subscription row for ' + pl.m);
+  else if (!says(row))
+    fail('pricing.html fallback row for ' + pl.m + ' carries no closed-to-new-subscribers note — a failed fetch would show it as buyable');
+}
+
 // 8. Open weights and the host spread.
 //
 //    Both blocks were added 2026-08-29 with the three Chinese labs. They describe

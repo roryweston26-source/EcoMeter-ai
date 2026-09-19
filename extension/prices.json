@@ -152,7 +152,7 @@
     { "p": "openai", "m": "ChatGPT Go", "price": 8 },
     { "p": "openai", "m": "ChatGPT Plus", "price": 20 },
     { "p": "openai", "m": "ChatGPT Pro", "price": 100 },
-    { "p": "openai", "m": "ChatGPT Pro (20×)", "price": 200 },
+    { "p": "openai", "m": "ChatGPT Pro (20×)", "price": 200, "note": "Closed to new subscribers since 2026-09-10 — existing subscriptions continue, but you cannot start or upgrade to this plan" },
 
     { "p": "anthropic", "m": "Claude Free", "price": 0 },
     { "p": "anthropic", "m": "Claude Pro", "price": 20, "note": "$17/mo billed annually" },

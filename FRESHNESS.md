@@ -1219,6 +1219,64 @@ long one stops sustained use. `capPerDay()` takes the **smallest** messages-per-
 any published window permits, because that is what a month of maxed-out use can
 actually contain.
 
+### 2026-09-19 — two providers withdrew figures in one pass, and one plan stopped being buyable
+
+**All eight disclosed figures were re-read at source. Two providers had deleted theirs,
+and the disclosed count fell 10 → 8.** This is the first pass where B1's warning —
+*a figure being here today is not evidence it will be next quarter* — paid out twice.
+
+- **OpenAI deleted ChatGPT Go's "10 messages every 5 hours after enabling Thinking".**
+  Go is now sold in comparatives alone: *More messages with tools, More uploads, More
+  image creation, More voice chats, Longer memory*. The whole pricing page carries **zero
+  numeric allowances**, and the strings `every 5 hours` and `10 messages` do not appear
+  on it. This was one of only **two** absolute consumer figures anyone published, so the
+  loss is far larger than its size. Row moved to `not_disclosed`.
+- **Microsoft deleted all four of its figures at once.** The AI-credits article was
+  rewritten (*Last updated: September 2026*, retitled *AI credits and limits for Microsoft
+  365 subscriptions*) and Agents 25 tasks/month, Vision 15 min/day, Voice 60 min/day and
+  the 60 AI credits/month for Personal and Family are **all gone**. The replacement table
+  grades four tiers entirely in words — *Extensive use / Standard usage / More usage /
+  Highest usage / Not available*. Verified by regex over the rendered page at **both** URLs
+  this file cited (they now resolve to the same article): not one numeric allowance phrase
+  survives. **The largest single-step disclosure regression this project has recorded**, and
+  note it took the CHEAP tiers' figure with it — this one was not hiding behind a price rise.
+
+⚠️ **Microsoft is simultaneously the provider that produced the first positive grade
+movement this project ever recorded** (E1g, per-site datacenter disclosure). Both
+directions are running at once inside one company; do not flatten that into one attitude.
+
+**A plan stopped being purchasable, which is a different failure from a missing number.**
+OpenAI paused new sign-ups and upgrades to **ChatGPT Pro $200 (Pro 20×) on 2026-09-10**;
+existing subscriptions continue and eligible leavers get one 30-day return. Corroborated
+independently — `openai.com/chatgpt/pricing` now lists **$0 / $8 / $20 / $100** and no
+$200 at all. The row is **kept, not deleted**: existing subscribers still need to know
+whether to keep paying, which is the question the Auditor answers. But it now carries an
+`availability` block, and **`check-prices.js` §7c fails unless BOTH subscription copies
+carry a note saying so** — verified by injecting each. `audit.html` never offered this
+plan, so no recommendation was ever wrong; the pricing table was showing a price nobody
+could pay, which is what the Kimi decision in A11 refused to do.
+
+**What held.** OpenAI's Codex five-hour table is unchanged (Sol 10-100 / 50-500 /
+200-2,000) and has **gained a GPT-6 Astra row** at 5-45 on Plus, still scaling exactly
+5× and 20× to the Pro tiers across all seven models. Perplexity Max's 10,000 credits a
+month, the 100-credits-per-dollar conversion and the 15–70 credit task range are all
+still published. Mistral's 150 Flash answers a day holds. Z.ai's three plans verify
+exactly — allowances, credit formula, per-model multipliers and peak window unchanged.
+**Note the Codex page has moved to `learn.chatgpt.com`**; the old developers.openai.com
+URL redirects.
+
+**Anthropic, re-read as B9 instructs — all three pages together, and nothing moved.**
+The best-practices article still says the panel shows when the weekly limit resets *"for
+Opus only and all other models"*; the Max article still calls it *"a weekly usage limit
+that applies across all models"*. **The contradiction is intact and still unresolved.**
+The negative claim re-verified too: the usage-and-length-limits article contains *weekly*
+**zero** times. The 5×/20× wording is unchanged and still session-only. **New, and
+deliberately not made into a window:** the Max article reserves the right to limit usage
+*"in other ways, such as weekly and **monthly** caps... at our discretion"*. That names a
+monthly cap as a reserved right, not as a limit they say exists — recorded in the row,
+given no `unquantified_windows` entry. If *may* ever hardens to *do*, it becomes a third
+window.
+
 **Guard:** `check-auditor.js`, `check-prices.js` §11
 
 ## B2. The disclosure findings (prose)
@@ -1630,11 +1688,17 @@ assumptions. It is a pure statement about two numbers the provider published.
 | State | Rows | Reads |
 |---|---|---|
 | `ratio` | 3 (Z.ai) | **6.7× tighter** + both figures |
-| `sized` | 2 | the long window, published, with nothing comparable to set against it |
+| `sized` | 1 | the long window, published, with nothing comparable to set against it |
 | `named` | 12 | *weekly — not published* |
-| `none` | 10 | *none published* + **the date it was read** |
+| `none` | 11 | *none published* + **the date it was read** |
 | `unchecked` | 3 | *not checked — our gap, not their silence* |
 | `unknown` | 1 (DeepSeek) | *not established* |
+
+**`sized` fell 2 → 1 and `none` rose 10 → 11 on 2026-09-19**, and not because the
+engine changed: ChatGPT Go's five-hour Thinking figure was **withdrawn** from OpenAI's
+pricing page, so the row that used to publish a sized window now publishes nothing.
+Microsoft's three figures went the same week (see B1). The table is guarded precisely
+so a withdrawal shows up here as a number rather than as silence.
 
 **These six counts are guarded** (`test-auditor.js` §8) because the first version of
 this table was written from a mid-build snapshot and was wrong in three of six rows
@@ -2334,7 +2398,7 @@ key is missing.
 **What rots here, in order of speed:**
 
 1. **`allowance` — fastest-moving thing on the page.** It is 🔴 × 8 today because
-   25 of 27 plans publish nothing (26 of 27 until 2026-08-29 — see E1k). That count comes from `plan-limits.json`, so
+   23 of 31 plans publish nothing (25 of 27 in August; OpenAI and Microsoft both withdrew figures on 2026-09-19 — see B1, E1k). That count comes from `plan-limits.json`, so
    **re-count it whenever that file is verified** rather than trusting the prose.
    The trend is one-directional and hostile: OpenAI *deleted* its only general cap
    between two checks. A 🔴 here is not safe to assume permanent in either

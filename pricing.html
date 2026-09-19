@@ -679,7 +679,7 @@
     { p:"openai",      m:"ChatGPT Go",             price:8 },
     { p:"openai",      m:"ChatGPT Plus",           price:20 },
     { p:"openai",      m:"ChatGPT Pro",            price:100 },
-    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200 },
+    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200, note:"Closed to new subscribers since 2026-09-10 — existing subscriptions continue, but you cannot start or upgrade to this plan" },
 
     { p:"anthropic",   m:"Claude Free",            price:0 },
     { p:"anthropic",   m:"Claude Pro",             price:20, note:"$17/mo billed annually" },
@@ -731,7 +731,7 @@
   // Measured by scripts/derive-archetypes.js with the real cl100k tokenizer over this
   // repo's prose, and shown in "show the math" so the conversion behind the archetypes
   // is visible rather than asserted. check-auditor.js fails if it drifts.
-  var CHARS_PER_TOKEN = 3.832;
+  var CHARS_PER_TOKEN = 3.831;
 
   var FALLBACK_LIMITS = {
     _meta: {
@@ -772,8 +772,7 @@
     },
     plans: [
       { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"ChatGPT chat surfaces" }, value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
-      { p:"openai", m:"ChatGPT Go", provenance:"disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" },
-        caps:[{ n:10, unit:"messages", window:"5h", scope:"Thinking", soft:false, scope_limited:true }] },
+      { p:"openai", m:"ChatGPT Go", provenance:"not_disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" } },
       { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
         caps:[{ n:10, n_high:100, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
       { p:"openai", m:"ChatGPT Pro", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
@@ -807,10 +806,7 @@
         caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }] },
 
       { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"the free Copilot tier" } },
-      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"disclosed",
-        caps:[{ n:25, unit:"agent tasks", window:"30d", scope:"Agents", soft:false, scope_limited:true },
-              { n:15, unit:"minutes", window:"1d", scope:"Vision", soft:false, scope_limited:true },
-              { n:60, unit:"minutes", window:"1d", scope:"Voice", soft:false, scope_limited:true }] },
+      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"not_disclosed" },
 
       { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31" }, value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
         third_party:[{ n:25, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
