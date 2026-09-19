@@ -89,6 +89,21 @@ ok(Object.values(water._hosts).every(h => h.source), 'every host says where its 
   ok(measured > 0, measured + ' models on measured curves, ' + (models.length - measured) + ' on class fallbacks');
 }
 
+// The benchmark version is a TWO-COPY FACT: water.json cites it and
+// derive-water-model.js transcribes from it. Neither can be checked against the
+// actual paper from here, so the least this can do is refuse to let the two copies
+// drift — updating the citation without re-reading the table, or the reverse, is
+// exactly how a fitted model quietly stops matching its source. Until 2026-09-19
+// the citation said only 'May 2025' (v1) while the paper already stood at v6.
+{
+  const cite = JSON.stringify(water._sources || []);
+  const code = fs.readFileSync(path.join(ROOT, 'scripts/derive-water-model.js'), 'utf8');
+  const vOf = s => (s.match(/2505\.09598[^0-9]{0,60}v(\d+)/) || [])[1];
+  const a = vOf(cite), b = vOf(code);
+  ok(!!a && !!b && a === b,
+    'Jegham benchmark version pinned identically in water.json (v' + a + ') and derive-water-model.js (v' + b + ')');
+}
+
 console.log('\nenergy curves reproduce Jegham et al. Table 4');
 {
   let worst = 0, label = '';

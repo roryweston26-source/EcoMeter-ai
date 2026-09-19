@@ -3207,6 +3207,45 @@ yet), or the underlying academic estimates are revised. Next re-source should
 re-check the same four: arXiv:2508.15734 for a v2, Google's next Environmental
 Report, Anthropic for any first disclosure, and Li et al. for a revision.
 
+### 2026-09-19 re-source — the anchors held, and a load-bearing citation was a version behind
+
+**All four things this section names as the next re-check were checked at source, and
+none had moved.** arXiv:2508.15734 (Google's own measurement paper, origin of the 0.26 mL
+anchor) is **still v1**, submitted 21 Aug 2025, never revised. Google has published **no
+2027 Environmental Report** — sustainability.google still serves the 2026 edition we read
+directly on 2026-08-25. **Anthropic still discloses nothing**: its Transparency Hub runs to
+13,000 characters and contains the words *water* and *energy* **zero** times, with no
+environmental link on it at all. Li et al. is **still at v5** (26 Mar 2025), CACM version
+unchanged. No provider publishes water per **token**, which is still why this file models
+rather than quotes. `_tiers_last_sourced` is now `2026-09`, honestly earned.
+
+⚠️ **What this pass found instead: the benchmark every energy curve is fitted to had been
+revised four times without us noticing.** Jegham et al. was cited here only as
+*"arXiv:2505.09598, May 2025"* — which is **v1**. The paper now stands at **v6 (24 Nov
+2025)**, and two of those revisions changed the PDF substantially in size. Nothing in this
+repo compared our transcription against the paper: `test-water-model.js` checks our curves
+against `derive-water-model.js`'s copy of Table 4, so a silent revision of the *source*
+would have been invisible forever.
+
+**Re-read from v6 and the transcription is CORRECT** — all 30 models across all three
+prompt configurations, every value matching. So the model rests on current data and
+nothing needed refitting. That is luck rather than process, and the process is now:
+
+- **the version is pinned in both places** (`water.json` `_sources` and the comment above
+  `MEASURED` in `derive-water-model.js`), so the next pass can see at a glance whether it
+  has moved;
+- **the pin is a two-copy fact and guarded** — `test-water-model.js` fails if the two
+  citations disagree, verified by bumping one to v7 and watching it fire. It cannot check
+  the paper itself from CI, but it can refuse to let someone update the citation without
+  re-reading the table, or the reverse.
+
+**Watch for:** the paper's own prose says DeepSeek-R1 (DS) is **29.075 Wh** at long context
+while its Table 4 says **29.078**. We transcribe the table. Don't "fix" it to the prose.
+
+**Two models added this pass** — Claude Fable 5.1 and Mythos 5.1 — both `large` on `aws`,
+matching their 5.0 siblings, which is the judgement A3 warns is required rather than
+automatic. The coverage tripwire in `test-water-model.js` moved 77 → 79 by hand.
+
 **Guard:** `check-prices.js` — "priced, no water tier" is its first check. Nothing
 guards the *figures* or their descriptions; only a re-source like this catches those.
 
