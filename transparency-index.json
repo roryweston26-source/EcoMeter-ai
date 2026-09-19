@@ -2,7 +2,7 @@
   "_meta": {
     "title": "AI Transparency Index",
     "lede": "How openly the major AI providers let the public see what their AI costs — in dollars, in data, and in water and energy. We grade transparency, not the underlying footprint: whether a real figure is findable at all, and who had to surface it. 'Not disclosed' is a finding, not a gap to paper over.",
-    "last_verified": "2026-08-29",
+    "last_verified": "2026-09-19",
     "status": "ok",
     "status_note": "",
     "axes": [
@@ -432,10 +432,10 @@
           },
           "allowance": {
             "grade": "pending",
-            "note": "Downgraded from 🔴 to ⚪ on 2026-08-31, which is a correction to US, not a change by DeepSeek. This cell was graded off the shared aggregate sentence rather than off a DeepSeek page — exactly the failure this index recorded against xAI on 2026-08-29. Checked properly: deepseek.com renders as a JavaScript shell (599 characters of text to a plain fetch), chat.deepseek.com returns an empty 202, and the only readable DeepSeek documentation is the API rate-limit page, which covers per-account CONCURRENCY — a different thing from a consumer usage window and not quotable as one. No consumer-facing limits page was read, so no absence can be asserted. DeepSeek also has no paid consumer tier, so there may be no allowance to publish; that too is unestablished rather than known. To close this, open chat.deepseek.com in a logged-in browser.",
-            "source": "deepseek.com; api-docs.deepseek.com rate limit and FAQ pages",
+            "note": "Downgraded from 🔴 to ⚪ on 2026-08-31, which is a correction to US, not a change by DeepSeek. The cell had been graded off a shared aggregate sentence rather than off a DeepSeek page — exactly the failure this index recorded against xAI on 2026-08-29. RE-CHECKED 2026-09-19 WITH A REAL BROWSER, which retires the previous excuse: deepseek.com is no longer a 599-character shell to us, it renders, and the entire site carries exactly ONE pricing link — 'API Pricing'. There is no consumer plans page at all. chat.deepseek.com still returns a completely empty document (zero characters of text) without a login, so the consumer product itself remains unreadable. THE GRADE STAYS ⚪ AND THAT IS THE POINT: we can now say with confidence that DeepSeek publishes no consumer PRICING page, but an allowance can exist on a free product, and the only surface that would carry one is login-walled. A free product's limits are still limits. Not disclosed and not readable are different findings, and this is the second. To close it, open chat.deepseek.com signed in — that remains the only route.",
+            "source": "deepseek.com (rendered 2026-09-19); chat.deepseek.com (login-walled, empty without auth); api-docs.deepseek.com rate limit and FAQ pages",
             "source_url": "https://api-docs.deepseek.com/quick_start/rate_limit",
-            "source_date": "Aug 31 2026"
+            "source_date": "Sep 19 2026"
           },
           "context_window": {
             "grade": "red",

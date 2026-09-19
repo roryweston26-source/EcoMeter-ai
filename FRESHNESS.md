@@ -2210,7 +2210,7 @@ data sitting next to it.
   The page now calls that directional only. **Next re-anchor, go looking for a real
   inference-opex total** and re-level, don't just re-label.
 
-- **⚠️ UNVERIFIED SUPERLATIVE, flagged 2026-08-30, not resolved.** `ai-clock.html`
+- **⚠️ UNVERIFIED SUPERLATIVE — flagged 2026-08-30, SOFTENED 2026-09-19.** `ai-clock.html`
   says of the prompts counter: *"The only official disclosure is still ChatGPT's ~2.5
   billion a day (18 billion messages a week)."* The **ChatGPT figure itself is
   sourced** (OpenAI "How People Use ChatGPT", NBER Sept 2025) and the page correctly
@@ -2225,6 +2225,18 @@ data sitting next to it.
   soften it to "the only one we have found."** Note the claim is load-bearing in the
   honest direction — it exists to tell the reader the counter rests on one old
   number — so it is not urgent, but it is exactly the class of sentence that rots.
+
+  **Took the second option, which this entry authorised.** The page now reads *"The only
+  official disclosure **we have found**…"*, and the `<dd>` says outright that we have not
+  audited every provider for a prompt or message count — so the hedge is doing real work
+  rather than being modesty. One provider WAS checked properly: **Google's I/O 2026 keynote
+  reports _tokens_** — three trillion a day internally, 3.2 quadrillion a month across its
+  surfaces — **and no prompt or message figure at all**, zero instances of either word.
+  That supports the claim without proving it, which is exactly why it is hedged rather than
+  asserted. **A token count is not a prompt count**, and the page now says so, because the
+  two sit one counter apart on the same page and conflating them is the easiest error
+  available here. Verifying it outright still means auditing every provider; softening cost
+  nothing and removed a false certainty.
 
 - **`index.html`'s "None of the major providers show you this" (water/energy) was
   read on 2026-08-30 and STANDS**, on the narrow reading that "show *you*" means
@@ -2309,6 +2321,38 @@ keep saying so — one ⚪ remains, Microsoft's API rate card, by design.
 
 **Copy:** `transparency-index.html` → `FALLBACK` is deliberately minimal — it
 renders an *error state*, not stale data. That's correct. Leave it.
+
+### 2026-09-19 — E checked, not re-graded, and one ⚪ got a better reason
+
+**The annual re-read (E1b) was done on 2026-08-25 and is not due again until August**,
+so this pass did not repeat it. `datacenters.json` sits at a full 12-site pass from the
+same date. Both were left alone deliberately rather than re-stamped — bumping a date
+without re-reading is the thing rule 7 forbids.
+
+**What did move: the DeepSeek `allowance` ⚪.** The cell's own note said *"to close this,
+open chat.deepseek.com in a logged-in browser"*. Done as far as it can be without
+credentials, and the result **retires the old excuse without changing the grade**:
+deepseek.com is no longer a 599-character shell to us — it renders, and the entire site
+carries **exactly one pricing link, "API Pricing"**, with no consumer plans page at all.
+`chat.deepseek.com` returns a **completely empty document** without a login.
+
+**The grade stays ⚪ and that is the correct outcome.** We can now say confidently that
+DeepSeek publishes no consumer *pricing* page — but **an allowance can exist on a free
+product**, and the only surface that would carry one is login-walled. *Not disclosed* and
+*not readable* remain different findings, and this is still the second. Resist the pull to
+call it 🔴 just because the evidence got better; it got better about the wrong question.
+
+**Two grading calls in `datacenters.json` remain flagged and unresolved, deliberately** —
+`google-the-dalles` and `aws-anthropic-new-carlisle` (see E2). Both are Rory's, both are
+recorded in `_meta.verification_status`, and neither should be quietly decided by a pass
+that was not looking at them.
+
+⚠️ **One cross-file catch worth recording, because the guard earned it.** The allowance
+column's prose quotes the plan tally from `plan-limits.json` in **three** cells. Section B
+moved that tally 21 → 23 and `check-transparency.js` failed immediately, naming the ratio
+as well as the count. Nobody would have found those by reading. Two further copies —
+`PROJECT-CONTEXT.md` and E1's own "what rots here" list — were **not** guarded and had to
+be grepped out by hand. That is the asymmetry E1k describes, still true.
 
 ## E1b. The annual provider-report re-read — do this every August
 
