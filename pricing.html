@@ -471,6 +471,8 @@
     { p:"anthropic", key:"claude-opus-5",             m:"Claude Opus 5" },
     { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.5 / 4.6 / 4.7 priced the same" },
     { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
+    { p:"anthropic", key:"claude-fable-5-1",          m:"Claude Fable 5.1", note:"paid · cache hits 0.025x base, not the usual 0.1x" },
+    { p:"anthropic", key:"claude-mythos-5-1",         m:"Claude Mythos 5.1", note:"paid · limited availability · cache hits 0.025x base" },
     { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
     { p:"openai", key:"gpt-6-astra",  m:"GPT-6 Astra", note:"powers GPT-6 Pro · Pro plans in chat, Plus in Work and Codex" },
@@ -517,7 +519,7 @@
     { p:"perplexity", key:"sonar",               m:"Sonar" },
     { p:"perplexity", key:"sonar-reasoning-pro", m:"Sonar Reasoning Pro" },
 
-    { p:"deepseek", key:"deepseek-v4-flash", m:"DeepSeek V4 Flash" },
+    { p:"deepseek", key:"deepseek-v4-flash", m:"DeepSeek Flash", note:"now DeepSeek-V4.1-Flash, served under the name deepseek-flash; cut from $0.44/$1.32 on 2026-09-19" },
     { p:"deepseek", key:"deepseek-v4-pro",   m:"DeepSeek V4 Pro" },
     { p:"deepseek", key:"deepseek-v3",       m:"DeepSeek V3", note:"no longer listed by DeepSeek · last known rate" },
     { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1", note:"no longer listed by DeepSeek · last known rate" },
@@ -528,7 +530,7 @@
     { p:"alibaba", key:"qwen3.8-flash",     m:"Qwen3.8 Flash", note:"weights NOT published" },
 
     { p:"zai", key:"glm-5.3",       m:"GLM-5.3" },
-    { p:"zai", key:"glm-5.3-flash", m:"GLM-5.3 Flash", note:"Half price until 2026-09-09, then $0.15/$0.50" },
+    { p:"zai", key:"glm-5.3-flash", m:"GLM-5.3 Flash", note:"doubled to $0.15/$0.50 on 2026-09-09 when the half-price promo ended" },
 
     { p:"moonshot", key:"kimi-k3",        m:"Kimi K3" },
     { p:"moonshot", key:"kimi-k2.7-code", m:"Kimi K2.7 Code" }
@@ -548,7 +550,9 @@
       "claude-opus-5":             { input: 5e-6,    output: 2.5e-5 },
       "claude-opus-4-8":           { input: 5e-6,    output: 2.5e-5 },
       "claude-fable-5":            { input: 1e-5,    output: 5e-5 },
-      "claude-mythos-5":           { input: 1e-5,    output: 5e-5 }
+      "claude-mythos-5":           { input: 1e-5,    output: 5e-5 },
+      "claude-fable-5-1":          { input: 1e-5,    output: 5e-5 },
+      "claude-mythos-5-1":         { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
       "gpt-6-astra":   { input: 1e-5,   output: 5e-5, long: { over: 272000, input: 2e-5, output: 7.5e-5 } },
@@ -600,7 +604,7 @@
       "sonar-reasoning-pro": { input: 2e-6,    output: 8e-6 }
     },
     "deepseek": {
-      "deepseek-v4-flash": { input: 4.4e-7,  output: 1.32e-6 },
+      "deepseek-v4-flash": { input: 3e-7,    output: 1.2e-6 },
       "deepseek-v4-pro":   { input: 1.32e-6, output: 3.96e-6 },
       "deepseek-v3":       { input: 1.4e-7,  output: 2.8e-7 },
       "deepseek-r1":       { input: 5.5e-7,  output: 2.19e-6 }
@@ -613,7 +617,7 @@
     },
     "zai": {
       "glm-5.3":       { input: 1.4e-6,  output: 4.4e-6 },
-      "glm-5.3-flash": { input: 7.5e-8,  output: 2.5e-7 }
+      "glm-5.3-flash": { input: 1.5e-7,  output: 5e-7 }
     },
     "moonshot": {
       "kimi-k3":        { input: 3e-6,    output: 1.5e-5 },
@@ -727,7 +731,7 @@
   // Measured by scripts/derive-archetypes.js with the real cl100k tokenizer over this
   // repo's prose, and shown in "show the math" so the conversion behind the archetypes
   // is visible rather than asserted. check-auditor.js fails if it drifts.
-  var CHARS_PER_TOKEN = 3.882;
+  var CHARS_PER_TOKEN = 3.832;
 
   var FALLBACK_LIMITS = {
     _meta: {
@@ -735,9 +739,9 @@
       default_archetype: "standard",
       archetypes: {
         // Owned by scripts/derive-archetypes.js — regenerate, don't hand-edit.
-        light:    { input: 635,   output: 232,  label: "Short exchanges, little history" },
-        standard: { input: 3596,  output: 464,  label: "Typical multi-turn chat" },
-        heavy:    { input: 14791, output: 1082, label: "Long context, documents, code" }
+        light:     { input: 641,   output: 235,  label: "Short exchanges, little history" },
+        standard:  { input: 3639,  output: 470,  label: "Typical multi-turn chat" },
+        heavy:     { input: 14975, output: 1096, label: "Long context, documents, code" }
       },
       // Mirrors plan-limits.json _meta.reasoning.models — mid only; that file carries
       // the ranges and the basis. Thinking tokens bill at the output rate, so leaving
@@ -1195,19 +1199,22 @@
 
   // "Open weights" is a property of a MODEL, not a provider: Alibaba publishes
   // weights for two of the four Qwen models here and not the other two, and
-  // Mistral publishes only Small. Badging the provider would state a falsehood
-  // about specific models, so the badge is driven entirely by the presence of an
-  // open_weights block, which is only written when the weights page has been read.
+  // Mistral publishes Small 4, Large 3 AND Medium 3.5. Badging the provider would
+  // state a falsehood about specific models, so the badge is driven entirely by the
+  // presence of an open_weights block, written only when the weights page was read.
   function owBadge(r) {
     if (!r.ow) return "";
     var osi = r.ow.osi === true;
     // A bespoke licence named after the model is not the same promise as MIT or
     // Apache-2.0, and flattening the two into one green badge would be the kind of
-    // false reassurance this page exists to avoid.
+    // false reassurance this page exists to avoid. Since 2026-09-19 the tooltip also
+    // carries WHAT the licence restricts, because 'bespoke' told the reader nothing:
+    // two models here are both labelled modified-mit and mean opposite things — one
+    // wants a logo above $20M revenue, the other forbids use entirely above it.
     return '<span class="ow' + (osi ? "" : " ow-custom") + '" title="Weights published' +
            (r.ow.params && r.ow.params !== "not disclosed" ? " · " + esc(r.ow.params) : "") +
            " · licence: " + esc(r.ow.license) +
-           (osi ? "" : " (bespoke — read it before you rely on it)") + '">open</span>';
+           (osi ? "" : " (bespoke) — " + esc(r.ow.restriction || "read it before you rely on it")) + '">open</span>';
   }
 
   // The spread only exists because the weights are public: for a closed model

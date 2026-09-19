@@ -80,8 +80,9 @@ ok(Object.values(water._hosts).every(h => h.source), 'every host says where its 
   // entry renders no water figure at all, with no error, so this is a tripwire and
   // has to be updated by hand when models are added. 68 -> 76 on 2026-08-29 with
   // the three Chinese labs, 76 -> 77 on 2026-09-06 with gpt-6-astra (FRESHNESS
-  // E3 — hardcoded coverage counts).
-  ok(models.length === 77, models.length + ' models carry a water entry');
+  // E3 — hardcoded coverage counts), 77 -> 79 on 2026-09-19 with Claude Fable 5.1
+  // and Claude Mythos 5.1.
+  ok(models.length === 79, models.length + ' models carry a water entry');
   ok(models.every(m => water._hosts[m.host]), 'every model joins to a real host');
   ok(models.every(m => !m.energy || water._energy.measured[m.energy]), 'every named energy curve exists');
   const measured = models.filter(m => m.energy).length;

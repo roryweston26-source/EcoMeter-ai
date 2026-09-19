@@ -208,7 +208,7 @@ a source you're about to change.
 
 **Goes stale:** constantly. OpenAI cut two models ~5× overnight on 2026-08-02.
 
-**Source of truth:** `extension/prices.json` → `api` (10 providers, ~76 models).
+**Source of truth:** `extension/prices.json` → `api` (10 providers, ~79 models).
 
 **Copies that must follow — all four drift silently:**
 - `pricing.html` → `FALLBACK_PRICES`
@@ -243,6 +243,52 @@ to the unmodelled prompt-caching discount — they do not cancel out.
 
 **Then rewrite `_meta.last_updated` and `_meta.verified`** — the prose should name
 what moved and what didn't.
+
+**Two fetch notes earned on 2026-09-19.** `ai.google.dev` redirect-loops a plain
+curl until it has a **cookie jar** (`-b jar -c jar`) — without one it returns 302
+forever and looks like the site is down. `mistral.ai/pricing/api` renders its rate
+card **client-side**, like Alibaba's: fetch the HTML and the numbers are simply not
+in it. Render both. Neither failure announces itself as a failure.
+
+### 2026-09-19 — the full nine-provider re-read, and what it cost to skip one
+
+**One rate in seventy-nine had moved, and it moved DOWN.** DeepSeek cut its Flash
+model from $0.44/$1.32 to **$0.30/$1.20** peak and renamed it: the rate card now
+lists `deepseek-flash` (DeepSeek-V4.1-Flash) and says `deepseek-v4-flash` is
+**retired**, legacy requests served by V4.1-Flash at the Flash price. We keep the old
+key because it joins five files and DeepSeek still accepts it; the display name is now
+"DeepSeek Flash". Everything else at all nine providers was unchanged — including both
+Gemini Flash promos, every Anthropic family, all four Alibaba tiers, both Kimi models
+and all three Sonar rates.
+
+**The one thing that was wrong, we had already been warned about.** Z.ai's
+`glm-5.3-flash` promo expired **2026-09-09** and nobody ran the guard, so the site
+quoted **half the real price for ten days**. `check-prices.js` had been right and
+simply had nothing to say until the data was already wrong. Three mechanisms now
+close that gap, each fault-injected:
+
+- **Promos warn 21 days out**, sunsets 30, via a new non-failing `warn()` channel.
+  A guard that can only speak once the number is wrong speaks too late.
+- **`promo.standard` may now be `null`** — for when a provider says a rate is
+  promotional but *not* what it reverts to. Rule 3 forbids inventing the figure, so
+  the guard records the absence and demands a re-read on expiry instead of asserting
+  a number. **GPT-5.6 Sol is the first**: OpenAI says $4/$20 is promotional "at least
+  through November 21, 2026" and never says what follows. That gap was spotted on
+  2026-09-06 and left unactioned; three days later the GLM one bit.
+- **A new `sunset` block** `{ on, what, source }` for an announced end-of-life. It
+  warns as the date nears and **fails once past**, because a rate for an API nobody
+  can call is not a price. Perplexity's three Sonar models carry the first, for
+  **2026-09-27** — confirmed verbatim at source on 2026-09-19, date unchanged.
+
+**Two Anthropic models were missing**: Claude Fable 5.1 and Claude Mythos 5.1, both
+$10/$50, added across all six files that must agree. Both carry a **0.025× cache-hit
+multiplier** where every other Claude model uses 0.1× — the first time that multiplier
+has varied by model, and worth watching as a pattern rather than a quirk.
+
+⚠️ **`o1` was wrongly listed in `_legacy_keys`.** It is still on OpenAI's current
+pricing page at $15/$60, exactly our stored rate. `gpt-4` and `gpt-4-turbo` really
+have gone. "I did not find it" and "it is not there" are different claims, and only
+the second belongs in that list.
 
 **Guard:** `check-prices.js`, `check-auditor.js`
 
@@ -613,6 +659,58 @@ that line to tidy the layout.** Where a host lists several SKUs for one model we
 the cheapest per host — otherwise Kimi K2.7 Code's "highspeed" SKU at double the rate
 would masquerade as Moonshot charging two different prices for the same thing.
 
+### Re-measured 2026-09-19 — the market moved hard in three weeks
+
+**Every figure below replaces one three weeks older. The direction is uniform: more
+hosts, lower floors, and the labs falling further behind their own resellers.**
+
+| Model | lab's price | cheapest host | lab ÷ cheapest | hosts undercutting the lab | host spread |
+|---|---|---|---|---|---|
+| `deepseek-v4-flash` | $0.30 | **$0.039** (StreamLake) | **7.7×** | **16 of 16** | 5.32× |
+| `qwen3.8-27b` | $0.50 | **$0.100** (Darkbloom) | **5.0×** | **16 of 16** | 4.50× |
+| `deepseek-v4-pro` | $1.32 | $0.422 (StreamLake) | 3.13× | 6 of 15 | 4.52× |
+| `glm-5.3-flash` | $0.15 | $0.075 (DeepInfra) | 2.00× | 8 of 27 | **6.00×** |
+| `kimi-k3` | $3.00 | $1.700 (Relace) | 1.76× | 9 of 17 | 2.03× |
+| `glm-5.3` | $1.40 | $0.844 (Baidu) | 1.66× | 18 of 30 | 1.66× |
+| `kimi-k2.7-code` | $0.95 | $0.680 (DeepInfra) | 1.40× | 8 of 14 | 1.40× |
+| `qwen3.8-2.4t-a95b` | $2.00 | $2.000 (all seven) | 1.00× | 0 of 7 | **1.00×** |
+
+**Host spreads are now 1.00×–6.00×, where on 2026-08-29 they were 1.18×–2.88×.** The
+order-of-magnitude gap the first pass went looking for and didn't find has since opened
+up — but between *hosts and the lab*, not between hosts.
+
+**The headline finding got stronger, not weaker: for 7 of 8 models the lab that made
+the model sits in the more expensive half of the market for it**, up from 4 of 6. Two
+labs are now dearer than **every single host** of their own model — DeepSeek on
+`deepseek-v4-flash` and Alibaba on `qwen3.8-27b` — and two more are the single dearest
+host in their own market: Z.ai is 30th of 30 for GLM-5.3, and **Moonshot has become the
+dearest of 14 for Kimi K2.7 Code**, where on 2026-08-29 it was 12th of 15.
+
+⚠️ **`cheaper_than_first_party` can equal `n`, and a guard used to forbid it.** Both
+16-of-16 rows above were unstorable until 2026-09-19: `check-prices.js` asserted
+`ctf < n`. That is the same assumption the range check had made and had already been
+corrected for — this second copy of it was left behind. **It had already corrupted a
+shipped value**: `qwen3.8-27b` was 11-of-11 on 2026-08-29 (dearest host $0.48 against
+Alibaba's $0.50), was stored as `7` to satisfy the guard, and the page then rendered
+"7 undercut Alibaba's own API" directly beside a note of ours saying all of them did.
+Prose and data disagreed for three weeks and rule 4 is what catches it. The guard now
+allows `ctf <= n` and carries the story in a comment.
+
+**`mistral-small-4` lost its spread entirely and its `hosted` block is now gone.**
+OpenRouter returns three endpoints for it and all three are Mistral itself ($0.15,
+$0.15, $0.165); Venice, its one third-party host on 2026-08-29, has dropped it. Apache-2.0
+weights with no third-party host at all is a surprising state for the one model Mistral
+actually opened — see `_no_hosted_block` in `prices.json`, which records this so the next
+pass doesn't re-add the block by reflex. It is worth re-checking rather than assuming.
+
+**`qwen3.8-2.4t-a95b` is the opposite and just as interesting: all seven hosts charge
+exactly Alibaba's list $2.00/$6.00.** A 1.00× spread is a real measurement, not a
+missing one. But DeepInfra serves it at **fp4** and SiliconFlow at **fp8** — *the same
+price for measurably different computations*. This is the sharpest case yet for the
+quantisation caveat: where the dollar spread is zero, precision is the only axis left,
+and it is the one hosts don't advertise.
+
+### The 2026-08-29 finding, superseded above but kept for the shape of it
 ### The finding, as measured on 2026-08-29
 
 Spreads were **1.18×–2.88×**, not the order-of-magnitude gaps this was expected to
@@ -629,9 +727,11 @@ order-of-magnitude gaps, which is the real failure mode (a units error).
 there is no second price. That is the argument for the column, and it's worth keeping
 in the copy if it ever gets rewritten.
 
-### The biggest spread in the file is DeepSeek's, and it lands on a price rise we already flagged
+### DeepSeek's spread, first measured 2026-08-29 and re-measured 2026-09-19
 
-Measured 2026-08-29, after the three Chinese labs were already shipped:
+**The table below is the 2026-08-29 measurement, superseded by the 2026-09-19 one
+above.** It is kept because the *shape* of the finding survived re-measurement
+unchanged, which is itself evidence it is structural rather than a snapshot:
 
 | Model | first-party | cheapest host | spread | hosts cheaper than the lab |
 |---|---|---|---|---|
@@ -642,16 +742,18 @@ Measured 2026-08-29, after the three Chinese labs were already shipped:
 **DeepSeek raised its prices on 2026-08-24 and the open-weight market did not follow,
 because the weights are MIT and it cannot be made to.** `_deepseek_increase_landed`
 records the rise: v4-flash went $0.14/$0.28 → $0.44/$1.32. The same published model is
-being served at **$0.068** — 6.5× below DeepSeek's own API. Cloudflare is the only host
-at DeepSeek's list price, matching it exactly.
+being served at **$0.039** — **7.7×** below DeepSeek's own API, measured against the CUT
+price DeepSeek moved to on 2026-09-19, not the August one. **Cloudflare no longer matches
+DeepSeek's list price**; on 2026-09-19 it does not serve this model at all, and
+**the dearest of the 16 hosts, Azure at $0.21, is still below DeepSeek's own rate.**
 
 **It survives the off-peak objection, which is the first thing anyone will raise.**
 Stored DeepSeek rates are PEAK and off-peak is exactly half (`_deepseek_peak_offpeak`).
-At the off-peak $0.22, v4-flash is **still 16 of 17**. **v4-pro does NOT survive it**:
-7 of 17 at peak but only **2 of 17** off-peak, where Baidu and StreamLake at ~$0.507
-stay below DeepSeek's $0.66. Quote the flash number; qualify the pro one.
-
-**The quantisation caveat is weaker here than anywhere else, and that is evidence-backed.**
+At the off-peak $0.15 it is **12 of 16**, not 16 of 16 — the first time this claim has
+weakened, and it weakened because DeepSeek CUT its price. **v4-pro still does NOT survive it**:
+6 of 15 at peak but only **2 of 15** off-peak, where StreamLake ($0.422) and Baidu
+($0.431) stay below DeepSeek's $0.66 — the same two hosts as three weeks ago. Quote
+the flash number; qualify the pro one.
 DeepSeek's own released checkpoint carries `quantization_config.quant_method: "fp8"`
 with `expert_dtype: "fp4"` (`config.json` on the HF repo, read 2026-08-29). So the fp8
 and fp4 hosts are serving **the format DeepSeek itself published**, not a lossy

@@ -89,6 +89,8 @@ const MODEL_CATALOG = [
     { key:'claude-opus-4-8', name:'Claude Opus 4.8' },
     { key:'claude-haiku-4-5-20251001', name:'Claude Haiku 4.5' },
     { key:'claude-fable-5', name:'Claude Fable 5' },
+    { key:'claude-fable-5-1', name:'Claude Fable 5.1' },
+    { key:'claude-mythos-5-1', name:'Claude Mythos 5.1' },
     { key:'claude-mythos-5', name:'Claude Mythos 5' },
   ]},
   { label:'ChatGPT', models:[
@@ -139,7 +141,7 @@ const MODEL_CATALOG = [
   ]},
   { label:'DeepSeek', models:[
     { key:'deepseek-v4-pro', name:'DeepSeek V4 Pro' },
-    { key:'deepseek-v4-flash', name:'DeepSeek V4 Flash' },
+    { key:'deepseek-v4-flash', name:'DeepSeek Flash' },
     { key:'deepseek-v3', name:'DeepSeek V3' },
     { key:'deepseek-r1', name:'DeepSeek R1' },
   ]},
