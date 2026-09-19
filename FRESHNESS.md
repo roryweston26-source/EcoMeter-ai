@@ -2052,6 +2052,28 @@ row (which flips to a `deadline has passed` tag and drops the call to action) an
 student line inside the recommendation card (which disappears). The CI guard only fires
 when a build runs; the site is static and can be read long after one._
 
+**2026-09-19 — all six routes re-verified, and for the first time nothing changed status.**
+Google, GitHub and Mistral still `disclosed`; OpenAI and Anthropic still nothing for
+individuals; DeepSeek still free anyway. Every figure confirmed verbatim at the provider's
+own page: Google's 31 Dec 2026 deadline, payment method required and $19.99 conversion;
+GitHub's *"free to verified students, teachers, and open-source maintainers"*; OpenAI's
+*"free plan for verified U.S. K–12 educators through June 2027"*; Mistral's *"$5.99 /
+month (normally $14.99)"*. Anthropic's logo wall is **still exactly nine institutions** and
+the same nine — note the page now serves **18** logo files because they are light/dark
+pairs, so a naive count doubles it and would have read as growth that did not happen.
+
+**Two gaps closed, both on Google.** The student page is **no longer sign-in walled**,
+which answers the open re-check question below: there is **no discounted rate after the
+free year** — it converts to the full $19.99/mo, so the choice is cancel or pay full price.
+And Google states two eligibility conditions we had never recorded, both of which a student
+hits before any of our other detail matters: the US offer is for **college students aged
+18+**, and **eligibility must be re-verified each year** to keep access. A second free year
+is not automatic even for someone still enrolled.
+
+**Worth setting against section B:** over the same month two providers *withdrew* published
+plan limits, while every student offer held. The rot in this repo is not uniform, and
+assuming it is would send the next pass looking in the wrong place.
+
 | Provider | State | Re-check |
 |---|---|---|
 | Google | **RELAUNCHED.** 12 months AI Pro free (US) / AI Plus (140+ markets), SheerID, **claim by 2026-12-31** (now carried as `claim_by`, guarded). Status `none` → `disclosed`. | Does a *discounted* rate exist for after the free year? Landing page is behind a sign-in — **needs Rory signed in.** |
