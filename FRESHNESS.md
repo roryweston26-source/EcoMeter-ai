@@ -180,10 +180,11 @@ wrong number in front of a user.
 | Date | What | Entry |
 |---|---|---|
 | **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. | [A1](#a1-per-token-api-prices) |
-| **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** v6.14 bundles the Gemini Flash promo rate and a build freezes its prices; after the promo reverts, a still-live v6.14 understates Gemini cost by 2×. No guard can reach the store. | [H4](#h4-the-shipped-build-vs-main) |
+| **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** **v6.15** (uploaded 2026-09-19) bundles the Gemini Flash promo rate, and the extension reads its OWN bundled `prices.json` — no remote fetch — so a build freezes its prices. After the promo reverts, a still-shipped v6.15 understates Gemini by 2×. Shipping v6.15 closed every OTHER drift and moved this deadline not at all. | [H4](#h4-the-shipped-build-vs-main) |
 | ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
 | **2026-12-31** | **Google's promotional rate on `gemini-3.7-flash` and `gemini-3.6-flash` expires** — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
+| **2027-01-01** | **RE-UPLOAD THE EXTENSION once the Gemini promos revert.** The extension reads its BUNDLED `prices.json` — there is no remote fetch — so the store copy freezes at whatever shipped. v6.15 carries the promo $0.75/$3.75; from 1 January that understates Gemini by **2×**, the direction that costs the reader money. `check-prices.js` fixes the repo automatically; only a manual upload fixes users. | [H4](#h4-the-shipped-build-vs-main), [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
 | **2026-09-27** | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices) |
 | 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
@@ -3860,7 +3861,34 @@ change with it.
 
 ## H4. The shipped build vs `main`
 
-### v6.15 BUILT 2026-09-19 — closes every drift measured below, awaiting Rory's upload
+### v6.15 UPLOADED 2026-09-19 — the store and `main` are level for the first time since 2026-08-28
+
+**Rory uploaded it the same day it was built.** The drift table below is therefore CLOSED:
+the store no longer carries the wrong DeepSeek rate or the eleven missing models. `main`,
+the bundled package and the store all read **6.15**, so G5's three numbers agree — the
+first time that has been true since v6.14 went up on 2026-08-28.
+
+**Awaiting review.** Record the verdict here when it lands — v6.14's never was, which is
+why this pass could not tell whether a new upload would even be accepted. Watch for the
+`generativelanguage.googleapis.com` permission re-review.
+
+🚨 **THE JANUARY RISK IS NOT CLOSED BY THIS UPLOAD, AND IT IS EASY TO THINK IT IS.**
+The extension reads its OWN bundled copy — `fetch(chrome.runtime.getURL('prices.json'))`
+in `sidepanel.js`, with a hardcoded `FALLBACK_API` behind it. **There is no remote price
+fetch anywhere in the extension.** The website refreshes from `prices.json` on every load;
+the extension cannot. So whatever ships is what users see until the next upload.
+
+v6.15 bundles `gemini-3.7-flash` and `gemini-3.6-flash` at the promotional **$0.75/$3.75**,
+which is correct *today* and reverts to **$1.50/$7.50 on 2026-12-31** (A6). **v6.15 goes
+wrong on 1 January in exactly the way v6.14 would have.** Shipping it reset the drift on
+everything else and moved this deadline not at all. Closing it needs a build uploaded
+**after** the revert — no earlier build can carry a rate that does not exist yet.
+
+**This is now the top dated item in the repo.** It is in the calendar at the top of this
+file. `check-prices.js` will fail the moment the promo expires, so the repo will be
+corrected within a day; the gap is entirely between the repo being right and the store
+being re-uploaded, and that gap is manual.
+
 
 **The package exists: `ecometer-ai-v6.15.zip`, 22 entries, 1.57 MB.** Built by
 `build-extension.js` after a manual bump (6.14 → 6.15), which G5 permits — reactive
@@ -3891,7 +3919,7 @@ version is pending, so if v6.14 never cleared, v6.15 cannot go up until it does 
 if it was rejected, the rejection reason applies to this build too. Expect permission
 re-review for `generativelanguage.googleapis.com` regardless.
 
-### 2026-09-19 — the drift is now MEASURED, and it has a January deadline
+### 2026-09-19 — the drift as measured before v6.15 shipped (CLOSED, kept as the record)
 
 Diffed the shipped `ecometer-ai-v6.14.zip` bundle against `extension/prices.json` on
 `main`. The store build carries `last_updated: 2026-08-24` and seven providers.
