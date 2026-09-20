@@ -2,7 +2,7 @@
   "_meta": {
     "title": "AI Transparency Index",
     "lede": "How openly the major AI providers let the public see what their AI costs — in dollars, in data, and in water and energy. We grade transparency, not the underlying footprint: whether a real figure is findable at all, and who had to surface it. 'Not disclosed' is a finding, not a gap to paper over.",
-    "last_verified": "2026-08-29",
+    "last_verified": "2026-09-19",
     "status": "ok",
     "status_note": "",
     "axes": [
@@ -192,7 +192,7 @@
           },
           "allowance": {
             "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 21 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. Anthropic's four consumer plans all sit in that 26. Max is sold as '5x/20x more usage than Pro' with Pro itself unquantified, and the Consumer Terms say plan limits are 'described in the order process' while the terms themselves specify none.",
+            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 23 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. Anthropic's four consumer plans all sit in that 26. Max is sold as '5x/20x more usage than Pro' with Pro itself unquantified, and the Consumer Terms say plan limits are 'described in the order process' while the terms themselves specify none.",
             "source": "claude.com/pricing; Anthropic Consumer Terms; Legerly plan-limits.json",
             "source_url": "https://www.anthropic.com/legal/consumer-terms",
             "source_date": "Aug 25 2026"
@@ -232,7 +232,7 @@
           },
           "allowance": {
             "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 21 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. Google's five consumer tiers are sold as '2x/4x/20x higher than standard limits', with its own footnote clarifying that the base is non-AI subscribers. It also reserves the right to change limits 'without notice, including due to capacity constraints'.",
+            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 23 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. Google's five consumer tiers are sold as '2x/4x/20x higher than standard limits', with its own footnote clarifying that the base is non-AI subscribers. It also reserves the right to change limits 'without notice, including due to capacity constraints'.",
             "source": "gemini.google/subscriptions; Legerly plan-limits.json",
             "source_url": "https://gemini.google/subscriptions",
             "source_date": "Aug 25 2026"
@@ -272,7 +272,7 @@
           },
           "allowance": {
             "grade": "red",
-            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 21 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. All five xAI consumer tiers are in that count. Re-read 2026-08-31 across x.ai/pricing, x.ai/grok and help.x.com’s X Premium page specifically to ask whether xAI names a usage WINDOW, after OpenAI, Google, Anthropic and Perplexity all turned out to. It does not. Every reference to Grok volume is relative and unwindowed — \"higher rate limits\", \"increased usage limits on Grok\", \"higher limits on Grok\" — with no base, no period and no reset. Of the nine providers tracked, xAI is the only one that names neither a number nor a window. This is 🔴 and not ⚪ because all three pages rendered and were read; help.x.com served a Cloudflare interstitial first and the real page on a retry.",
+            "note": "Across the 31 consumer plans Legerly tracks, from 9 providers, 23 publish no usage allowance at all. Every paid tier graded here is sold on a relative multiplier against a base nobody quantifies. Two things about that ratio, both of which cut against this table rather than for it: it has weakened from 26-of-27 since 2026-08-25 — because we looked harder, not because anyone published anything — and three of the ten exceptions are Z.ai’s GLM Coding tiers, which these eight rows do not cover at all. All five xAI consumer tiers are in that count. Re-read 2026-08-31 across x.ai/pricing, x.ai/grok and help.x.com’s X Premium page specifically to ask whether xAI names a usage WINDOW, after OpenAI, Google, Anthropic and Perplexity all turned out to. It does not. Every reference to Grok volume is relative and unwindowed — \"higher rate limits\", \"increased usage limits on Grok\", \"higher limits on Grok\" — with no base, no period and no reset. Of the nine providers tracked, xAI is the only one that names neither a number nor a window. This is 🔴 and not ⚪ because all three pages rendered and were read; help.x.com served a Cloudflare interstitial first and the real page on a retry.",
             "source": "x.ai/pricing; Legerly plan-limits.json",
             "source_url": "https://x.ai/pricing",
             "source_date": "Aug 31 2026"
@@ -432,10 +432,10 @@
           },
           "allowance": {
             "grade": "pending",
-            "note": "Downgraded from 🔴 to ⚪ on 2026-08-31, which is a correction to US, not a change by DeepSeek. This cell was graded off the shared aggregate sentence rather than off a DeepSeek page — exactly the failure this index recorded against xAI on 2026-08-29. Checked properly: deepseek.com renders as a JavaScript shell (599 characters of text to a plain fetch), chat.deepseek.com returns an empty 202, and the only readable DeepSeek documentation is the API rate-limit page, which covers per-account CONCURRENCY — a different thing from a consumer usage window and not quotable as one. No consumer-facing limits page was read, so no absence can be asserted. DeepSeek also has no paid consumer tier, so there may be no allowance to publish; that too is unestablished rather than known. To close this, open chat.deepseek.com in a logged-in browser.",
-            "source": "deepseek.com; api-docs.deepseek.com rate limit and FAQ pages",
+            "note": "Downgraded from 🔴 to ⚪ on 2026-08-31, which is a correction to US, not a change by DeepSeek. The cell had been graded off a shared aggregate sentence rather than off a DeepSeek page — exactly the failure this index recorded against xAI on 2026-08-29. RE-CHECKED 2026-09-19 WITH A REAL BROWSER, which retires the previous excuse: deepseek.com is no longer a 599-character shell to us, it renders, and the entire site carries exactly ONE pricing link — 'API Pricing'. There is no consumer plans page at all. chat.deepseek.com still returns a completely empty document (zero characters of text) without a login, so the consumer product itself remains unreadable. THE GRADE STAYS ⚪ AND THAT IS THE POINT: we can now say with confidence that DeepSeek publishes no consumer PRICING page, but an allowance can exist on a free product, and the only surface that would carry one is login-walled. A free product's limits are still limits. Not disclosed and not readable are different findings, and this is the second. To close it, open chat.deepseek.com signed in — that remains the only route.",
+            "source": "deepseek.com (rendered 2026-09-19); chat.deepseek.com (login-walled, empty without auth); api-docs.deepseek.com rate limit and FAQ pages",
             "source_url": "https://api-docs.deepseek.com/quick_start/rate_limit",
-            "source_date": "Aug 31 2026"
+            "source_date": "Sep 19 2026"
           },
           "context_window": {
             "grade": "red",

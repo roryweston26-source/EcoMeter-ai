@@ -1,7 +1,7 @@
 {
   "_meta": {
     "comment": "Per-plan usage limits and the assumptions behind the 'break even at' and 'ceiling' columns on pricing.html. Joins to extension/prices.json 'subscriptions' on p + m (exact string match). Rates are NOT stored here — they are read live from prices.json.api at render time, so these figures re-price themselves when API prices change.",
-    "last_verified": "2026-08-29",
+    "last_verified": "2026-09-19",
     "month_days": 30,
     "provenance_legend": {
       "disclosed": "The provider publishes this figure about its own product.",
@@ -9,35 +9,14 @@
       "third_party": "Measured or reported by someone other than the provider. Treat as indicative.",
       "not_disclosed": "The provider does not publish a usable figure."
     },
-    "finding": "As of 2026-08-29, TWO absolute consumer usage figures are published by any major provider about its own product, out of 27 plans — and 25 publish nothing at all. The first is a feature sub-limit: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' The second was found on 2026-08-29 and is materially better: Perplexity states that 'Consumer Max plans start with 10,000 credits a month', publishes the conversion ('100 credits equals $1') and lists typical consumption by task class, so a reader can actually estimate what the plan buys — though it covers Computer rather than the whole plan. Everything else is sold on a relative multiplier against a base nobody quantifies: OpenAI's Pro tiers as '5x or 20x more usage' than Plus (what it multiplies is unstated), Anthropic's Max as '5x/20x more usage than Pro', Google's tiers as '2x/4x/20x higher than standard limits' — Google's own footnote clarifying the base as 'non-AI subscribers'. Anthropic, Google and OpenAI have all moved to metering that varies with prompt complexity, feature use, model and chat length. Google reserves the right to change limits 'without notice, including due to capacity constraints.' The pattern still holds — disclosure gets worse as the price goes up — but it is no longer true that 'nothing else is quantified anywhere', and that sentence stood here unchallenged until someone checked it against the provider's own page.",
+    "finding": "As of 2026-09-19, 8 of the 31 consumer plans tracked here publish any usage figure at all about their own product; 23 publish nothing. Of those 8, 5 bound A SINGLE FEATURE rather than the plan — OpenAI's Codex five-hour message table on Plus and the two Pro tiers, Perplexity Max's Computer credits, and Mistral's 150 Flash answers a day. Only 3 publish an allowance that bounds the whole product, and all 3 belong to Z.ai — which also publishes the credit formula, the per-model multipliers, the peak/off-peak rule and a token conversion table, so the allowance can actually be checked rather than merely quoted. THE COUNT FELL BY TWO THIS PASS, AND BOTH LOSSES WERE WITHDRAWALS RATHER THAN RESTATEMENTS. OpenAI deleted ChatGPT Go's \"10 messages every 5 hours after enabling Thinking\" — one of the only two absolute consumer figures that existed — and its pricing page now carries no numeric allowance of any kind. Microsoft deleted all four of its published figures at once (Agents 25 tasks/month, Vision 15 min/day, Voice 60 min/day, and the 60 AI credits/month that applied to the CHEAP tiers) and replaced them with \"Extensive use\" / \"Standard usage\" / \"More usage\" / \"Highest usage\". Everything else is still sold on a relative multiplier against a base nobody states: OpenAI's Pro tiers as \"5x or 20x more usage\" than Plus, Anthropic's Max as \"5x/20x more usage than Pro\", Google's tiers as \"2x/4x/20x higher than standard limits\" with its own footnote defining the base as \"non-AI subscribers\". Anthropic, Google and OpenAI all meter in ways that vary with prompt complexity, feature use, model and chat length, and Google reserves the right to change limits \"without notice, including due to capacity constraints.\" The pattern holds and has strengthened: disclosure gets worse as the price goes up, and over the last month it got worse outright.",
     "context_windows_are_now_disclosed": "Counter-example to the finding above, added 2026-08-24, and recorded because a file that only collects evidence for its own thesis is not evidence. OpenAI's plan table now publishes a per-plan CONTEXT WINDOW for every consumer tier — Instant 27K/54K/54K/128K and Reasoning Varies/256K/256K/400K across Free/Go/Plus/Pro. That is a real, absolute, provider-published number about its own product, and the first any provider has ADDED rather than withdrawn in the period this file covers. It does not weaken the finding, because a context window bounds how much fits in one conversation, not how many conversations you get — the allowance question is still unanswered everywhere. But \"nobody discloses anything\" would now be false, and the honest statement is narrower: nobody discloses an ALLOWANCE.",
-    "disclosure_is_getting_worse": "Between the 2026-07-28 and 2026-08-08 checks, OpenAI DELETED the only general absolute cap anyone published — '160 GPT-5.5 Instant messages per 3 hours', which had applied identically to Go at $8 and Plus at $20. The replacement language is that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind. This is worth re-checking every time this file is verified: the trend is one-directional, and a figure being here today is not evidence it will be next quarter.",
+    "disclosure_is_getting_worse": "Between the 2026-07-28 and 2026-08-08 checks, OpenAI DELETED the only general absolute cap anyone published — '160 GPT-5.5 Instant messages per 3 hours', which had applied identically to Go at $8 and Plus at $20. The replacement language is that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind. This is worth re-checking every time this file is verified: the trend is one-directional, and a figure being here today is not evidence it will be next quarter. SECOND ENTRY, 2026-09-19, and it is two providers in one pass. (1) OPENAI deleted ChatGPT Go's \"10 messages every 5 hours after enabling Thinking\" from openai.com/chatgpt/pricing, sometime after 2026-08-24. Go is now described only in comparatives — \"More messages with tools\", \"More uploads\", \"More image creation\". The whole pricing page contains zero numeric allowances; the strings \"every 5 hours\" and \"10 messages\" do not appear anywhere on it. This was one of only two absolute consumer usage figures published by anyone, so the loss is disproportionate to its size. (2) MICROSOFT rewrote its AI-credits article (\"Last updated: September 2026\") and deleted EVERY figure in it: Agents 25 tasks/month, Vision 15 minutes/day and Voice 60 minutes/day on Premium, plus the hard 60 AI credits/month that had applied to Personal and Family. The replacement table grades four tiers entirely in words — \"Extensive use\", \"Standard usage\", \"More usage\", \"Highest usage\", \"Not available\". Verified by regex over the rendered page at both URLs this file cited: not one numeric allowance phrase survives. Microsoft is also the provider whose per-site datacenter disclosure produced the first positive grade movement this project ever recorded (E1g), so the two directions are running at once and should not be summarised as one attitude. SEPARATELY, and not a disclosure loss but an availability one: OpenAI paused new sign-ups and upgrades to ChatGPT Pro $200 (Pro 20x) on 2026-09-10, and $200 no longer appears on its pricing page. THE TREND REMAINS ONE-DIRECTIONAL. In fourteen months this log records four withdrawals and zero additions from the Western providers; every figure gained in that time came from Z.ai. A figure being here today is not evidence it will be next quarter — re-check every one of them every pass, because two of eight went this time.",
     "archetypes": {
-      "comment": "Tokens per message exchange. DERIVED, not hand-picked: scripts/derive-archetypes.js measures characters-per-token with the real cl100k tokenizer over this repo’s prose (3.882 chars/token, 165 samples) and converts the message lengths below. Read that honestly: the CONVERSION is measured, the LENGTHS are still an assumption — prompt_chars, reply_chars and history_turns are judgement, chosen to be checkable against a real chat window rather than legible as round token counts. “input” is this prompt plus history_turns prior exchanges re-sent; “output” is the reply, BEFORE the reasoning multiplier in _meta.reasoning is applied. This is still the largest single lever on every figure on the page. There is no corpus of real chat traffic here, so do not call these measurements; the intended anchor remains real EcoMeter exports. check-auditor.js re-runs the derivation and fails if this block has drifted from it.",
-      "light": {
-        "input": 635,
-        "output": 232,
-        "prompt_chars": 220,
-        "reply_chars": 900,
-        "history_turns": 2,
-        "label": "Short exchanges, little history"
-      },
-      "standard": {
-        "input": 3596,
-        "output": 464,
-        "prompt_chars": 450,
-        "reply_chars": 1800,
-        "history_turns": 6,
-        "label": "Typical multi-turn chat"
-      },
-      "heavy": {
-        "input": 14791,
-        "output": 1082,
-        "prompt_chars": 1400,
-        "reply_chars": 4200,
-        "history_turns": 10,
-        "label": "Long context, documents, code"
-      }
+      "comment": "Tokens per message exchange. DERIVED, not hand-picked: scripts/derive-archetypes.js measures characters-per-token with the real cl100k tokenizer over this repo’s prose (3.831 chars/token, 341 samples) and converts the message lengths below. Read that honestly: the CONVERSION is measured, the LENGTHS are still an assumption — prompt_chars, reply_chars and history_turns are judgement, chosen to be checkable against a real chat window rather than legible as round token counts. “input” is this prompt plus history_turns prior exchanges re-sent; “output” is the reply, BEFORE the reasoning multiplier in _meta.reasoning is applied. This is still the largest single lever on every figure on the page. There is no corpus of real chat traffic here, so do not call these measurements; the intended anchor remains real EcoMeter exports. check-auditor.js re-runs the derivation and fails if this block has drifted from it.",
+      "light": { "input": 641, "output": 235, "prompt_chars": 220, "reply_chars": 900, "history_turns": 2, "label": "Short exchanges, little history" },
+      "standard": { "input": 3639, "output": 470, "prompt_chars": 450, "reply_chars": 1800, "history_turns": 6, "label": "Typical multi-turn chat" },
+      "heavy": { "input": 14975, "output": 1096, "prompt_chars": 1400, "reply_chars": 4200, "history_turns": 10, "label": "Long context, documents, code" }
     },
     "reasoning": {
       "comment": "Thinking-token multipliers on the OUTPUT side. A reasoning model emits hidden chain-of-thought before its visible reply and bills it at the output rate, so a break-even that counts only the reply understates what the same work costs on the API — which pushes the break-even figure UP and makes a plan look harder to justify than it is. EcoMeter has modelled this since it shipped (REASONING_RANGES in extension/sidepanel.js); the website did not, and the gap was worth 30-45% on exactly the frontier models people pay for. mid is applied; lo/hi record the spread rather than pretending there is not one. A row with measured:true was MEASURED — see scripts/measure-reasoning.js; providers do not publish per-model statistics, but they do report thinking tokens per response in usage, so it can be measured from outside, and for those rows it was. A row without measured:true is still judgement and should be treated as provisional: every guess checked so far was too high. Applies to the models that reason BY DEFAULT in consumer chat, which is why gpt-5.6-luna and the flash/mini tiers are absent rather than set to 1.",
@@ -132,8 +111,16 @@
         "peak": true,
         "formula": "(input x in-mult + cached x cached-mult + output x out-mult) / 10000",
         "models": {
-          "glm-5.3": { "input": 6.9, "cached": 1.7, "output": 24 },
-          "glm-5.3-flash": { "input": 2.3, "cached": 0.56, "output": 8 }
+          "glm-5.3": {
+            "input": 6.9,
+            "cached": 1.7,
+            "output": 24
+          },
+          "glm-5.3-flash": {
+            "input": 2.3,
+            "cached": 0.56,
+            "output": 8
+          }
         },
         "implied_credit_value_usd": "About $0.0019-0.0020 at Z.ai's own API rates, i.e. roughly 510-520 credits per dollar, and it barely moves across the three archetypes. Z.ai does NOT publish this; it is derived from two things it does publish (the credit multipliers and the per-token rates). Worth stating because Perplexity publishes its own conversion as '100 credits equals $1' — the two units differ by about 5x, so 'credits' compares nothing between providers unless someone does this arithmetic.",
         "source": "https://docs.z.ai/devpack/overview",
@@ -165,7 +152,11 @@
         "result": "none stated",
         "scope": "ChatGPT chat surfaces",
         "checked": "2026-08-31",
-        "pages_read": ["https://openai.com/chatgpt/pricing", "https://help.openai.com/en/articles/9275245-chatgpt-free-tier-faq", "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"],
+        "pages_read": [
+          "https://openai.com/chatgpt/pricing",
+          "https://help.openai.com/en/articles/9275245-chatgpt-free-tier-faq",
+          "https://help.openai.com/en/articles/9793128-about-chatgpt-pro-tiers"
+        ],
         "note": "Read specifically to ask whether OpenAI names a usage WINDOW for ordinary chat. It does not — no window of any kind appears on the pricing page, the Free Tier FAQ or the Pro tiers article. This is what makes the Codex weekly window a scoped finding rather than a general one: OpenAI names windows for its agentic product and none for the chat product these plans are sold as."
       },
       "stated": "The plans page advertises 'Unlimited text chats with GPT-5.6 Luna' — 'subject to abuse guardrails' — alongside limited messages, uploads, image generation and voice. So the headline is unlimited-on-the-cheapest-model rather than a capped allowance on the default one. GPT-5.5 has now FINISHED leaving this tier: it sits in the plan table's single 'Legacy models' row, marked No for Free and No for Go, and the Free Tier FAQ updated 2026-08-13 lists only Luna. On 2026-08-08 that rollout was still in progress and 5.5 was correctly recorded as present then. No absolute message figure either way. Free gets no GPT-5.6 Sol at any reasoning level; its Think button runs Thinking Mini.",
@@ -185,19 +176,8 @@
     {
       "p": "openai",
       "m": "ChatGPT Go",
-      "provenance": "disclosed",
-      "caps": [
-        {
-          "n": 10,
-          "unit": "messages",
-          "window": "5h",
-          "scope": "Thinking",
-          "soft": false,
-          "scope_limited": true,
-          "note": "Enabled via + then Thinking. Explicitly does NOT use GPT-5.6 Sol. scope_limited: this bounds ONE FEATURE, not the plan — ordinary Go chat is advertised as unlimited on Luna, so a ceiling computed from this figure would sit far below what Go is actually worth. Consumers must refuse it the same way they refuse an undisclosed multiplier base."
-        }
-      ],
-      "stated": "The only absolute MESSAGE figure OpenAI still publishes for a consumer tier: 'Go users can send up to 10 messages every 5 hours after enabling Thinking.' Everything else is 'more messages' than Free. Go carries ads ('This plan may include ads'), and as of 2026-08-24 GPT-5.5 has left this tier along with Free — the 'Legacy models' row reads No for Go.",
+      "provenance": "not_disclosed",
+      "stated": "WITHDRAWN between 2026-08-24 and 2026-09-19. openai.com/chatgpt/pricing used to state 'Go users can send up to 10 messages every 5 hours after enabling Thinking' — one of only two absolute consumer usage figures published by anyone, and the one this file's headline finding led with. The page now describes Go entirely in comparatives: 'More messages with tools', 'More uploads', 'More image creation', 'More voice chats', 'Longer memory'. Re-read 2026-09-19: the whole pricing page carries ZERO numeric allowances of any kind, and the strings 'every 5 hours' and '10 messages' do not appear on it. Not moved elsewhere — searched. Per rule 3 the withdrawal is the finding; do not carry the old number forward.",
       "context_window": {
         "instant_tokens": 54000,
         "reasoning_tokens": 256000,
@@ -208,7 +188,7 @@
         "high": "gpt-5.6-luna"
       },
       "source": "https://openai.com/chatgpt/pricing",
-      "as_of": "2026-08-24",
+      "as_of": "2026-09-19",
       "note": "REMOVED 2026-08-08: a '160 GPT-5.5 Instant messages / 3h' cap, previously recorded here as disclosed for both Go and Plus. OpenAI's help article no longer states any absolute Instant figure — it now says only that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. It was the single disclosed absolute this whole file rested on, and it is gone."
     },
     {
@@ -224,16 +204,18 @@
           "scope": "Codex (GPT-5.6 Sol, local messages)",
           "soft": false,
           "scope_limited": true,
-          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers \u2014 which is the first time OpenAI has quantified the base its \u201C5x/20x more usage\u201D marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
+          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers — which is the first time OpenAI has quantified the base its “5x/20x more usage” marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
         }
       ],
       "unquantified_windows": [
         {
           "window": "7d",
           "scope": "Codex and agentic features",
-          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: \u201COn ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.\u201D The help article on using Codex with a ChatGPT plan is unhedged: a banked reset \u201Crefreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date\u201D. Neither sizes it.",
+          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: “On ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.” The help article on using Codex with a ChatGPT plan is unhedged: a banked reset “refreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date”. Neither sizes it.",
           "source": "https://developers.openai.com/codex/pricing#what-are-the-usage-limits-for-my-plan",
-          "corroborated_by": ["https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"],
+          "corroborated_by": [
+            "https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"
+          ],
           "effect": "SCOPE MATTERS AND IS THE WHOLE FINDING: this is Codex and the agentic features that share its allowance, NOT ChatGPT chat. The ChatGPT Free FAQ and the Pro tiers article name no window of any kind, so nothing here licenses a claim about ordinary chat. What it does mean is that OpenAI's published five-hour Codex table is a burst rate on the same terms as Anthropic's: a weekly cap sits above it that OpenAI has said exists and will not size.",
           "as_of": "2026-08-31"
         }
@@ -250,7 +232,7 @@
       },
       "note": "Plus includes GPT-5.6 Sol at Medium and High reasoning but not Extra High or Pro, which are Pro-only. Free and Go get no Sol access at all, at any reasoning level. If a Sol reasoning limit is reached, ChatGPT falls back to GPT-5.4 Thinking mini rather than stopping.",
       "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
-      "as_of": "2026-08-08"
+      "as_of": "2026-09-19"
     },
     {
       "p": "openai",
@@ -265,16 +247,18 @@
           "scope": "Codex (GPT-5.6 Sol, local messages)",
           "soft": false,
           "scope_limited": true,
-          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers \u2014 which is the first time OpenAI has quantified the base its \u201C5x/20x more usage\u201D marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
+          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers — which is the first time OpenAI has quantified the base its “5x/20x more usage” marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
         }
       ],
       "unquantified_windows": [
         {
           "window": "7d",
           "scope": "Codex and agentic features",
-          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: \u201COn ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.\u201D The help article on using Codex with a ChatGPT plan is unhedged: a banked reset \u201Crefreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date\u201D. Neither sizes it.",
+          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: “On ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.” The help article on using Codex with a ChatGPT plan is unhedged: a banked reset “refreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date”. Neither sizes it.",
           "source": "https://developers.openai.com/codex/pricing#what-are-the-usage-limits-for-my-plan",
-          "corroborated_by": ["https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"],
+          "corroborated_by": [
+            "https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"
+          ],
           "effect": "SCOPE MATTERS AND IS THE WHOLE FINDING: this is Codex and the agentic features that share its allowance, NOT ChatGPT chat. The ChatGPT Free FAQ and the Pro tiers article name no window of any kind, so nothing here licenses a claim about ordinary chat. What it does mean is that OpenAI's published five-hour Codex table is a burst rate on the same terms as Anthropic's: a weekly cap sits above it that OpenAI has said exists and will not size.",
           "as_of": "2026-08-31"
         }
@@ -295,7 +279,7 @@
         "high": "gpt-5.6-sol"
       },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19"
     },
     {
       "p": "openai",
@@ -310,16 +294,18 @@
           "scope": "Codex (GPT-5.6 Sol, local messages)",
           "soft": false,
           "scope_limited": true,
-          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers \u2014 which is the first time OpenAI has quantified the base its \u201C5x/20x more usage\u201D marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
+          "note": "From OpenAI's published per-model, per-plan table of local messages per five-hour window. Sol is quoted here because it is the model the table leads with and the one cloud chats use; the same table gives Terra 25-200 and Luna 250-2,000 on Plus, scaling exactly 5x and 20x to the two Pro tiers — which is the first time OpenAI has quantified the base its “5x/20x more usage” marketing multiplies. scope_limited: this bounds Codex and the agentic features sharing its allowance, NOT ChatGPT chat, and a ceiling computed from it would price a whole plan off one product surface."
         }
       ],
       "unquantified_windows": [
         {
           "window": "7d",
           "scope": "Codex and agentic features",
-          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: \u201COn ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.\u201D The help article on using Codex with a ChatGPT plan is unhedged: a banked reset \u201Crefreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date\u201D. Neither sizes it.",
+          "stated": "OpenAI states the weekly window twice, once hedged and once not. The Codex pricing page: “On ChatGPT plans, local messages and cloud chats share a five-hour window. Additional weekly limits may apply.” The help article on using Codex with a ChatGPT plan is unhedged: a banked reset “refreshes your 5-hour and weekly Codex usage windows and changes your weekly reset date”. Neither sizes it.",
           "source": "https://developers.openai.com/codex/pricing#what-are-the-usage-limits-for-my-plan",
-          "corroborated_by": ["https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"],
+          "corroborated_by": [
+            "https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan"
+          ],
           "effect": "SCOPE MATTERS AND IS THE WHOLE FINDING: this is Codex and the agentic features that share its allowance, NOT ChatGPT chat. The ChatGPT Free FAQ and the Pro tiers article name no window of any kind, so nothing here licenses a claim about ordinary chat. What it does mean is that OpenAI's published five-hour Codex table is a burst rate on the same terms as Anthropic's: a weekly cap sits above it that OpenAI has said exists and will not size.",
           "as_of": "2026-08-31"
         }
@@ -335,7 +321,15 @@
         "high": "gpt-5.6-sol"
       },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19",
+      "availability": {
+        "status": "closed_to_new_subscribers",
+        "since": "2026-09-10",
+        "stated": "OpenAI: 'As of September 10, 2026, we're temporarily pausing new sign-ups and upgrades to the ChatGPT Pro $200 plan (Pro 20X). This includes sign-ups and upgrades from Free, Go, Plus, or Pro $100. Existing ChatGPT Pro $200 subscriptions and new or existing ChatGPT Pro $100 subscriptions are not affected.' Eligible former subscribers get one 30-day return window.",
+        "effect": "A reader who does not already have this plan CANNOT BUY IT, so recommending it to them is advice they cannot act on. Corroborated independently: openai.com/chatgpt/pricing lists $0 / $8 / $20 / $100 and no longer shows $200 at all. The row is kept rather than deleted because existing subscribers still hold it and still need to know whether to keep paying — which is the question the Auditor answers for them — but nothing should offer it as an upgrade. Same principle as the Kimi decision in FRESHNESS A11: do not present a price nobody can pay.",
+        "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
+        "as_of": "2026-09-19"
+      }
     },
     {
       "p": "anthropic",
@@ -347,7 +341,7 @@
         "high": "claude-sonnet-5"
       },
       "source": "https://www.claude.com/pricing",
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19"
     },
     {
       "p": "anthropic",
@@ -377,31 +371,46 @@
       "unquantified_windows": [
         {
           "window": "7d",
-          "stated": "Anthropic documents BOTH meters in \"Usage limit best practices\" step 7: Settings > Usage shows \"progress bars showing how much of your five-hour session and weekly usage limits you\u2019ve consumed\". It sizes neither. Note the article this claim used to cite \u2014 \"Understanding usage and length limits\" \u2014 does not contain the word \"weekly\" at all; re-read 2026-09-01, zero occurrences. The claim was right and the citation was wrong, which is as good as unsourced to anyone following the link.",
+          "stated": "Anthropic documents BOTH meters in \"Usage limit best practices\" step 7: Settings > Usage shows \"progress bars showing how much of your five-hour session and weekly usage limits you’ve consumed\". It sizes neither. Note the article this claim used to cite — \"Understanding usage and length limits\" — does not contain the word \"weekly\" at all; re-read 2026-09-01, zero occurrences. The claim was right and the citation was wrong, which is as good as unsourced to anyone following the link. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
           "surfaced_in_product": {
             "observed": "2026-09-01",
             "plan": "Claude Pro",
             "evidence": "single account, screenshot",
-            "detail": "The Claude Pro usage panel shows TWO live meters side by side — a \"5-hour limit\" with a countdown to reset, and \"Weekly \u00b7 all models\" with a named reset day and time (Saturday 02:00 local). Both are rendered as a PERCENTAGE CONSUMED. Neither ever states the denominator.",
+            "detail": "The Claude Pro usage panel shows TWO live meters side by side — a \"5-hour limit\" with a countdown to reset, and \"Weekly · all models\" with a named reset day and time (Saturday 02:00 local). Both are rendered as a PERCENTAGE CONSUMED. Neither ever states the denominator.",
             "why_it_matters": "This changes the character of the non-disclosure and sharpens it. Anthropic is not failing to quantify the weekly cap: it quantifies it precisely enough to render a live percentage against it, several times a session. What it withholds is only the number that percentage is OF. A consumer can watch themselves reach 43% of something they will never be told the size of. That is a deliberate design, not an omission, and it is the strongest illustration on this file of the difference between metering and disclosing.",
-            "open_question": "The label reads \"Weekly \u00b7 all models\", and the qualifier implies a sibling meter scoped to a SUBSET of models — most plausibly a separate weekly budget for the most expensive model. Not asserted: it has only been seen on Pro, where no sibling was visible. Check a Max account, where an Opus-specific weekly meter would be the obvious candidate.",
+            "open_question": "The label reads \"Weekly · all models\", and the qualifier implies a sibling meter scoped to a SUBSET of models — most plausibly a separate weekly budget for the most expensive model. Not asserted: it has only been seen on Pro, where no sibling was visible. Check a Max account, where an Opus-specific weekly meter would be the obvious candidate.",
             "caveat": "One account at one moment. It establishes that the mechanism EXISTS and what form it takes. It establishes nothing about the size of the cap, which is what would actually be worth publishing, and no percentage from it is recorded here."
           },
           "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
-          "corroborated_by": ["https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits"],
-          "effect": "The ~45/5h third-party figure therefore describes a BURST, not a sustained rate, and any per-day number derived from it is an upper bound Anthropic has itself said cannot be held for 30 days. Biased high, and high on a cap flatters the plan."
+          "corroborated_by": [
+            "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits"
+          ],
+          "effect": "The ~45/5h third-party figure therefore describes a BURST, not a sustained rate, and any per-day number derived from it is an upper bound Anthropic has itself said cannot be held for 30 days. Biased high, and high on a cap flatters the plan.",
+          "scope": "all models",
+          "as_of": "2026-09-19"
+        },
+        {
+          "window": "7d",
+          "scope": "Opus only",
+          "stated": "Anthropic states TWO weekly meters, not one: \"Weekly limits: Check when your plan’s weekly usage limit resets for Opus only and all other models.\" Read at source 2026-09-06. This closes the open question recorded on this file on 2026-09-01, which inferred a sibling meter from the \"Weekly · all models\" label and deliberately declined to assert it. Anthropic has now asserted it. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
+          "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
+          "as_of": "2026-09-19",
+          "applies_to_plans": "Pro, Max, Team and seat-based Enterprise, per the same sentence",
+          "contradiction": "Anthropic’s own two pages disagree on how many weekly meters exist. The Max article says the weekly is a single limit \"that applies across all models\" (read 2026-09-06); the best-practices article says the weekly resets \"for Opus only and all other models\". Both are current. We record both rather than picking the tidier one.",
+          "observed_gap": "Neither meter is sized, and on the one Pro account we have read the panel showed only two meters (session-0, weekly_all-1) with no Opus sibling, on 2026-09-02 and 2026-09-03. So either the documentation over-describes what Pro shows, or the Opus meter appears only once Opus use crosses some threshold. Unresolved; recorded rather than guessed.",
+          "why_it_matters": "A second unsized weekly meter means the plan a consumer is buying has at least THREE limits, of which Anthropic sizes none, while publishing a precise 5x/20x multiplier for one of them. The count of hidden meters is itself a disclosure fact."
         }
       ],
       "overage_pricing": {
         "stated": "Usage credits let a Pro / Max 5x / Max 20x subscriber keep working past the included limit, and Anthropic states the rate plainly: \"Usage credits are billed at standard API rates.\" Spend is capped by a user-set monthly limit.",
         "source": "https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans",
         "as_of": "2026-09-01",
-        "why_it_matters": "It does not size the allowance, but it settles the UNIT, which is the thing that has been missing. Past the cap, compute costs standard API rates \u2014 the same rates prices.json already carries. So the included allowance is denominated in dollars-of-API-compute, exactly the unit this site computes every other figure in. Pair that with the in-product percentage meter and the weekly cap becomes MEASURABLE rather than guessable: tokens per percentage point, priced at the published rate. That is the route to the first non-Z.ai Ceiling figure on the table, and it needs no disclosure from Anthropic at all.",
+        "why_it_matters": "It does not size the allowance, but it settles the UNIT, which is the thing that has been missing. Past the cap, compute costs standard API rates — the same rates prices.json already carries. So the included allowance is denominated in dollars-of-API-compute, exactly the unit this site computes every other figure in. Pair that with the in-product percentage meter and the weekly cap becomes MEASURABLE rather than guessable: tokens per percentage point, priced at the published rate. That is the route to the first non-Z.ai Ceiling figure on the table, and it needs no disclosure from Anthropic at all.",
         "caveat": "\"Standard API rates\" is a pointer to a page that moves, not a number, and Anthropic reserves the right to change it. Re-read alongside the rate card rather than treating the link as a constant."
       },
       "note": "Two INDEPENDENT meters, confirmed in-product 2026-09-01: a rolling 5-hour window and a weekly one, each shown as its own percentage. The weekly is what binds anyone who is not bursting — a week holds 33.6 five-hour windows, and no provider that publishes both sets the weekly anywhere near 33.6x the short one (Z.ai, the only one that does publish both, sets it at 5x). So the 5-hour limit is a speed bump that clears itself in hours; the weekly is the actual budget. Anthropic sizes neither. See unquantified_windows, and _meta.caveats for why we label the bias rather than invent the missing number.",
       "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19"
     },
     {
       "p": "anthropic",
@@ -411,14 +420,42 @@
       "multiplier": {
         "of": "Claude Pro",
         "x": 5,
-        "base_disclosed": false
+        "base_disclosed": false,
+        "applies_to": "5h",
+        "applies_to_stated": "Max 5x provides five times more usage PER SESSION than the Pro plan.",
+        "longer_window_multiple_stated": false,
+        "source": "https://support.claude.com/en/articles/11049741-what-is-the-max-plan",
+        "as_of": "2026-09-06",
+        "why_it_matters": "The multiplier is attached to the session window and to nothing else. The very next sentence introduces the weekly limit separately, with no multiple, no size and no stated relation to the 5x/20x: \"Your session-based usage limit will reset every five hours. Max plans also have a weekly usage limit that applies across all models.\" So upgrading buys a STATED multiple on the window that clears itself in five hours and an UNSTATED one on the window that governs the month. That asymmetry is published, not inferred, and it can be said without measuring anything."
       },
       "value_models": {
         "low": "claude-sonnet-5",
         "high": "claude-opus-5"
       },
       "source": "https://www.claude.com/pricing",
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19",
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "scope": "all models",
+          "stated": "Anthropic states the weekly limit for Max directly: \"Max plans also have a weekly usage limit that applies across all models. The weekly limit resets at a fixed time each week that is assigned to your account.\" Read at source 2026-09-06. Recorded explicitly rather than inherited from Pro, because Anthropic states it of Max on the Max page. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
+          "source": "https://support.claude.com/en/articles/11049741-what-is-the-max-plan",
+          "as_of": "2026-09-19",
+          "effect": "Sized nowhere. The plan’s only published number is the session multiple."
+        },
+        {
+          "window": "7d",
+          "scope": "Opus only",
+          "stated": "Anthropic states TWO weekly meters, not one: \"Weekly limits: Check when your plan’s weekly usage limit resets for Opus only and all other models.\" Read at source 2026-09-06. This closes the open question recorded on this file on 2026-09-01, which inferred a sibling meter from the \"Weekly · all models\" label and deliberately declined to assert it. Anthropic has now asserted it. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
+          "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
+          "as_of": "2026-09-19",
+          "applies_to_plans": "Pro, Max, Team and seat-based Enterprise, per the same sentence",
+          "contradiction": "Anthropic’s own two pages disagree on how many weekly meters exist. The Max article says the weekly is a single limit \"that applies across all models\" (read 2026-09-06); the best-practices article says the weekly resets \"for Opus only and all other models\". Both are current. We record both rather than picking the tidier one.",
+          "observed_gap": "Neither meter is sized, and on the one Pro account we have read the panel showed only two meters (session-0, weekly_all-1) with no Opus sibling, on 2026-09-02 and 2026-09-03. So either the documentation over-describes what Pro shows, or the Opus meter appears only once Opus use crosses some threshold. Unresolved; recorded rather than guessed.",
+          "why_it_matters": "A second unsized weekly meter means the plan a consumer is buying has at least THREE limits, of which Anthropic sizes none, while publishing a precise 5x/20x multiplier for one of them. The count of hidden meters is itself a disclosure fact."
+        }
+      ],
+      "note": "Two windows, and Anthropic sizes neither. The 5x/20x multiplier it does publish covers only the five-hour session. The Max page also reserves the right to more: \"to manage capacity and ensure fair access to all users, we may limit your usage in other ways, such as weekly and monthly caps or model and feature usage, at our discretion\" — so even the meters we can name are a floor, not the full set."
     },
     {
       "p": "anthropic",
@@ -428,14 +465,42 @@
       "multiplier": {
         "of": "Claude Pro",
         "x": 20,
-        "base_disclosed": false
+        "base_disclosed": false,
+        "applies_to": "5h",
+        "applies_to_stated": "Max 20x provides 20 times more usage PER SESSION than the Pro plan.",
+        "longer_window_multiple_stated": false,
+        "source": "https://support.claude.com/en/articles/11049741-what-is-the-max-plan",
+        "as_of": "2026-09-06",
+        "why_it_matters": "The multiplier is attached to the session window and to nothing else. The very next sentence introduces the weekly limit separately, with no multiple, no size and no stated relation to the 5x/20x: \"Your session-based usage limit will reset every five hours. Max plans also have a weekly usage limit that applies across all models.\" So upgrading buys a STATED multiple on the window that clears itself in five hours and an UNSTATED one on the window that governs the month. That asymmetry is published, not inferred, and it can be said without measuring anything."
       },
       "value_models": {
         "low": "claude-sonnet-5",
         "high": "claude-opus-5"
       },
       "source": "https://www.claude.com/pricing",
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19",
+      "unquantified_windows": [
+        {
+          "window": "7d",
+          "scope": "all models",
+          "stated": "Anthropic states the weekly limit for Max directly: \"Max plans also have a weekly usage limit that applies across all models. The weekly limit resets at a fixed time each week that is assigned to your account.\" Read at source 2026-09-06. Recorded explicitly rather than inherited from Pro, because Anthropic states it of Max on the Max page. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
+          "source": "https://support.claude.com/en/articles/11049741-what-is-the-max-plan",
+          "as_of": "2026-09-19",
+          "effect": "Sized nowhere. The plan’s only published number is the session multiple."
+        },
+        {
+          "window": "7d",
+          "scope": "Opus only",
+          "stated": "Anthropic states TWO weekly meters, not one: \"Weekly limits: Check when your plan’s weekly usage limit resets for Opus only and all other models.\" Read at source 2026-09-06. This closes the open question recorded on this file on 2026-09-01, which inferred a sibling meter from the \"Weekly · all models\" label and deliberately declined to assert it. Anthropic has now asserted it. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
+          "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
+          "as_of": "2026-09-19",
+          "applies_to_plans": "Pro, Max, Team and seat-based Enterprise, per the same sentence",
+          "contradiction": "Anthropic’s own two pages disagree on how many weekly meters exist. The Max article says the weekly is a single limit \"that applies across all models\" (read 2026-09-06); the best-practices article says the weekly resets \"for Opus only and all other models\". Both are current. We record both rather than picking the tidier one.",
+          "observed_gap": "Neither meter is sized, and on the one Pro account we have read the panel showed only two meters (session-0, weekly_all-1) with no Opus sibling, on 2026-09-02 and 2026-09-03. So either the documentation over-describes what Pro shows, or the Opus meter appears only once Opus use crosses some threshold. Unresolved; recorded rather than guessed.",
+          "why_it_matters": "A second unsized weekly meter means the plan a consumer is buying has at least THREE limits, of which Anthropic sizes none, while publishing a precise 5x/20x multiplier for one of them. The count of hidden meters is itself a disclosure fact."
+        }
+      ],
+      "note": "Two windows, and Anthropic sizes neither. The 5x/20x multiplier it does publish covers only the five-hour session. The Max page also reserves the right to more: \"to manage capacity and ensure fair access to all users, we may limit your usage in other ways, such as weekly and monthly caps or model and feature usage, at our discretion\" — so even the meters we can name are a floor, not the full set."
     },
     {
       "p": "google",
@@ -553,8 +618,12 @@
       "window_check": {
         "result": "none stated",
         "checked": "2026-08-31",
-        "pages_read": ["https://x.ai/pricing", "https://x.ai/grok", "https://help.x.com/en/using-x/x-premium"],
-        "note": "Read at source on three xAI- and X-owned pages. Every reference to Grok volume is relative and unwindowed \u2014 \u201Chigher rate limits\u201D, \u201Cincreased usage limits on Grok\u201D, \u201Chigher limits on Grok\u201D \u2014 with no base, no period and no reset. This is the only provider of the five checked on 2026-08-31 that names no window at all, and it is a 🔴 rather than a \u26aa because the pages rendered and were read. help.x.com served a Cloudflare interstitial on the first request and the real page on a retry; check the <title> before trusting a body."
+        "pages_read": [
+          "https://x.ai/pricing",
+          "https://x.ai/grok",
+          "https://help.x.com/en/using-x/x-premium"
+        ],
+        "note": "Read at source on three xAI- and X-owned pages. Every reference to Grok volume is relative and unwindowed — “higher rate limits”, “increased usage limits on Grok”, “higher limits on Grok” — with no base, no period and no reset. This is the only provider of the five checked on 2026-08-31 that names no window at all, and it is a 🔴 rather than a ⚪ because the pages rendered and were read. help.x.com served a Cloudflare interstitial on the first request and the real page on a retry; check the <title> before trusting a body."
       },
       "value_models": {
         "low": "grok-4.6",
@@ -656,7 +725,7 @@
         "high": "anthropic:claude-opus-5"
       },
       "source": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity",
-      "as_of": "2026-08-29"
+      "as_of": "2026-09-19"
     },
     {
       "p": "microsoft",
@@ -666,8 +735,10 @@
         "result": "none stated",
         "scope": "the free Copilot tier",
         "checked": "2026-08-31",
-        "pages_read": ["https://support.microsoft.com/en-us/microsoft-365-copilot/ai-credits-and-limits-for-microsoft-365-subscriptions"],
-        "note": "Microsoft\u2019s limits table names daily and monthly windows, but its columns are Personal, Family and Premium \u2014 the free Copilot tier is not on it, so no window is stated for THIS plan. The paid row is a different matter and carries real caps."
+        "pages_read": [
+          "https://support.microsoft.com/en-us/microsoft-365-copilot/ai-credits-and-limits-for-microsoft-365-subscriptions"
+        ],
+        "note": "Microsoft’s limits table names daily and monthly windows, but its columns are Personal, Family and Premium — the free Copilot tier is not on it, so no window is stated for THIS plan. The paid row is a different matter and carries real caps."
       },
       "no_api_rate": true,
       "as_of": "2026-07-28"
@@ -675,20 +746,11 @@
     {
       "p": "microsoft",
       "m": "Microsoft 365 Premium",
-      "provenance": "disclosed",
-      "caps": [
-        {
-          "n": 25, "unit": "agent tasks", "window": "30d", "scope": "Agents",
-          "soft": false, "scope_limited": true,
-          "note": "\u201C25 tasks per month shared amongst all agents\u201D. Microsoft's table quantifies four things on Premium and refuses the fifth: Agents 25/month, Vision 15 minutes/day, Voice 60 minutes/day \u2014 and then Chat, the thing most people buy it for, is \u201CExtensive use\u201D. The Copilot-in-apps credit line is \u201CExtensive usage beyond standard credit limits\u201D against a Personal/Family figure of 60 credits per month, so the paid tier is the one whose allowance is unquantified. Same shape as Kimi (FRESHNESS A11): a company that clearly can quantify, declining to on the one number that would let you price the upgrade."
-        },
-        { "n": 15, "unit": "minutes", "window": "1d", "scope": "Vision", "soft": false, "scope_limited": true },
-        { "n": 60, "unit": "minutes", "window": "1d", "scope": "Voice", "soft": false, "scope_limited": true }
-      ],
+      "provenance": "not_disclosed",
       "no_api_rate": true,
-      "stated": "'Extensive use' beyond the standard credit limit. Microsoft publishes a hard 60 AI credits/month for the cheaper Personal and Family plans but no figure for Premium — disclosure decreasing as price rises.",
+      "stated": "WITHDRAWN between 2026-07-28 and 2026-09-19, and completely. Microsoft's AI-credits article published three figures for Premium — Agents 25 tasks/month shared across all agents, Vision 15 minutes/day, Voice 60 minutes/day — plus a hard 60 AI credits/month for the cheaper Personal and Family plans. The article was rewritten (it now reads 'Last updated: September 2026' and is retitled 'AI credits and limits for Microsoft 365 subscriptions') and EVERY NUMBER IS GONE. The table is now purely qualitative on all four tiers: 'Extensive use', 'Standard usage', 'More usage', 'Highest usage', 'Not available'. Verified 2026-09-19 by regex over the rendered page — it contains no numeric allowance phrase at all, at either of the two URLs this file cited, which now resolve to the same article. This is the single largest one-step regression in disclosure this project has recorded: a provider went from quantifying four things to quantifying nothing, and it took the cheap tiers' 60 credits/month with it — the one figure that was NOT hiding behind a price rise.",
       "source": "https://support.microsoft.com/en-us/office/ai-credits-and-limits-for-microsoft-365-personal-family-and-premium-68530f1a-4459-4d02-9818-8233c1f673b8",
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19"
     },
     {
       "p": "mistral",
@@ -697,8 +759,10 @@
       "window_check": {
         "result": "none stated",
         "checked": "2026-08-31",
-        "pages_read": ["https://mistral.ai/pricing"],
-        "note": "The full plan table and FAQ were read. Mistral names exactly one window and it is DAILY — \u201CFlash answers: 200 / day on Team vs. 150 / day on Pro\u201D. No weekly or monthly window appears anywhere; the unlimited rows carry \u201CSubject to fair usage limits\u201D instead, which is a window-shaped absence rather than a window."
+        "pages_read": [
+          "https://mistral.ai/pricing"
+        ],
+        "note": "The full plan table and FAQ were read. Mistral names exactly one window and it is DAILY — “Flash answers: 200 / day on Team vs. 150 / day on Pro”. No weekly or monthly window appears anywhere; the unlimited rows carry “Subject to fair usage limits” instead, which is a window-shaped absence rather than a window."
       },
       "stated": "'Limited messages and web searches' — no number.",
       "third_party": [
@@ -725,9 +789,13 @@
       "provenance": "disclosed",
       "caps": [
         {
-          "n": 150, "unit": "Flash answers", "window": "1d", "scope": "Flash answers",
-          "soft": false, "scope_limited": true,
-          "note": "\u201CFlash answers: 200 / day on Team vs. 150 / day on Pro.\u201D It is worth noting WHERE this lives: not in the plan table, which is relative multipliers throughout (\u201CUp to 6x free\u201D messages, \u201CUp to 5x free\u201D web searches, \u201CUp to 40x free\u201D image generations, all against a Free base that is never quantified), but buried in an FAQ answer about a different question. The only absolute consumer number Mistral publishes is the one it did not put in the comparison table."
+          "n": 150,
+          "unit": "Flash answers",
+          "window": "1d",
+          "scope": "Flash answers",
+          "soft": false,
+          "scope_limited": true,
+          "note": "“Flash answers: 200 / day on Team vs. 150 / day on Pro.” It is worth noting WHERE this lives: not in the plan table, which is relative multipliers throughout (“Up to 6x free” messages, “Up to 5x free” web searches, “Up to 40x free” image generations, all against a Free base that is never quantified), but buried in an FAQ answer about a different question. The only absolute consumer number Mistral publishes is the one it did not put in the comparison table."
         }
       ],
       "stated": "Messages are 'subject to fair usage limits and Mistral's Terms of Service' — unquantified. Mistral does publish one number on its pricing page: 150 Flash answers per day on Pro (200 on Team). Flash answers are one feature, not the general message allowance.",
@@ -747,7 +815,7 @@
         "low": "mistral-small-4",
         "high": "mistral-medium-3.5"
       },
-      "as_of": "2026-07-28"
+      "as_of": "2026-09-19"
     },
     {
       "p": "deepseek",
@@ -756,8 +824,12 @@
       "window_check": {
         "result": "not established",
         "checked": "2026-08-31",
-        "pages_read": ["https://www.deepseek.com/", "https://api-docs.deepseek.com/quick_start/rate_limit", "https://api-docs.deepseek.com/faq"],
-        "note": "\u26aa NOT ESTABLISHED, not 🔴. deepseek.com renders as a JS shell (599 characters of text to a plain fetch) and chat.deepseek.com returned an empty 202; the in-app browser was not permitted to load it. So no consumer-facing limits page was actually READ, and an unread page is not a silent provider \u2014 that is the E1g failure exactly. What IS readable is the API rate-limit doc, and it covers CONCURRENCY per account, which is a different thing from a consumer usage window and must not be quoted as one. To close this: open chat.deepseek.com in a logged-in browser."
+        "pages_read": [
+          "https://www.deepseek.com/",
+          "https://api-docs.deepseek.com/quick_start/rate_limit",
+          "https://api-docs.deepseek.com/faq"
+        ],
+        "note": "⚪ NOT ESTABLISHED, not 🔴. deepseek.com renders as a JS shell (599 characters of text to a plain fetch) and chat.deepseek.com returned an empty 202; the in-app browser was not permitted to load it. So no consumer-facing limits page was actually READ, and an unread page is not a silent provider — that is the E1g failure exactly. What IS readable is the API rate-limit doc, and it covers CONCURRENCY per account, which is a different thing from a consumer usage window and must not be quoted as one. To close this: open chat.deepseek.com in a logged-in browser."
       },
       "stated": "No paid consumer tier and no published chat usage limits.",
       "value_models": {
@@ -807,7 +879,7 @@
         "low": "zai:glm-5.3-flash"
       },
       "source": "https://docs.z.ai/devpack/overview",
-      "as_of": "2026-08-30"
+      "as_of": "2026-09-19"
     },
     {
       "p": "zai",
@@ -838,7 +910,7 @@
         "low": "zai:glm-5.3-flash"
       },
       "source": "https://docs.z.ai/devpack/overview",
-      "as_of": "2026-08-30"
+      "as_of": "2026-09-19"
     },
     {
       "p": "zai",
@@ -869,7 +941,7 @@
         "low": "zai:glm-5.3-flash"
       },
       "source": "https://docs.z.ai/devpack/overview",
-      "as_of": "2026-08-30"
+      "as_of": "2026-09-19"
     }
   ]
 }

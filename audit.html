@@ -204,16 +204,25 @@ let PLANS = {
     // FAQ, updated 2026-08-13, lists only Luna. Re-verified 2026-08-24.
     { m:'ChatGPT Free', price:0,   cap:null, capSource:'disclosed',
       models:['gpt-5.6-luna','gpt-5.4-mini'], features:[], seats:1 },
-    { m:'ChatGPT Go',   price:8,   cap:null, capSource:'disclosed',
+    { m:'ChatGPT Go',   price:8,   cap:null, capSource:'not_disclosed',
       models:['gpt-5.6-luna','gpt-5.4-mini'], features:['image-gen','ads'], seats:1 },
+    // GPT-6 Astra is on Plus and Pro, and the two OpenAI surfaces do NOT agree on
+    // where. The plan comparison table says Astra: Free "No", Go "No", Plus "Yes",
+    // Pro "Expanded". The help centre is narrower: GPT-6 Pro, "powered by GPT-6
+    // Astra", is rolling out to Pro $100 / Pro $200 / Business / Enterprise, and
+    // Plus gets Astra "in ChatGPT Work and Codex" — Chat is named for Pro and
+    // omitted for Plus. Both agree Plus HAS it, so it is listed; the surface is
+    // open. Deliberately NOT in plan-limits.json value_models yet: pricing a Plus
+    // break-even on $10/$50 when the plan may serve Sol at $4/$20 in chat would
+    // lower the break-even and flatter the subscription — the harmful direction.
     { m:'ChatGPT Plus', price:20,  cap:null, capSource:'not_disclosed',
-      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research'], seats:1 },
     // Pro's differentiator is Sol at Extra High plus Sol Pro — reasoning levels, not
     // a distinct model key. There is no gpt-5.6-sol-pro rate to price, so it stays a
     // feature rather than an invented model.
     { m:'ChatGPT Pro',  price:100, cap:null, capSource:'not_disclosed',
-      models:['gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research','sol-pro'], seats:1 },
   ],
   anthropic: [
@@ -279,6 +288,7 @@ let PLANS = {
 // unnoticed for ten days in Aug 2026 (gemini-3.5-flash was a third of the real
 // rate), which made pay-per-token look cheaper than it is whenever the fetch broke.
 let API = {
+  'gpt-6-astra':{in:1e-5,out:5e-5},
   'gpt-5.6-luna':{in:2e-7,out:1.2e-6}, 'gpt-5.6-sol':{in:4e-6,out:2e-5}, 'gpt-5.6-terra':{in:2e-6,out:1.2e-5},
   'gpt-5.5':{in:5e-6,out:3e-5}, 'gpt-5.4':{in:2.5e-6,out:1.5e-5}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
   'o3':{in:2e-6,out:8e-6}, 'o4-mini':{in:1.1e-6,out:4.4e-6}, 'gpt-4.1':{in:2e-6,out:8e-6},
@@ -290,7 +300,7 @@ let API = {
   // DeepSeek's warned increase landed: ~3x input, ~4.5x output. These are the PEAK
   // (undiscounted) rates — off-peak is half, but it depends on a UTC window the user
   // does not control, and this engine's cheapest advice leans on DeepSeek hardest.
-  'deepseek-v4-flash':{in:4.4e-7,out:1.32e-6}, 'deepseek-v4-pro':{in:1.32e-6,out:3.96e-6},
+  'deepseek-v4-flash':{in:3e-7,out:1.2e-6}, 'deepseek-v4-pro':{in:1.32e-6,out:3.96e-6},
   'deepseek-r1':{in:5.5e-7,out:2.19e-6},
 };
 const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsoft:'Copilot', deepseek:'DeepSeek' };
@@ -350,17 +360,19 @@ function advancedModels(){
     tiers.forEach(t=>{ if(t.price>0) t.models.forEach(m=>{ if(!free.has(m)) s.add(m); }); });
   }
   // providers the auditor doesn't yet cover, but whose models can appear in an export
-  ['claude-fable-5','claude-mythos-5','grok-4.5','grok-4.6','sonar-reasoning-pro','deepseek-v4-pro'].forEach(m=>s.add(m));
+  ['claude-fable-5','claude-mythos-5','claude-fable-5-1','claude-mythos-5-1','grok-4.5','grok-4.6','sonar-reasoning-pro','deepseek-v4-pro'].forEach(m=>s.add(m));
   LEGACY_MODELS.forEach(m=>s.delete(m));
   return s;
 }
 const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus 4.8', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
+  'claude-fable-5-1':'Claude Fable 5.1', 'claude-mythos-5-1':'Claude Mythos 5.1',
+  'gpt-6-astra':'GPT-6 Astra',
   'gpt-5.6-sol':'GPT-5.6 Sol', 'gpt-5.6-terra':'GPT-5.6 Terra', 'gpt-5.6-luna':'GPT-5.6 Luna',
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
   'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-3.5-flash':'Gemini 3.5 Flash',
   'gemini-3.6-flash':'Gemini 3.6 Flash', 'gemini-3.7-flash':'Gemini 3.7 Flash',
   'sonar-reasoning-pro':'Sonar Reasoning Pro', 'grok-4.5':'Grok 4.5', 'grok-4.6':'Grok 4.6',
-  'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek V4 Flash', 'deepseek-r1':'DeepSeek R1',
+  'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek Flash', 'deepseek-r1':'DeepSeek R1',
   // Every plan-limits value_model needs a label or its raw key leaks into the
   // break-even copy — check-auditor.js enforces that.
   'gpt-5.4-mini':'GPT-5 Thinking Mini', 'claude-haiku-4-5-20251001':'Claude Haiku 4.5',
@@ -586,7 +598,7 @@ const MSG_MID={lt5:3,'5to20':12,'20to50':35,'50to150':100,'150plus':200};
    regenerates them. Still the single largest lever on every dollar figure below.
    Connecting an EcoMeter export replaces them with measured billed-input tokens;
    the fix for the quiz path is to anchor them to real exports. */
-const ARCHETYPE={ light:{in:635,out:232}, standard:{in:3596,out:464}, heavy:{in:14791,out:1082} };
+const ARCHETYPE={ light:{in:641,out:235}, standard:{in:3639,out:470}, heavy:{in:14975,out:1096} };
 const PURPOSE_TOK={quick:'light',writing:'standard',research:'standard',coding:'heavy',agentic:'heavy'};
 
 function toolsCount(a){ return (a.tools||[]).filter(t=>t!=='other').length || 1; }
@@ -981,7 +993,15 @@ function unquantifiedWindow(prov, tier, depth){
         // Codex disclosure asserts about a surface we do not measure, which is the
         // same category error as pricing a whole plan off a feature sub-limit.
         // pricing.html covers every surface and shows it there, with its scope named.
-        return row.unquantified_windows[0].scope ? null : row.unquantified_windows[0].window;
+        //
+        // But a scope NARROWS only when it names a subset. "all models" does the
+        // opposite: it is Anthropic's own phrase for a window covering the entire
+        // plan, and reading it as a narrowing would silently delete the very caveat
+        // it exists to carry. Added 2026-09-06, when labelling Anthropic's weekly
+        // "all models" made this line drop the caveat from Pro, Max 5x and Max 20x.
+        // check-auditor.js section 18 carries the same predicate and catches the drift.
+        var uqs = row.unquantified_windows[0].scope;
+        return (uqs && !/^all(\s+models?)?$/i.test(uqs)) ? null : row.unquantified_windows[0].window;
       }
       if(row.multiplier && row.multiplier.of)
         return unquantifiedWindow(prov, {m:row.multiplier.of}, (depth||0)+1);

@@ -132,12 +132,65 @@ if (process.argv.includes('--write')) {
   const raw = fs.readFileSync(P, 'utf8');
   const NL = raw.indexOf('\r\n') >= 0 ? '\r\n' : '\n';
   const start = raw.indexOf('    "archetypes": {');
-  const end = raw.indexOf('    },', start);
+  // The closing brace must be matched at its OWN indentation, anchored to a line
+  // start. Searching for '    },' alone finds it inside '      },' — the nested
+  // "light" object\'s close — the six-space string contains the four-space one.
+  // The splice then cut the block mid-object and the JSON.parse below threw, so
+  // --write has been dead since the archetypes gained nested rows, while
+  // check-auditor.js went on naming it as the remedy. Found 2026-09-19.
+  const CLOSE = NL + '    },';
+  const end = raw.indexOf(CLOSE, start);
   if (start < 0 || end < 0) throw new Error('cannot locate the archetypes block in plan-limits.json');
-  const out = raw.slice(0, start) + renderBlock(NL) + raw.slice(end + '    },'.length);
+  const out = raw.slice(0, start) + renderBlock(NL) + raw.slice(end + CLOSE.length);
   JSON.parse(out);
   fs.writeFileSync(P, out);
   console.log('plan-limits.json archetypes updated.');
+
+  // pricing.html mirrors BOTH of these so the table renders before the live fetch
+  // lands, and check-auditor.js checks both copies. Until 2026-09-19 --write wrote
+  // only plan-limits.json, so the documented remedy for a drift failure did not
+  // clear that failure — you ran the script the error names and still had two. The
+  // block there even read "Owned by scripts/derive-archetypes.js" while nothing
+  // here wrote it.
+  const H = path.join(ROOT, 'pricing.html');
+  let html = fs.readFileSync(H, 'utf8');
+  const CR = String.fromCharCode(13), LF = String.fromCharCode(10);
+  const HNL = html.indexOf(CR + LF) >= 0 ? CR + LF : LF;
+  const before = html;
+
+  html = html.replace(/var CHARS_PER_TOKEN = [\d.]+;/,
+    'var CHARS_PER_TOKEN = ' + CHARS_PER_TOKEN.toFixed(3) + ';');
+
+  const pad = (s, n) => s + ' '.repeat(Math.max(0, n - s.length));
+  const mirror = Object.entries(archetypes).map(([name, a]) =>
+    '        ' + pad(name + ':', 10) + ' { input: ' + pad(a.input + ',', 6) +
+    ' output: ' + pad(a.output + ',', 5) + ' label: ' + JSON.stringify(a.label) + ' }');
+  const TAG = '        // Owned by scripts/derive-archetypes.js — regenerate, don\'t hand-edit.';
+  const s2 = html.indexOf(TAG);
+  if (s2 < 0) throw new Error('cannot locate the archetypes mirror in pricing.html');
+  const e2 = html.indexOf(HNL + '      },', s2);
+  if (e2 < 0) throw new Error('cannot locate the end of the archetypes mirror');
+  html = html.slice(0, s2) + TAG + HNL + mirror.join(',' + HNL) + html.slice(e2);
+
+  if (html !== before) {
+    fs.writeFileSync(H, html);
+    console.log('pricing.html CHARS_PER_TOKEN and archetype mirror updated.');
+  }
+
+  // audit.html carries a THIRD copy as its failed-fetch fallback, and its comment
+  // also claimed this script 'owns these numbers and regenerates them'. It did not.
+  // FRESHNESS warns that audit.html is the copy updated last or not at all; the way
+  // to stop that being true is for the generator to write it.
+  const A = path.join(ROOT, 'audit.html');
+  let aud = fs.readFileSync(A, 'utf8');
+  const audBefore = aud;
+  const one = ([n, a]) => n + ':{in:' + a.input + ',out:' + a.output + '}';
+  aud = aud.replace(/const ARCHETYPE={[^}]*}[^;]*;/,
+    'const ARCHETYPE={ ' + Object.entries(archetypes).map(one).join(', ') + ' };');
+  if (aud !== audBefore) {
+    fs.writeFileSync(A, aud);
+    console.log('audit.html ARCHETYPE fallback updated.');
+  }
 }
 
 module.exports = { CHARS_PER_TOKEN, archetypes, SHAPES, COMMENT, samples: prose.length };

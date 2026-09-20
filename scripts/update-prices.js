@@ -136,6 +136,7 @@ async function fetchOpenAI() {
   // SHORT-CONTEXT rates — the long-context column is roughly double and applies
   // to every token in the request (see _meta.caveats._short_context_only).
   const prices = {
+    'gpt-6-astra':  { input: perM(10.00),  output: perM(50.00)  },
     'gpt-5.6-sol':  { input: perM(4.00),   output: perM(20.00)  },
     'gpt-5.6-terra':{ input: perM(2.00),   output: perM(12.00)  },
     'gpt-5.6-luna': { input: perM(0.20),   output: perM(1.20)   },

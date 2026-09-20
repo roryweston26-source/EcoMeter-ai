@@ -24,6 +24,11 @@ const all = {};
 for (const [prov, m] of Object.entries(p.api)) for (const [k, v] of Object.entries(m)) all[k] = v;
 let bad = 0;
 const fail = s => { console.log('  X ' + s); bad++; };
+// Warnings do NOT fail the build. They exist for things that are still correct today
+// but are about to stop being: a promo with a known end date is the only one so far.
+// A guard that can only speak once the data is already wrong arrives too late.
+const warnings = [];
+const warn = s => { warnings.push(s); };
 
 // 1. price <-> water parity
 for (const [prov, m] of Object.entries(p.api)) {
@@ -155,17 +160,89 @@ for (const [prov, m] of Object.entries(p.api)) {
     if (!v.promo) continue;
     promos++;
     const { until, standard } = v.promo;
-    if (!until || !standard || standard.input == null || standard.output == null) {
-      fail('promo block on ' + k + ' must carry { until, standard:{input,output} }');
+    // `standard: null` is a legitimate, deliberate state: the provider says a rate
+    // is promotional but does NOT say what it reverts to. Rule 3 — a gap is a finding,
+    // never fill it with a plausible number — so we record the absence and make the
+    // guard ask for a re-read on expiry instead of asserting a figure we invented.
+    // It must still say so out loud, hence the required note.
+    const unknown = standard === null;
+    if (!until || (!unknown && (!standard || standard.input == null || standard.output == null))) {
+      fail('promo block on ' + k + ' must carry { until, standard:{input,output} }, or standard:null with a note');
       continue;
     }
-    if (Math.abs(standard.input - v.input) < 1e-12 && Math.abs(standard.output - v.output) < 1e-12)
+    if (unknown && !v.promo.note)
+      fail('promo on ' + k + ' has standard:null but no note saying what the provider did and did not publish');
+    if (!unknown && Math.abs(standard.input - v.input) < 1e-12 && Math.abs(standard.output - v.output) < 1e-12)
       fail('promo on ' + k + ' matches the standard rate — it is not a promotion');
-    if (until < today)
-      fail('PROMO EXPIRED ' + until + ': ' + k + ' must revert to $' +
-           standard.input * 1e6 + '/$' + standard.output * 1e6 + ' per 1M (currently $' +
-           v.input * 1e6 + '/$' + v.output * 1e6 + '), and the promo block removed');
+
+    // Heads-up BEFORE it bites. glm-5.3-flash's promo expired 2026-09-09 and was
+    // found on 2026-09-19, so the site quoted half the real price for ten days —
+    // the guard was right and simply had nothing to say until it was already wrong.
+    const daysLeft = Math.round((Date.parse(until) - Date.parse(today)) / 86400000);
+    if (daysLeft >= 0 && daysLeft <= 21)
+      warn('promo on ' + k + ' expires in ' + daysLeft + ' day(s), on ' + until +
+           (unknown ? ' — and the provider has not published the reverting rate, so go read it now'
+                    : ' — reverting to $' + standard.input * 1e6 + '/$' + standard.output * 1e6 + ' per 1M'));
+
+    if (until < today) {
+      if (unknown)
+        fail('PROMO EXPIRED ' + until + ': ' + k + ' — the provider never published what it reverts to. Re-read the rate card and set the real standard; do not guess.');
+      else
+        fail('PROMO EXPIRED ' + until + ': ' + k + ' must revert to $' +
+             standard.input * 1e6 + '/$' + standard.output * 1e6 + ' per 1M (currently $' +
+             v.input * 1e6 + '/$' + v.output * 1e6 + '), and the promo block removed');
+    }
   }
+}
+
+// 7b. Announced SUNSETS. A provider saying 'this API is supported until <date>' is
+//     the same shape of fact as a promotional rate and rots the same way, but until
+//     2026-09-19 it lived only as prose in FRESHNESS — which is exactly how
+//     glm-5.3-flash's expiry went ten days unnoticed. A model may carry
+//     { sunset: { on, what, source } }; this warns as the date nears and fails once
+//     it has passed, because a rate for an API nobody can call is not a price.
+let sunsets = 0;
+for (const [prov, m] of Object.entries(p.api)) {
+  for (const [k, v] of Object.entries(m)) {
+    if (!v || !v.sunset) continue;
+    sunsets++;
+    const { on, what, source } = v.sunset;
+    if (!on || !what || !source) { fail('sunset block on ' + k + ' needs { on, what, source }'); continue; }
+    const days = Math.round((Date.parse(on) - Date.parse(today)) / 86400000);
+    // First sentence only: three models share one sunset note here, and printing the
+    // whole thing three times buries every other warning on the page.
+    if (days >= 0 && days <= 30)
+      warn('SUNSET in ' + days + ' day(s), on ' + on + ': ' + k + ' — ' + what.split('; ')[0].split('. ')[0] + '.');
+    if (on < today)
+      fail('SUNSET PASSED ' + on + ': ' + k + ' — ' + what + '. Re-read ' + source +
+           ' and either remove the model or record what replaced it; do not leave a rate for an API that is gone.');
+  }
+}
+
+// 7c. A plan you cannot buy must say so, in BOTH copies of the subscription list.
+//     OpenAI paused new sign-ups to ChatGPT Pro $200 (Pro 20x) on 2026-09-10 and
+//     dropped $200 from its pricing page, while this project went on listing it at
+//     $200 like any other option. The row is kept — existing subscribers still need
+//     to know whether to keep paying — but a price with no way to pay it is exactly
+//     the kind of thing the Kimi decision (FRESHNESS A11) refused to publish.
+for (const pl of L.plans) {
+  const av = pl.availability;
+  if (!av || av.status === 'open') continue;
+  if (!av.since || !av.stated || !av.source)
+    fail('availability on ' + pl.m + ' needs { status, since, stated, source }');
+  const sub = p.subscriptions.find(s => s.p === pl.p && s.m === pl.m);
+  if (!sub) { fail('availability on ' + pl.m + ' but no subscription row'); continue; }
+  const says = s => s && /closed to new|cannot (start|buy)|paused/i.test(s);
+  if (!says(sub.note))
+    fail('plan-limits says ' + pl.m + ' is ' + av.status + ' but its prices.json subscription row carries no note saying so');
+  // Plain string search, not a regex: the plan name contains a multiplication sign
+  // and parentheses, and building a pattern out of it is how this check first broke.
+  const marker = 'm:"' + pl.m + '"';
+  const k = html.indexOf(marker);
+  const row = k < 0 ? null : html.slice(k, html.indexOf(String.fromCharCode(10), k));
+  if (!row) fail('no pricing.html fallback subscription row for ' + pl.m);
+  else if (!says(row))
+    fail('pricing.html fallback row for ' + pl.m + ' carries no closed-to-new-subscribers note — a failed fetch would show it as buyable');
 }
 
 // 8. Open weights and the host spread.
@@ -179,7 +256,16 @@ for (const [prov, m] of Object.entries(p.api)) {
 //
 //    The staleness thresholds fail LOUD rather than silently ageing, on the same
 //    principle as the promo check above.
-const OSI = new Set(['apache-2.0', 'mit', 'modified-mit', 'bsd-3-clause']);
+// OSI-approved licences ONLY. 'modified-mit' was in this set until 2026-09-19 and
+// should never have been: a modified MIT is by definition not MIT, and OSI has
+// approved no such licence. Worse, the STRING IS NOT THE LICENCE — two models here
+// carry 'modified-mit' and mean opposite things. Moonshot's asks you to display
+// "Kimi K2.7 Code" in your UI above 100M MAU or $20M monthly revenue; Mistral
+// Medium 3.5's FORBIDS use outright above $20M monthly revenue unless you buy a
+// commercial licence. One is attribution, the other is a paywall, and a solid green
+// badge said both were plain MIT. Record what a bespoke licence actually restricts
+// in open_weights.restriction rather than trusting its name.
+const OSI = new Set(['apache-2.0', 'mit', 'bsd-3-clause']);
 const STALE_DAYS = 120;
 const daysOld = d => Math.floor((Date.now() - Date.parse(d)) / 86400000);
 let ow = 0, spreads = 0;
@@ -198,6 +284,10 @@ for (const [prov, m] of Object.entries(p.api)) {
         fail('open_weights on ' + k + ' claims osi:true for non-OSI licence "' + o.license + '"');
       if (o.osi === false && OSI.has(o.license))
         fail('open_weights on ' + k + ' sets osi:false for standard licence "' + o.license + '" — that understates it');
+      // A non-OSI licence without a plain-English restriction is a badge that says
+      // "bespoke" and tells the reader nothing about what it actually costs them.
+      if (o.osi === false && !o.restriction)
+        fail('open_weights on ' + k + ': osi:false needs a restriction saying what the licence actually limits');
     }
     if (!v.hosted) continue;
     spreads++;
@@ -209,8 +299,14 @@ for (const [prov, m] of Object.entries(p.api)) {
     }
     if (h.low.input > h.high.input) fail('hosted spread on ' + k + ': low.input exceeds high.input');
     if (typeof h.n !== 'number' || h.n < 2) fail('hosted on ' + k + ': n must be at least 2 — a single host is not a spread');
-    if (h.cheaper_than_first_party != null && h.cheaper_than_first_party >= h.n)
-      fail('hosted on ' + k + ': cheaper_than_first_party (' + h.cheaper_than_first_party + ') must be below n (' + h.n + ')');
+    // ctf MAY equal n. That is the sharpest case this column exists to show — every
+    // host undercutting the lab that made the model — and asserting ctf < n made it
+    // unstorable. It did: qwen3.8-27b was 11-of-11 on 2026-08-29 (dearest host $0.48
+    // vs Alibaba's own $0.50, which is what FRESHNESS A9 and the page note both say)
+    // and got stored as 7 to satisfy this line. Same wrong assumption as the range
+    // check below, which was fixed that day while this second copy of it was left.
+    if (h.cheaper_than_first_party != null && h.cheaper_than_first_party > h.n)
+      fail('hosted on ' + k + ': cheaper_than_first_party (' + h.cheaper_than_first_party + ') exceeds n (' + h.n + ')');
     // The first-party rate is NOT required to sit inside the host range. The first
     // run of this check asserted it was and failed on qwen3.8-27b, where Alibaba's
     // $0.50 list price is above all eleven hosts — including Alibaba's own resale
@@ -456,10 +552,15 @@ for (const [prov, m] of Object.entries(p.api)) {
   }
 }
 
+if (warnings.length) {
+  console.log('');
+  for (const s of warnings) console.log('  ! ' + s);
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)'
   : '\nALL CHECKS PASS — ' + Object.keys(all).length + ' models priced, ' + promos +
-    ' on promotional rates, ' + shown.length +
+    ' on promotional rates, ' + sunsets + ' with an announced sunset, ' + shown.length +
     ' shown, ' + Object.values(all).filter(x => x.long).length + ' with long-context tiers, ' +
     ow + ' with published weights (' + spreads + ' with a measured host spread), ' + L.plans.length + ' plans');
 process.exit(bad ? 1 : 0);

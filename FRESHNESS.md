@@ -7,7 +7,11 @@ each thing lives, what to check it against, and which script proves the fix.
 **It exists so one prompt can re-verify the whole project.** Everything below is
 written to be executed, not just read.
 
-_Last full pass: **2026-08-25** — A, B, C, D, F verified 2026-08-24 and current.
+_Last full pass: **2026-09-19** — A through H, all eleven guards passing. The
+2026-08-25 entry below is kept because its detail is still the reference for E.
+Update this line when a pass completes._
+
+_Previous full pass: **2026-08-25** — A, B, C, D, F verified 2026-08-24 and current.
 **E is now fully verified**: all 12 datacenter sites re-checked (backlog cleared,
 `last_updated` earned for the first time since 2026-07-13), and the Transparency
 Index completed — Microsoft's per-site disclosure found in the fact sheet (the
@@ -80,6 +84,34 @@ almost nobody reports. **Homepage reordered** so the Transparency Index sits in
 the top three; both "Coming soon" cards moved to the end, since nothing that
 exists should rank below something that does not._
 
+_**2026-09-19 — FULL PASS, A through H.** The first since 2026-08-25. **Exactly one of
+79 API rates had moved** (DeepSeek cut Flash $0.44/$1.32 → $0.30/$1.20 and renamed it
+deepseek-flash / V4.1-Flash), every student offer held, and the water anchors did not
+budge. What the pass actually found was **rot in the machinery rather than the numbers**.
+**check-prices.js ran in no workflow at all** — the guard carrying the promo-expiry check
+written so "an expired promo cannot quietly become a wrong price" had never run
+automatically, and the cost was measured: Z.ai's glm-5.3-flash promo expired 2026-09-09
+and the site quoted half the real price for ten days. It is in CI now, with
+test-cost-model and test-water-model, which were also ungated. **derive-archetypes.js
+--write had been dead** since the archetypes gained nested rows, so check-auditor kept
+naming a remedy that crashed; fixed, and extended to write all three copies it claimed to
+own. **check-prices.js asserted `ctf < n`**, encoding "a lab is never dearer than every
+host" — the exact finding the column exists to surface — and it had already corrupted a
+shipped value. **`modified-mit` was whitelisted as OSI**, rendering a green "open" badge
+for two licences that mean opposite things (Kimi's asks for a logo above $20M revenue;
+Mistral Medium 3.5's forbids use entirely); all six bespoke licences read at source and a
+required `restriction` field added. **DISCLOSURE GOT WORSE FOR THE FIRST TIME IN ONE
+PASS**: OpenAI deleted ChatGPT Go's Thinking figure and Microsoft deleted all four of its
+published limits, dropping the disclosed count 10 → 8. OpenAI also **paused new sign-ups
+to Pro $200**, so the table was showing a price nobody could pay. New this pass: promo
+and sunset warnings that fire BEFORE the date, `promo.standard: null` for a promo whose
+reverting rate the provider won't publish (GPT-5.6 Sol is the first), a machine-checked
+`sunset` block (Perplexity's Sonar, 2026-09-27), an `availability` block with a two-copy
+guard, `check-extension.js` pinning the manifest and the x.com privacy carve-out, and the
+Jegham benchmark version pinned after it turned out to be **four revisions ahead of our
+citation** (transcription re-read from v6 and correct). Claude Fable 5.1 and Mythos 5.1
+added across all six files. **Eleven guards, all in CI, all passing.**_
+
 ---
 
 ## The one prompt
@@ -147,10 +179,13 @@ wrong number in front of a user.
 
 | Date | What | Entry |
 |---|---|---|
+| **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. | [A1](#a1-per-token-api-prices) |
+| **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** v6.14 bundles the Gemini Flash promo rate and a build freezes its prices; after the promo reverts, a still-live v6.14 understates Gemini cost by 2×. No guard can reach the store. | [H4](#h4-the-shipped-build-vs-main) |
+| ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
 | **2026-12-31** | **Google's promotional rate on `gemini-3.7-flash` and `gemini-3.6-flash` expires** — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
-| **2026-09-27** | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. | [A1](#a1-per-token-api-prices) |
+| **2026-09-27** | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices) |
 | 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
 | Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
 | June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
@@ -208,7 +243,7 @@ a source you're about to change.
 
 **Goes stale:** constantly. OpenAI cut two models ~5× overnight on 2026-08-02.
 
-**Source of truth:** `extension/prices.json` → `api` (10 providers, ~76 models).
+**Source of truth:** `extension/prices.json` → `api` (10 providers, ~79 models).
 
 **Copies that must follow — all four drift silently:**
 - `pricing.html` → `FALLBACK_PRICES`
@@ -243,6 +278,52 @@ to the unmodelled prompt-caching discount — they do not cancel out.
 
 **Then rewrite `_meta.last_updated` and `_meta.verified`** — the prose should name
 what moved and what didn't.
+
+**Two fetch notes earned on 2026-09-19.** `ai.google.dev` redirect-loops a plain
+curl until it has a **cookie jar** (`-b jar -c jar`) — without one it returns 302
+forever and looks like the site is down. `mistral.ai/pricing/api` renders its rate
+card **client-side**, like Alibaba's: fetch the HTML and the numbers are simply not
+in it. Render both. Neither failure announces itself as a failure.
+
+### 2026-09-19 — the full nine-provider re-read, and what it cost to skip one
+
+**One rate in seventy-nine had moved, and it moved DOWN.** DeepSeek cut its Flash
+model from $0.44/$1.32 to **$0.30/$1.20** peak and renamed it: the rate card now
+lists `deepseek-flash` (DeepSeek-V4.1-Flash) and says `deepseek-v4-flash` is
+**retired**, legacy requests served by V4.1-Flash at the Flash price. We keep the old
+key because it joins five files and DeepSeek still accepts it; the display name is now
+"DeepSeek Flash". Everything else at all nine providers was unchanged — including both
+Gemini Flash promos, every Anthropic family, all four Alibaba tiers, both Kimi models
+and all three Sonar rates.
+
+**The one thing that was wrong, we had already been warned about.** Z.ai's
+`glm-5.3-flash` promo expired **2026-09-09** and nobody ran the guard, so the site
+quoted **half the real price for ten days**. `check-prices.js` had been right and
+simply had nothing to say until the data was already wrong. Three mechanisms now
+close that gap, each fault-injected:
+
+- **Promos warn 21 days out**, sunsets 30, via a new non-failing `warn()` channel.
+  A guard that can only speak once the number is wrong speaks too late.
+- **`promo.standard` may now be `null`** — for when a provider says a rate is
+  promotional but *not* what it reverts to. Rule 3 forbids inventing the figure, so
+  the guard records the absence and demands a re-read on expiry instead of asserting
+  a number. **GPT-5.6 Sol is the first**: OpenAI says $4/$20 is promotional "at least
+  through November 21, 2026" and never says what follows. That gap was spotted on
+  2026-09-06 and left unactioned; three days later the GLM one bit.
+- **A new `sunset` block** `{ on, what, source }` for an announced end-of-life. It
+  warns as the date nears and **fails once past**, because a rate for an API nobody
+  can call is not a price. Perplexity's three Sonar models carry the first, for
+  **2026-09-27** — confirmed verbatim at source on 2026-09-19, date unchanged.
+
+**Two Anthropic models were missing**: Claude Fable 5.1 and Claude Mythos 5.1, both
+$10/$50, added across all six files that must agree. Both carry a **0.025× cache-hit
+multiplier** where every other Claude model uses 0.1× — the first time that multiplier
+has varied by model, and worth watching as a pattern rather than a quirk.
+
+⚠️ **`o1` was wrongly listed in `_legacy_keys`.** It is still on OpenAI's current
+pricing page at $15/$60, exactly our stored rate. `gpt-4` and `gpt-4-turbo` really
+have gone. "I did not find it" and "it is not there" are different claims, and only
+the second belongs in that list.
 
 **Guard:** `check-prices.js`, `check-auditor.js`
 
@@ -347,6 +428,37 @@ both with `water.json` tiers in the same commit, which is the pattern to copy. 6
 models priced, 47 shown, 13 with long-context tiers, 27 plans as of that refresh —
 those counts come from `check-prices.js` output and are worth pasting into a pass
 report, since a change in them is the fastest signal that structure moved.
+
+**Added 2026-09-06:** `gpt-6-astra` — OpenAI's new flagship, sitting above
+`gpt-5.6-sol` on its pricing page at **$10/$50** per 1M short-context and
+**$20/$75** long (>272k, the same threshold as the 5.6 family, read from that
+page's own tooltip). It is ONE model, not a Sol/Terra/Luna-style family. **Six of
+the seven places are done**, with the `water.json` tier in the same commit per the
+pattern above: `prices.json` `api`, `water.json` (large / azure — INFERRED, OpenAI
+discloses nothing), `pricing.html` `MODEL_REGISTRY`, `sidepanel.js`
+`MODEL_CATALOG`, `audit.html` (`API`, `LABELS`, and `PLANS[].models` for Plus and
+Pro), and `update-prices.js` `fetchOpenAI()`. Not in `free_tiers`: the plan table
+says Free "No", Go "No".
+
+**The seventh place is deliberately NOT done, and neither is `MODELS.openai.top`.**
+`plan-limits.json` → `value_models` still points at `gpt-5.6-sol`, because the two
+OpenAI surfaces disagree about which SURFACE Plus gets Astra on. The plan
+comparison table says Plus "Yes" and Pro "Expanded". The help centre says GPT-6
+Pro, "powered by GPT-6 Astra", is Pro $100 / Pro $200 / Business / Enterprise, and
+that Plus gets Astra "in ChatGPT Work and Codex" — it names Chat for Pro and omits
+it for Plus. Pricing a Plus break-even on $10/$50 when the plan may serve Sol at
+$4/$20 in chat LOWERS the break-even and flatters the subscription — the harmful
+direction, and exactly the Gemini Flash mistake recorded above. **Settle the
+surface question before touching `value_models` or `top`.** The reasoning
+multiplier is absent for the same reason: unmeasured, and every guess checked so
+far has been too high.
+
+**Two hand-maintained copies no guard opens are still stale, found the same day:**
+`index.html`'s ticker had `GPT-5.5 $5.00` and now reads Astra $10.00, but it still
+carries **Grok 4.3 $1.25** — a key this very section records as appearing nowhere
+on x.ai's page — and **DeepSeek V3 $0.14**, a legacy key at a rate that rose ~3x on
+2026-08-24. The `README.md` provider table is stale the same way outside its
+OpenAI row (no 5.6 family before this pass, no Grok 4.6, no Chinese labs at all).
 
 **Guard:** `check-prices.js` (water parity + "shown on page but unpriced"),
 `check-auditor.js`
@@ -496,6 +608,19 @@ the past**, naming the standard rate to restore. Its pass line reports the count
 (`68 models priced, 2 on promotional rates, …`), so a promo silently disappearing
 is visible too.
 
+**Found 2026-09-06, NOT actioned — `gpt-5.6-sol` is on a promotional rate and this
+file does not know it.** developers.openai.com/docs/pricing states, under the
+flagship table: "GPT-5.6 Sol's promotional pricing is available at least through
+November 21, 2026." The stored $4/$20 carries no `promo` block, so Sol is the one
+promotional rate in the file with no expiry guard — `check-prices.js` will not warn
+when it reverts. Two things need deciding before it can be recorded honestly. The
+wording is a FLOOR ("at least through"), not an expiry, so `until: 2026-11-21`
+would fire the guard as a RE-CHECK prompt rather than a known revert date. And
+`standard` would have to be $5/$30 — what the rate was before 2026-08-24, but NOT
+something OpenAI publishes as the revert target. Recording that as the standard
+rate is the inference rule 8 forbids, so it is flagged here rather than guessed
+into the file.
+
 This is the one entry in this file that **cannot** go stale unnoticed, and it's
 the model for the rest: a dated figure with a machine-readable expiry and a script
 that fails on it beats a calendar entry and a human remembering. Where another
@@ -569,6 +694,58 @@ that line to tidy the layout.** Where a host lists several SKUs for one model we
 the cheapest per host — otherwise Kimi K2.7 Code's "highspeed" SKU at double the rate
 would masquerade as Moonshot charging two different prices for the same thing.
 
+### Re-measured 2026-09-19 — the market moved hard in three weeks
+
+**Every figure below replaces one three weeks older. The direction is uniform: more
+hosts, lower floors, and the labs falling further behind their own resellers.**
+
+| Model | lab's price | cheapest host | lab ÷ cheapest | hosts undercutting the lab | host spread |
+|---|---|---|---|---|---|
+| `deepseek-v4-flash` | $0.30 | **$0.039** (StreamLake) | **7.7×** | **16 of 16** | 5.32× |
+| `qwen3.8-27b` | $0.50 | **$0.100** (Darkbloom) | **5.0×** | **16 of 16** | 4.50× |
+| `deepseek-v4-pro` | $1.32 | $0.422 (StreamLake) | 3.13× | 6 of 15 | 4.52× |
+| `glm-5.3-flash` | $0.15 | $0.075 (DeepInfra) | 2.00× | 8 of 27 | **6.00×** |
+| `kimi-k3` | $3.00 | $1.700 (Relace) | 1.76× | 9 of 17 | 2.03× |
+| `glm-5.3` | $1.40 | $0.844 (Baidu) | 1.66× | 18 of 30 | 1.66× |
+| `kimi-k2.7-code` | $0.95 | $0.680 (DeepInfra) | 1.40× | 8 of 14 | 1.40× |
+| `qwen3.8-2.4t-a95b` | $2.00 | $2.000 (all seven) | 1.00× | 0 of 7 | **1.00×** |
+
+**Host spreads are now 1.00×–6.00×, where on 2026-08-29 they were 1.18×–2.88×.** The
+order-of-magnitude gap the first pass went looking for and didn't find has since opened
+up — but between *hosts and the lab*, not between hosts.
+
+**The headline finding got stronger, not weaker: for 7 of 8 models the lab that made
+the model sits in the more expensive half of the market for it**, up from 4 of 6. Two
+labs are now dearer than **every single host** of their own model — DeepSeek on
+`deepseek-v4-flash` and Alibaba on `qwen3.8-27b` — and two more are the single dearest
+host in their own market: Z.ai is 30th of 30 for GLM-5.3, and **Moonshot has become the
+dearest of 14 for Kimi K2.7 Code**, where on 2026-08-29 it was 12th of 15.
+
+⚠️ **`cheaper_than_first_party` can equal `n`, and a guard used to forbid it.** Both
+16-of-16 rows above were unstorable until 2026-09-19: `check-prices.js` asserted
+`ctf < n`. That is the same assumption the range check had made and had already been
+corrected for — this second copy of it was left behind. **It had already corrupted a
+shipped value**: `qwen3.8-27b` was 11-of-11 on 2026-08-29 (dearest host $0.48 against
+Alibaba's $0.50), was stored as `7` to satisfy the guard, and the page then rendered
+"7 undercut Alibaba's own API" directly beside a note of ours saying all of them did.
+Prose and data disagreed for three weeks and rule 4 is what catches it. The guard now
+allows `ctf <= n` and carries the story in a comment.
+
+**`mistral-small-4` lost its spread entirely and its `hosted` block is now gone.**
+OpenRouter returns three endpoints for it and all three are Mistral itself ($0.15,
+$0.15, $0.165); Venice, its one third-party host on 2026-08-29, has dropped it. Apache-2.0
+weights with no third-party host at all is a surprising state for the one model Mistral
+actually opened — see `_no_hosted_block` in `prices.json`, which records this so the next
+pass doesn't re-add the block by reflex. It is worth re-checking rather than assuming.
+
+**`qwen3.8-2.4t-a95b` is the opposite and just as interesting: all seven hosts charge
+exactly Alibaba's list $2.00/$6.00.** A 1.00× spread is a real measurement, not a
+missing one. But DeepInfra serves it at **fp4** and SiliconFlow at **fp8** — *the same
+price for measurably different computations*. This is the sharpest case yet for the
+quantisation caveat: where the dollar spread is zero, precision is the only axis left,
+and it is the one hosts don't advertise.
+
+### The 2026-08-29 finding, superseded above but kept for the shape of it
 ### The finding, as measured on 2026-08-29
 
 Spreads were **1.18×–2.88×**, not the order-of-magnitude gaps this was expected to
@@ -585,9 +762,11 @@ order-of-magnitude gaps, which is the real failure mode (a units error).
 there is no second price. That is the argument for the column, and it's worth keeping
 in the copy if it ever gets rewritten.
 
-### The biggest spread in the file is DeepSeek's, and it lands on a price rise we already flagged
+### DeepSeek's spread, first measured 2026-08-29 and re-measured 2026-09-19
 
-Measured 2026-08-29, after the three Chinese labs were already shipped:
+**The table below is the 2026-08-29 measurement, superseded by the 2026-09-19 one
+above.** It is kept because the *shape* of the finding survived re-measurement
+unchanged, which is itself evidence it is structural rather than a snapshot:
 
 | Model | first-party | cheapest host | spread | hosts cheaper than the lab |
 |---|---|---|---|---|
@@ -598,16 +777,18 @@ Measured 2026-08-29, after the three Chinese labs were already shipped:
 **DeepSeek raised its prices on 2026-08-24 and the open-weight market did not follow,
 because the weights are MIT and it cannot be made to.** `_deepseek_increase_landed`
 records the rise: v4-flash went $0.14/$0.28 → $0.44/$1.32. The same published model is
-being served at **$0.068** — 6.5× below DeepSeek's own API. Cloudflare is the only host
-at DeepSeek's list price, matching it exactly.
+being served at **$0.039** — **7.7×** below DeepSeek's own API, measured against the CUT
+price DeepSeek moved to on 2026-09-19, not the August one. **Cloudflare no longer matches
+DeepSeek's list price**; on 2026-09-19 it does not serve this model at all, and
+**the dearest of the 16 hosts, Azure at $0.21, is still below DeepSeek's own rate.**
 
 **It survives the off-peak objection, which is the first thing anyone will raise.**
 Stored DeepSeek rates are PEAK and off-peak is exactly half (`_deepseek_peak_offpeak`).
-At the off-peak $0.22, v4-flash is **still 16 of 17**. **v4-pro does NOT survive it**:
-7 of 17 at peak but only **2 of 17** off-peak, where Baidu and StreamLake at ~$0.507
-stay below DeepSeek's $0.66. Quote the flash number; qualify the pro one.
-
-**The quantisation caveat is weaker here than anywhere else, and that is evidence-backed.**
+At the off-peak $0.15 it is **12 of 16**, not 16 of 16 — the first time this claim has
+weakened, and it weakened because DeepSeek CUT its price. **v4-pro still does NOT survive it**:
+6 of 15 at peak but only **2 of 15** off-peak, where StreamLake ($0.422) and Baidu
+($0.431) stay below DeepSeek's $0.66 — the same two hosts as three weeks ago. Quote
+the flash number; qualify the pro one.
 DeepSeek's own released checkpoint carries `quantization_config.quant_method: "fp8"`
 with `expert_dtype: "fp4"` (`config.json` on the HF repo, read 2026-08-29). So the fp8
 and fp4 hosts are serving **the format DeepSeek itself published**, not a lossy
@@ -1073,6 +1254,64 @@ long one stops sustained use. `capPerDay()` takes the **smallest** messages-per-
 any published window permits, because that is what a month of maxed-out use can
 actually contain.
 
+### 2026-09-19 — two providers withdrew figures in one pass, and one plan stopped being buyable
+
+**All eight disclosed figures were re-read at source. Two providers had deleted theirs,
+and the disclosed count fell 10 → 8.** This is the first pass where B1's warning —
+*a figure being here today is not evidence it will be next quarter* — paid out twice.
+
+- **OpenAI deleted ChatGPT Go's "10 messages every 5 hours after enabling Thinking".**
+  Go is now sold in comparatives alone: *More messages with tools, More uploads, More
+  image creation, More voice chats, Longer memory*. The whole pricing page carries **zero
+  numeric allowances**, and the strings `every 5 hours` and `10 messages` do not appear
+  on it. This was one of only **two** absolute consumer figures anyone published, so the
+  loss is far larger than its size. Row moved to `not_disclosed`.
+- **Microsoft deleted all four of its figures at once.** The AI-credits article was
+  rewritten (*Last updated: September 2026*, retitled *AI credits and limits for Microsoft
+  365 subscriptions*) and Agents 25 tasks/month, Vision 15 min/day, Voice 60 min/day and
+  the 60 AI credits/month for Personal and Family are **all gone**. The replacement table
+  grades four tiers entirely in words — *Extensive use / Standard usage / More usage /
+  Highest usage / Not available*. Verified by regex over the rendered page at **both** URLs
+  this file cited (they now resolve to the same article): not one numeric allowance phrase
+  survives. **The largest single-step disclosure regression this project has recorded**, and
+  note it took the CHEAP tiers' figure with it — this one was not hiding behind a price rise.
+
+⚠️ **Microsoft is simultaneously the provider that produced the first positive grade
+movement this project ever recorded** (E1g, per-site datacenter disclosure). Both
+directions are running at once inside one company; do not flatten that into one attitude.
+
+**A plan stopped being purchasable, which is a different failure from a missing number.**
+OpenAI paused new sign-ups and upgrades to **ChatGPT Pro $200 (Pro 20×) on 2026-09-10**;
+existing subscriptions continue and eligible leavers get one 30-day return. Corroborated
+independently — `openai.com/chatgpt/pricing` now lists **$0 / $8 / $20 / $100** and no
+$200 at all. The row is **kept, not deleted**: existing subscribers still need to know
+whether to keep paying, which is the question the Auditor answers. But it now carries an
+`availability` block, and **`check-prices.js` §7c fails unless BOTH subscription copies
+carry a note saying so** — verified by injecting each. `audit.html` never offered this
+plan, so no recommendation was ever wrong; the pricing table was showing a price nobody
+could pay, which is what the Kimi decision in A11 refused to do.
+
+**What held.** OpenAI's Codex five-hour table is unchanged (Sol 10-100 / 50-500 /
+200-2,000) and has **gained a GPT-6 Astra row** at 5-45 on Plus, still scaling exactly
+5× and 20× to the Pro tiers across all seven models. Perplexity Max's 10,000 credits a
+month, the 100-credits-per-dollar conversion and the 15–70 credit task range are all
+still published. Mistral's 150 Flash answers a day holds. Z.ai's three plans verify
+exactly — allowances, credit formula, per-model multipliers and peak window unchanged.
+**Note the Codex page has moved to `learn.chatgpt.com`**; the old developers.openai.com
+URL redirects.
+
+**Anthropic, re-read as B9 instructs — all three pages together, and nothing moved.**
+The best-practices article still says the panel shows when the weekly limit resets *"for
+Opus only and all other models"*; the Max article still calls it *"a weekly usage limit
+that applies across all models"*. **The contradiction is intact and still unresolved.**
+The negative claim re-verified too: the usage-and-length-limits article contains *weekly*
+**zero** times. The 5×/20× wording is unchanged and still session-only. **New, and
+deliberately not made into a window:** the Max article reserves the right to limit usage
+*"in other ways, such as weekly and **monthly** caps... at our discretion"*. That names a
+monthly cap as a reserved right, not as a limit they say exists — recorded in the row,
+given no `unquantified_windows` entry. If *may* ever hardens to *do*, it becomes a third
+window.
+
 **Guard:** `check-auditor.js`, `check-prices.js` §11
 
 ## B2. The disclosure findings (prose)
@@ -1237,12 +1476,26 @@ the first level, raw tokens would have said 4% and API dollars 13%.
    can precede the true first request by up to ten minutes. A larger gap means unseen usage
    opened the window. One of six samples failed at 83 minutes and is dropped, not averaged.
 
-**⚠️ Scope is load-bearing: one machine's Claude Code transcripts.** claude.ai, mobile or a
-second machine count against the same meters and are invisible here, biasing every cap
-**downward**. Claude Code's panel says the same of itself — *"this machine only, excludes
-claude.ai"*. **Rory confirmed on 2026-09-02 that Claude Code on one machine is all he uses**,
-which is the only reason these figures are quotable at all. That confirmation is a fact about
-an account, not about the product, and it expires the moment his habits change.
+**⚠️ SCOPE: VIOLATED, MEASURED, AND THE OLD CONFIRMATION IS RETRACTED (2026-09-05).** This
+reads one machine's Claude Code transcripts. claude.ai, mobile or a second machine count
+against the same meters and are invisible here, biasing every cap **downward**; Claude Code's
+panel says the same of itself — *"this machine only, excludes claude.ai"*. B10 used to rest on
+**"Rory confirmed on 2026-09-02 that Claude Code on one machine is all he uses"**, called here
+"the only reason these figures are quotable at all". **That confirmation was wrong.** Asked
+again on 2026-09-05, after the quiet column turned a single anomaly into a four-interval
+pattern, the answer was **claude.ai and the mobile app are also in use**.
+
+So this is no longer a caveat with a mitigation attached. **Every cap in B10 is a contaminated
+floor by measurement**, and nothing here may be quoted as a figure for Claude Pro — only as a
+lower bound on one account's, seen through a partial window. **The five-hour cap survives
+better than the weekly** (a 429 is a 100% observation and the contamination test already drops
+windows opened by usage we cannot see — one of six failed and was excluded); the weekly has no
+such anchor and is hit hard. **The fitted unit is barely touched**, because α and β come from
+the ratio *between* windows and browser use would have to be systematically cache-read-heavy
+to move them. **Any future run states "no claude.ai, no phone" as a precondition** — it costs
+nothing and it is what makes a bracket mean what it says. **And EcoMeter is the missing half:**
+the tool this protocol correctly rejected for measuring Claude Code is exactly right for the
+browser, so the two are complementary rather than rival. Neither sees the phone.
 
 **USE THE COPY BUTTON, NOT A SCREENSHOT.** The usage panel's copy icon emits exact percentages
 *and exact reset instants* — `session-0: 4% (resets 2026-09-03T02:50:00.618709+00:00)`,
@@ -1262,6 +1515,23 @@ floor, not a centre.** Ask Rory: phone, browser, second machine, Claude Code on 
 **The weekly is NOT solved, and must not be published yet.** Best estimate **~10.2× the
 five-hour cap, band 8.1–13.6**, from a four-point move (31.5M units, readings C→F) — and that
 is a **floor**, because the unseen usage above sits inside the interval.
+
+**⚠️ 2026-09-05: it is worse than a floor — it is a floor dragged down by contamination, and
+the scope caveat is now CONTRADICTED rather than merely unproven.** The script reports, per
+pair, the longest stretch with no request in the transcripts at all, and the readings sort
+monotonically by it: **11m quiet reads 13.3×, 104m reads 12.8×, 197m reads 7.3×, 317m reads
+3.1×**. Unseen usage can only bias a pair *downward* — the bar moves on usage we did not see
+and we divide the usage we did see by that larger move — so **the maximum across pairs is the
+estimate and the mean is meaningless**; the script now says so and names the offending pairs.
+The loudest case came from pairing the 2026-09-03T03:31 baseline, which had been set aside as
+"a starting line, not a data point": 18 requests in a five-minute burst, then **nothing for
+5h17m while the weekly climbed four points**. Rounding cannot rescue it (even a three-point
+reading gives 13M, 2.4× below C→F) and the transcripts are not at fault — the copy report's
+own Local activity count of 4637 straddles our parse exactly (4631 at 03:31:10Z, 4639 at
+03:33:10Z). **Roughly 0.9M units were spent somewhere this machine cannot see, in one night.**
+The cleanest pair on record (C→D, 11 minutes quiet) reads 13.3×, but it is a one-point move
+so its honest band is 6.7× to unbounded. A clean pair and a tight pair are not the same thing
+and we have neither together.
 
 **Derive the weekly from Δ between two readings, NEVER from cumulative usage since a stated
 reset.** A Δ needs no window start, which is what makes it immune to the item below.
@@ -1290,10 +1560,56 @@ paragraph.** The same paragraph also reserves further meters — *"we may limit 
 other ways, such as weekly and monthly caps or model and feature usage, at our discretion"* —
 so even the two-meter picture is not guaranteed complete.
 
-**Next step is a precision one and it is cheap: catch ticks, not levels.** Percentage
-quantisation is the only error term left, so time the moment the bar changes 5%→6%: between
-two consecutive ticks exactly one point of the cap is spent and the usage between them is
-exact on disk. At the observed burn rate a tick is ~20 minutes of heavy work.
+**THE REJECTIONS SELF-LABEL, and that is the route to the weekly (found 2026-09-05).** Every
+429 carries a `quotaLimits` object that had been sitting in the transcripts unread:
+`{"rateLimitType":"five_hour","overageStatus":"rejected","overageDisabledReason":
+"org_level_disabled","isUsingOverage":false,"resetsAt":…}`. Three consequences.
+**(1)** All seven rejections say `"five_hour"`, so "these are five-hour observations" is now
+read off the record instead of assumed — the five-hour fit's load-bearing premise is
+confirmed. **(2) A weekly 429 would announce itself**, and would be a 100% observation of
+the weekly cap with **no percentage rounding at all** — the weekly could then be read exactly
+the way the five-hour was. That is the cheapest route left and it costs nothing but waiting;
+the script used to discard non-five-hour rejections silently and now shouts about them.
+**(3)** `isUsingOverage: false` on all seven means no paid credit inflated any window, so
+each is an observation of the plan and not of a purchase — which also **weakens the
+"credit top-up" explanation for the parked mid-week reset** below, without killing it.
+**Dead ends checked the same day, recorded so nobody re-treads them:** `~/.claude/.claude.json`
+and its five rotating backups carry no utilization; `quotaLimits` rides only on rejections,
+never on a successful response. The copy button is still the only source of levels.
+
+**Tick brackets are BUILT and TESTED, and the protocol's price is now measured.** Percentage
+quantisation was the only error term left. Between the instant the bar turns v−1 → v and the
+instant it turns v → v+1 exactly one point is spent, so the estimator brackets it —
+`capLo = 100 × units(first sighting of v → last sighting of v)` and
+`capHi = 100 × units(last sighting of v−1 → first sighting of v+1)` — assuming nothing about
+how the product rounds, and combining several brackets by intersection. **When they do not
+intersect it reports a contradiction rather than averaging**, because a lower bound above an
+upper one means either unseen usage or a wrong α/β.
+
+**⚠️ The precision table is a SIMULATION, not a measurement of Anthropic** — the real
+2026-08-24 → 09-01 token stream replayed against a *hypothetical* 31.5M cap, asking only how
+tightly the estimator could recover it. Glancing every 30 min gives 14.6× and is useless;
+15 min 2.34×; 10 min 1.54×; 5 min 1.18×; **3 min 1.06×**, and below three minutes nothing
+improves because the floor is set by how far apart the *requests* are, not the glances.
+**Six ticks is the target, not two:** two consecutive ticks read a median 1.46× and can be as
+bad as 6.05×, six read a median 1.22× worst 1.47× — already better than the 8.1–13.6 band we
+have. Across all 33 pairs, 32 triples, 31 quads and 29 six-runs, **every window contained the
+true cap**; the method varies in tightness, it does not lie.
+
+**Guarded by `scripts/test-limit-ticks.js` — 24 assertions, every one fault-injected.** It
+runs the estimator against a cap it already knows, then breaks each assumption in turn:
+20% of usage hidden off-machine makes the bracket land *below* the truth (the scope caveat,
+made mechanical); a mid-run reset and a changed reset instant each split the readings so no
+bracket spans them; a bar advancing slower than the unit model predicts is caught as a
+contradiction — **the one failure the five-hour fit cannot catch on its own**; a level
+glimpsed once yields no bracket rather than a confident-looking one. It prefers Rory's real
+transcripts and falls back to a **seeded synthetic stream**, so it is not a test that only
+runs on one machine — it is wired into `validate-site.yml` alongside the other guards.
+
+**⚠️ The 2026-09-03 anchor has EXPIRED and a fresh window is open.** That baseline
+(`weekly_all-1: 12%`) sat in the window that ended **2026-09-05T06:00:00Z**, so it can no
+longer be paired with anything. The good news buried in that: the next run starts from an
+almost-empty bar. **What the instrument now lacks is readings, not machinery.**
 
 **A contrast worth keeping, and B9 supplies the other half.** Z.ai's credit multipliers
 weight output *less* against input than its own API prices do (4.9× vs 5.5×), so long-output
@@ -1307,9 +1623,91 @@ When it does, it lands as `provenance: "measured"` (a value that does not exist 
 sample size, date, model and the one-account scope attached — and **displayed on
 `pricing.html` before it is ever allowed near the Auditor's `cap` fit test**, per B6.
 
-**Re-verify:** re-run the script after any new 429; every rejection is a free extra sample
-and the fit tightens on its own. If a re-fit ever moves α off 0, the "re-sent context is
-free" claim must come down everywhere it has been repeated.
+**⚠️ 2026-09-06 — A SEVENTH WINDOW LANDED AND THE FIT GOT WORSE, NOT BETTER. The 3.09M
+above is stale; do not quote it without reading this.** A new 429 on **2026-09-05T11:00**
+(still `rateLimitType: "five_hour"`, still no overage) refits the model to:
+
+| | 6 windows to 2026-08-30 | 7 windows, incl. 2026-09-05 |
+|---|---|---|
+| output weight β | 7.75 | **18** |
+| spread | 1.25× | **2.24×** |
+| CV | 8.3% | **23.4%** |
+| **five-hour cap** | **3.09M** | **5.05M** |
+
+_(Both columns are the SUPERSEDED mean-spread estimator, kept to show what went wrong.
+The envelope estimator that replaced it the same day gives β 8.2 and a cap of ≥3.58M on
+all seven windows, and does not move when the seventh is added — see below.)_
+
+**The new window is tiny — 96 requests, $16 of API-equivalent, against $35–$74 for every
+other one.** A 429 at a fifth of the usage is what a window looks like when most of it was
+spent somewhere this machine cannot see, which since 2026-09-05 we know happens on this
+account. **The existing contamination test cannot catch it:** `unseenMin` checks only the
+gap before the window's FIRST visible request, and this window scored a clean 3 minutes.
+Contamination arriving *mid-window* is invisible to it.
+
+**Do not fix this by dropping the sample.** The principled reading is the one the quiet
+column already forced on the weekly: **every 429 is a LOWER bound on the cap**, because
+unseen usage can only ever make the visible units too small. So the estimator should fit
+the **upper envelope** of the windows, not minimise spread across their mean — and a
+window far below the others is a contamination detector rather than evidence of a smaller
+cap. Minimising CV across a contaminated sample is what dragged β from 7.75 to 18.
+
+**IMPLEMENTED 2026-09-06, and both findings survived the rebuild** — which is the main
+reason to believe them, since the method moved underneath them and they did not.
+
+**The cap is now `max_i units_i`, and nothing is discarded.** A contaminated window sits
+below the envelope and its distance below estimates what was spent off-machine. The
+`unseenMin` exclusion is gone: the 83-minute window is back in, sitting 28% short.
+**β is fixed by RECONCILING TWO INDEPENDENT FAMILIES** rather than by internal spread —
+the rejections give a cap, the panel deltas give a cap, and β is where they agree
+(**0.0% at β = 8.2**, within 2% over **6.8–10.1**). β from the rejections alone is
+worthless: on the same seven windows minimising CV says **21.5** and minimising one-sided
+shortfall says **4.75**.
+
+**FIVE-HOUR CAP ≥ 3.58M units** (band 3.17M–4.14M). Per-window shortfall below the
+envelope — an estimate of off-machine usage — runs **0% / 8% / 11% / 14% / 20% / 28%** and
+then **56%** for 2026-09-05, i.e. this account's transcripts see 80–90% of a good window
+and under half of a bad one.
+
+**⚠️ α IS NOW IMPOSED AT 0, NOT FITTED, and that correction came out of testing the
+estimator rather than from the data.** Cache reads run 16M–111M per window against 0.9–1.7M
+of cache write and 0.14–0.30M of output — one to two orders of magnitude larger — so a hair
+of α swamps the unit and buys agreement for free. Left free, the search wandered to α = 0.04
+on synthetic data with a known answer and returned a β less than half the truth. **α coming
+back 0 on the real rejections was partly luck.** The claim now rests on evidence beside the
+fit: a free one-sided search does put it at 0 and holds it there when the contaminated
+window is added; at the billing weight of 0.1 the two families disagree by **36%** instead
+of 0.0%; and the one exact-agreement branch off zero needs α = 0.02 with **β = 36**, output
+weighing seven times the price list, which is a degeneracy and not a rival answer.
+
+**⚠️ THE ">=" IS CONDITIONAL AND THE CONDITION IS UNMET HERE.** Measured on synthetic
+samples with a known answer: at the true β the envelope never exceeds the truth; with one
+clean window AND one clean panel delta the fitted cap never exceeds it; **with nothing clean
+in either family it overshoots in about a third of samples, badly, and the β band does not
+rescue it.** We do not know that any window on this account is clean. **A clean run — browser
+and phone untouched — is what earns the lower bound**, and until then 3.58M is a figure with
+a condition attached, not a floor.
+
+**⚠️ AND THE OUT-OF-SAMPLE CHECK IS GONE.** B10 used to lean on it: the old fit used only
+429s, so the panel levels (18% vs 17%, 45% vs 43%) were genuine predictions. **The new fit
+consumes those deltas to identify β, so they are inputs now, not tests**, and "the two
+families agree to 0.0%" is the criterion being satisfied rather than evidence. Restoring a
+check is cheap — predict the next 429 or the next panel delta *before* adding it. **Do that
+before quoting the cap as anything but a floor.**
+
+**Guarded by `scripts/test-limit-envelope.js` — 20 assertions, in CI.** It recovers a known
+cap, a known β and each window's hidden fraction exactly; checks the fit refuses to move
+when a badly contaminated window is added; and **requires the superseded mean-spread
+estimator to FAIL that same test**, because a change nobody can demonstrate the need for is
+not an improvement.
+
+**Re-verify:** re-run the script after any new 429; every rejection is a free extra sample —
+**but check the spread and CV, not just the cap.** A new sample that widens the spread is
+telling you the sample is dirty, not that the model needs a bigger β. If a re-fit ever moves α off 0, the "re-sent context is
+free" claim must come down everywhere it has been repeated. **Check the `rateLimitType` line
+in the output every time** — the day it stops reading `"five_hour"` for all of them is the
+day the weekly becomes directly measurable. And run `node scripts/test-limit-ticks.js`
+before believing any bracket the script prints.
 
 ## B9. The "Longer window" column (added 2026-09-01)
 
@@ -1325,11 +1723,17 @@ assumptions. It is a pure statement about two numbers the provider published.
 | State | Rows | Reads |
 |---|---|---|
 | `ratio` | 3 (Z.ai) | **6.7× tighter** + both figures |
-| `sized` | 2 | the long window, published, with nothing comparable to set against it |
+| `sized` | 1 | the long window, published, with nothing comparable to set against it |
 | `named` | 12 | *weekly — not published* |
-| `none` | 10 | *none published* + **the date it was read** |
+| `none` | 11 | *none published* + **the date it was read** |
 | `unchecked` | 3 | *not checked — our gap, not their silence* |
 | `unknown` | 1 (DeepSeek) | *not established* |
+
+**`sized` fell 2 → 1 and `none` rose 10 → 11 on 2026-09-19**, and not because the
+engine changed: ChatGPT Go's five-hour Thinking figure was **withdrawn** from OpenAI's
+pricing page, so the row that used to publish a sized window now publishes nothing.
+Microsoft's three figures went the same week (see B1). The table is guarded precisely
+so a withdrawal shows up here as a number rather than as silence.
 
 **These six counts are guarded** (`test-auditor.js` §8) because the first version of
 this table was written from a mid-build snapshot and was wrong in three of six rows
@@ -1356,9 +1760,62 @@ An unscoped check wins; a scoped one (`"ChatGPT chat surfaces"`) is the fallback
 Safe because any plan with a long window of its own resolves before the check is
 consulted, which is why Microsoft 365 Premium never inherits Copilot Free's entry.
 
+### 2026-09-06 — Anthropic names TWO weekly limits, and the multiplier covers neither
+
+**Read at source the same day, both pages current.** The column gave all three paid
+Claude rows one flat cell — *"weekly — not published · Anthropic says it exists and never
+sizes it"*. Two things Anthropic **does** publish were missing from it.
+
+**(1) There are two weekly meters.** The usage-limit best-practices article says the panel
+shows *"when your plan's weekly usage limit resets **for Opus only and all other models**"*
+— naming Pro, Max, Team and seat-based Enterprise in the same sentence. `plan-limits.json`
+had carried this since 2026-09-01 as an **open question**: it inferred a sibling meter from
+the *"Weekly · all models"* label and deliberately declined to assert it. **Anthropic has
+now asserted it**, so it stops being our inference and becomes their disclosure. Both rows
+render as `2 weekly limits — neither sized`.
+
+**⚠️ Anthropic's own two pages disagree on how many weekly meters exist**, and both are
+current: the Max article calls it a single limit *"that applies across all models"*, the
+best-practices article says it resets *"for Opus only and all other models"*. Recorded
+both rather than the tidier one. **And the product does not match either:** the one Pro
+account we have read showed exactly two meters — `session-0`, `weekly_all-1` — with no
+Opus sibling on 2026-09-02 and 2026-09-03. So the docs over-describe Pro, or the meter
+appears conditionally. **Unresolved, and recorded as unresolved.** A Max account or heavier
+Opus use on Pro would settle it; see B10, where the copy-report parser now shouts if a
+third meter ever appears.
+
+**(2) The 5×/20× multiplier covers the SESSION and nothing else.** *"Max 5x provides five
+times more usage **per session**"*, then immediately *"Max plans **also** have a weekly
+usage limit"* — introduced separately, with no multiple and no size. The Max cells now say
+so directly: **"the 5-hour window is a stated 5× Claude Pro's · the weekly one carries no
+stated multiple"**. That is the honest answer to the question Z.ai answers with 6.7×, and
+**the asymmetry is published, not inferred.**
+
+**⚠️ A GUARD CAUGHT A REAL REGRESSION, and the near-miss is the lesson.** Labelling the
+weekly `scope: "all models"` made `audit.html` **drop the caveat entirely** — because both
+`audit.html`'s `unquantifiedWindow()` and `check-auditor.js` §18 treat *any* `scope` as
+narrowing the window to one product surface. That is right for OpenAI's Codex-only weekly
+and exactly wrong for a phrase meaning the opposite. **Both now test for plan-wide wording
+(`/^all(\s+models?)?$/i`), and the predicate is a TWO-COPY FACT** — if one moves and the
+other does not, §18's two-way diff is what catches it. Do not "simplify" either copy.
+
+**Claude Free deliberately left as `not checked`.** Anthropic's weekly sentence enumerates
+only the paid plans, and rendering `none published` for Free would put an absence in their
+mouth on the strength of a list Free was never in. Closing it needs a deliberate read of
+Free's own pages, which nobody has done.
+
+**Citation drift, checked and still sound.** `plan-limits.json` cites
+`support.anthropic.com/…/11647753-understanding-usage-and-length-limits`; the article has
+been **retitled** to *"How do usage and length limits work"* and the old slug now takes two
+301s to reach it. It still resolves. **The negative claim attached to it was re-verified
+2026-09-06 and holds: zero occurrences of "weekly" in the current text**, which is why the
+weekly disclosure is sourced to the best-practices article instead.
+
 **Re-verify:** the 6.72× is pinned by `test-auditor.js` §8 and quoted in B4, B8,
 PROJECT-CONTEXT and two commit messages. If Z.ai changes either cap, that number moves
-and every one of those copies is stale — the guard will say so.
+and every one of those copies is stale — the guard will say so. **For Anthropic, re-read
+both pages together** — the contradiction above means checking only one will make the
+other look settled.
 
 **Known cosmetic limit:** the subscriptions table is now 1,184px wide on a 375px
 phone. It scrolls inside `.tablewrap` and the page itself does not overflow, which is
@@ -1376,7 +1833,7 @@ window data and three of those four had arrived incidentally.
 |---|---|---|---|
 | Z.ai | 5h + **7d** | **both, in credits** | ✅ |
 | OpenAI | 5h + **7d** (Codex only) | 5h yes (ranges), 7d **no** | ✅ |
-| Anthropic | 5h + **7d** | neither | ✅ |
+| Anthropic | 5h + **7d ×2** | neither | ✅ |
 | Google | 5h + **7d** | neither | ✅ |
 | Perplexity | **7d** + 30d | 30d yes (credits), 7d **no** | ✅ |
 | Microsoft | **1d + 30d** | yes, per feature | ✅ |
@@ -1385,6 +1842,12 @@ window data and three of those four had arrived incidentally.
 | DeepSeek | **⚪ unknown** | — | ❌ could not read |
 
 **Five of nine name a weekly or monthly window. Only Z.ai sizes the long one.**
+
+**Updated 2026-09-06 — Anthropic names *two* weekly windows, not one** (Opus-only and
+all-models), and sizes neither; see B9. That makes it the only provider on this table
+admitting to more hidden meters than it has ever sized, and the count is still a floor —
+the same Max paragraph reserves *"weekly and monthly caps or model and feature usage, at
+our discretion"*.
 
 ### The three corrections, all against the provider
 
@@ -1624,6 +2087,28 @@ row (which flips to a `deadline has passed` tag and drops the call to action) an
 student line inside the recommendation card (which disappears). The CI guard only fires
 when a build runs; the site is static and can be read long after one._
 
+**2026-09-19 — all six routes re-verified, and for the first time nothing changed status.**
+Google, GitHub and Mistral still `disclosed`; OpenAI and Anthropic still nothing for
+individuals; DeepSeek still free anyway. Every figure confirmed verbatim at the provider's
+own page: Google's 31 Dec 2026 deadline, payment method required and $19.99 conversion;
+GitHub's *"free to verified students, teachers, and open-source maintainers"*; OpenAI's
+*"free plan for verified U.S. K–12 educators through June 2027"*; Mistral's *"$5.99 /
+month (normally $14.99)"*. Anthropic's logo wall is **still exactly nine institutions** and
+the same nine — note the page now serves **18** logo files because they are light/dark
+pairs, so a naive count doubles it and would have read as growth that did not happen.
+
+**Two gaps closed, both on Google.** The student page is **no longer sign-in walled**,
+which answers the open re-check question below: there is **no discounted rate after the
+free year** — it converts to the full $19.99/mo, so the choice is cancel or pay full price.
+And Google states two eligibility conditions we had never recorded, both of which a student
+hits before any of our other detail matters: the US offer is for **college students aged
+18+**, and **eligibility must be re-verified each year** to keep access. A second free year
+is not automatic even for someone still enrolled.
+
+**Worth setting against section B:** over the same month two providers *withdrew* published
+plan limits, while every student offer held. The rot in this repo is not uniform, and
+assuming it is would send the next pass looking in the wrong place.
+
 | Provider | State | Re-check |
 |---|---|---|
 | Google | **RELAUNCHED.** 12 months AI Pro free (US) / AI Plus (140+ markets), SheerID, **claim by 2026-12-31** (now carried as `claim_by`, guarded). Status `none` → `disclosed`. | Does a *discounted* rate exist for after the free year? Landing page is behind a sign-in — **needs Rory signed in.** |
@@ -1760,7 +2245,7 @@ data sitting next to it.
   The page now calls that directional only. **Next re-anchor, go looking for a real
   inference-opex total** and re-level, don't just re-label.
 
-- **⚠️ UNVERIFIED SUPERLATIVE, flagged 2026-08-30, not resolved.** `ai-clock.html`
+- **⚠️ UNVERIFIED SUPERLATIVE — flagged 2026-08-30, SOFTENED 2026-09-19.** `ai-clock.html`
   says of the prompts counter: *"The only official disclosure is still ChatGPT's ~2.5
   billion a day (18 billion messages a week)."* The **ChatGPT figure itself is
   sourced** (OpenAI "How People Use ChatGPT", NBER Sept 2025) and the page correctly
@@ -1775,6 +2260,18 @@ data sitting next to it.
   soften it to "the only one we have found."** Note the claim is load-bearing in the
   honest direction — it exists to tell the reader the counter rests on one old
   number — so it is not urgent, but it is exactly the class of sentence that rots.
+
+  **Took the second option, which this entry authorised.** The page now reads *"The only
+  official disclosure **we have found**…"*, and the `<dd>` says outright that we have not
+  audited every provider for a prompt or message count — so the hedge is doing real work
+  rather than being modesty. One provider WAS checked properly: **Google's I/O 2026 keynote
+  reports _tokens_** — three trillion a day internally, 3.2 quadrillion a month across its
+  surfaces — **and no prompt or message figure at all**, zero instances of either word.
+  That supports the claim without proving it, which is exactly why it is hedged rather than
+  asserted. **A token count is not a prompt count**, and the page now says so, because the
+  two sit one counter apart on the same page and conflating them is the easiest error
+  available here. Verifying it outright still means auditing every provider; softening cost
+  nothing and removed a false certainty.
 
 - **`index.html`'s "None of the major providers show you this" (water/energy) was
   read on 2026-08-30 and STANDS**, on the narrow reading that "show *you*" means
@@ -1859,6 +2356,38 @@ keep saying so — one ⚪ remains, Microsoft's API rate card, by design.
 
 **Copy:** `transparency-index.html` → `FALLBACK` is deliberately minimal — it
 renders an *error state*, not stale data. That's correct. Leave it.
+
+### 2026-09-19 — E checked, not re-graded, and one ⚪ got a better reason
+
+**The annual re-read (E1b) was done on 2026-08-25 and is not due again until August**,
+so this pass did not repeat it. `datacenters.json` sits at a full 12-site pass from the
+same date. Both were left alone deliberately rather than re-stamped — bumping a date
+without re-reading is the thing rule 7 forbids.
+
+**What did move: the DeepSeek `allowance` ⚪.** The cell's own note said *"to close this,
+open chat.deepseek.com in a logged-in browser"*. Done as far as it can be without
+credentials, and the result **retires the old excuse without changing the grade**:
+deepseek.com is no longer a 599-character shell to us — it renders, and the entire site
+carries **exactly one pricing link, "API Pricing"**, with no consumer plans page at all.
+`chat.deepseek.com` returns a **completely empty document** without a login.
+
+**The grade stays ⚪ and that is the correct outcome.** We can now say confidently that
+DeepSeek publishes no consumer *pricing* page — but **an allowance can exist on a free
+product**, and the only surface that would carry one is login-walled. *Not disclosed* and
+*not readable* remain different findings, and this is still the second. Resist the pull to
+call it 🔴 just because the evidence got better; it got better about the wrong question.
+
+**Two grading calls in `datacenters.json` remain flagged and unresolved, deliberately** —
+`google-the-dalles` and `aws-anthropic-new-carlisle` (see E2). Both are Rory's, both are
+recorded in `_meta.verification_status`, and neither should be quietly decided by a pass
+that was not looking at them.
+
+⚠️ **One cross-file catch worth recording, because the guard earned it.** The allowance
+column's prose quotes the plan tally from `plan-limits.json` in **three** cells. Section B
+moved that tally 21 → 23 and `check-transparency.js` failed immediately, naming the ratio
+as well as the count. Nobody would have found those by reading. Two further copies —
+`PROJECT-CONTEXT.md` and E1's own "what rots here" list — were **not** guarded and had to
+be grepped out by hand. That is the asymmetry E1k describes, still true.
 
 ## E1b. The annual provider-report re-read — do this every August
 
@@ -1970,7 +2499,7 @@ key is missing.
 **What rots here, in order of speed:**
 
 1. **`allowance` — fastest-moving thing on the page.** It is 🔴 × 8 today because
-   25 of 27 plans publish nothing (26 of 27 until 2026-08-29 — see E1k). That count comes from `plan-limits.json`, so
+   23 of 31 plans publish nothing (25 of 27 in August; OpenAI and Microsoft both withdrew figures on 2026-09-19 — see B1, E1k). That count comes from `plan-limits.json`, so
    **re-count it whenever that file is verified** rather than trusting the prose.
    The trend is one-directional and hostile: OpenAI *deleted* its only general cap
    between two checks. A 🔴 here is not safe to assume permanent in either
@@ -2757,6 +3286,45 @@ yet), or the underlying academic estimates are revised. Next re-source should
 re-check the same four: arXiv:2508.15734 for a v2, Google's next Environmental
 Report, Anthropic for any first disclosure, and Li et al. for a revision.
 
+### 2026-09-19 re-source — the anchors held, and a load-bearing citation was a version behind
+
+**All four things this section names as the next re-check were checked at source, and
+none had moved.** arXiv:2508.15734 (Google's own measurement paper, origin of the 0.26 mL
+anchor) is **still v1**, submitted 21 Aug 2025, never revised. Google has published **no
+2027 Environmental Report** — sustainability.google still serves the 2026 edition we read
+directly on 2026-08-25. **Anthropic still discloses nothing**: its Transparency Hub runs to
+13,000 characters and contains the words *water* and *energy* **zero** times, with no
+environmental link on it at all. Li et al. is **still at v5** (26 Mar 2025), CACM version
+unchanged. No provider publishes water per **token**, which is still why this file models
+rather than quotes. `_tiers_last_sourced` is now `2026-09`, honestly earned.
+
+⚠️ **What this pass found instead: the benchmark every energy curve is fitted to had been
+revised four times without us noticing.** Jegham et al. was cited here only as
+*"arXiv:2505.09598, May 2025"* — which is **v1**. The paper now stands at **v6 (24 Nov
+2025)**, and two of those revisions changed the PDF substantially in size. Nothing in this
+repo compared our transcription against the paper: `test-water-model.js` checks our curves
+against `derive-water-model.js`'s copy of Table 4, so a silent revision of the *source*
+would have been invisible forever.
+
+**Re-read from v6 and the transcription is CORRECT** — all 30 models across all three
+prompt configurations, every value matching. So the model rests on current data and
+nothing needed refitting. That is luck rather than process, and the process is now:
+
+- **the version is pinned in both places** (`water.json` `_sources` and the comment above
+  `MEASURED` in `derive-water-model.js`), so the next pass can see at a glance whether it
+  has moved;
+- **the pin is a two-copy fact and guarded** — `test-water-model.js` fails if the two
+  citations disagree, verified by bumping one to v7 and watching it fire. It cannot check
+  the paper itself from CI, but it can refuse to let someone update the citation without
+  re-reading the table, or the reverse.
+
+**Watch for:** the paper's own prose says DeepSeek-R1 (DS) is **29.075 Wh** at long context
+while its Table 4 says **29.078**. We transcribe the table. Don't "fix" it to the prose.
+
+**Two models added this pass** — Claude Fable 5.1 and Mythos 5.1 — both `large` on `aws`,
+matching their 5.0 siblings, which is the judgement A3 warns is required rather than
+automatic. The coverage tripwire in `test-water-model.js` moved 77 → 79 by hand.
+
 **Guard:** `check-prices.js` — "priced, no water tier" is its first check. Nothing
 guards the *figures* or their descriptions; only a re-source like this catches those.
 
@@ -3121,6 +3689,21 @@ that regardless.
 justifications), `STORE-LISTING.md` (the platform list — see H1), and possibly
 `privacy-policy.html`.
 
+**Guard added 2026-09-19: `scripts/check-extension.js`, and it is in CI.** This was
+unguarded, and the failure is silent in the worst way — a platform in `PLATFORMS` with no
+`content_scripts` match never runs, so the panel simply stops counting there, which looks
+exactly like the DOM-selector rot G1 warns about except that we caused it.
+
+**The rule it encodes is deliberately not "every platform must be in `matches`".** `x.com`
+*is* in `PLATFORMS` and is deliberately **not** in `matches`, because x.com is Twitter/X
+and granting the whole domain to reach Grok would be a privacy regression; it is reached
+by programmatic injection from `background.js` instead. Writing the naive rule would have
+invited someone to "fix" x.com by adding it, quietly widening the extension's reach across
+all of X while looking like tidying. So the guard carries an explicit programmatic-injection
+list with the reason attached, **fails if x.com ever appears in `matches`**, fails if a
+declared platform is missing one, fails on a match with no platform behind it, and fails if
+`manifest.json` and `prices.json._meta.version` disagree. All four verified by injection.
+
 ## G3. Tokenizer accuracy bands
 
 `extension/sidepanel.js` → `METHOD_ACCURACY`. These are user-facing claims about
@@ -3276,6 +3859,34 @@ If G2 or the token-count behaviour changes, this file and its effective date
 change with it.
 
 ## H4. The shipped build vs `main`
+
+### 2026-09-19 — the drift is now MEASURED, and it has a January deadline
+
+Diffed the shipped `ecometer-ai-v6.14.zip` bundle against `extension/prices.json` on
+`main`. The store build carries `last_updated: 2026-08-24` and seven providers.
+
+| | Store (v6.14) | `main` today |
+|---|---|---|
+| `deepseek-v4-flash` | **$0.44 / $1.32** | $0.30 / $1.20 |
+| Chinese labs (Alibaba, Z.ai, Moonshot) | **absent** | 8 models |
+| `gpt-6-astra` | **absent** | $10 / $50 |
+| Claude Fable 5.1 / Mythos 5.1 | **absent** | $10 / $50 |
+
+**One price wrong, eleven models missing.** The wrong one errs in the *safe* direction —
+overstating DeepSeek's API cost makes "drop your plan and pay per token" look worse than
+it is — but it is still a number we know to be wrong sitting in front of users.
+
+⚠️ **The dated risk is the Gemini promos, and it turns harmful on 2027-01-01.** v6.14
+bundles `gemini-3.7-flash` and `gemini-3.6-flash` at the promotional $0.75/$3.75. Those
+revert to $1.50/$7.50 on **2026-12-31** (A6). A build frozen at the promo rate after that
+date **understates Gemini cost by 2×** — the direction that costs the reader money.
+`check-prices.js` now fails on this in the repo (and, since 2026-09-19, actually runs in
+CI) but it cannot reach the store. **If no build ships before January, the live extension
+becomes wrong in the harmful direction on a known date.**
+
+**This is Rory's step and cannot be automated away from here** — the store upload is
+manual. The standing fix H4 already names is the right one: exercise the weekly
+`publish.yml` cadence instead of shipping every few months.
 
 **This is a freshness item because what users have is not what this repo says.**
 

@@ -3,11 +3,11 @@
 
   "_last_updated": "2026-08-28",
 
-  "_tiers_last_sourced": "2026-08",
+  "_tiers_last_sourced": "2026-09",
 
   "_date_fields_note": "_last_updated is when this FILE last changed, which is usually just adding a tier for a newly-priced model. _tiers_last_sourced is when the underlying ml-per-token figures were last checked against primary research — a different and much slower-moving thing. These were one field until 2026-08-24, which let routine model additions make the intensity estimates look freshly verified when they had not been re-read since Dec 2025.",
 
-  "_tiers_last_sourced_note": "2026-08-28 re-source, the first since 2025-12. THE ANCHORS DID NOT MOVE. Google's 0.26 ml per median Gemini Apps text prompt and Altman's 0.32 ml per ChatGPT query are still the only first-party per-prompt water figures that exist, and no provider has published a per-TOKEN figure at all. Checked against primary sources rather than coverage: the Google paper (arXiv:2508.15734) is still v1, 21 Aug 2025, never revised; Google's 2026 Environmental Report repeats the same May-2025 measurement unchanged (independently confirmed by this repo's own direct read, transparency-index.json, 2026-08-25); Anthropic still publishes no per-query water figure; Li et al. has since been peer-reviewed but its numbers are unchanged. So the nine-month-old date was stale bookkeeping, not stale evidence. What the pass DID find was six errors in how this file described its own numbers — each is corrected below and flagged inline where it lived. Two further passes the same day rebuilt the model itself: first from a flat ml-per-token constant to a query-size curve, then from size tiers to energy x infrastructure. See _model_history.",
+  "_tiers_last_sourced_note": "2026-09-19 re-source. THE ANCHORS DID NOT MOVE, and all four things FRESHNESS F1 names as the next re-check were checked at source. (1) arXiv:2508.15734, Google's own measurement paper and the origin of the 0.26 mL anchor, is STILL v1 — submitted 21 Aug 2025, never revised. (2) Google has published no 2027 Environmental Report; sustainability.google still serves the 2026 edition, whose per-prompt figures we read directly on 2026-08-25. (3) Anthropic STILL discloses nothing: its Transparency Hub runs to 13,000 characters and contains the words 'water' and 'energy' zero times, with no environmental link anywhere on it. (4) Li et al. is still at v5 (26 Mar 2025) with the peer-reviewed CACM version unchanged. No provider publishes water per TOKEN, which remains the reason this file models rather than quotes. WHAT THIS PASS ADDED, and it was overdue: Jegham et al. — the benchmark every energy curve here is fitted to — has been revised FOUR TIMES since the 'May 2025' our citation implied, and now stands at v6 (24 Nov 2025). Nothing in this repo checked our transcription against the paper, so a silent revision would never have surfaced. All thirty models and all three prompt configurations of its Table 4 were re-read from v6 and compared against derive-water-model.js: EVERY VALUE MATCHES. The model is fitted to current data, and the version is now pinned in the citation so the next pass can tell at a glance whether it has moved.",
 
   "_sources": [
     "Li, Yang, Islam, Ren — 'Making AI Less Thirsty: Uncovering and Addressing the Secret Water Footprint of AI Models' — arXiv:2304.03271 — arxiv.org/abs/2304.03271",
@@ -16,7 +16,7 @@
     "Google Cloud blog — 'Measuring the environmental impact of AI inference', Aug 2025 — the public-facing version of the above",
     "Google 2026 Environmental Report — re-read 2026-08-25: per-prompt figures unchanged from May 2025",
     "Sam Altman — 'The Gentle Singularity', Jun 2025 — 0.000085 gallons (= 0.32 ml) per ChatGPT query; a blog statement with no published methodology",
-    "Jegham et al. — 'How Hungry is AI? Benchmarking Energy, Water and Carbon Footprint of LLM Inference' — arXiv:2505.09598, May 2025 — per-query energy for 30 models at three KNOWN token configs, plus a water equation matching our conservative/academic split. Load-bearing as of 2026-08-28: this is the benchmark _open_questions is measured against",
+    "Jegham et al. — 'How Hungry is AI? Benchmarking Energy, Water and Carbon Footprint of LLM Inference' — arXiv:2505.09598, cited as v6 (24 Nov 2025), first posted May 2025 — per-query energy for 30 models at three KNOWN token configs, plus a water equation matching our conservative/academic split. Load-bearing: every energy curve in this file is fitted to its Table 4. THE VERSION MATTERS AND IS NOW PINNED — the paper has been revised six times, and until 2026-09-19 we cited it only as 'May 2025', which is v1, so four revisions could have landed without anything here noticing. All 30 models x 3 configs were re-read from v6 on 2026-09-19 and every value matches our transcription in scripts/derive-water-model.js. Check the version before trusting that again.",
     "OpenRouter / 'State of AI: An Empirical 100 Trillion Token Study' — arXiv:2601.10088, 2026 — average prompt+completion tokens per request, the same quantity the extension multiplies. Router/API traffic, so a proxy for chat usage rather than a measurement of it",
     "de Vries-Gao — 'The carbon and water footprints of data centers and what this could mean for artificial intelligence' — Patterns 7(1) 101430, online 17 Dec 2025 — doi.org/10.1016/j.patter.2025.101430 — industry aggregate, not a per-token source",
     "IEEE Spectrum — 'The Real Story on AI Water Usage at Data Centers', Sep 2025 — relays the Li et al. 16.9 ml breakdown",
@@ -51,6 +51,8 @@
   "anthropic": {
     "claude-fable-5":            { "class": "large", "host": "aws" },
     "claude-mythos-5":           { "class": "large", "host": "aws" },
+    "claude-fable-5-1":          { "class": "large", "host": "aws" },
+    "claude-mythos-5-1":         { "class": "large", "host": "aws" },
     "claude-opus-5":             { "class": "large", "host": "aws" },
     "claude-opus-4-8":           { "class": "large", "host": "aws" },
     "claude-opus-4-7":           { "class": "large", "host": "aws" },
@@ -66,6 +68,7 @@
   },
 
   "openai": {
+    "gpt-6-astra":   { "class": "large", "host": "azure" },
     "gpt-5.6-sol":   { "class": "large", "host": "azure" },
     "gpt-5.6-terra": { "class": "medium", "host": "azure" },
     "gpt-5.6-luna":  { "class": "small", "host": "azure" },

@@ -471,8 +471,11 @@
     { p:"anthropic", key:"claude-opus-5",             m:"Claude Opus 5" },
     { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.5 / 4.6 / 4.7 priced the same" },
     { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
+    { p:"anthropic", key:"claude-fable-5-1",          m:"Claude Fable 5.1", note:"paid · cache hits 0.025x base, not the usual 0.1x" },
+    { p:"anthropic", key:"claude-mythos-5-1",         m:"Claude Mythos 5.1", note:"paid · limited availability · cache hits 0.025x base" },
     { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
+    { p:"openai", key:"gpt-6-astra",  m:"GPT-6 Astra", note:"powers GPT-6 Pro · Pro plans in chat, Plus in Work and Codex" },
     { p:"openai", key:"gpt-5.6-sol",   m:"GPT-5.6 Sol", note:"powers Medium / High / Extra High reasoning in ChatGPT" },
     { p:"openai", key:"gpt-5.6-terra", m:"GPT-5.6 Terra" },
     { p:"openai", key:"gpt-5.6-luna",  m:"GPT-5.6 Luna" },
@@ -516,7 +519,7 @@
     { p:"perplexity", key:"sonar",               m:"Sonar" },
     { p:"perplexity", key:"sonar-reasoning-pro", m:"Sonar Reasoning Pro" },
 
-    { p:"deepseek", key:"deepseek-v4-flash", m:"DeepSeek V4 Flash" },
+    { p:"deepseek", key:"deepseek-v4-flash", m:"DeepSeek Flash", note:"now DeepSeek-V4.1-Flash, served under the name deepseek-flash; cut from $0.44/$1.32 on 2026-09-19" },
     { p:"deepseek", key:"deepseek-v4-pro",   m:"DeepSeek V4 Pro" },
     { p:"deepseek", key:"deepseek-v3",       m:"DeepSeek V3", note:"no longer listed by DeepSeek · last known rate" },
     { p:"deepseek", key:"deepseek-r1",       m:"DeepSeek R1", note:"no longer listed by DeepSeek · last known rate" },
@@ -527,7 +530,7 @@
     { p:"alibaba", key:"qwen3.8-flash",     m:"Qwen3.8 Flash", note:"weights NOT published" },
 
     { p:"zai", key:"glm-5.3",       m:"GLM-5.3" },
-    { p:"zai", key:"glm-5.3-flash", m:"GLM-5.3 Flash", note:"Half price until 2026-09-09, then $0.15/$0.50" },
+    { p:"zai", key:"glm-5.3-flash", m:"GLM-5.3 Flash", note:"doubled to $0.15/$0.50 on 2026-09-09 when the half-price promo ended" },
 
     { p:"moonshot", key:"kimi-k3",        m:"Kimi K3" },
     { p:"moonshot", key:"kimi-k2.7-code", m:"Kimi K2.7 Code" }
@@ -547,9 +550,12 @@
       "claude-opus-5":             { input: 5e-6,    output: 2.5e-5 },
       "claude-opus-4-8":           { input: 5e-6,    output: 2.5e-5 },
       "claude-fable-5":            { input: 1e-5,    output: 5e-5 },
-      "claude-mythos-5":           { input: 1e-5,    output: 5e-5 }
+      "claude-mythos-5":           { input: 1e-5,    output: 5e-5 },
+      "claude-fable-5-1":          { input: 1e-5,    output: 5e-5 },
+      "claude-mythos-5-1":         { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
+      "gpt-6-astra":   { input: 1e-5,   output: 5e-5, long: { over: 272000, input: 2e-5, output: 7.5e-5 } },
       "gpt-5.6-sol":   { input: 4e-6,   output: 2e-5, long: { over: 272000, input: 0.000008, output: 0.00003 } },
       "gpt-5.6-terra": { input: 2e-6,   output: 1.2e-5, long: { over: 272000, input: 4e-6, output: 1.8e-5 } },
       "gpt-5.6-luna":  { input: 2e-7,   output: 1.2e-6, long: { over: 272000, input: 4e-7, output: 1.8e-6 } },
@@ -598,7 +604,7 @@
       "sonar-reasoning-pro": { input: 2e-6,    output: 8e-6 }
     },
     "deepseek": {
-      "deepseek-v4-flash": { input: 4.4e-7,  output: 1.32e-6 },
+      "deepseek-v4-flash": { input: 3e-7,    output: 1.2e-6 },
       "deepseek-v4-pro":   { input: 1.32e-6, output: 3.96e-6 },
       "deepseek-v3":       { input: 1.4e-7,  output: 2.8e-7 },
       "deepseek-r1":       { input: 5.5e-7,  output: 2.19e-6 }
@@ -611,7 +617,7 @@
     },
     "zai": {
       "glm-5.3":       { input: 1.4e-6,  output: 4.4e-6 },
-      "glm-5.3-flash": { input: 7.5e-8,  output: 2.5e-7 }
+      "glm-5.3-flash": { input: 1.5e-7,  output: 5e-7 }
     },
     "moonshot": {
       "kimi-k3":        { input: 3e-6,    output: 1.5e-5 },
@@ -673,7 +679,7 @@
     { p:"openai",      m:"ChatGPT Go",             price:8 },
     { p:"openai",      m:"ChatGPT Plus",           price:20 },
     { p:"openai",      m:"ChatGPT Pro",            price:100 },
-    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200 },
+    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200, note:"Closed to new subscribers since 2026-09-10 — existing subscriptions continue, but you cannot start or upgrade to this plan" },
 
     { p:"anthropic",   m:"Claude Free",            price:0 },
     { p:"anthropic",   m:"Claude Pro",             price:20, note:"$17/mo billed annually" },
@@ -725,7 +731,7 @@
   // Measured by scripts/derive-archetypes.js with the real cl100k tokenizer over this
   // repo's prose, and shown in "show the math" so the conversion behind the archetypes
   // is visible rather than asserted. check-auditor.js fails if it drifts.
-  var CHARS_PER_TOKEN = 3.882;
+  var CHARS_PER_TOKEN = 3.831;
 
   var FALLBACK_LIMITS = {
     _meta: {
@@ -733,9 +739,9 @@
       default_archetype: "standard",
       archetypes: {
         // Owned by scripts/derive-archetypes.js — regenerate, don't hand-edit.
-        light:    { input: 635,   output: 232,  label: "Short exchanges, little history" },
-        standard: { input: 3596,  output: 464,  label: "Typical multi-turn chat" },
-        heavy:    { input: 14791, output: 1082, label: "Long context, documents, code" }
+        light:     { input: 641,   output: 235,  label: "Short exchanges, little history" },
+        standard:  { input: 3639,  output: 470,  label: "Typical multi-turn chat" },
+        heavy:     { input: 14975, output: 1096, label: "Long context, documents, code" }
       },
       // Mirrors plan-limits.json _meta.reasoning.models — mid only; that file carries
       // the ranges and the basis. Thinking tokens bill at the output rate, so leaving
@@ -766,8 +772,7 @@
     },
     plans: [
       { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"ChatGPT chat surfaces" }, value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
-      { p:"openai", m:"ChatGPT Go", provenance:"disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" },
-        caps:[{ n:10, unit:"messages", window:"5h", scope:"Thinking", soft:false, scope_limited:true }] },
+      { p:"openai", m:"ChatGPT Go", provenance:"not_disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" } },
       { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
         caps:[{ n:10, n_high:100, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
       { p:"openai", m:"ChatGPT Pro", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
@@ -801,10 +806,7 @@
         caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }] },
 
       { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"the free Copilot tier" } },
-      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"disclosed",
-        caps:[{ n:25, unit:"agent tasks", window:"30d", scope:"Agents", soft:false, scope_limited:true },
-              { n:15, unit:"minutes", window:"1d", scope:"Vision", soft:false, scope_limited:true },
-              { n:60, unit:"minutes", window:"1d", scope:"Voice", soft:false, scope_limited:true }] },
+      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"not_disclosed" },
 
       { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31" }, value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
         third_party:[{ n:25, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
@@ -1063,6 +1065,36 @@
     return null;
   }
 
+  // How MANY unsized long windows a plan has. Anthropic names two weekly meters — one
+  // for Opus, one for all models — and "a weekly limit" undercounts that. The number of
+  // meters a provider admits to but will not size is itself a disclosure fact.
+  function longUnquantifiedAll(lim, depth) {
+    if (!lim || (depth || 0) > 4) return [];
+    var own = (lim.unquantified_windows || []).filter(function (u) {
+      return (WINDOW_HOURS[u.window] || 0) > 24;
+    });
+    if (own.length) return own;
+    if (!lim.multiplier || !lim.multiplier.of) return [];
+    var plans = PLAN_LIMITS.plans || [];
+    for (var i = 0; i < plans.length; i++)
+      if (plans[i].p === lim.p && plans[i].m === lim.multiplier.of)
+        return longUnquantifiedAll(plans[i], (depth || 0) + 1);
+    return [];
+  }
+
+  // A multiplier the provider attaches to the SHORT window only. This is the sharpest
+  // thing the column can say about a plan nobody has sized: the provider is willing to
+  // quantify how much bigger the five-hour window gets, and says nothing at all about
+  // the window that actually governs the month. Only asserted where the data records
+  // both the scope and that no longer-window multiple was stated.
+  function shortOnlyMultiplier(lim) {
+    var m = lim && lim.multiplier;
+    if (!m || !m.x || !m.applies_to) return null;
+    if ((WINDOW_HOURS[m.applies_to] || 0) > 24) return null;
+    if (m.longer_window_multiple_stated !== false) return null;
+    return m;
+  }
+
   // What the LONG window (a week, a month) does to this plan, and whether it binds
   // harder than the short one.
   //
@@ -1115,7 +1147,7 @@
                others: shorts.length ? shorts : null };
     }
     var uq = longUnquantified(lim);
-    if (uq) return { state: 'named', uq: uq };
+    if (uq) return { state: 'named', uq: uq, all: longUnquantifiedAll(lim), mult: shortOnlyMultiplier(lim) };
     if (wc && wc.result === 'none stated') return { state: 'none', read: wc };
     return { state: 'unchecked' };
   }
@@ -1163,19 +1195,22 @@
 
   // "Open weights" is a property of a MODEL, not a provider: Alibaba publishes
   // weights for two of the four Qwen models here and not the other two, and
-  // Mistral publishes only Small. Badging the provider would state a falsehood
-  // about specific models, so the badge is driven entirely by the presence of an
-  // open_weights block, which is only written when the weights page has been read.
+  // Mistral publishes Small 4, Large 3 AND Medium 3.5. Badging the provider would
+  // state a falsehood about specific models, so the badge is driven entirely by the
+  // presence of an open_weights block, written only when the weights page was read.
   function owBadge(r) {
     if (!r.ow) return "";
     var osi = r.ow.osi === true;
     // A bespoke licence named after the model is not the same promise as MIT or
     // Apache-2.0, and flattening the two into one green badge would be the kind of
-    // false reassurance this page exists to avoid.
+    // false reassurance this page exists to avoid. Since 2026-09-19 the tooltip also
+    // carries WHAT the licence restricts, because 'bespoke' told the reader nothing:
+    // two models here are both labelled modified-mit and mean opposite things — one
+    // wants a logo above $20M revenue, the other forbids use entirely above it.
     return '<span class="ow' + (osi ? "" : " ow-custom") + '" title="Weights published' +
            (r.ow.params && r.ow.params !== "not disclosed" ? " · " + esc(r.ow.params) : "") +
            " · licence: " + esc(r.ow.license) +
-           (osi ? "" : " (bespoke — read it before you rely on it)") + '">open</span>';
+           (osi ? "" : " (bespoke) — " + esc(r.ow.restriction || "read it before you rely on it")) + '">open</span>';
   }
 
   // The spread only exists because the weights are public: for a closed model
@@ -1517,9 +1552,29 @@
                    ? ' · the shorter windows here bound different features, so the two cannot be compared'
                    : ' · no shorter window published to compare it against') + '</span></span>';
       } else if (lw.state === 'named') {
-        wkCell = '<span class="tp">' + esc((WINDOW_LONG[lw.uq.window] || lw.uq.window)) + ' — not published' +
-                 '<span class="sub">' + provName(r.p) + ' says it exists and never sizes it' +
-                 (lw.uq.scope ? ' · ' + esc(lw.uq.scope) + ' only' : '') + '</span></span>';
+        // The provider admits the window exists and will not size it. Two things sharpen
+        // that when the data supports them: how many such windows there are, and whether
+        // the provider was willing to quantify the SHORT one in the same breath.
+        var all = lw.all && lw.all.length > 1 ? lw.all : null;
+        var word = WINDOW_LONG[lw.uq.window] || lw.uq.window;
+        var head = all
+          ? all.length + ' ' + esc(word) + ' limits — ' + (all.length === 2 ? 'neither' : 'none') + ' sized'
+          : esc(word) + ' — not published';
+        var sub;
+        if (lw.mult) {
+          // The comparison the reader came for, and the answer is that there isn't one.
+          sub = 'the ' + esc(WINDOW_LONG[lw.mult.applies_to] || lw.mult.applies_to) +
+                ' window is a stated ' + lw.mult.x + '× ' + esc(lw.mult.of) +
+                '’s · the ' + esc(word) + ' one carries no stated multiple';
+        } else {
+          sub = provName(r.p) + (all ? ' says they exist and sizes neither' : ' says it exists and never sizes it');
+        }
+        if (all) {
+          sub += ' · ' + all.map(function (u) { return esc(u.scope || 'unscoped'); }).join(' and ');
+        } else if (lw.uq.scope) {
+          sub += ' · ' + esc(lw.uq.scope) + ' only';
+        }
+        wkCell = '<span class="tp">' + head + '<span class="sub">' + sub + '</span></span>';
       } else if (lw.state === 'unknown') {
         wkCell = '<span class="nd">not established' +
                  '<span class="sub">we could not read a consumer page — not the same as silence</span></span>';

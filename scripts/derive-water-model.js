@@ -40,6 +40,12 @@
  *
  * ENERGY COMES FROM THE PAPER, AND ONLY THE ENERGY
  * Jegham et al. Table 4 reports per-query energy (Wh) for 30 models at three
+// SOURCE VERSION: arXiv:2505.09598 **v6** (24 Nov 2025). Pin this. The paper has
+// been revised six times and this file used to cite it only as 'May 2025', which is
+// v1 — so four revisions could have landed without anything here noticing. Every
+// value below was re-read from v6's Table 4 on 2026-09-19 and all 30 models x 3
+// configs match. Note the paper's own prose says DeepSeek-R1 (DS) is 29.075 Wh at
+// long context while its Table 4 says 29.078; the TABLE is what we transcribe.
  * known token configurations. That is a measurement of the models, independent
  * of anybody's cooling, so it survives the host numbers being re-sourced.
  *
