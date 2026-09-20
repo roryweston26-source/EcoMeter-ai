@@ -16,6 +16,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Read version from manifest
         id: version
         run: |
@@ -23,14 +28,14 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Build zip
-        run: |
-          cd extension
-          zip -r ../ecometer-ai-v${{ steps.version.outputs.version }}.zip . \
-            --exclude "*.DS_Store" \
-            --exclude "*/.gitkeep"
-          echo "Built ecometer-ai-v${{ steps.version.outputs.version }}.zip"
-          ls -lh ../ecometer-ai-v${{ steps.version.outputs.version }}.zip
+      # Same builder as the local build and publish.yml — one package definition,
+      # not three. Before this, CI zipped the folder inline and shipped
+      # STORE-LISTING.md and STORE-SUBMISSION.md to users, so the Release asset
+      # was not the package that went to the store. The builder also runs the
+      # pre-flight checks (version parity, the 132-char description limit, the
+      # product-name check that v6.12 was rejected over) and exits non-zero.
+      - name: Build & verify the package
+        run: node scripts/build-extension.js
 
       # ── GitHub Release ────────────────────────────────────────────────────
       - name: Check if tag already exists

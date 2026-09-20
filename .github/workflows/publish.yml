@@ -134,7 +134,17 @@ jobs:
             version=$(node -e "console.log(require('./extension/manifest.json').version)")
             zip="ecometer-ai-v${version}.zip"
             rm -f "$zip"
-            ( cd extension && zip -qr "../$zip" . --exclude "*.DS_Store" --exclude "*/.gitkeep" )
+
+            # The store upload is the one build that reaches users, so it goes
+            # through the same builder as everything else — which is also the only
+            # thing checking manifest.description for the product names v6.12 was
+            # rejected over. Re-run per attempt: bump-version.js has moved the
+            # version on by then, so this repacks at the new number.
+            if ! node scripts/build-extension.js; then
+              echo "✗ Package build blocked — see the errors above. Nothing uploaded."
+              exit 1
+            fi
+
             echo "Attempt $attempt — uploading v$version…"
 
             RESPONSE=$(curl -s -X PUT \

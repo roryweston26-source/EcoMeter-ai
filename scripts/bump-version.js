@@ -10,8 +10,13 @@
  * — then rebuilds and retries. It is not called proactively, so a manually set
  * version is uploaded as-is and manual/automatic bumps never collide.
  *
- * Uses a surgical string replace so the rest of manifest.json stays
- * byte-for-byte identical (preserving its \u escapes and formatting).
+ * It bumps BOTH extension/manifest.json and extension/prices.json's
+ * _meta.version, because build-extension.js refuses to package the two out of
+ * step. Before 2026-08-29 this bumped the manifest alone, so a reactive bump
+ * silently desynced them — nothing checked, so nothing complained.
+ *
+ * Uses a surgical string replace so the rest of each file stays
+ * byte-for-byte identical (preserving manifest.json's \u escapes and formatting).
  *
  * Run manually: node scripts/bump-version.js
  */
@@ -20,6 +25,7 @@ const fs   = require('fs');
 const path = require('path');
 
 const MANIFEST = path.join(__dirname, '../extension/manifest.json');
+const PRICES   = path.join(__dirname, '../extension/prices.json');
 
 let text = fs.readFileSync(MANIFEST, 'utf8');
 const current = JSON.parse(text).version;
@@ -40,8 +46,25 @@ if (!re.test(text)) {
   process.exit(1);
 }
 
+// prices.json carries the same version in _meta. Rewrite it in the same pass, and
+// fail before writing either file if it isn't where we expect — a half-applied
+// bump is worse than no bump, because the next build is the thing that discovers it.
+let pricesText = fs.readFileSync(PRICES, 'utf8');
+const pricesCurrent = JSON.parse(pricesText)._meta.version;
+if (pricesCurrent !== current) {
+  console.error(`✗ prices.json _meta.version ("${pricesCurrent}") does not match manifest ("${current}") — fix that by hand first.`);
+  process.exit(1);
+}
+const pricesRe = new RegExp(`("version"\\s*:\\s*")${current.replace(/\./g, '\\.')}(")`);
+if (!pricesRe.test(pricesText)) {
+  console.error(`✗ Could not locate version "${current}" in prices.json`);
+  process.exit(1);
+}
+
 text = text.replace(re, `$1${next}$2`);
+pricesText = pricesText.replace(pricesRe, `$1${next}$2`);
 fs.writeFileSync(MANIFEST, text);
+fs.writeFileSync(PRICES, pricesText);
 
 // Only the new version goes to stdout so CI can capture it cleanly.
 console.log(next);

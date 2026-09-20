@@ -93,7 +93,7 @@ ecometer-ai/
 │   └── tokenizer_o200k.js
 ├── scripts/
 │   ├── update-prices.js  # Writes the prices.json api section
-│   ├── bump-version.js   # Increments manifest version (reactive, on store collision)
+│   ├── bump-version.js   # Increments manifest + prices.json version (reactive, on collision)
 │   └── roll-clock.js     # Rolls the AI Clock anchor forward
 └── .github/
     └── workflows/
