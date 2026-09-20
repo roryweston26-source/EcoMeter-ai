@@ -3860,6 +3860,37 @@ change with it.
 
 ## H4. The shipped build vs `main`
 
+### v6.15 BUILT 2026-09-19 — closes every drift measured below, awaiting Rory's upload
+
+**The package exists: `ecometer-ai-v6.15.zip`, 22 entries, 1.57 MB.** Built by
+`build-extension.js` after a manual bump (6.14 → 6.15), which G5 permits — reactive
+versioning respects manual bumps and will not double-bump. **The bump was necessary,
+not pre-emptive:** v6.14 is already in the store, so re-uploading that version number
+is rejected as a duplicate.
+
+**Verified with an independent zip reader**, not by trusting the writer: 22 entries,
+**zero backslash separators**, **one distinct timestamp** across all entries (so the
+reproducibility claim in H0 still holds), manifest reading `6.15` / MV3 *inside* the
+archive, and `prices.json`, `water.json` and `sidepanel.js` byte-identical to
+`extension/`. Every entry exists on disk.
+
+**It closes all four drifts** the table below measures: `deepseek-v4-flash` at the
+corrected $0.30, the eight Chinese-lab models present, `gpt-6-astra` present, and Claude
+Fable 5.1 / Mythos 5.1 present. The bundled `prices.json` carries `verified: 2026-09-19`
+and 79 models against v6.14's seven providers.
+
+⚠️ **THE JANUARY DEADLINE IS THE REASON TO ACTUALLY UPLOAD IT.** The risk in the table
+below is not closed by building — only by shipping. v6.14 in the store bundles both
+Gemini Flash promos at $0.75/$3.75, and those revert on **2026-12-31**. A store build
+frozen at the promo rate understates Gemini by 2× from 1 January, in the direction that
+costs the reader money.
+
+⚠️ **Check the dashboard before uploading.** H4 records v6.14 as *awaiting review* on
+2026-08-28 and never recorded a verdict. The store blocks a new upload while a prior
+version is pending, so if v6.14 never cleared, v6.15 cannot go up until it does — and
+if it was rejected, the rejection reason applies to this build too. Expect permission
+re-review for `generativelanguage.googleapis.com` regardless.
+
 ### 2026-09-19 — the drift is now MEASURED, and it has a January deadline
 
 Diffed the shipped `ecometer-ai-v6.14.zip` bundle against `extension/prices.json` on
