@@ -495,15 +495,31 @@ large/unpublished. No reasoning multiplier for any of the five: unmeasured.
 dated-snapshot ids at every provider, plus older Qwen, GLM and Kimi variants. None
 are chat models we cost, so none were added.
 
-**OPEN, and Rory's call: break-even anchors were NOT moved.** `plan-limits.json`
-`value_models` and `audit.html` `MODELS.*.top` still price ChatGPT Plus/Pro on
-`gpt-5.6-sol` ($4/$20) and Claude Pro/Max on `claude-opus-5` ($5/$25). Both plans now
-carry a cheaper current model: GPT-6 Sol at $2/$10 and Opus 5.5 at $4/$20. If those
-are what the apps serve by default, the anchors overstate the API value of a
-subscription, which lowers break-even and **flatters the subscription**. That is the
-harmful direction, the same shape as the Astra question above. It is left alone
-because it sets the Auditor's headline answer, and neither provider says which
-model a plan serves by default.
+**Break-even anchors MOVED 2026-09-26, on Rory's call.** `plan-limits.json`
+`value_models` (plus `pricing.html`'s fallback copy) and `audit.html` `MODELS.*.top` now
+price ChatGPT Plus / Pro / Pro 20x on `gpt-6-sol` ($2/$10), not `gpt-5.6-sol` ($4/$20),
+and Claude Pro / Max 5x / Max 20x on `claude-opus-5-5` ($4/$20), not `claude-opus-5`
+($5/$25). The low ends and Perplexity Max are unchanged. Perplexity's own model
+menu was not re-checked, so its anchors still name the older models.
+
+**What it did to the headline number** (the high-end break-even at the standard
+archetype, 3,639 in / 470 out):
+
+| plan | before | after | if the predecessor's multiplier held |
+|---|---|---|---|
+| Claude Pro $20 | 16.9 msgs/day | 27.8 | 21.2 |
+| Claude Max 5x $100 | 84.7 | 139.1 | 105.9 |
+| ChatGPT Plus $20 | 25.8 | 55.7 | 51.6 |
+| ChatGPT Pro $100 | 129.0 | 278.3 | 258.0 |
+
+**The last column is the open part.** Neither new model has a measured thinking-token
+multiplier, so `reasoningMult()` returns 1, per its rule that an invented multiplier
+is worse than none. Opus 5 measured 1.8 and GPT-5.6 Sol 1.2. So for Claude, about
+a third of the rise is the missing measurement, not the price. Leaving it at 1
+understates API cost and **undersells** the subscription, which is the less harmful
+direction, but it is still a known bias. **Fix: run `node scripts/measure-reasoning.js
+--run --write --models=claude-opus-5-5,gpt-6-sol`.** It needs real Anthropic and
+OpenAI keys. The OpenAI one in this shell was the placeholder on 2026-09-26.
 
 **The homepage ticker was fixed while here.** It showed Gemini 3.5 Flash at **$0.50**
 (the real rate is $1.50), Grok 4.3 (not listed by xAI) and DeepSeek V3 (legacy key).

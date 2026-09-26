@@ -13,10 +13,10 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 Five new models, each in all seven places with a water tier. **These are extension
 changes too** (`prices.json`, `water.json`, the picker), so they reach users only with
-the next store upload. The website picks them up on merge. **Two things need Rory:**
-- **Break-even anchors were not moved.** ChatGPT Plus/Pro still price on GPT-5.6 Sol
-  and Claude Pro/Max on Opus 5. Both plans now carry a cheaper current model, which
-  means the Auditor may flatter those subscriptions. See the OPEN paragraph in A3.
+the next store upload. The website picks them up on merge. **Open:**
+- **Break-even anchors MOVED 2026-09-26** to GPT-6 Sol and Opus 5.5 (Rory's call). The
+  new models have no measured thinking-token multiplier, so they run at 1x and Claude's
+  break-even reads high. Run measure-reasoning.js with real keys. See A3.
 - **Perplexity Sonar ends 2026-09-27.** The three `sonar*` rates are due for removal
   then. `check-prices.js` will start failing on the sunset date by design.
 
