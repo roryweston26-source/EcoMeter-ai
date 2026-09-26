@@ -99,6 +99,7 @@ async function fetchAnthropic() {
     'claude-sonnet-4-6':         { input: perM(3.00),  output: perM(15.00) },
     'claude-sonnet-4-5':         { input: perM(3.00),  output: perM(15.00) },
     'claude-sonnet':             { input: perM(3.00),  output: perM(15.00) },
+    'claude-opus-5-5':           { input: perM(4.00),  output: perM(20.00) },
     'claude-opus-5':             { input: perM(5.00),  output: perM(25.00) },
     'claude-opus-4-5':           { input: perM(5.00),  output: perM(25.00) },
     'claude-opus-4-8':           { input: perM(5.00),  output: perM(25.00) },
@@ -137,6 +138,8 @@ async function fetchOpenAI() {
   // to every token in the request (see _meta.caveats._short_context_only).
   const prices = {
     'gpt-6-astra':  { input: perM(10.00),  output: perM(50.00)  },
+    'gpt-6-sol':    { input: perM(2.00),   output: perM(10.00)  },
+    'gpt-6-luna':   { input: perM(0.10),   output: perM(0.50)   },
     'gpt-5.6-sol':  { input: perM(4.00),   output: perM(20.00)  },
     'gpt-5.6-terra':{ input: perM(2.00),   output: perM(12.00)  },
     'gpt-5.6-luna': { input: perM(0.20),   output: perM(1.20)   },

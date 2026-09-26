@@ -215,14 +215,18 @@ let PLANS = {
     // open. Deliberately NOT in plan-limits.json value_models yet: pricing a Plus
     // break-even on $10/$50 when the plan may serve Sol at $4/$20 in chat would
     // lower the break-even and flatter the subscription — the harmful direction.
+    // GPT-6 Sol and GPT-6 Luna joined on 2026-09-25 with the SAME pattern in the plan
+    // table, read from its per-cell labels: Free "No", Go "No", Plus "Yes", Pro
+    // "Expanded". Free and Go still run GPT-5.6 Luna. On 2026-09-26 value_models
+    // and MODELS.openai.top moved to GPT-6 Sol (FRESHNESS A3); Astra stays out.
     { m:'ChatGPT Plus', price:20,  cap:null, capSource:'not_disclosed',
-      models:['gpt-6-astra','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-6-sol','gpt-6-luna','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research'], seats:1 },
     // Pro's differentiator is Sol at Extra High plus Sol Pro — reasoning levels, not
     // a distinct model key. There is no gpt-5.6-sol-pro rate to price, so it stays a
     // feature rather than an invented model.
     { m:'ChatGPT Pro',  price:100, cap:null, capSource:'not_disclosed',
-      models:['gpt-6-astra','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-6-sol','gpt-6-luna','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research','sol-pro'], seats:1 },
   ],
   anthropic: [
@@ -238,16 +242,23 @@ let PLANS = {
     // guessed-lower number would push readers onto a pricier tier on a figure nobody
     // published — the exact harm this tool exists to prevent. The number stays, the
     // claim attached to it changes, and only for the users a weekly cap can reach.
+    // claude.com/pricing now has a per-plan MODEL table, by family and without
+    // versions (read 2026-09-25): Opus Free "No", Pro/Max "Yes"; Sonnet and Haiku on
+    // every tier; Fable Free "No", Pro "Usage credits" (paid on top, so NOT listed
+    // for Pro), Max 5x and 20x "50% of weekly limits". Opus 5.5 is Anthropic's
+    // current Opus, so it is listed wherever Opus is. Before this, a Fable user was
+    // not gated at all — no tier listed it, so the Auditor treated it as available
+    // everywhere, Free included.
     { m:'Claude Free',   price:0,   cap:40,  capSource:'estimate',
       models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
     { m:'Claude Pro',    price:20,  cap:144, capSource:'third_party', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
+      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8'],
       features:['projects','extended-thinking'], seats:1 },
     { m:'Claude Max 5×', price:100, cap:720, capSource:'third_party', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
+      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
       features:['projects','extended-thinking','priority'], seats:1 },
     { m:'Claude Max 20×',price:200, cap:null, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5','claude-opus-4-8'],
+      models:['claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
       features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
@@ -288,13 +299,13 @@ let PLANS = {
 // unnoticed for ten days in Aug 2026 (gemini-3.5-flash was a third of the real
 // rate), which made pay-per-token look cheaper than it is whenever the fetch broke.
 let API = {
-  'gpt-6-astra':{in:1e-5,out:5e-5},
+  'gpt-6-astra':{in:1e-5,out:5e-5}, 'gpt-6-sol':{in:2e-6,out:1e-5}, 'gpt-6-luna':{in:1e-7,out:5e-7},
   'gpt-5.6-luna':{in:2e-7,out:1.2e-6}, 'gpt-5.6-sol':{in:4e-6,out:2e-5}, 'gpt-5.6-terra':{in:2e-6,out:1.2e-5},
   'gpt-5.5':{in:5e-6,out:3e-5}, 'gpt-5.4':{in:2.5e-6,out:1.5e-5}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
   'o3':{in:2e-6,out:8e-6}, 'o4-mini':{in:1.1e-6,out:4.4e-6}, 'gpt-4.1':{in:2e-6,out:8e-6},
   'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-sonnet-4-6':{in:3e-6,out:1.5e-5},
   'claude-haiku-4-5-20251001':{in:1e-6,out:5e-6},
-  'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
+  'claude-opus-5-5':{in:4e-6,out:2e-5}, 'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
   'gemini-3.6-flash':{in:7.5e-7,out:3.75e-6}, 'gemini-3.5-flash':{in:1.5e-6,out:9e-6},
   'gemini-3.1-pro-preview':{in:2e-6,out:1.2e-5},
   // DeepSeek's warned increase landed: ~3x input, ~4.5x output. These are the PEAK
@@ -307,7 +318,7 @@ const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsof
 // `top` is what "I always want the best" means for each provider, and it must NOT
 // be on that provider's free tier or the answer can never change the result.
 const MODELS = {
-  openai:{free:'gpt-5.6-luna',top:'gpt-5.6-sol'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-5'},
+  openai:{free:'gpt-5.6-luna',top:'gpt-6-sol'}, anthropic:{free:'claude-sonnet-5',top:'claude-opus-5-5'},
   google:{free:'gemini-3.6-flash',top:'gemini-3.1-pro-preview'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
   deepseek:{free:'deepseek-v4-flash',top:'deepseek-v4-pro'},
 };
@@ -360,18 +371,18 @@ function advancedModels(){
     tiers.forEach(t=>{ if(t.price>0) t.models.forEach(m=>{ if(!free.has(m)) s.add(m); }); });
   }
   // providers the auditor doesn't yet cover, but whose models can appear in an export
-  ['claude-fable-5','claude-mythos-5','claude-fable-5-1','claude-mythos-5-1','grok-4.5','grok-4.6','sonar-reasoning-pro','deepseek-v4-pro'].forEach(m=>s.add(m));
+  ['claude-fable-5','claude-mythos-5','claude-fable-5-1','claude-mythos-5-1','grok-4.5','grok-4.6','grok-4.7','sonar-reasoning-pro','deepseek-v4-pro'].forEach(m=>s.add(m));
   LEGACY_MODELS.forEach(m=>s.delete(m));
   return s;
 }
 const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus 4.8', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
   'claude-fable-5-1':'Claude Fable 5.1', 'claude-mythos-5-1':'Claude Mythos 5.1',
-  'gpt-6-astra':'GPT-6 Astra',
+  'gpt-6-astra':'GPT-6 Astra', 'gpt-6-sol':'GPT-6 Sol', 'gpt-6-luna':'GPT-6 Luna', 'claude-opus-5-5':'Claude Opus 5.5',
   'gpt-5.6-sol':'GPT-5.6 Sol', 'gpt-5.6-terra':'GPT-5.6 Terra', 'gpt-5.6-luna':'GPT-5.6 Luna',
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
   'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-3.5-flash':'Gemini 3.5 Flash',
-  'gemini-3.6-flash':'Gemini 3.6 Flash', 'gemini-3.7-flash':'Gemini 3.7 Flash',
-  'sonar-reasoning-pro':'Sonar Reasoning Pro', 'grok-4.5':'Grok 4.5', 'grok-4.6':'Grok 4.6',
+  'gemini-3.6-flash':'Gemini 3.6 Flash', 'gemini-3.7-flash':'Gemini 3.7 Flash', 'gemini-3.8-flash':'Gemini 3.8 Flash',
+  'sonar-reasoning-pro':'Sonar Reasoning Pro', 'grok-4.5':'Grok 4.5', 'grok-4.6':'Grok 4.6', 'grok-4.7':'Grok 4.7',
   'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek Flash', 'deepseek-r1':'DeepSeek R1',
   // Every plan-limits value_model needs a label or its raw key leaks into the
   // break-even copy — check-auditor.js enforces that.

@@ -468,6 +468,7 @@
     { p:"anthropic", key:"claude-sonnet-5",           m:"Claude Sonnet 5", note:"free default · $2 / $10 is now the standard rate" },
     { p:"anthropic", key:"claude-sonnet-4-6",         m:"Claude Sonnet 4.6" },
     { p:"anthropic", key:"claude-haiku-4-5-20251001", m:"Claude Haiku 4.5" },
+    { p:"anthropic", key:"claude-opus-5-5",           m:"Claude Opus 5.5", note:"current Opus · cache hits 0.05x base, not the usual 0.1x" },
     { p:"anthropic", key:"claude-opus-5",             m:"Claude Opus 5" },
     { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.5 / 4.6 / 4.7 priced the same" },
     { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
@@ -476,6 +477,8 @@
     { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
     { p:"openai", key:"gpt-6-astra",  m:"GPT-6 Astra", note:"powers GPT-6 Pro · Pro plans in chat, Plus in Work and Codex" },
+    { p:"openai", key:"gpt-6-sol",    m:"GPT-6 Sol", note:"Plus and Pro in ChatGPT · not on Free or Go" },
+    { p:"openai", key:"gpt-6-luna",   m:"GPT-6 Luna", note:"Plus and Pro in ChatGPT · not on Free or Go" },
     { p:"openai", key:"gpt-5.6-sol",   m:"GPT-5.6 Sol", note:"powers Medium / High / Extra High reasoning in ChatGPT" },
     { p:"openai", key:"gpt-5.6-terra", m:"GPT-5.6 Terra" },
     { p:"openai", key:"gpt-5.6-luna",  m:"GPT-5.6 Luna" },
@@ -492,6 +495,7 @@
     { p:"openai", key:"o3",           m:"o3" },
     { p:"openai", key:"o4-mini",      m:"o4-mini" },
 
+    { p:"google", key:"gemini-3.8-flash",       m:"Gemini 3.8 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
     { p:"google", key:"gemini-3.7-flash",       m:"Gemini 3.7 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
     { p:"google", key:"gemini-3.6-flash",       m:"Gemini 3.6 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
     { p:"google", key:"gemini-3.5-flash",       m:"Gemini 3.5 Flash" },
@@ -502,7 +506,8 @@
     { p:"google", key:"gemini-2.5-flash",       m:"Gemini 2.5 Flash" },
     { p:"google", key:"gemini-2.5-flash-lite",  m:"Gemini 2.5 Flash-Lite" },
 
-    { p:"xai", key:"grok-4.6",    m:"Grok 4.6", note:"Current flagship · on every Grok tier, free included" },
+    { p:"xai", key:"grok-4.7",    m:"Grok 4.7", note:"API flagship · not yet in the Grok apps" },
+    { p:"xai", key:"grok-4.6",    m:"Grok 4.6", note:"on every Grok tier, free included · the apps still run 4.6" },
     { p:"xai", key:"grok-4.5",    m:"Grok 4.5" },
     { p:"xai", key:"grok-4.3",    m:"Grok 4.3" },
     { p:"xai", key:"grok-4.20",   m:"Grok 4.20" },
@@ -547,6 +552,7 @@
       "claude-haiku-4-5-20251001": { input: 1e-6,    output: 5e-6 },
       "claude-sonnet-5":           { input: 2e-6,    output: 1e-5 },
       "claude-sonnet-4-6":         { input: 3e-6,    output: 1.5e-5 },
+      "claude-opus-5-5":           { input: 4e-6,    output: 2e-5 },
       "claude-opus-5":             { input: 5e-6,    output: 2.5e-5 },
       "claude-opus-4-8":           { input: 5e-6,    output: 2.5e-5 },
       "claude-fable-5":            { input: 1e-5,    output: 5e-5 },
@@ -556,6 +562,8 @@
     },
     "openai": {
       "gpt-6-astra":   { input: 1e-5,   output: 5e-5, long: { over: 272000, input: 2e-5, output: 7.5e-5 } },
+      "gpt-6-sol":     { input: 2e-6,   output: 1e-5, long: { over: 272000, input: 4e-6, output: 1.5e-5 } },
+      "gpt-6-luna":    { input: 1e-7,   output: 5e-7, long: { over: 272000, input: 2e-7, output: 7.5e-7 } },
       "gpt-5.6-sol":   { input: 4e-6,   output: 2e-5, long: { over: 272000, input: 0.000008, output: 0.00003 } },
       "gpt-5.6-terra": { input: 2e-6,   output: 1.2e-5, long: { over: 272000, input: 4e-6, output: 1.8e-5 } },
       "gpt-5.6-luna":  { input: 2e-7,   output: 1.2e-6, long: { over: 272000, input: 4e-7, output: 1.8e-6 } },
@@ -573,6 +581,7 @@
       "o4-mini":      { input: 1.1e-6,  output: 4.4e-6 }
     },
     "google": {
+      "gemini-3.8-flash":       { input: 7.5e-7,  output: 3.75e-6 },
       "gemini-3.7-flash":       { input: 7.5e-7,  output: 3.75e-6 },
       "gemini-3.6-flash":       { input: 7.5e-7,  output: 3.75e-6 },
       "gemini-3.5-flash":       { input: 1.5e-6,  output: 9e-6 },
@@ -584,6 +593,7 @@
       "gemini-2.5-flash-lite":  { input: 1e-7,    output: 4e-7 }
     },
     "xai": {
+      "grok-4.7":    { input: 2e-6,    output: 6e-6, long: { over: 200000, input: 0.000004, output: 0.000012 } },
       "grok-4.6":    { input: 2e-6,    output: 6e-6, long: { over: 200000, input: 0.000004, output: 0.000012 } },
       "grok-4.5":    { input: 2e-6,    output: 6e-6, long: { over: 200000, input: 0.000004, output: 0.000012 } },
       "grok-4.3":    { input: 1.25e-6, output: 2.5e-6, long: { over: 200000, input: 0.0000025, output: 0.000005 } },
@@ -773,18 +783,18 @@
     plans: [
       { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"ChatGPT chat surfaces" }, value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
       { p:"openai", m:"ChatGPT Go", provenance:"not_disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" } },
-      { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
+      { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-6-sol" },
         caps:[{ n:10, n_high:100, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
-      { p:"openai", m:"ChatGPT Pro", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
+      { p:"openai", m:"ChatGPT Pro", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-6-sol" },
         caps:[{ n:50, n_high:500, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
-      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-6-sol" },
         caps:[{ n:200, n_high:2000, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
 
       { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5" } },
-      { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-opus-5" },
+      { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-opus-5-5" },
         third_party:[{ n:45, unit:"messages", window:"5h", scope:"all models", confidence:"medium", source:"https://claudelimit.com/claude-pro-limits/" }] },
-      { p:"anthropic", m:"Claude Max 5×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5" } },
-      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:20, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5" } },
+      { p:"anthropic", m:"Claude Max 5×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5-5" } },
+      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:20, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5-5" } },
 
       { p:"google", m:"Gemini (Free)", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
       { p:"google", m:"Google AI Plus", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:2, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },

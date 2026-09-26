@@ -464,6 +464,73 @@ OpenAI row (no 5.6 family before this pass, no Grok 4.6, no Chinese labs at all)
 **Guard:** `check-prices.js` (water parity + "shown on page but unpriced"),
 `check-auditor.js`
 
+**Added 2026-09-25 — a new-model sweep, not a full pass.** Every rate card in the
+2026-09-19 `verified` list was read for model ids we don't carry. Five were new, and
+each went into all seven places in the same commit, water tier included:
+
+| key | rate (short / long) | read at |
+|---|---|---|
+| `claude-opus-5-5` | $4 / $20, no long tier; cache hits **0.05x** base | platform.claude.com pricing |
+| `gpt-6-sol` | $2 / $10; >272k $4 / $15 | developers.openai.com/docs/pricing |
+| `gpt-6-luna` | $0.10 / $0.50; >272k $0.20 / $0.75 | same |
+| `gemini-3.8-flash` | $0.75 / $3.75 **promo to 2026-12-31**, then $1.50 / $7.50 | ai.google.dev pricing |
+| `grok-4.7` | $2 / $6; >=200k $4 / $12, identical to 4.6 | docs.x.ai model JSON (`longContextThreshold`) |
+
+GPT-6 is now a three-model family (Astra / Sol / Luna), so the "ONE model, not a
+family" line in the 2026-09-06 entry above is out of date. Opus 5.5 is cheaper than
+Opus 5 ($5 / $25), which Anthropic now lists under "Additional models". Water tiers are
+INFERRED from siblings, as usual: Opus 5.5 large/aws, GPT-6 Sol medium and Luna
+small on azure, Gemini 3.8 Flash on Google's measured Gemini curve, Grok 4.7
+large/unpublished. No reasoning multiplier for any of the five: unmeasured.
+
+**Where they are on consumer plans (checked the same day):**
+- **ChatGPT**: the compare grid's per-cell labels give all three GPT-6 models Free
+  "No", Go "No", Plus "Yes", Pro "Expanded". Free and Go still run GPT-5.6 Luna.
+  Added to Plus and Pro in `audit.html`; `free_tiers` unchanged.
+- **Gemini app**: the free card still says 3.6 Flash. 3.8 Flash is API-only, like 3.7.
+- **Grok apps**: x.ai/pricing still names Grok 4.6 only. 4.7 is API-only for now.
+- **Claude**: see A4. claude.com/pricing now has a per-plan model table.
+
+**Not skipped:** the sweep also turned up image, voice, TTS, embedding and
+dated-snapshot ids at every provider, plus older Qwen, GLM and Kimi variants. None
+are chat models we cost, so none were added.
+
+**Break-even anchors MOVED 2026-09-26, on Rory's call.** `plan-limits.json`
+`value_models` (plus `pricing.html`'s fallback copy) and `audit.html` `MODELS.*.top` now
+price ChatGPT Plus / Pro / Pro 20x on `gpt-6-sol` ($2/$10), not `gpt-5.6-sol` ($4/$20),
+and Claude Pro / Max 5x / Max 20x on `claude-opus-5-5` ($4/$20), not `claude-opus-5`
+($5/$25). The low ends and Perplexity Max are unchanged. Perplexity's own model
+menu was not re-checked, so its anchors still name the older models.
+
+**What it did to the headline number** (the high-end break-even at the standard
+archetype, 3,639 in / 470 out):
+
+| plan | before | after | if the predecessor's multiplier held |
+|---|---|---|---|
+| Claude Pro $20 | 16.9 msgs/day | 27.8 | 21.2 |
+| Claude Max 5x $100 | 84.7 | 139.1 | 105.9 |
+| ChatGPT Plus $20 | 25.8 | 55.7 | 51.6 |
+| ChatGPT Pro $100 | 129.0 | 278.3 | 258.0 |
+
+**The last column is the open part.** Neither new model has a measured thinking-token
+multiplier, so `reasoningMult()` returns 1, per its rule that an invented multiplier
+is worse than none. Opus 5 measured 1.8 and GPT-5.6 Sol 1.2. So for Claude, about
+a third of the rise is the missing measurement, not the price. Leaving it at 1
+understates API cost and **undersells** the subscription, which is the less harmful
+direction, but it is still a known bias. **Fix: run `node scripts/measure-reasoning.js
+--run --write --models=claude-opus-5-5,gpt-6-sol`.** It needs real Anthropic and
+OpenAI keys. The OpenAI one in this shell was the placeholder on 2026-09-26.
+
+**The homepage ticker was fixed while here.** It showed Gemini 3.5 Flash at **$0.50**
+(the real rate is $1.50), Grok 4.3 (not listed by xAI) and DeepSeek V3 (legacy key).
+It now shows Opus 5.5, GPT-6 Astra, Gemini 3.8 Flash (labelled promo), Grok 4.7,
+GPT-6 Sol and DeepSeek V4.1 Flash, all from `prices.json`. **Still no guard opens it.**
+
+**New guard: `validate-site.js` now compiles every inline `<script>`.** This pass
+dropped a comma in `pricing.html`'s `MODEL_REGISTRY`. That kills the whole page script,
+not one row, and `validate-site` passed it, because it only counted tags.
+`test-auditor.js` caught it by chance. Checked by injecting the same fault.
+
 ## A4. What the free tiers include
 
 **Goes stale faster than prices, and it moves the Auditor's whole answer.**
@@ -510,6 +577,12 @@ and the next pass should know these were looked at rather than assumed:
   is unverifiable from Anthropic’s own surfaces. That is a not-disclosed finding, not
   a gap in our data. API rates on the page did confirm Sonnet 5 $2/$10 and Haiku 4.5
   $1/$5.
+  **Superseded 2026-09-25:** claude.com/pricing now carries a per-plan MODEL table,
+  by family, no versions. Opus: Free "No", Pro/Max "Yes". Sonnet and Haiku: every
+  tier. Fable: Free "No", Pro "Usage credits", Max 5x/20x "50% of weekly limits".
+  Our Claude Free line-up (Sonnet + Haiku) agrees with it. `audit.html` now lists
+  Opus 5.5 wherever Opus is, and Fable 5 / 5.1 on both Max tiers only. Before this, no
+  tier listed Fable, so a Fable user was never gated and could be pointed at Free.
 
 **Two things the same pass fixed, both in `free_tiers`:**
 - **Copilot’s stand-in rate was being printed as Copilot’s rate.** `pricing.html`’s
