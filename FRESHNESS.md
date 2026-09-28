@@ -186,7 +186,7 @@ wrong number in front of a user.
 | **2026-12-31** | **Google's promotional rate on `gemini-3.7-flash` and `gemini-3.6-flash` expires** — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
 | **2027-01-01** | **RE-UPLOAD THE EXTENSION once the Gemini promos revert.** The extension reads its BUNDLED `prices.json` — there is no remote fetch — so the store copy freezes at whatever shipped. v6.15 carries the promo $0.75/$3.75; from 1 January that understates Gemini by **2×**, the direction that costs the reader money. `check-prices.js` fixes the repo automatically; only a manual upload fixes users. | [H4](#h4-the-shipped-build-vs-main), [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
-| **2026-09-27** | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices) |
+| **2026-09-27** ✅ DONE | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices)
 | 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
 | Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
 | June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
@@ -531,6 +531,15 @@ GPT-6 Sol and DeepSeek V4.1 Flash, all from `prices.json`. **Still no guard open
 dropped a comma in `pricing.html`'s `MODEL_REGISTRY`. That kills the whole page script,
 not one row, and `validate-site` passed it, because it only counted tags.
 `test-auditor.js` caught it by chance. Checked by injecting the same fault.
+
+**Removed 2026-09-27 — Perplexity Sonar, at its sunset.** `sonar-pro`, `sonar` and
+`sonar-reasoning-pro` are gone from every copy (`prices.json`, `water.json`, both
+`pricing.html` tables, the picker, `audit.html`, README). No successor was added:
+the Agent API resells other labs' models at their own rates, which we already carry.
+Perplexity Free in `free_tiers` now uses the Copilot pattern: GPT-5.6 Terra as a
+**stand-in only**, flagged `no_api_rate`, so the free view prints "not disclosed".
+Terra is the stand-in `plan-limits.json` already used for Perplexity Free, so nothing
+new is asserted. Water entries 84 -> 81.
 
 ## A4. What the free tiers include
 

@@ -371,7 +371,7 @@ function advancedModels(){
     tiers.forEach(t=>{ if(t.price>0) t.models.forEach(m=>{ if(!free.has(m)) s.add(m); }); });
   }
   // providers the auditor doesn't yet cover, but whose models can appear in an export
-  ['claude-fable-5','claude-mythos-5','claude-fable-5-1','claude-mythos-5-1','grok-4.5','grok-4.6','grok-4.7','sonar-reasoning-pro','deepseek-v4-pro'].forEach(m=>s.add(m));
+  ['claude-fable-5','claude-mythos-5','claude-fable-5-1','claude-mythos-5-1','grok-4.5','grok-4.6','grok-4.7','deepseek-v4-pro'].forEach(m=>s.add(m));
   LEGACY_MODELS.forEach(m=>s.delete(m));
   return s;
 }
@@ -382,7 +382,7 @@ const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
   'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-3.5-flash':'Gemini 3.5 Flash',
   'gemini-3.6-flash':'Gemini 3.6 Flash', 'gemini-3.7-flash':'Gemini 3.7 Flash', 'gemini-3.8-flash':'Gemini 3.8 Flash',
-  'sonar-reasoning-pro':'Sonar Reasoning Pro', 'grok-4.5':'Grok 4.5', 'grok-4.6':'Grok 4.6', 'grok-4.7':'Grok 4.7',
+  'grok-4.5':'Grok 4.5', 'grok-4.6':'Grok 4.6', 'grok-4.7':'Grok 4.7',
   'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek Flash', 'deepseek-r1':'DeepSeek R1',
   // Every plan-limits value_model needs a label or its raw key leaks into the
   // break-even copy — check-auditor.js enforces that.

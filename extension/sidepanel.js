@@ -139,11 +139,6 @@ const MODEL_CATALOG = [
     { key:'mistral-small-4', name:'Mistral Small 4' },
     { key:'codestral', name:'Codestral' },
   ]},
-  { label:'Perplexity', models:[
-    { key:'sonar-pro', name:'Sonar Pro' },
-    { key:'sonar', name:'Sonar' },
-    { key:'sonar-reasoning-pro', name:'Sonar Reasoning Pro' },
-  ]},
   { label:'DeepSeek', models:[
     { key:'deepseek-v4-pro', name:'DeepSeek V4 Pro' },
     { key:'deepseek-v4-flash', name:'DeepSeek Flash' },

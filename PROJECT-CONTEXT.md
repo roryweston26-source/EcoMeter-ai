@@ -17,8 +17,8 @@ the next store upload. The website picks them up on merge. **Open:**
 - **Break-even anchors MOVED 2026-09-26** to GPT-6 Sol and Opus 5.5 (Rory's call). The
   new models have no measured thinking-token multiplier, so they run at 1x and Claude's
   break-even reads high. Run measure-reasoning.js with real keys. See A3.
-- **Perplexity Sonar ends 2026-09-27.** The three `sonar*` rates are due for removal
-  then. `check-prices.js` will start failing on the sunset date by design.
+- **Perplexity Sonar removed 2026-09-27** at its sunset. Perplexity Free now prices on a
+  labelled GPT-5.6 Terra stand-in (`no_api_rate`), like Copilot. See A3.
 
 Also: `audit.html` now gates Fable on Claude Max (claude.com/pricing publishes a
 per-plan model table now). The homepage ticker had Gemini Flash at a third of its
