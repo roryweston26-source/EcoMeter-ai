@@ -82,8 +82,9 @@ ok(Object.values(water._hosts).every(h => h.source), 'every host says where its 
   // the three Chinese labs, 76 -> 77 on 2026-09-06 with gpt-6-astra (FRESHNESS
   // E3 — hardcoded coverage counts), 77 -> 79 on 2026-09-19 with Claude Fable 5.1
   // and Claude Mythos 5.1, 79 -> 84 on 2026-09-25 with Claude Opus 5.5, GPT-6 Sol,
-  // GPT-6 Luna, Gemini 3.8 Flash and Grok 4.7.
-  ok(models.length === 84, models.length + ' models carry a water entry');
+  // GPT-6 Luna, Gemini 3.8 Flash and Grok 4.7, 84 -> 81 on 2026-09-27 when
+  // Perplexity's three Sonar API models were removed at their sunset.
+  ok(models.length === 81, models.length + ' models carry a water entry');
   ok(models.every(m => water._hosts[m.host]), 'every model joins to a real host');
   ok(models.every(m => !m.energy || water._energy.measured[m.energy]), 'every named energy curve exists');
   const measured = models.filter(m => m.energy).length;

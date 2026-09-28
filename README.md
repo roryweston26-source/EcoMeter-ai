@@ -55,7 +55,6 @@ Each exists because something was wrong and nothing caught it. They have found a
 | OpenAI | GPT-6 Astra / Sol / Luna, GPT-5.6 Sol / Terra / Luna, GPT-5.5 (+ Pro), GPT-5.4 (+ mini / nano / Pro), GPT-4o (+ mini), GPT-4.1 (+ mini / nano), o3, o4-mini |
 | xAI | Grok 4.7, Grok 4.6, Grok 4.5, Grok 4.3, Grok 4.20, Grok 4, Grok 3, Grok 3 Mini |
 | Mistral | Large 3, Medium 3.5, Small 4, Codestral |
-| Perplexity | Sonar Pro, Sonar, Sonar Reasoning Pro |
 | DeepSeek | V4 Pro, V4 Flash, V3, R1 |
 
 The full catalog (including advanced/paid frontier models) lives in [`extension/prices.json`](extension/prices.json) — the single source of truth for pricing, shared by the extension and the Legerly website.
