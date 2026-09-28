@@ -519,7 +519,8 @@ a third of the rise is the missing measurement, not the price. Leaving it at 1
 understates API cost and **undersells** the subscription, which is the less harmful
 direction, but it is still a known bias. **Fix: run `node scripts/measure-reasoning.js
 --run --write --models=claude-opus-5-5,gpt-6-sol`.** It needs real Anthropic and
-OpenAI keys. The OpenAI one in this shell was the placeholder on 2026-09-26.
+OpenAI keys and costs money. **Rory declined on 2026-09-27**, so the 1x stays until
+that changes. Don't re-propose a paid run without a reason.
 
 **The homepage ticker was fixed while here.** It showed Gemini 3.5 Flash at **$0.50**
 (the real rate is $1.50), Grok 4.3 (not listed by xAI) and DeepSeek V3 (legacy key).
