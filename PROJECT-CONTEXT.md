@@ -9,6 +9,21 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-09-25 — Opus 5.5, GPT-6 Sol / Luna, Gemini 3.8 Flash, Grok 4.7 added (FRESHNESS A3)
+
+Five new models, each in all seven places with a water tier. **These are extension
+changes too** (`prices.json`, `water.json`, the picker), so they reach users only with
+the next store upload. The website picks them up on merge. **Open:**
+- **Break-even anchors MOVED 2026-09-26** to GPT-6 Sol and Opus 5.5 (Rory's call). The
+  new models have no measured thinking-token multiplier, so they run at 1x and Claude's
+  break-even reads high. Run measure-reasoning.js with real keys. See A3.
+- **Perplexity Sonar ends 2026-09-27.** The three `sonar*` rates are due for removal
+  then. `check-prices.js` will start failing on the sunset date by design.
+
+Also: `audit.html` now gates Fable on Claude Max (claude.com/pricing publishes a
+per-plan model table now). The homepage ticker had Gemini Flash at a third of its
+real rate and is fixed. `validate-site.js` now parses inline scripts.
+
 ### ✅ v6.14 IS UPLOADED (2026-08-28) — and 6.13 must have cleared review
 
 **Rory uploaded `ecometer-ai-v6.14.zip` on 2026-08-28.** The store blocks a new upload while a prior version is still "Pending review" (§11), so **the fact that 6.14 went up is itself evidence 6.13 cleared** — its verdict was never recorded here before it was superseded. Worth confirming in the dashboard rather than assuming.

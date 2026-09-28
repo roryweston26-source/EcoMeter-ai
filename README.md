@@ -50,10 +50,10 @@ Each exists because something was wrong and nothing caught it. They have found a
 
 | Provider | Models |
 |---|---|
-| Anthropic | Claude Opus 5, Opus 4.8 / 4.7 / 4.6, Sonnet 5, Sonnet 4.6, Haiku 4.5, plus Fable 5 & Mythos 5 |
-| Google | Gemini 3.5 Flash, 3.1 Pro, 3.1 Flash-Lite, 2.5 Pro / Flash / Flash-Lite |
-| OpenAI | GPT-6 Astra, GPT-5.6 Sol / Terra / Luna, GPT-5.5 (+ Pro), GPT-5.4 (+ mini / nano / Pro), GPT-4o (+ mini), GPT-4.1 (+ mini / nano), o3, o4-mini |
-| xAI | Grok 4.3, Grok 4.20, Grok 4, Grok 3, Grok 3 Mini |
+| Anthropic | Claude Opus 5.5, Opus 5, Opus 4.8 / 4.7 / 4.6, Sonnet 5, Sonnet 4.6, Haiku 4.5, plus Fable 5 / 5.1 & Mythos 5 / 5.1 |
+| Google | Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash, 3.5 Flash-Lite, 3.1 Pro, 3.1 Flash-Lite, 2.5 Pro / Flash / Flash-Lite |
+| OpenAI | GPT-6 Astra / Sol / Luna, GPT-5.6 Sol / Terra / Luna, GPT-5.5 (+ Pro), GPT-5.4 (+ mini / nano / Pro), GPT-4o (+ mini), GPT-4.1 (+ mini / nano), o3, o4-mini |
+| xAI | Grok 4.7, Grok 4.6, Grok 4.5, Grok 4.3, Grok 4.20, Grok 4, Grok 3, Grok 3 Mini |
 | Mistral | Large 3, Medium 3.5, Small 4, Codestral |
 | Perplexity | Sonar Pro, Sonar, Sonar Reasoning Pro |
 | DeepSeek | V4 Pro, V4 Flash, V3, R1 |

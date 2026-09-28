@@ -295,7 +295,7 @@ const EXACT = {
   // Google's figure is the median across Gemini Apps, i.e. a medium-class
   // curve. Applying it to Pro (large) or Flash-Lite (tiny) would flatten real
   // differences, so only the medium-class Gemini models take the anchor.
-  'gemini-3.7-flash': 'gemini', 'gemini-3.6-flash': 'gemini',
+  'gemini-3.8-flash': 'gemini', 'gemini-3.7-flash': 'gemini', 'gemini-3.6-flash': 'gemini',
   'gemini-3.5-flash': 'gemini', 'gemini-2.5-flash': 'gemini',
 };
 

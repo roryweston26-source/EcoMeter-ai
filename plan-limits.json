@@ -228,7 +228,7 @@
       },
       "value_models": {
         "low": "gpt-5.4-mini",
-        "high": "gpt-5.6-sol"
+        "high": "gpt-6-sol"
       },
       "note": "Plus includes GPT-5.6 Sol at Medium and High reasoning but not Extra High or Pro, which are Pro-only. Free and Go get no Sol access at all, at any reasoning level. If a Sol reasoning limit is reached, ChatGPT falls back to GPT-5.4 Thinking mini rather than stopping.",
       "source": "https://help.openai.com/en/articles/11909943-gpt-55-in-chatgpt",
@@ -276,7 +276,7 @@
       "stated": "'Pro $100 unlocks 5x higher usage than Plus.' What it multiplies is not stated: the one published absolute cap (160 GPT-5.5 Instant messages / 3h) is identical on Go at $8 and Plus at $20, so it is plainly not the figure that separates tiers. OpenAI adds only that 'some models have separate usage allowances' — those allowances are never published.",
       "value_models": {
         "low": "gpt-5.4-mini",
-        "high": "gpt-5.6-sol"
+        "high": "gpt-6-sol"
       },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
       "as_of": "2026-09-19"
@@ -318,7 +318,7 @@
       "stated": "'Pro $200 unlocks 20x usage than Plus.' What it multiplies is not stated — see the $100 tier. Multiplying the published Instant cap by 20 would imply 25,600 messages a day, which is not a claim OpenAI makes and not one worth repeating.",
       "value_models": {
         "low": "gpt-5.4-mini",
-        "high": "gpt-5.6-sol"
+        "high": "gpt-6-sol"
       },
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
       "as_of": "2026-09-19",
@@ -366,7 +366,7 @@
       ],
       "value_models": {
         "low": "claude-haiku-4-5-20251001",
-        "high": "claude-opus-5"
+        "high": "claude-opus-5-5"
       },
       "unquantified_windows": [
         {
@@ -430,7 +430,7 @@
       },
       "value_models": {
         "low": "claude-sonnet-5",
-        "high": "claude-opus-5"
+        "high": "claude-opus-5-5"
       },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-09-19",
@@ -475,7 +475,7 @@
       },
       "value_models": {
         "low": "claude-sonnet-5",
-        "high": "claude-opus-5"
+        "high": "claude-opus-5-5"
       },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-09-19",

@@ -15,6 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 
 const repoRoot = path.resolve(__dirname, '..');
 const errors = [];
@@ -91,6 +92,21 @@ function validateHtml(htmlFile) {
     }
   }
 
+  // 2b. Inline scripts must at least PARSE. Balanced tags say nothing about what is
+  // between them: on 2026-09-25 a missing comma in pricing.html's MODEL_REGISTRY
+  // passed every check here and was caught only because test-auditor.js happens to
+  // eval that page. A syntax error kills the whole script, not one row. Compiled,
+  // never run. Only plain <script> blocks are checked; a src= or non-JS type is skipped.
+  const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+  let sm, n = 0;
+  while ((sm = scriptRe.exec(src)) !== null) {
+    const attrs = sm[1];
+    if (/\bsrc\s*=/i.test(attrs)) continue;
+    if (/\btype\s*=\s*"(?!text\/javascript")[^"]*"/i.test(attrs)) continue;
+    n++;
+    try { new vm.Script(sm[2], { filename: rel + ' <script #' + n + '>' }); }
+    catch (e) { errors.push(`${rel}: inline <script #${n}> does not parse — ${e.message}`); }
+  }
   // 3. Local references (href/src + fetch('…')) must point to files that exist.
   const refs = [];
   const attrRe = /\b(?:href|src)\s*=\s*"([^"]*)"/gi;

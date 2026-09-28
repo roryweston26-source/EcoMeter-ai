@@ -40,7 +40,7 @@
   },
 
   "_remaining_caveats": {
-    "measured_vs_inferred": "16 of 68 models sit on a curve fitted to that exact model; the other 52 use a class fallback fitted across measured models of similar size. Per-model fits carry up to 29% error against the source; class fits run 39-74%. The panel marks which is which on hover. A class figure is a genuinely weaker claim.",
+    "measured_vs_inferred": "17 of 84 models sit on a curve fitted to that exact model; the other 67 use a class fallback fitted across measured models of similar size. Per-model fits carry up to 29% error against the source; class fits run 39-74%. The panel marks which is which on hover. A class figure is a genuinely weaker claim.",
     "one_energy_source": "All energy comes from a single benchmark, and that benchmark is itself modelled — inferred hardware, published multipliers, API latency — not metered. No provider publishes energy or water per token. Google publishes one per-prompt energy figure and it is the only first-party number in the whole model.",
     "google_token_count": "Gemini is anchored on Google's measurement, but Google does not publish the token count of its median prompt, so mapping it onto the 100-in/300-out config is our assumption. That single undisclosed number is the largest remaining source of error for Gemini.",
     "unpublished_hosts": "xAI and Mistral publish no PUE or WUE. They use the median of the four hosts that do publish, which is inference, not measurement. Google publishes no fleet-wide WUE either — the figure used is the LLM-serving WUE from its own paper.",
@@ -53,6 +53,7 @@
     "claude-mythos-5":           { "class": "large", "host": "aws" },
     "claude-fable-5-1":          { "class": "large", "host": "aws" },
     "claude-mythos-5-1":         { "class": "large", "host": "aws" },
+    "claude-opus-5-5":           { "class": "large", "host": "aws" },
     "claude-opus-5":             { "class": "large", "host": "aws" },
     "claude-opus-4-8":           { "class": "large", "host": "aws" },
     "claude-opus-4-7":           { "class": "large", "host": "aws" },
@@ -69,6 +70,8 @@
 
   "openai": {
     "gpt-6-astra":   { "class": "large", "host": "azure" },
+    "gpt-6-sol":     { "class": "medium", "host": "azure" },
+    "gpt-6-luna":    { "class": "small", "host": "azure" },
     "gpt-5.6-sol":   { "class": "large", "host": "azure" },
     "gpt-5.6-terra": { "class": "medium", "host": "azure" },
     "gpt-5.6-luna":  { "class": "small", "host": "azure" },
@@ -92,6 +95,7 @@
   },
 
   "google": {
+    "gemini-3.8-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
     "gemini-3.7-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
     "gemini-3.6-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
     "gemini-3.5-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
@@ -106,6 +110,7 @@
 
   "xai": {
     "grok-4":      { "class": "large", "host": "unpublished" },
+    "grok-4.7":    { "class": "large", "host": "unpublished" },
     "grok-4.6":    { "class": "large", "host": "unpublished" },
     "grok-4.5":    { "class": "large", "host": "unpublished" },
     "grok-4.3":    { "class": "large", "host": "unpublished" },

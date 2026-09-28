@@ -1,10 +1,11 @@
 {
   "_meta": {
     "comment": "Shared data for the EcoMeter extension and the Legerly pricing page. 'api' = per-token USD (input/output). 'subscriptions' = consumer plan $/month. 'free_tiers' = which models each platform's FREE plan exposes (drives the extension model picker). To update prices, edit the numbers here.",
-    "last_updated": "2026-09-19",
+    "last_updated": "2026-09-25",
     "version": "6.15",
     "source": "Official provider pricing pages + free-tier availability",
     "verified": "2026-09-19 — FULL nine-provider re-read, the first since 2026-08-24, against platform.claude.com/docs/en/about-claude/pricing, developers.openai.com/docs/pricing, ai.google.dev/gemini-api/docs/pricing, docs.x.ai/docs/models, api-docs.deepseek.com/quick_start/pricing, mistral.ai/pricing/api, docs.perplexity.ai/getting-started/pricing, alibabacloud.com/help/en/model-studio/model-pricing, platform.moonshot.ai/docs/pricing and docs.z.ai/guides/overview/pricing. EXACTLY ONE RATE HAD MOVED, and it moved DOWN: DeepSeek cut its Flash model from $0.44/$1.32 to $0.30/$1.20 peak, and renamed it — the rate card now lists deepseek-flash (DeepSeek-V4.1-Flash) and states that deepseek-v4-flash is RETIRED, with legacy requests served by V4.1-Flash at the Flash price. Every other rate at all nine providers was unchanged, including both Gemini Flash promos ($0.75/$3.75 through 2026-12-31, then $1.50/$7.50, confirmed verbatim) and all four Anthropic families. TWO NEW ANTHROPIC MODELS added: Claude Fable 5.1 and Claude Mythos 5.1, both $10/$50, both carrying a 0.025x cache-hit multiplier where every other Claude model uses 0.1x. Z.AI's glm-5.3-flash promo EXPIRED on 2026-09-09 and was found ten days late: it is back at the standard $0.15/$0.50, confirmed against Z.ai's own rate card rather than trusting the figure we had recorded. GPT-5.6 Sol's $4/$20 now carries a promo block with standard:null — OpenAI says it is promotional 'at least through November 21, 2026' and does NOT say what it reverts to, and rule 3 forbids inventing the number. Perplexity's three Sonar rates now carry a machine-checked sunset for 2026-09-27, confirmed at source. Mistral's own pricing page badges Medium 3.5 and Large 3 as OPEN; both weights repos were loaded and both are now recorded, which makes the long-standing 'Mistral publishes only Small' claim wrong. Host spreads re-measured for all eight models with a hosted block.",
+    "added_2026-09-25": "NEW-MODEL sweep, not a full re-verification: every provider rate card was read for model ids missing here. Five added, each read at source: Claude Opus 5.5 $4/$20 (cache hits 0.05x base; platform.claude.com pricing), GPT-6 Sol $2/$10 and GPT-6 Luna $0.10/$0.50 (both >272k long tier at $4/$15 and $0.20/$0.75; developers.openai.com/docs/pricing), Gemini 3.8 Flash $0.75/$3.75 promo through 2026-12-31 then $1.50/$7.50 (ai.google.dev), Grok 4.7 $2/$6 with >=200k at $4/$12, identical to 4.6 (docs.x.ai model JSON). Every OpenAI rate already here re-read unchanged. Perplexity Sonar sunset re-read: still 2026-09-27.",
     "caveats": {
       "claude-sonnet-5": "$2/$10 per 1M is now the STANDARD rate. It launched as an introductory rate through 2026-08-31, and Anthropic's pricing page states the scheduled 2026-09-01 rise to $3/$15 will not occur. Resolved 2026-08-24 — no action needed at the end of August.",
       "_long_context": "'input'/'output' are the SHORT-CONTEXT rates. Where a provider charges more past a context threshold, the optional 'long' block holds { over, input, output }: 'over' is the INPUT-token count at which the higher rate starts, and that rate then applies to ALL tokens in the request, not just the excess. Thresholds are OpenAI >272k (per the tooltip on developers.openai.com/docs/pricing), Google >200k, xAI >=200k. Anthropic does not tier this way and has no 'long' block. A consumer that ignores 'long' silently undercounts long conversations by roughly 2x — which is the OPPOSITE direction to the unmodelled prompt-caching discount, so the two do not cancel out.",
@@ -32,6 +33,7 @@
       "claude-sonnet-4-6": { "input": 3e-06, "output": 1.5e-05 },
       "claude-sonnet-4-5": { "input": 3e-06, "output": 1.5e-05 },
       "claude-sonnet": { "input": 3e-06, "output": 1.5e-05 },
+      "claude-opus-5-5": { "input": 4e-06, "output": 2e-05 },
       "claude-opus-5": { "input": 5e-06, "output": 2.5e-05 },
       "claude-opus-4-5": { "input": 5e-06, "output": 2.5e-05 },
       "claude-opus-4-8": { "input": 5e-06, "output": 2.5e-05 },
@@ -50,6 +52,8 @@
       "gpt-4.1-mini": { "input": 4e-07, "output": 1.6e-06 },
       "gpt-4.1-nano": { "input": 1e-07, "output": 4e-07 },
       "gpt-6-astra": { "input": 1e-05, "output": 5e-05, "long": { "over": 272000, "input": 0.00002, "output": 0.000075 } },
+      "gpt-6-sol": { "input": 2e-06, "output": 1e-05, "long": { "over": 272000, "input": 0.000004, "output": 0.000015 } },
+      "gpt-6-luna": { "input": 1e-07, "output": 5e-07, "long": { "over": 272000, "input": 2e-07, "output": 7.5e-07 } },
       "gpt-5.6-sol": { "input": 4e-06, "output": 2e-05, "long": { "over": 272000, "input": 0.000008, "output": 0.00003 },
         "promo": { "until": "2026-11-21", "standard": null, "note": "OpenAI's own pricing page states, directly under the flagship table, that \"GPT-5.6 Sol's promotional pricing is available at least through November 21, 2026\". It does NOT say what the rate reverts to, so `standard` is null rather than a guess. The last standard rate before this one was $5/$30 short-context and $10/$45 long, cut to $4/$20 and $8/$30 on 2026-08-24 — that is history, not a prediction, and must not be written into `standard` on the strength of it. \"At least through\" also means the date can move out as well as arrive, so re-read the page rather than acting on expiry alone. Recorded 2026-09-19; the gap was spotted on 2026-09-06 and left unactioned, and glm-5.3-flash then expired unnoticed for ten days, which is the argument for recording a promo even when the reverting figure is unknown." } },
       "gpt-5.6-terra": { "input": 2e-06, "output": 1.2e-05, "long": { "over": 272000, "input": 0.000004, "output": 0.000018 } },
@@ -68,6 +72,7 @@
       "gpt-4": { "input": 3e-05, "output": 6e-05 }
     },
     "google": {
+      "gemini-3.8-flash": { "input": 7.5e-07, "output": 3.75e-06, "promo": { "until": "2026-12-31", "standard": { "input": 1.5e-06, "output": 7.5e-06 } } },
       "gemini-3.7-flash": { "input": 7.5e-07, "output": 3.75e-06, "promo": { "until": "2026-12-31", "standard": { "input": 1.5e-06, "output": 7.5e-06 } } },
       "gemini-3.6-flash": { "input": 7.5e-07, "output": 3.75e-06, "promo": { "until": "2026-12-31", "standard": { "input": 1.5e-06, "output": 7.5e-06 } } },
       "gemini-3.5-flash": { "input": 1.5e-06, "output": 9e-06 },
@@ -80,6 +85,7 @@
       "gemini-2.5-flash-lite": { "input": 1e-07, "output": 4e-07 }
     },
     "xai": {
+      "grok-4.7": { "input": 2e-06, "output": 6e-06, "long": { "over": 200000, "input": 0.000004, "output": 0.000012 } },
       "grok-4.6": { "input": 2e-06, "output": 6e-06, "long": { "over": 200000, "input": 0.000004, "output": 0.000012 } },
       "grok-4.5": { "input": 2e-06, "output": 6e-06, "long": { "over": 200000, "input": 0.000004, "output": 0.000012 } },
       "grok-4.3": { "input": 1.25e-06, "output": 2.5e-06, "long": { "over": 200000, "input": 0.0000025, "output": 0.000005 } },
