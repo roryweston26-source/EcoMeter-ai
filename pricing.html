@@ -465,7 +465,8 @@
   // PRICES are read live from prices.json (the file the Monday Action updates).
   // This list only controls naming, order, and which models appear.
   var MODEL_REGISTRY = [
-    { p:"anthropic", key:"claude-sonnet-5",           m:"Claude Sonnet 5", note:"free default · $2 / $10 is now the standard rate" },
+    { p:"anthropic", key:"claude-sonnet-5-5",         m:"Claude Sonnet 5.5", note:"current Sonnet · on every plan, free included · same $2 / $10 as Sonnet 5" },
+    { p:"anthropic", key:"claude-sonnet-5",           m:"Claude Sonnet 5", note:"previous Sonnet · $2 / $10 is the standard rate" },
     { p:"anthropic", key:"claude-sonnet-4-6",         m:"Claude Sonnet 4.6" },
     { p:"anthropic", key:"claude-haiku-4-5-20251001", m:"Claude Haiku 4.5" },
     { p:"anthropic", key:"claude-opus-5-5",           m:"Claude Opus 5.5", note:"current Opus · cache hits 0.05x base, not the usual 0.1x" },
@@ -477,8 +478,9 @@
     { p:"anthropic", key:"claude-mythos-5",           m:"Claude Mythos 5", note:"paid" },
 
     { p:"openai", key:"gpt-6-astra",  m:"GPT-6 Astra", note:"powers GPT-6 Pro · Pro plans in chat, Plus in Work and Codex" },
-    { p:"openai", key:"gpt-6-sol",    m:"GPT-6 Sol", note:"Plus and Pro in ChatGPT · not on Free or Go" },
-    { p:"openai", key:"gpt-6-luna",   m:"GPT-6 Luna", note:"Plus and Pro in ChatGPT · not on Free or Go" },
+    { p:"openai", key:"gpt-6.1-sol",  m:"GPT-6.1 Sol", note:"newest Sol · Work and Codex only, not regular ChatGPT chat · Pro first, rolling out to Plus · not on Free or Go" },
+    { p:"openai", key:"gpt-6-sol",    m:"GPT-6 Sol", note:"superseded by GPT-6.1 Sol · Work and Codex on Plus and Pro, not regular ChatGPT chat · not on Free or Go" },
+    { p:"openai", key:"gpt-6-luna",   m:"GPT-6 Luna", note:"Work and Codex on Plus and Pro, not regular ChatGPT chat · not on Free or Go" },
     { p:"openai", key:"gpt-5.6-sol",   m:"GPT-5.6 Sol", note:"powers Medium / High / Extra High reasoning in ChatGPT" },
     { p:"openai", key:"gpt-5.6-terra", m:"GPT-5.6 Terra" },
     { p:"openai", key:"gpt-5.6-luna",  m:"GPT-5.6 Luna" },
@@ -546,6 +548,7 @@
     "_last_updated": "2026-08-29",
     "anthropic": {
       "claude-haiku-4-5-20251001": { input: 1e-6,    output: 5e-6 },
+      "claude-sonnet-5-5":         { input: 2e-6,    output: 1e-5 },
       "claude-sonnet-5":           { input: 2e-6,    output: 1e-5 },
       "claude-sonnet-4-6":         { input: 3e-6,    output: 1.5e-5 },
       "claude-opus-5-5":           { input: 4e-6,    output: 2e-5 },
@@ -558,6 +561,7 @@
     },
     "openai": {
       "gpt-6-astra":   { input: 1e-5,   output: 5e-5, long: { over: 272000, input: 2e-5, output: 7.5e-5 } },
+      "gpt-6.1-sol":   { input: 2e-6,   output: 1e-5, long: { over: 272000, input: 4e-6, output: 1.5e-5 } },
       "gpt-6-sol":     { input: 2e-6,   output: 1e-5, long: { over: 272000, input: 4e-6, output: 1.5e-5 } },
       "gpt-6-luna":    { input: 1e-7,   output: 5e-7, long: { over: 272000, input: 2e-7, output: 7.5e-7 } },
       "gpt-5.6-sol":   { input: 4e-6,   output: 2e-5, long: { over: 272000, input: 0.000008, output: 0.00003 } },
@@ -781,11 +785,11 @@
       { p:"openai", m:"ChatGPT Pro (20×)", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-6-sol" },
         caps:[{ n:200, n_high:2000, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
 
-      { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5" } },
+      { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5-5" } },
       { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-opus-5-5" },
         third_party:[{ n:45, unit:"messages", window:"5h", scope:"all models", confidence:"medium", source:"https://claudelimit.com/claude-pro-limits/" }] },
-      { p:"anthropic", m:"Claude Max 5×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5-5" } },
-      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:20, base_disclosed:false }, value_models:{ low:"claude-sonnet-5", high:"claude-opus-5-5" } },
+      { p:"anthropic", m:"Claude Max 5×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false }, value_models:{ low:"claude-sonnet-5-5", high:"claude-opus-5-5" } },
+      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:20, base_disclosed:false }, value_models:{ low:"claude-sonnet-5-5", high:"claude-opus-5-5" } },
 
       { p:"google", m:"Gemini (Free)", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
       { p:"google", m:"Google AI Plus", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:2, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },

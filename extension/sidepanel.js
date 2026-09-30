@@ -83,6 +83,7 @@ const FALLBACK_API = {
 // Keys match prices.json `api`; getPrice() resolves the rate.
 const MODEL_CATALOG = [
   { label:'Claude', models:[
+    { key:'claude-sonnet-5-5', name:'Claude Sonnet 5.5' },
     { key:'claude-sonnet-5', name:'Claude Sonnet 5' },
     { key:'claude-sonnet-4-6', name:'Claude Sonnet 4.6' },
     { key:'claude-opus-5-5', name:'Claude Opus 5.5' },
@@ -96,6 +97,7 @@ const MODEL_CATALOG = [
   ]},
   { label:'ChatGPT', models:[
     { key:'gpt-6-astra', name:'GPT-6 Astra' },
+    { key:'gpt-6.1-sol', name:'GPT-6.1 Sol' },
     { key:'gpt-6-sol', name:'GPT-6 Sol' },
     { key:'gpt-6-luna', name:'GPT-6 Luna' },
     { key:'gpt-5.6-sol', name:'GPT-5.6 Sol' },

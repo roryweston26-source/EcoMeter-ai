@@ -188,6 +188,8 @@ wrong number in front of a user.
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
 | **2026-09-27** ✅ DONE | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices)
 | 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
+| Any day (announced 2026-09-28) | **Claude Haiku 5.5** — Sonnet 5.5's launch post says it "will join the Claude 5.5 family in the coming weeks". No rate is published, so none is recorded. When it lands: all seven places, and `value_models.low` on Claude Free and Pro. | [A3](#a3-the-model-line-up) |
+| 2026-10-23 | **OpenAI shuts down a batch of older snapshots.** Of ours, `gpt-4.1-nano`, `o1` and `o3-mini` are priced and not yet in `_legacy_keys`; move them there once they go (`gpt-4` and `gpt-4-turbo` already are). | [A3](#a3-the-model-line-up) |
 | Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
 | June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
 | Daily, by clock | **DeepSeek meters peak/off-peak by UTC time** — the only provider here that does. We store peak rates deliberately. | [A5](#a5-dated-price-events) |
@@ -541,6 +543,113 @@ Perplexity Free in `free_tiers` now uses the Copilot pattern: GPT-5.6 Terra as a
 Terra is the stand-in `plan-limits.json` already used for Perplexity Free, so nothing
 new is asserted. Water entries 84 -> 81.
 
+**Added 2026-09-30 — two models, from the same new-model sweep.** Both shipped after the
+2026-09-25 pass and were read at provider-owned pages within two days of release.
+
+| key | rate (short / long) | released | read at |
+|---|---|---|---|
+| `claude-sonnet-5-5` | $2 / $10, no long tier; cache hits 0.1x base ($0.20) | 2026-09-28, Anthropic's release notes | platform.claude.com pricing, Anthropic's launch post |
+| `gpt-6.1-sol` | $2 / $10; >272k $4 / $15 | 2026-09-29, OpenAI's API changelog | developers.openai.com/api/docs/pricing and the model page |
+
+Perplexity's Agent API lists both at the same rates, an independent read of the same
+numbers. Water tiers went in the same commit, INFERRED from siblings as usual: Sonnet 5.5
+medium/aws, GPT-6.1 Sol medium/azure. Water entries 81 -> 83, and `check-prices.js` now
+reports 83 priced, 64 shown, 18 with long-context tiers. The GPT-6 family on OpenAI's
+pricing page is now Astra / **6.1 Sol** / Luna. `gpt-6-sol` is **superseded, not retired**:
+its model page still serves it at $2/$10 and says "See GPT-6.1 Sol for the newer Sol
+model", so it keeps a current rate and is noted in `_legacy_keys`.
+
+**Claude Sonnet 5.5 — all seven places, and no number moved.** It is listed on every
+Claude tier (Anthropic's Sonnet page: "Anyone can chat with Claude using Sonnet 5.5"; the
+family-level table already had Sonnet on every tier). Claude Free `high`, Max 5x / 20x
+`low` and `MODELS.anthropic.free` now name it. Same $2/$10, and 1x either way (Sonnet 5's
+measured 1.0 and an unmeasured model's default are the same number, and the "Thinking
+tokens" line only renders above 1). **Checked rather than assumed:** pricing.html was
+rendered before and after in all three views with every "show the math" panel open. The
+only text that differs in Subscriptions is the model name on the two Max rows; their
+break-evens (139–278 and 278–557 msgs/day) are identical. `test-auditor.js` is unchanged
+at 114 checks over 225,000 combinations. Perplexity's anchors still read
+`anthropic:claude-sonnet-5`; its model menu has not been re-read. No reasoning multiplier:
+unmeasured, under the same standing decision as Opus 5.5 and GPT-6 Sol above. Anthropic
+says Sonnet 5.5 "costs up to 30% less per task" because it uses fewer tokens. That is its
+own test, and our archetypes use one output size for every model, so it is not modelled.
+**Which Sonnet is Free's default is not published.** `free_tiers` lists 5.5 first and no
+entry carries the `default` tag any more. Sonnet 5 and 4.6 stay listed, unchecked.
+
+**GPT-6.1 Sol — six of the seven places, deliberately not `value_models`.** Not in
+`free_tiers` (compare grid: Free "No", Go "No"). Listed on Plus and Pro in `audit.html`
+(grid: Plus "Yes", Pro "Expanded", the pattern the other GPT-6 models follow). Not an
+anchor, for the reason below.
+
+**⚠️ OPEN, needs Rory — OpenAI's help centre contradicts what ChatGPT Plus and Pro are
+priced on.** help.openai.com/en/articles/20001275 (ChatGPT Work and Codex), read
+2026-09-30: "GPT-6.1 Sol, GPT-6 Sol and GPT-6 Luna are models for ChatGPT Work and Codex.
+They are **not available in regular ChatGPT conversations**." Its sibling article
+(.../20001354) says Chat runs **GPT-5.6 Sol** on Plus and Pro (GPT-5.6 Luna on Free and Go)
+and puts GPT-6 Pro (Astra) in Chat for Pro $100 and $200, not Plus; Plus gets Astra in Work
+and Codex. The 2026-09-22 ChatGPT release notes point the same way: the GPT-6 Sol and Luna
+models are "separate from the models available in Chat". chatgpt.com/pricing's compare grid, the source used on 2026-09-25,
+does not separate surfaces and lists all four GPT-6 models as Plus "Yes" / Pro "Expanded".
+Both pages are true at once; rule 1 says the help article wins on what Chat serves.
+- **What is wrong because of it:** `plan-limits.json` `value_models.high` for ChatGPT Plus /
+  Pro / Pro 20x, `audit.html` `MODELS.openai.top` and `pricing.html`'s fallback copy all name
+  `gpt-6-sol`, which Chat does not serve. Plus's break-even (56–138 msgs/day) has its low
+  end priced on a model a Plus subscriber cannot select in a chat. On `gpt-5.6-sol` ($4/$20,
+  promotional to at least 2026-11-21) that end was **25.8** before the 2026-09-26 move
+  (standard archetype, table above). **It runs the harmful way:** it makes the API look
+  cheaper than Plus's chat would cost, the 2026-08-28 failure mode, where the tool is readier
+  to say "drop the plan" than the bill supports.
+- **What is still right:** listing the GPT-6 models on Plus and Pro in `PLANS[].models`. Both
+  plans include them, on Work and Codex, so gating on them is correct.
+- **Not changed here,** because the anchors moved on 2026-09-26 on Rory's call and moving
+  them back changes published numbers. **Options:** (a) re-anchor Plus / Pro / Pro 20x `high`
+  and `MODELS.openai.top` on `gpt-5.6-sol` (recommended; the figures return to roughly their
+  pre-2026-09-26 values), (b) keep GPT-6 Sol and relabel the figure as Work and Codex usage,
+  (c) leave it.
+- **What was changed:** the GPT-6 Sol and Luna notes on pricing.html said "Plus and Pro in
+  ChatGPT". They now say "Work and Codex ... not regular ChatGPT chat", as does the new 6.1
+  Sol row, and the comment in `audit.html` names this open item.
+
+**Announced, not released: Claude Haiku 5.5.** Sonnet 5.5's launch post says it "will join
+the Claude 5.5 family in the coming weeks". No rate is published, so nothing is added and no
+number is guessed. It would replace Haiku 4.5, which is the `low` end on Claude Free and Pro
+and Free's limited model: all seven places plus `value_models.low` on two rows. It is in the
+dated calendar.
+
+**Seen, and not added** (so the next pass need not find them again):
+- OpenAI: `gpt-5.6-cyber` ($12.50/$75) and `gpt-rosalind-research` ($5/$25, billing from
+  2026-10-05) are trusted-access models, not consumer chat. GPT-6 Astra's **Ultrafast** tier
+  ($60/$300; >272k $120/$450) is a service tier like Fast, Flex and Batch, not a model.
+- Perplexity: `perplexity/sonar` ($0.25/$2.50, cache read $0.0625) is on its Agent API model
+  page with **no docs link and no changelog entry**. A3 above says the app's Sonar has no
+  published API rate; this is a rate for a model *named* sonar, but nothing says it is what
+  the app runs, so it is not used. Its Router API also lists NVIDIA Nemotron 3 Ultra
+  ($0.25/$2.50); NVIDIA is not a tracked provider.
+- Mistral now hosts GLM 5.3 (`zai-glm-5-3`, GA 2026-09-28): a new *host* for A9's spread
+  table, not a new model.
+- Google: Gemini Omni Flash (video), 3.8 Live and the 3.8 Flash / Flash-Lite TTS models. On
+  2026-09-18 Google also limited the 2.5 models to users who already used them (still served,
+  not deprecated).
+- Alibaba: `qwen3.8-max-0902` (a dated snapshot, same $2/$6), `qwen3.8-max-prime` (a Fast
+  mode tier, $3.301/$9.902 in China) and `qwen3.8-omni-flash` (omni/realtime). Z.ai:
+  `GLM-5.3-FlashX` ($0.37/$1.25, a speed variant).
+- xAI and DeepSeek: nothing newer than Grok 4.7 and V4.1 Flash.
+
+**Seen in passing, not acted on:**
+- **ChatGPT Pro 200 is open again and Pro 500 is new** (ChatGPT release notes, 2026-09-29:
+  Pro 200 "available for new subscriptions again at $200/month"; Pro 500 at $500/month, with
+  Astra Ultrafast). `pricing.html` still says Pro (20×) is "Closed to new subscribers since
+  2026-09-10". That is a live stale claim against the provider, found while checking models.
+  It is a separate job: the `availability` block, `plan-limits.json`, `audit.html` and a new
+  $500 row.
+- **No GPT-6 branch in `getEncodingForModel()`** (`extension/sidepanel.js`): every `gpt-6-*`
+  key, the new one included, falls through to the char-ratio estimate and is labelled
+  "estimated". That is the honest label, since OpenAI's docs do not say what tokenizer GPT-6
+  uses and o200k would be labelled "tiktoken-exact". Leave it until OpenAI says.
+- OpenAI shuts down a batch of older snapshots on **2026-10-23**
+  (developers.openai.com/api/docs/deprecations). Of ours: `gpt-4.1-nano`, `o1` and `o3-mini`
+  are priced and not yet in `_legacy_keys`; `gpt-4` and `gpt-4-turbo` already are.
+
 ## A4. What the free tiers include
 
 **Goes stale faster than prices, and it moves the Auditor's whole answer.**
@@ -593,6 +702,10 @@ and the next pass should know these were looked at rather than assumed:
   Our Claude Free line-up (Sonnet + Haiku) agrees with it. `audit.html` now lists
   Opus 5.5 wherever Opus is, and Fable 5 / 5.1 on both Max tiers only. Before this, no
   tier listed Fable, so a Fable user was never gated and could be pointed at Free.
+  **Updated 2026-09-30:** Anthropic's Sonnet page (anthropic.com/claude/sonnet) now says
+  "Anyone can chat with Claude using Sonnet 5.5", so Sonnet 5.5 is on Free. Which Sonnet is the
+  default is still not published: `free_tiers` lists 5.5 first and no longer tags any entry
+  `default`. Sonnet 5 and 4.6 stay listed and were not re-checked.
 
 **Two things the same pass fixed, both in `free_tiers`:**
 - **Copilot’s stand-in rate was being printed as Copilot’s rate.** `pricing.html`’s

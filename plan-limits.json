@@ -338,7 +338,7 @@
       "stated": "'Free for everyone.' No usage figure published.",
       "value_models": {
         "low": "claude-haiku-4-5-20251001",
-        "high": "claude-sonnet-5"
+        "high": "claude-sonnet-5-5"
       },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-09-19"
@@ -429,7 +429,7 @@
         "why_it_matters": "The multiplier is attached to the session window and to nothing else. The very next sentence introduces the weekly limit separately, with no multiple, no size and no stated relation to the 5x/20x: \"Your session-based usage limit will reset every five hours. Max plans also have a weekly usage limit that applies across all models.\" So upgrading buys a STATED multiple on the window that clears itself in five hours and an UNSTATED one on the window that governs the month. That asymmetry is published, not inferred, and it can be said without measuring anything."
       },
       "value_models": {
-        "low": "claude-sonnet-5",
+        "low": "claude-sonnet-5-5",
         "high": "claude-opus-5-5"
       },
       "source": "https://www.claude.com/pricing",
@@ -474,7 +474,7 @@
         "why_it_matters": "The multiplier is attached to the session window and to nothing else. The very next sentence introduces the weekly limit separately, with no multiple, no size and no stated relation to the 5x/20x: \"Your session-based usage limit will reset every five hours. Max plans also have a weekly usage limit that applies across all models.\" So upgrading buys a STATED multiple on the window that clears itself in five hours and an UNSTATED one on the window that governs the month. That asymmetry is published, not inferred, and it can be said without measuring anything."
       },
       "value_models": {
-        "low": "claude-sonnet-5",
+        "low": "claude-sonnet-5-5",
         "high": "claude-opus-5-5"
       },
       "source": "https://www.claude.com/pricing",

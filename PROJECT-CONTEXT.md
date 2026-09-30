@@ -9,6 +9,27 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-09-30 — Sonnet 5.5 and GPT-6.1 Sol added; OpenAI's help centre contradicts the ChatGPT break-even anchors (FRESHNESS A3)
+
+Two models released since the 09-25 sweep: **Claude Sonnet 5.5** (2026-09-28, $2/$10) and
+**GPT-6.1 Sol** (2026-09-29, $2/$10, >272k $4/$15). Both carry water tiers and are in the
+picker. **These are extension changes too** (`prices.json`, `water.json`, `sidepanel.js`), so
+they reach users only with the next store upload; the website picks them up on merge. The
+sweep found nothing new at xAI, Google, Mistral, DeepSeek, Alibaba, Z.ai or Moonshot.
+**Claude Haiku 5.5 is announced, not released** ("in the coming weeks"); no rate exists yet.
+
+The Claude plan anchors moved to Sonnet 5.5 without moving a number: pricing.html was
+rendered before and after, and only the model label on the two Max rows changed.
+
+**Open, needs Rory:** OpenAI's help centre says GPT-6.1 Sol, GPT-6 Sol and GPT-6 Luna are
+Work and Codex models, "not available in regular ChatGPT conversations", while the Plus and
+Pro break-evens are anchored on `gpt-6-sol` (moved 09-26). Re-anchoring on `gpt-5.6-sol`,
+which is what Chat serves, would roughly halve Plus's low-end figure (55.7 back to about 26).
+Not done: it changes published numbers, and the 09-26 move was Rory's call. Also seen and
+not done: ChatGPT Pro 200 reopened and Pro 500 launched on 09-29, while pricing.html still
+says Pro (20×) is closed to new subscribers.
+
+
 ### 2026-09-25 — Opus 5.5, GPT-6 Sol / Luna, Gemini 3.8 Flash, Grok 4.7 added (FRESHNESS A3)
 
 Five new models, each in all seven places with a water tier. **These are extension
