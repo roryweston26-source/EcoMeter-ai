@@ -9,6 +9,19 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-09-30 — ChatGPT Pro 200 reopened; Pro 500 added as not disclosed (FRESHNESS A2, B1)
+
+OpenAI reopened **Pro 200** to new subscribers on 09-29, with a lower allowance it doesn't
+size. Subscribers from before its cutoff keep the old allowance until **2026-10-29**, which is
+in the FRESHNESS calendar and warned on by `check-prices.js` §7c-iii. The "Closed to new
+subscribers" note is gone from both subscription copies, and **§7c-ii now fails if a closed
+note comes back** while plan-limits says open. **Pro 500** ($500, web only at launch) is in
+`prices.json`, `pricing.html` and `plan-limits.json` as `not_disclosed`, with its own dated
+window check. It is not in the Auditor, same as Pro (20×). The disclosure count is now **8 of
+32; 24 publish nothing**. Still open: re-grading both Pro rows, whose 5x/20x and Codex
+figures OpenAI has withdrawn (FRESHNESS B1). The `prices.json` change reaches the
+extension only with the next store upload.
+
 ### 2026-09-30 — Sonnet 5.5 and GPT-6.1 Sol added; ChatGPT break-even re-anchored on GPT-5.6 Sol (FRESHNESS A3)
 
 Two models released since the 09-25 sweep: **Claude Sonnet 5.5** (2026-09-28, $2/$10) and
@@ -29,7 +42,7 @@ break-evens had been anchored on `gpt-6-sol` since 09-26. Plus is back to 25.8 m
 provider is unchanged. In the Auditor, 2,410 of 45,000 ChatGPT answer combinations (5.4%) now
 recommend Plus $20/mo where they used to say pay-as-you-go; FRESHNESS A3 has the sweep.
 Separately, ChatGPT Pro 200 reopened and Pro 500 launched on 09-29 while pricing.html still
-says Pro (20×) is closed to new subscribers; a separate task was started for that on 09-30.
+says Pro (20×) is closed to new subscribers; fixed the same day (entry above).
 
 
 ### 2026-09-25 — Opus 5.5, GPT-6 Sol / Luna, Gemini 3.8 Flash, Grok 4.7 added (FRESHNESS A3)
@@ -982,7 +995,7 @@ Lives in `transparency-index.json` under a **top-level `pricing` key** (`title`,
 
 **This table is generated from `transparency-index.json`, because the hand-typed one had drifted.** It was written before the 2026-08-25 backlog pass and never updated: it showed ⚪ on price notice for Google, xAI, Mistral, Perplexity and Microsoft, and on retirement for DeepSeek, xAI, Mistral and Perplexity — nine cells that the JSON had already graded. Open thread 18 recorded the axis as finished while this table still said it was not. **Regenerate it rather than editing it by hand.**
 
-**The finding is the shape, not any single cell: `allowance` is 🔴 for SEVEN of eight, and it is by far the weakest column.** Providers tell you the price and when it will change; almost none tell you what you get for it. Grounded in `plan-limits.json` — **23 of 31 consumer plans publish no allowance** (2026-09-19; it was 25 of 27 in August, and the ratio worsened because OpenAI and Microsoft both WITHDREW figures — see FRESHNESS B1).
+**The finding is the shape, not any single cell: `allowance` is 🔴 for SEVEN of eight, and it is by far the weakest column.** Providers tell you the price and when it will change; almost none tell you what you get for it. Grounded in `plan-limits.json` — **24 of 32 consumer plans publish no allowance** (2026-09-30, when ChatGPT Pro 500 was added as the 24th; 23 of 31 on 2026-09-19; it was 25 of 27 in August, and the ratio worsened because OpenAI and Microsoft both WITHDREW figures — see FRESHNESS B1).
 
 **The one exception is Perplexity, and it is worth knowing precisely.** "Consumer Max plans start with 10,000 credits a month", plus a published conversion (**100 credits = $1**) and typical consumption by task class (light 100–350, complex 350–950, heavy 875–2,275, mega 2,400–9,800). It is the only allowance figure on the table a reader can do arithmetic with. 🟡 not 🟢 because it covers **Computer**, Perplexity's agent product, and Perplexity states in the same breath that "Consumer Pro plans do not start with a set monthly amount" — one surface on one tier. **It had been published since 2026-08-06 and we recorded the column as all-🔴 twice before finding it.**
 

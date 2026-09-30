@@ -190,6 +190,7 @@ wrong number in front of a user.
 | 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
 | Any day (announced 2026-09-28) | **Claude Haiku 5.5** — Sonnet 5.5's launch post says it "will join the Claude 5.5 family in the coming weeks". No rate is published, so none is recorded. When it lands: all seven places, and `value_models.low` on Claude Free and Pro. | [A3](#a3-the-model-line-up) |
 | 2026-10-23 | **OpenAI shuts down a batch of older snapshots.** Of ours, `gpt-4.1-nano`, `o1` and `o3-mini` are priced and not yet in `_legacy_keys`; move them there once they go (`gpt-4` and `gpt-4-turbo` already are). | [A3](#a3-the-model-line-up) |
+| **2026-10-29** | **Grandfathered ChatGPT Pro 200 subscribers move to the lower allowance**, at the same $200. OpenAI doesn't say how much lower. Both subscription notes describe the plan as it is before this date. `check-prices.js` §7c-iii warns from 30 days out and fails once the date passes: re-read the Pro tiers article, rewrite both notes, then update or remove `availability.transition`. | [A2](#a2-consumer-subscription-prices), [B1](#b1-the-caps-themselves) |
 | Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
 | June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
 | Daily, by clock | **DeepSeek meters peak/off-peak by UTC time** — the only provider here that does. We store peak rates deliberately. | [A5](#a5-dated-price-events) |
@@ -335,7 +336,7 @@ the second belongs in that list.
 **Goes stale:** less often, but sharply. Google AI Plus went $7.99 → $4.99;
 Copilot Pro finished retiring 1 Aug 2026.
 
-**Source of truth:** `extension/prices.json` → `subscriptions` (26 plans).
+**Source of truth:** `extension/prices.json` → `subscriptions` (32 plans, 2026-09-30).
 
 **Copies:** `plan-limits.json` → `plans` (joins on `p` + `m`) · `audit.html` →
 `PLANS[].price`
@@ -350,6 +351,15 @@ change a join key.
 Google AI Ultra (20×) corrected $200 → $199.99. A new tier means a new
 `plan-limits.json` row and a new `audit.html` entry, or `check-prices.js` fails on
 "subscription with no plan-limits entry".
+
+**Recent movement (2026-09-30):** OpenAI **reopened ChatGPT Pro 200** to new subscribers
+on 2026-09-29, with a lower allowance it doesn't size, and launched **Pro 500** at $500
+(web only at launch, Astra Ultrafast included, "the highest included usage" and no
+number). Pro 500 is in `prices.json`, `pricing.html` and `plan-limits.json` as
+`not_disclosed`, and **not in `audit.html`**, same as Pro (20×): Pro 200's value anchor
+is still open (A3), and a plan with no published allowance gives the Auditor nothing to
+size. The name `ChatGPT Pro (20×)` is kept as the join key even though OpenAI no longer
+states a multiple; the subscription note says so.
 
 **Guard:** `check-prices.js`, `check-auditor.js`
 
@@ -667,6 +677,8 @@ dated calendar.
   2026-09-10". That is a live stale claim against the provider, found while checking models.
   It is a separate job: the `availability` block, `plan-limits.json`, `audit.html` and a new
   $500 row.
+  **Done 2026-09-30** (A2, B1): the note is retired, Pro 500 is in as `not_disclosed`, and
+  it stays out of `audit.html`, like Pro (20×).
 - **No GPT-6 branch in `getEncodingForModel()`** (`extension/sidepanel.js`): every `gpt-6-*`
   key, the new one included, falls through to the char-ratio estimate and is labelled
   "estimated". That is the honest label, since OpenAI's docs do not say what tokenizer GPT-6
@@ -1450,7 +1462,7 @@ cap anyone published.
 `disclosed` / `derived` / `third_party` / `not_disclosed`.
 
 **Copies:**
-- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 31 rows, **generated from `plan-limits.json`, not hand-copied** (2026-08-30). It had drifted to 27 rows with no Z.ai at all while the callout derived "31 plans / 5 disclosed" from whatever was loaded, so a failed fetch printed a different finding from the one the data supports. `pricing.html` → `SUBSCRIPTIONS` had drifted the same way, to 26.
+- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 32 rows (2026-09-30), **generated from `plan-limits.json`, not hand-copied** (2026-08-30). It had drifted to 27 rows with no Z.ai at all while the callout derived "31 plans / 5 disclosed" from whatever was loaded, so a failed fetch printed a different finding from the one the data supports. `pricing.html` → `SUBSCRIPTIONS` had drifted the same way, to 26.
 - `audit.html` → `PLANS[].cap` + `.capSource` — uses `estimate` where `plan-limits.json` says `not_disclosed`, because the Auditor needs a working number. **Only `disclosed` may be shown to a user as fact.**
 - `audit.html` → `PLANS[].unquantifiedWindow` — the fetch-failure fallback for B6. Diffed both ways by `check-auditor.js` §18.
 
@@ -1512,6 +1524,21 @@ whether to keep paying, which is the question the Auditor answers. But it now ca
 carry a note saying so** — verified by injecting each. `audit.html` never offered this
 plan, so no recommendation was ever wrong; the pricing table was showing a price nobody
 could pay, which is what the Kimi decision in A11 refused to do.
+
+**Reversed 2026-09-29, and the reversal needed its own guard.** OpenAI reopened Pro 200
+to new subscribers, so `availability.status` is now `open`, with a `transition` for
+2026-10-29, when grandfathered subscribers move to the lower allowance. §7c skips open
+plans, so a stale "closed" note put back into either copy would have passed. **§7c-ii now
+fails if any subscription note says closed/paused/cannot buy while plan-limits doesn't**,
+and §7c-iii dates the transition. Both were verified on 2026-09-30 by injecting each fault
+into a scratch copy.
+
+**Open, not done in that change: the two OpenAI Pro rows are still graded `disclosed` on
+figures OpenAI has since withdrawn.** The Pro tiers article no longer says 5x or 20x, and
+the Codex pricing page dropped its Pro columns ("Pro plans currently have no five-hour
+limit"). Both rows carry a `note` saying so. Re-grading them is its own commit because it
+changes the headline count (8 disclosed of 32 would fall to 6, unverified), and the Plus
+row's Codex figure needs re-reading in the same pass.
 
 **What held.** OpenAI's Codex five-hour table is unchanged (Sol 10-100 / 50-500 /
 200-2,000) and has **gained a GPT-6 Astra row** at 5-45 on Plus, still scaling exactly
@@ -1947,7 +1974,7 @@ assumptions. It is a pure statement about two numbers the provider published.
 | `ratio` | 3 (Z.ai) | **6.7× tighter** + both figures |
 | `sized` | 1 | the long window, published, with nothing comparable to set against it |
 | `named` | 12 | *weekly — not published* |
-| `none` | 11 | *none published* + **the date it was read** |
+| `none` | 12 | *none published* + **the date it was read** |
 | `unchecked` | 3 | *not checked — our gap, not their silence* |
 | `unknown` | 1 (DeepSeek) | *not established* |
 
