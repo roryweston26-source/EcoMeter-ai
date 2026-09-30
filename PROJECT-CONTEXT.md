@@ -1174,6 +1174,8 @@ node scripts/build-extension.js
 
 It writes the archive itself (deflate via `zlib`, forward slashes, zero dependencies) and **refuses to build** if `prices.json._meta.version` disagrees with the manifest, if `manifest.description` names any of the nine products or drifts from `STORE-LISTING.md`, or if a required file is missing. `--check` verifies without writing. See FRESHNESS **H0**.
 
+It also refuses to overwrite an existing `ecometer-ai-v<version>.zip` unless you pass `--force` (zips are gitignored, so git can't give one back — a `--help` "sanity check" overwrote the uploaded v6.15 zip on 2026-09-30), and any argument other than `--check` / `--force` is a usage error that builds nothing.
+
 Verify before uploading with an *independent* implementation, not the writer that produced the zip — FRESHNESS H0 has the one-liner. Check: no backslashes in entry names, `manifest.json` at root with the right version *inside* the zip, `fonts/` and `icons/` present. `*.zip` is gitignored, so the artifact won't be committed.
 
 > Note: `release.yml` builds with `cd extension && zip -r ..` on Linux, which is correct, but it does **not** exclude `STORE-LISTING.md` / `STORE-SUBMISSION.md` — CI zips still contain them. Harmless, but the two paths differ.
