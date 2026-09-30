@@ -684,7 +684,8 @@
     { p:"openai",      m:"ChatGPT Go",             price:8 },
     { p:"openai",      m:"ChatGPT Plus",           price:20 },
     { p:"openai",      m:"ChatGPT Pro",            price:100 },
-    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200, note:"Closed to new subscribers since 2026-09-10 — existing subscriptions continue, but you cannot start or upgrade to this plan" },
+    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200, note:"Open to new subscribers again as of 2026-09-29, with a lower allowance than before. OpenAI doesn't say how much lower, and its help article no longer gives a multiple, so treat 20× as unconfirmed. Subscribers from before OpenAI's cutoff keep the old allowance until 2026-10-29." },
+    { p:"openai",      m:"ChatGPT Pro 500",        price:500, note:"New as of 2026-09-29. OpenAI says it has the highest included usage of its three Pro plans but gives no number. Includes Astra Ultrafast. Web only at launch." },
 
     { p:"anthropic",   m:"Claude Free",            price:0 },
     { p:"anthropic",   m:"Claude Pro",             price:20, note:"$17/mo billed annually" },
@@ -784,6 +785,7 @@
         caps:[{ n:50, n_high:500, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
       { p:"openai", m:"ChatGPT Pro (20×)", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
         caps:[{ n:200, n_high:2000, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
+      { p:"openai", m:"ChatGPT Pro 500", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-09-30", scope:"ChatGPT chat surfaces" }, value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
 
       { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5-5" } },
       { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-opus-5-5" },
