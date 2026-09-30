@@ -9,12 +9,35 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-09-30 — Sonnet 5.5 and GPT-6.1 Sol added; ChatGPT break-even re-anchored on GPT-5.6 Sol (FRESHNESS A3)
+
+Two models released since the 09-25 sweep: **Claude Sonnet 5.5** (2026-09-28, $2/$10) and
+**GPT-6.1 Sol** (2026-09-29, $2/$10, >272k $4/$15). Both carry water tiers and are in the
+picker. **These are extension changes too** (`prices.json`, `water.json`, `sidepanel.js`), so
+they reach users only with the next store upload; the website picks them up on merge. The
+sweep found nothing new at xAI, Google, Mistral, DeepSeek, Alibaba, Z.ai or Moonshot.
+**Claude Haiku 5.5 is announced, not released** ("in the coming weeks"); no rate exists yet.
+
+The Claude plan anchors moved to Sonnet 5.5 without moving a number: pricing.html was
+rendered before and after, and only the model label on the two Max rows changed.
+
+**Decided 2026-09-30 (Rory): ChatGPT's break-even is priced on GPT-5.6 Sol again.** OpenAI's
+help centre says GPT-6.1 Sol, GPT-6 Sol and GPT-6 Luna are Work and Codex models, "not
+available in regular ChatGPT conversations", and Chat runs GPT-5.6 Sol, but the Plus and Pro
+break-evens had been anchored on `gpt-6-sol` since 09-26. Plus is back to 25.8 msgs/day (from
+55.7), Pro to 129.0 (from 278.3), Pro 20× to 258 (from 557). Every Claude row and every other
+provider is unchanged. In the Auditor, 2,410 of 45,000 ChatGPT answer combinations (5.4%) now
+recommend Plus $20/mo where they used to say pay-as-you-go; FRESHNESS A3 has the sweep.
+Separately, ChatGPT Pro 200 reopened and Pro 500 launched on 09-29 while pricing.html still
+says Pro (20×) is closed to new subscribers; a separate task was started for that on 09-30.
+
+
 ### 2026-09-25 — Opus 5.5, GPT-6 Sol / Luna, Gemini 3.8 Flash, Grok 4.7 added (FRESHNESS A3)
 
 Five new models, each in all seven places with a water tier. **These are extension
 changes too** (`prices.json`, `water.json`, the picker), so they reach users only with
 the next store upload. The website picks them up on merge. **Open:**
-- **Break-even anchors MOVED 2026-09-26** to GPT-6 Sol and Opus 5.5 (Rory's call). The
+- **Break-even anchors MOVED 2026-09-26** to GPT-6 Sol and Opus 5.5 (Rory's call; the ChatGPT half was reversed 2026-09-30, see above). The
   new models have no measured thinking-token multiplier, so they run at 1x and Claude's
   break-even reads high. Run measure-reasoning.js with real keys. See A3.
 - **Perplexity Sonar removed 2026-09-27** at its sunset. Perplexity Free now prices on a

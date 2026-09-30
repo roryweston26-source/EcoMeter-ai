@@ -91,6 +91,9 @@ async function fetchAnthropic() {
   const prices = {
     'claude-haiku-4-5-20251001': { input: perM(1.00),  output: perM(5.00)  },
     'claude-haiku':              { input: perM(1.00),  output: perM(5.00)  },
+    // Sonnet 5.5 launched 2026-09-28 at the same $2/$10 as Sonnet 5 (Anthropic's launch post and
+    // pricing page, read 2026-09-30). No long-context tier, cache hits 0.1x base.
+    'claude-sonnet-5-5':         { input: perM(2.00),  output: perM(10.00) },
     // Sonnet 5 launched at an introductory $2/$10 listed through 2026-08-31.
     // Anthropic has since made that the STANDARD rate and cancelled the scheduled
     // 2026-09-01 rise to $3/$15 (its pricing page, checked 2026-08-24). Nothing to
@@ -138,6 +141,7 @@ async function fetchOpenAI() {
   // to every token in the request (see _meta.caveats._short_context_only).
   const prices = {
     'gpt-6-astra':  { input: perM(10.00),  output: perM(50.00)  },
+    'gpt-6.1-sol':  { input: perM(2.00),   output: perM(10.00)  },
     'gpt-6-sol':    { input: perM(2.00),   output: perM(10.00)  },
     'gpt-6-luna':   { input: perM(0.10),   output: perM(0.50)   },
     'gpt-5.6-sol':  { input: perM(4.00),   output: perM(20.00)  },
