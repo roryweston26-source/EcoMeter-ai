@@ -15,8 +15,20 @@
  * the HEAD commit's time in UTC, not the file's mtime, so the same commit builds
  * to the same bytes on any machine and in CI. Override with SOURCE_DATE_EPOCH.
  *
+ * Won't overwrite a package unless told to, as of 2026-09-30. The zips are
+ * gitignored, so one that gets overwritten can't come back from git, and a
+ * rebuild only matches it if extension/ and the stamp time are unchanged. Until
+ * then every argument but --check was ignored: a `--help` "sanity check" built
+ * straight over the v6.15 zip that went to the store on 2026-09-19. Now an
+ * existing ecometer-ai-v<version>.zip stops the build unless --force is passed,
+ * and any other argument, --help included, prints usage, exits 2 and builds
+ * nothing. --check still writes nothing and still passes with a zip in place.
+ * CI is unaffected: it builds in a fresh checkout, and publish.yml deletes the
+ * file before each attempt anyway.
+ *
  * Run:  node scripts/build-extension.js          # build + verify
  *       node scripts/build-extension.js --check  # verify only, write nothing
+ *       node scripts/build-extension.js --force  # replace an existing zip
  */
 const fs = require('fs');
 const path = require('path');
@@ -27,6 +39,29 @@ const SRC = path.join(ROOT, 'extension');
 
 // Docs for the humans filling in the dashboard; they must not ship to users.
 const EXCLUDE = new Set(['STORE-LISTING.md', 'STORE-SUBMISSION.md']);
+
+// ── Arguments ───────────────────────────────────────────────────────────────
+// Checked before anything else, so a bad flag builds nothing. Every argument
+// but --check used to be ignored, which is how `--help` came to overwrite a
+// package.
+const USAGE = [
+  'usage: node scripts/build-extension.js [--check | --force]',
+  '',
+  '  (no flag)  verify, then write ecometer-ai-v<version>.zip at the repo root;',
+  '             stops if that file already exists',
+  '  --check    verify only, write nothing',
+  '  --force    build even if that file exists, replacing it',
+].join('\n');
+const args = process.argv.slice(2);
+const unknown = args.filter(a => a !== '--check' && a !== '--force');
+const both = args.includes('--check') && args.includes('--force');
+if (unknown.length || both) {
+  if (unknown.length) console.error('unknown argument: ' + unknown.join(' '));
+  else console.error('--check and --force cannot be combined: --check never writes');
+  console.error('\n' + USAGE);
+  process.exit(2);
+}
+const FORCE = args.includes('--force');
 
 // ── Collect files ───────────────────────────────────────────────────────────
 function walk(dir, base = '') {
@@ -84,7 +119,34 @@ console.log('  manifest.description: ' + manifest.description.length + '/132 cha
 console.log('  prices.json _meta.version matches manifest');
 if (prev) console.log('  previous package on disk: ' + prev);
 
-if (process.argv.includes('--check')) { console.log('\n--check: verified, nothing written'); process.exit(0); }
+if (args.includes('--check')) { console.log('\n--check: verified, nothing written'); process.exit(0); }
+
+// ── Refuse to overwrite a package ───────────────────────────────────────────
+// After --check on purpose: verifying is always safe, so --check must still
+// pass with a zip in place.
+const outPath = path.join(ROOT, 'ecometer-ai-v' + version + '.zip');
+let existing = null;
+try { existing = fs.statSync(outPath); } catch (e) { if (e.code !== 'ENOENT') throw e; }
+if (existing) {
+  const name = path.basename(outPath);
+  const size = existing.size.toLocaleString('en-US') + ' bytes';
+  const when = existing.mtime.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  if (!FORCE) {
+    console.error([
+      '',
+      'NOT BUILT: ' + name + ' already exists',
+      '  size      ' + size + ' (' + (existing.size / 1024 / 1024).toFixed(2) + ' MB)',
+      '  modified  ' + when,
+      "  Zips are gitignored, so git can't give this one back. A rebuild only",
+      "  matches it if extension/ and the stamp time (HEAD's commit time, or",
+      '  SOURCE_DATE_EPOCH) are unchanged.',
+      "  If it's the package you uploaded, leave it alone. To build anyway,",
+      '  move it aside, or replace it with:  node scripts/build-extension.js --force',
+    ].join('\n'));
+    process.exit(1);
+  }
+  console.log('  --force: replacing ' + name + ', ' + size + ', modified ' + when);
+}
 
 // ── Write the archive ───────────────────────────────────────────────────────
 const crc32 = zlib.crc32 ? (buf => zlib.crc32(buf) >>> 0) : (() => {
@@ -147,8 +209,9 @@ eocd.writeUInt16LE(files.length, 8); eocd.writeUInt16LE(files.length, 10);
 eocd.writeUInt32LE(cd.length, 12); eocd.writeUInt32LE(offset, 16); eocd.writeUInt16LE(0, 20);
 
 const zip = Buffer.concat([...locals, cd, eocd]);
-const outPath = path.join(ROOT, 'ecometer-ai-v' + version + '.zip');
-fs.writeFileSync(outPath, zip);
+// 'wx' won't replace a file that appeared since the check above; only a --force
+// that passed it may overwrite.
+fs.writeFileSync(outPath, zip, { flag: existing ? 'w' : 'wx' });
 
 console.log('\nWROTE ' + path.basename(outPath) + '  (' + (zip.length / 1024 / 1024).toFixed(2) + ' MB)');
 for (const f of files) console.log('    ' + f.rel);

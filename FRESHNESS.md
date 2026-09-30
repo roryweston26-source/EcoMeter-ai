@@ -3990,6 +3990,7 @@ whatever happened to be sitting in the folder. It is now one command:
 ```
 node scripts/build-extension.js          # build + verify
 node scripts/build-extension.js --check  # verify only, writes nothing
+node scripts/build-extension.js --force  # replace an existing same-version zip
 ```
 
 **`release.yml` and `publish.yml` call this same script as of 2026-08-29.** Until then
@@ -4009,6 +4010,9 @@ build artifacts, not history) and **refuses to build** if any of these fail:
   doesn't appear verbatim in `STORE-LISTING.md` — **this field IS the store's short
   description, and it is what got v6.12 rejected**
 - a required file is missing, or `STORE-*.md` leaks into the package
+- `ecometer-ai-v<version>.zip` already exists and `--force` wasn't passed. Zips are
+  gitignored, so git can't give one back (2026-09-30: a `--help` "sanity check" rebuilt
+  over the uploaded v6.15 zip). Any other argument is a usage error that builds nothing.
 
 **Why it writes the zip itself:** there is no `zip` binary on this machine, and
 PowerShell's `Compress-Archive` can emit entry names with **backslashes**, which
@@ -4341,7 +4345,7 @@ node scripts/check-transparency.js && node scripts/check-prices.js && node scrip
 | `test-water-model.js` | Water model: energy fit vs Jegham Table 4, host rates vs their sources, six published-figure validations, sublinearity, monotonicity, both historical regressions | Whether the benchmark itself is right |
 | `derive-water-model.js` | Fits `water.json` `_energy` + writes `_hosts`, and re-migrates all 68 model entries (`--write`, idempotent) | Not a guard — run it when the benchmark or a host’s WUE changes |
 | `calibrate-tokenizer.js` | Measures the estimator; fails if the UI band is optimistic | The two guessed bands (G3) |
-| `build-extension.js` | Packages extension/ for the store; blocks on version mismatch, brand names in the short description, missing files | Not a guard — and it cannot smoke-test |
+| `build-extension.js` | Packages extension/ for the store; blocks on version mismatch, brand names in the short description, missing files, and overwriting an existing same-version zip (`--force` overrides) | Not a guard — and it cannot smoke-test |
 | `validate-site.js` | HTML/JSON well-formedness, page references | **Plausibility of any number** |
 | `check-transparency.js` | (2026-08-29) The Transparency Index's promises about ITSELF: every grade has a note and a `source_url` (114/114) and any "N of N" claim in `_meta.methodology` still holds; no maintainer-speak in copy that renders (cell notes, `water_note`s); the grade tables in `PROJECT-CONTEXT.md` match the JSON; hardcoded "N sites across N providers" counts match `datacenters.json` | **Whether a grade is RIGHT.** No script can read a provider's policy for you — that is what a re-read is for. It warns once `_meta.last_verified` passes 120 days and stops there |
 
