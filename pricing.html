@@ -778,11 +778,11 @@
     plans: [
       { p:"openai", m:"ChatGPT Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"ChatGPT chat surfaces" }, value_models:{ low:"gpt-5.6-luna", high:"gpt-5.4-mini" } },
       { p:"openai", m:"ChatGPT Go", provenance:"not_disclosed", value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-luna" } },
-      { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-6-sol" },
+      { p:"openai", m:"ChatGPT Plus", provenance:"disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
         caps:[{ n:10, n_high:100, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
-      { p:"openai", m:"ChatGPT Pro", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-6-sol" },
+      { p:"openai", m:"ChatGPT Pro", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:5, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
         caps:[{ n:50, n_high:500, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
-      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-6-sol" },
+      { p:"openai", m:"ChatGPT Pro (20×)", provenance:"disclosed", multiplier:{ of:"ChatGPT Plus", x:20, scope_unclear:true }, unquantified_windows:[{ window:"7d" }], value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" },
         caps:[{ n:200, n_high:2000, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
 
       { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5-5" } },

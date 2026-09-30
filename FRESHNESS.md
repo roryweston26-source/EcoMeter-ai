@@ -179,7 +179,7 @@ wrong number in front of a user.
 
 | Date | What | Entry |
 |---|---|---|
-| **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. | [A1](#a1-per-token-api-prices) |
+| **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. **It is also the ChatGPT Plus / Pro / Pro 20x break-even anchor again (since 2026-09-30), so those figures move with it.** | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** **v6.15** (uploaded 2026-09-19) bundles the Gemini Flash promo rate, and the extension reads its OWN bundled `prices.json` — no remote fetch — so a build freezes its prices. After the promo reverts, a still-shipped v6.15 understates Gemini by 2×. Shipping v6.15 closed every OTHER drift and moved this deadline not at all. | [H4](#h4-the-shipped-build-vs-main) |
 | ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
@@ -504,6 +504,10 @@ and Claude Pro / Max 5x / Max 20x on `claude-opus-5-5` ($4/$20), not `claude-opu
 ($5/$25). The low ends and Perplexity Max are unchanged. Perplexity's own model
 menu was not re-checked, so its anchors still name the older models.
 
+**The ChatGPT half of that move was REVERSED on 2026-09-30, on Rory's call; the Claude half
+stands.** OpenAI's help centre says GPT-6 Sol is not in regular Chat (see the resolved item
+below), so Plus / Pro / Pro 20x `high` and `MODELS.openai.top` are back on `gpt-5.6-sol`.
+
 **What it did to the headline number** (the high-end break-even at the standard
 archetype, 3,639 in / 470 out):
 
@@ -514,6 +518,9 @@ archetype, 3,639 in / 470 out):
 | ChatGPT Plus $20 | 25.8 | 55.7 | 51.6 |
 | ChatGPT Pro $100 | 129.0 | 278.3 | 258.0 |
 
+_The two ChatGPT rows were reversed on 2026-09-30: Plus is back at 25.8 and Pro at 129.0,
+measured (see below). The Claude rows stand._
+
 **The last column is the open part.** Neither new model has a measured thinking-token
 multiplier, so `reasoningMult()` returns 1, per its rule that an invented multiplier
 is worse than none. Opus 5 measured 1.8 and GPT-5.6 Sol 1.2. So for Claude, about
@@ -523,6 +530,10 @@ direction, but it is still a known bias. **Fix: run `node scripts/measure-reason
 --run --write --models=claude-opus-5-5,gpt-6-sol`.** It needs real Anthropic and
 OpenAI keys and costs money. **Rory declined on 2026-09-27**, so the 1x stays until
 that changes. Don't re-propose a paid run without a reason.
+
+**Update 2026-09-30:** the ChatGPT rows no longer depend on it. They are anchored on
+`gpt-5.6-sol` again, whose measured 1.2 applies; only the Claude rows still run an
+unmeasured model (Opus 5.5) at 1x.
 
 **The homepage ticker was fixed while here.** It showed Gemini 3.5 Flash at **$0.50**
 (the real rate is $1.50), Grok 4.3 (not listed by xAI) and DeepSeek V3 (legacy key).
@@ -581,34 +592,48 @@ entry carries the `default` tag any more. Sonnet 5 and 4.6 stay listed, unchecke
 (grid: Plus "Yes", Pro "Expanded", the pattern the other GPT-6 models follow). Not an
 anchor, for the reason below.
 
-**⚠️ OPEN, needs Rory — OpenAI's help centre contradicts what ChatGPT Plus and Pro are
-priced on.** help.openai.com/en/articles/20001275 (ChatGPT Work and Codex), read
-2026-09-30: "GPT-6.1 Sol, GPT-6 Sol and GPT-6 Luna are models for ChatGPT Work and Codex.
-They are **not available in regular ChatGPT conversations**." Its sibling article
-(.../20001354) says Chat runs **GPT-5.6 Sol** on Plus and Pro (GPT-5.6 Luna on Free and Go)
-and puts GPT-6 Pro (Astra) in Chat for Pro $100 and $200, not Plus; Plus gets Astra in Work
-and Codex. The 2026-09-22 ChatGPT release notes point the same way: the GPT-6 Sol and Luna
-models are "separate from the models available in Chat". chatgpt.com/pricing's compare grid, the source used on 2026-09-25,
-does not separate surfaces and lists all four GPT-6 models as Plus "Yes" / Pro "Expanded".
-Both pages are true at once; rule 1 says the help article wins on what Chat serves.
-- **What is wrong because of it:** `plan-limits.json` `value_models.high` for ChatGPT Plus /
-  Pro / Pro 20x, `audit.html` `MODELS.openai.top` and `pricing.html`'s fallback copy all name
-  `gpt-6-sol`, which Chat does not serve. Plus's break-even (56–138 msgs/day) has its low
-  end priced on a model a Plus subscriber cannot select in a chat. On `gpt-5.6-sol` ($4/$20,
-  promotional to at least 2026-11-21) that end was **25.8** before the 2026-09-26 move
-  (standard archetype, table above). **It runs the harmful way:** it makes the API look
-  cheaper than Plus's chat would cost, the 2026-08-28 failure mode, where the tool is readier
-  to say "drop the plan" than the bill supports.
-- **What is still right:** listing the GPT-6 models on Plus and Pro in `PLANS[].models`. Both
-  plans include them, on Work and Codex, so gating on them is correct.
-- **Not changed here,** because the anchors moved on 2026-09-26 on Rory's call and moving
-  them back changes published numbers. **Options:** (a) re-anchor Plus / Pro / Pro 20x `high`
-  and `MODELS.openai.top` on `gpt-5.6-sol` (recommended; the figures return to roughly their
-  pre-2026-09-26 values), (b) keep GPT-6 Sol and relabel the figure as Work and Codex usage,
-  (c) leave it.
-- **What was changed:** the GPT-6 Sol and Luna notes on pricing.html said "Plus and Pro in
+**RESOLVED 2026-09-30, on Rory's call — OpenAI's help centre contradicted what ChatGPT Plus
+and Pro were priced on, so they are priced on GPT-5.6 Sol again.**
+help.openai.com/en/articles/20001275 (ChatGPT Work and Codex), read 2026-09-30:
+"GPT-6.1 Sol, GPT-6 Sol and GPT-6 Luna are models for ChatGPT Work and Codex. They are
+**not available in regular ChatGPT conversations**." Its sibling article (.../20001354)
+says Chat runs **GPT-5.6 Sol** on Plus and Pro (GPT-5.6 Luna on Free and Go) and puts
+GPT-6 Pro (Astra) in Chat for Pro $100 and $200, not Plus; Plus gets Astra in Work and
+Codex. The 2026-09-22 ChatGPT release notes point the same way: the GPT-6 Sol and Luna
+models are "separate from the models available in Chat". chatgpt.com/pricing's compare
+grid, the source used on 2026-09-25, does not separate surfaces and lists all four GPT-6
+models as Plus "Yes" / Pro "Expanded". Both pages are true at once; rule 1 says the help
+article wins on what Chat serves.
+- **What was wrong:** `plan-limits.json` `value_models.high` for ChatGPT Plus / Pro / Pro 20x,
+  `audit.html` `MODELS.openai.top` and `pricing.html`'s fallback copy named `gpt-6-sol`,
+  which Chat does not serve. Plus's break-even had its low end priced on a model a Plus
+  subscriber cannot select in a chat. **It ran the harmful way:** it made the API look
+  cheaper than Plus's chat would cost, the 2026-08-28 failure mode, where the tool is
+  readier to say "drop the plan" than the bill supports.
+- **What changed (option (a), Rory's call):** those anchors and `MODELS.openai.top` are back
+  on `gpt-5.6-sol` ($4/$20, promotional to at least 2026-11-21, measured thinking
+  multiplier 1.2). **Measured, not estimated**, at the standard archetype: Plus 55.7 ->
+  **25.8** msgs/day, Pro 278.3 -> **129.0**, Pro 20x 557 -> **258**. The page shows 26 /
+  129 / 258, and the "show the math" panel reads the measured 1.2 again. Those are the
+  pre-2026-09-26 figures. The GPT-5.4 mini ends, every Claude row and every other provider
+  are unchanged; in the per-token and free views no row differs at all.
+- **What it does to the Auditor's advice,** swept over the same 225,000 answer combinations
+  as `test-auditor.js`, committed tree against working tree: **no provider other than
+  ChatGPT changes (0 of 180,000)**. For ChatGPT **4,480 of 45,000 (10.0%)** recommendations
+  change: 2,410 (5.4%) move from pay-as-you-go to **ChatGPT Plus $20/mo**, because the API
+  price of "the best model" is now the real Chat one, and 2,070 only swap the model named
+  in the headline (GPT-6 Sol -> GPT-5.6 Sol). Another 10,520 change only the figures
+  quoted. The direction is toward the subscription, which is what correcting an API price
+  that was about half of what Plus's chat would cost should do.
+- **The anchor now carries a promotional rate.** OpenAI does not say what $4/$20 reverts to
+  (`promo.standard` is null), so after 2026-11-21 these figures could move either way. The
+  dated calendar already carries that date.
+- **What is still right, and unchanged:** listing the GPT-6 models on Plus and Pro in
+  `PLANS[].models`. Both plans include them, on Work and Codex, so gating on them is
+  correct. If a provider ever puts a GPT-6.x Sol in Chat, the anchor should follow it.
+- **Also changed:** the GPT-6 Sol and Luna notes on pricing.html said "Plus and Pro in
   ChatGPT". They now say "Work and Codex ... not regular ChatGPT chat", as does the new 6.1
-  Sol row, and the comment in `audit.html` names this open item.
+  Sol row.
 
 **Announced, not released: Claude Haiku 5.5.** Sonnet 5.5's launch post says it "will join
 the Claude 5.5 family in the coming weeks". No rate is published, so nothing is added and no

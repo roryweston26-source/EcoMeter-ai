@@ -224,8 +224,9 @@ let PLANS = {
     // Astra: GPT-6.1 Sol, GPT-6 Sol and GPT-6 Luna "are models for ChatGPT Work and Codex. They
     // are not available in regular ChatGPT conversations", and what regular Chat runs on Plus
     // and Pro is GPT-5.6 Sol. They stay listed because the plans do include them, on Work and
-    // Codex. OPEN: value_models and MODELS.openai.top still name GPT-6 Sol, which Chat does
-    // not serve. Decision recorded in FRESHNESS A3; nothing here was re-anchored.
+    // Codex. So value_models and MODELS.openai.top moved back to GPT-5.6 Sol on 2026-09-30
+    // (FRESHNESS A3): listing a model here is about what the plan INCLUDES, the anchor is about
+    // what the chat surface this tool prices actually RUNS.
     { m:'ChatGPT Plus', price:20,  cap:null, capSource:'not_disclosed',
       models:['gpt-6-astra','gpt-6.1-sol','gpt-6-sol','gpt-6-luna','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research'], seats:1 },
@@ -329,7 +330,7 @@ const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsof
 // `top` is what "I always want the best" means for each provider, and it must NOT
 // be on that provider's free tier or the answer can never change the result.
 const MODELS = {
-  openai:{free:'gpt-5.6-luna',top:'gpt-6-sol'}, anthropic:{free:'claude-sonnet-5-5',top:'claude-opus-5-5'},
+  openai:{free:'gpt-5.6-luna',top:'gpt-5.6-sol'}, anthropic:{free:'claude-sonnet-5-5',top:'claude-opus-5-5'},
   google:{free:'gemini-3.6-flash',top:'gemini-3.1-pro-preview'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
   deepseek:{free:'deepseek-v4-flash',top:'deepseek-v4-pro'},
 };
