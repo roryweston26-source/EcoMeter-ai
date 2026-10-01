@@ -195,7 +195,9 @@ async function main() {
         compared++;
         if (!mine || !theirs) { mismatches.push({ arch, plan: tier.m, mine: !!mine, theirs: !!theirs }); continue; }
         if (Math.abs(mine.few - theirs.few) > 1e-9 || Math.abs(mine.many - theirs.many) > 1e-9
-            || mine.fewModel !== theirs.fewModel || mine.manyModel !== theirs.manyModel)
+            || mine.fewModel !== theirs.fewModel || mine.manyModel !== theirs.manyModel
+            || Math.abs((mine.fewLowest || 0) - (theirs.fewLowest || 0)) > 1e-9
+            || mine.fewLowestModel !== theirs.fewLowestModel)
           mismatches.push({ arch, plan: tier.m, mine, theirs });
       }
     }
@@ -203,6 +205,30 @@ async function main() {
     ok('break-even agrees with pricing.html on every plan and archetype', mismatches.length === 0,
        { compared, mismatches: mismatches.slice(0, 3) });
     ok('break-even was actually computed for the paid plans', compared >= 24, compared);
+
+    // unmeasured_range: the headline must NOT move (it stays at 1x), and the low end
+    // must be exactly the break-even at the bounding model's measured multiplier.
+    // Computed by hand from the raw JSON, so neither engine is checked against itself.
+    const ur = ((limits._meta.reasoning || {}).unmeasured_range || {}).models || {};
+    let rangeChecked = 0;
+    for (const [key, u] of Object.entries(ur)) {
+      const mult = limits._meta.reasoning.models[u.up_to].mid;
+      const rate = Object.values(JSON.parse(fs.readFileSync(R + 'extension/prices.json', 'utf8')).api).map(g => g[key]).find(Boolean);
+      const arc = limits._meta.archetypes.standard;
+      for (const pl of limits.plans.filter(p => p.value_models && Object.values(p.value_models).includes(key))) {
+        const sub = subs.find(s => s.p === pl.p && s.m === pl.m);
+        if (!sub || !sub.price) continue;
+        P.state.arch = 'standard';
+        const b = P.breakEven(sub, pl);
+        const at1 = sub.price / (arc.input * rate.input + arc.output * rate.output) / limits._meta.month_days;
+        const atUp = sub.price / (arc.input * rate.input + arc.output * mult * rate.output) / limits._meta.month_days;
+        ok(pl.m + ': headline still prices ' + key + ' at 1x', Math.abs(b.few - Math.min(at1, b.many)) < 1e-9, { few: b.few, at1 });
+        ok(pl.m + ': low end is the ' + u.up_to + ' multiplier (x' + mult + ')',
+           b.fewLowestModel === key && Math.abs(b.fewLowest - atUp) < 1e-9, { fewLowest: b.fewLowest, atUp });
+        rangeChecked++;
+      }
+    }
+    ok('the unmeasured range was exercised on at least one paid plan', rangeChecked > 0 || !Object.keys(ur).length, rangeChecked);
 
     // The long-context tier is DORMANT at today's archetypes (heavy is 15k input,
     // the thresholds are 200k-272k), so comparing outputs can't see it — both pages
@@ -245,6 +271,11 @@ async function main() {
     ok('break-even line names both value models', !!line && /Opus|Haiku|Sonnet/.test(line), line);
     ok('and says where the user sits against it',
        r.why.some(w => typeof w === 'string' && /messages\/day (clears|you're below)/.test(w)), r.why);
+    // Opus 5.5 is priced at 1x for want of a measurement; the user must be told how
+    // far that figure could fall, not just shown one confident number.
+    const range = r.why.find(w => typeof w === 'string' && /haven’t measured how much/.test(w));
+    ok('an unmeasured reasoning model carries its range to the user',
+       !!range && /Opus 5\.5/.test(range) && /Opus 5 did/.test(range), range || r.why);
     // free recommendations must NOT carry one — there is nothing to break even on
     const b = Object.assign({}, a, { messages: 'lt5', frequency: 'rarely', purpose: 'quick', frontier: 'default' });
     const rb = A.recommend(A.profileFor('anthropic', b, sigFor(b)), sigFor(b));

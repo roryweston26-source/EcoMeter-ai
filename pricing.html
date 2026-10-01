@@ -763,7 +763,11 @@
         "deepseek-v4-pro":        { mid: 2.5 },
         "deepseek-r1":            { mid: 2.5 },
         "deepseek-reasoner":      { mid: 2.5 }
-      } },
+      },
+      // Mirrors plan-limits.json _meta.reasoning.unmeasured_range — up_to only.
+      unmeasured_range: { models: {
+        "claude-opus-5-5":        { up_to: "claude-opus-5" }
+      } } },
       // Mirrors plan-limits.json _meta.credit_conversion. Without it a credit
       // allowance cannot be converted to messages, and the only plans that publish a
       // full allowance would lose their Ceiling whenever the live fetch fails.
@@ -869,7 +873,7 @@
   function monthDays() { return (PLAN_LIMITS._meta && PLAN_LIMITS._meta.month_days) || 30; }
 
   // What one message exchange costs at that model's published API rate.
-  function costPerMessage(prov, modelKey) {
+  function costPerMessage(prov, modelKey, multOverride) {
     // "provider:model" prices a plan against a model from someone else's rate card.
     // Perplexity Pro and Max mostly serve third-party frontier models, and pricing
     // them against Perplexity's own cheap Sonar rates answers the wrong question.
@@ -886,7 +890,18 @@
     var rate = (rec.long && a.input > rec.long.over) ? rec.long : rec;
     // Thinking tokens bill at the output rate. The archetype's "output" is the visible
     // reply only, so a reasoning model costs more per message than the reply implies.
-    return a.input * rate.input + a.output * reasoningMult(modelKey) * rate.output;
+    var mult = typeof multOverride === "number" ? multOverride : reasoningMult(modelKey);
+    return a.input * rate.input + a.output * mult * rate.output;
+  }
+
+  // For a model that reasons but was never measured: the multiplier it would have if
+  // it thought as much as the measured model named in unmeasured_range.up_to. Null
+  // when there is no such bound, so nothing here can invent a figure on its own.
+  function rangeMult(modelKey) {
+    var key = String(modelKey).split(":").pop();
+    var r = ((((PLAN_LIMITS._meta || {}).reasoning || {}).unmeasured_range || {}).models || {})[key];
+    var e = r && reasoningEntry(r.up_to);
+    return (e && typeof e.mid === "number" && e.mid > reasoningMult(modelKey)) ? { mult: e.mid, like: r.up_to } : null;
   }
 
   // Multiplier for a model that reasons by default, from plan-limits.json. Returns 1
@@ -912,18 +927,34 @@
     ["high", "low"].forEach(function (which) {
       var key = lim.value_models[which];
       var c = costPerMessage(sub.p, key);
-      if (c) ends.push({ msgs: sub.price / c / d, model: key });
+      if (!c) return;
+      var end = { msgs: sub.price / c / d, model: key };
+      var rm = rangeMult(key);
+      if (rm) end.lowest = { msgs: sub.price / costPerMessage(sub.p, key, rm.mult) / d, mult: rm.mult, like: rm.like };
+      ends.push(end);
     });
     if (!ends.length) return null;
     // Don't assume "high" is the pricier model — several plans pair a flagship with a
     // reasoning variant that costs more. Order by the answer, not by the label.
     ends.sort(function (a, b) { return a.msgs - b.msgs; });
-    return {
+    var out = {
       few: ends[0].msgs,
       many: ends[ends.length - 1].msgs,
       fewModel: ends[0].model,
       manyModel: ends[ends.length - 1].model
     };
+    // An unmeasured reasoning model: how low the figure could go if it thinks as much
+    // as the measured model it is bounded by. Whichever end that lands on.
+    ends.forEach(function (e) {
+      if (e.lowest && e.lowest.msgs < (out.fewLowest || out.few)) {
+        out.fewLowest = e.lowest.msgs;
+        out.fewLowestAt = e.msgs;
+        out.fewLowestModel = e.model;
+        out.fewLowestMult = e.lowest.mult;
+        out.fewLowestLike = e.lowest.like;
+      }
+    });
+    return out;
   }
 
   var WINDOW_HOURS = { "1h":1, "3h":3, "5h":5, "1d":24, "24h":24, "7d":168, "30d":720 };
@@ -1464,6 +1495,13 @@
           beCell = '<span class="be">' + fmtTime(be.few) + ' /day' +
                    '<span class="sub">' + fmtNum(be.few) + ' msgs · ' + modelLabel(be.fewModel) + '</span></span>';
         }
+        // The figure above prices an unmeasured reasoning model at 1x. Say how far it
+        // could fall, rather than let one number carry certainty it doesn't have.
+        if (be.fewLowest && !neverPays) {
+          beCell = beCell.replace(/<\/span>$/, '<span class="sub">' + esc(modelLabel(be.fewLowestModel)) + ': ' +
+                   fmtNum(be.fewLowest) + '–' + fmtNum(be.fewLowestAt) + ' msgs. Its thinking isn’t measured; the low end assumes it thinks as much as ' +
+                   esc(modelLabel(be.fewLowestLike)) + ' did.</span></span>');
+        }
       }
 
       // --- ceiling cell ---
@@ -1662,6 +1700,11 @@
                  ? '<b>Measured</b> against the provider’s own API over ' + rInfo.n +
                    ' ordinary chat prompts on ' + esc(rInfo.as_of) + ' — median of the per-prompt ratio, not a guess.'
                  : 'A midpoint estimate, not yet measured for this model.') + '</dd>' : "") +
+             (be.fewLowest ? '<dt>Thinking tokens — not measured</dt><dd>' + esc(modelLabel(be.fewLowestModel)) +
+               ' reasons by default, but we have no measurement of how much, so the figure above prices it at × ' +
+               reasoningMult(be.fewLowestModel) + '. ' + esc(modelLabel(be.fewLowestLike)) + ' measured × ' + be.fewLowestMult +
+               '. If ' + esc(modelLabel(be.fewLowestModel)) + ' thinks as much, break even falls to ' + fmtNum(be.fewLowest) +
+               ' messages/day (' + fmtTime(be.fewLowest) + '). The true figure is probably somewhere between the two.</dd>' : "") +
              (hiRate ? '<dt>' + esc(modelLabel(be.fewModel)) + ' API rate</dt><dd>$' + (hiRate.input * 1e6).toFixed(2) + ' / $' + (hiRate.output * 1e6).toFixed(2) + ' per 1M</dd>' : "") +
              (cpm ? '<dt>Cost per message</dt><dd>$' + cpm.toFixed(4) + '</dd>' : "") +
              '<dt>Break even</dt><dd>$' + sub.price + ' ÷ cost ÷ ' + monthDays() + ' days = ' + fmtNum(be.few) + ' messages/day</dd>' +

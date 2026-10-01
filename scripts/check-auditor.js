@@ -321,6 +321,25 @@ for (const [name, v] of Object.entries(L._meta.archetypes || {}))
     if (!mirror.includes('"' + k + '"'))
       fail('reasoning model missing from pricing.html FALLBACK_LIMITS mirror: ' + k);
 
+  // unmeasured_range: an unmeasured reasoning model's break-even is shown with a low
+  // end that assumes it thinks as much as a MEASURED sibling. The bound must be
+  // evidence, not another guess, and it must leave the moment the model is measured
+  // (a row in models wins, and the range would then be describing a stale gap).
+  const ur = (((L._meta || {}).reasoning || {}).unmeasured_range || {}).models || {};
+  const urMirror = pricing.slice(pricing.indexOf('unmeasured_range: { models: {'),
+                                 pricing.indexOf('} } },', pricing.indexOf('unmeasured_range: { models: {')));
+  for (const [k, v] of Object.entries(ur)) {
+    if (!all[k]) fail('unmeasured_range names a model with no API rate: ' + k);
+    if (rx[k]) fail('unmeasured_range still lists ' + k + ' but models now has a row for it — remove it from unmeasured_range');
+    const up = rx[v.up_to];
+    if (!up || !up.measured) fail('unmeasured_range ' + k + ' is bounded by ' + v.up_to + ', which is not a measured:true row');
+    if (!v.source || !/^\d{4}-\d{2}-\d{2}$/.test(v.read || '')) fail('unmeasured_range ' + k + ' needs source and read');
+    if (!new RegExp('"' + k.replace(/[.\-]/g, '\\$&') + '":\\s*\\{ up_to: "' + v.up_to.replace(/[.\-]/g, '\\$&') + '" \\}').test(urMirror))
+      fail('unmeasured_range ' + k + ' missing or different in pricing.html FALLBACK_LIMITS mirror');
+  }
+  for (const m of urMirror.matchAll(/"([\w.\-]+)":\s*\{ up_to:/g))
+    if (!ur[m[1]]) fail('pricing.html fallback has an unmeasured_range model plan-limits.json does not: ' + m[1]);
+
   const ecoAt = side.indexOf('const REASONING_RANGES');
   // PLATFORM_OVERHEAD_TOKENS is referenced earlier in the file than it is declared,
   // so anchoring the end on that name sliced backwards and silently checked nothing.
