@@ -191,6 +191,7 @@ wrong number in front of a user.
 | Any day (announced 2026-09-28) | **Claude Haiku 5.5** — Sonnet 5.5's launch post says it "will join the Claude 5.5 family in the coming weeks". No rate is published, so none is recorded. When it lands: all seven places, and `value_models.low` on Claude Free and Pro. | [A3](#a3-the-model-line-up) |
 | 2026-10-23 | **OpenAI shuts down a batch of older snapshots.** Of ours, `gpt-4.1-nano`, `o1` and `o3-mini` are priced and not yet in `_legacy_keys`; move them there once they go (`gpt-4` and `gpt-4-turbo` already are). | [A3](#a3-the-model-line-up) |
 | **2026-10-29** | **Grandfathered ChatGPT Pro 200 subscribers move to the lower allowance**, at the same $200. OpenAI doesn't say how much lower. Both subscription notes describe the plan as it is before this date. `check-prices.js` §7c-iii warns from 30 days out and fails once the date passes: re-read the Pro tiers article, rewrite both notes, then update or remove `availability.transition`. | [A2](#a2-consumer-subscription-prices), [B1](#b1-the-caps-themselves) |
+| 2026-11-30 | **Anthropic retires Claude Sonnet 4.5** on the Claude API (deprecated 2026-09-30; successor Sonnet 5.5). We price it but do not show it. Carried as a `sunset` block on `claude-sonnet-4-5` — `check-prices.js` warns from 30 days out and fails once past. When it goes: remove it from `prices.json`, `water.json` and `update-prices.js`. | [A3](#a3-the-model-line-up) |
 | Every Monday | `publish.yml` fires (09:15 UTC) — refreshes prices, builds, uploads a CWS draft. | [A1](#a1-per-token-api-prices), [G5](#g5-extension-version) |
 | June 2027 | ChatGPT for Teachers free window ends (US K-12). | [C2](#c2-known-dated-offers) |
 | Daily, by clock | **DeepSeek meters peak/off-peak by UTC time** — the only provider here that does. We store peak rates deliberately. | [A5](#a5-dated-price-events) |
@@ -4131,6 +4132,33 @@ If G2 or the token-count behaviour changes, this file and its effective date
 change with it.
 
 ## H4. The shipped build vs `main`
+
+### v6.16 BUILT 2026-10-01 — not yet uploaded; the store is behind `main` again
+
+**v6.15 in the store is now wrong in a way users can see.** Diffed its bundled `prices.json`
+against `main`: it still lists **Sonar Pro, Sonar and Sonar Reasoning Pro** in the picker,
+priced, four days after Perplexity shut that API down (2026-09-27); and it lacks the
+**seven models added since** — Claude Sonnet 5.5 ($2/$10), Claude Opus 5.5 ($4/$20),
+GPT-6.1 Sol, GPT-6 Sol ($2/$10), GPT-6 Luna ($0.10/$0.50), Gemini 3.8 Flash ($0.75/$3.75
+promo) and Grok 4.7 ($2/$6). 79 → 83 models. No rate that v6.15 carries has moved, so its
+existing figures are not wrong; it is missing and stale, not mispriced.
+
+**v6.16 closes that.** Bumped manually 6.15 → 6.16 (G5 permits it; v6.15 is in the store, so
+the same number would be rejected as a duplicate), built with `build-extension.js` from the
+commit that carries the bump. Release-day check before building — not a full pass: Anthropic
+release notes and pricing, OpenAI's full rate card, Google's changelog. One change, Sonnet
+4.5's 2026-11-30 retirement, recorded as a `sunset` block; see the calendar. All ten guards
+pass.
+
+**Still needs Rory:** load-unpacked smoke test at 6.16, check the dashboard for v6.15's
+review verdict (never recorded here — a pending version blocks the next upload), upload,
+and record the outcome in this section.
+
+🚨 **The January risk is unchanged, and v6.16 now carries it on THREE models**:
+`gemini-3.8-flash` joined `gemini-3.7-flash` and `gemini-3.6-flash` at the promotional
+$0.75/$3.75, all reverting on 2026-12-31. A build uploaded after the revert is still the
+only fix.
+
 
 ### v6.15 UPLOADED 2026-09-19 — the store and `main` are level for the first time since 2026-08-28
 
