@@ -245,6 +245,42 @@ for (const pl of L.plans) {
     fail('pricing.html fallback row for ' + pl.m + ' carries no closed-to-new-subscribers note — a failed fetch would show it as buyable');
 }
 
+// 7c-ii. The inverse: a plan you CAN buy must not say you can't. OpenAI reopened
+//     Pro 200 on 2026-09-29, and the check above could not see the stale "Closed to
+//     new subscribers" note left behind: with status 'open' it skipped the row, and
+//     a note put back into pricing.html alone still passed. Telling someone a plan is
+//     off the market when it isn't steers them away from an option they have.
+{
+  const saysClosed = s => s && /closed to new|cannot (start|buy)|paused/i.test(s);
+  const closed = pl => pl && pl.availability && pl.availability.status !== 'open';
+  for (const sub of p.subscriptions) {
+    const pl = L.plans.find(x => x.p === sub.p && x.m === sub.m);
+    if (closed(pl)) continue;
+    if (saysClosed(sub.note))
+      fail('prices.json subscription note for ' + sub.m + ' says it is closed, but plan-limits.json does not record it as closed');
+    const k = html.indexOf('m:"' + sub.m + '"');
+    const row = k < 0 ? null : html.slice(k, html.indexOf(String.fromCharCode(10), k));
+    if (row && saysClosed(row))
+      fail('pricing.html fallback row for ' + sub.m + ' says it is closed, but plan-limits.json does not record it as closed');
+  }
+}
+
+// 7c-iii. A dated availability change, e.g. OpenAI moving grandfathered Pro 200
+//     subscribers to the lower allowance on 2026-10-29. Same shape as a sunset (7b):
+//     warn as it nears, fail once it has passed, because both subscription notes
+//     describe the plan as it is BEFORE that date.
+for (const pl of L.plans) {
+  const t = pl.availability && pl.availability.transition;
+  if (!t) continue;
+  if (!t.on || !t.what) { fail('availability.transition on ' + pl.m + ' needs { on, what }'); continue; }
+  const days = Math.round((Date.parse(t.on) - Date.parse(today)) / 86400000);
+  if (days >= 0 && days <= 30)
+    warn('AVAILABILITY CHANGE in ' + days + ' day(s), on ' + t.on + ': ' + pl.m + '. Re-read ' + pl.availability.source + ' after it.');
+  if (t.on < today)
+    fail('AVAILABILITY CHANGE PASSED ' + t.on + ': ' + pl.m + ' — ' + t.what +
+         ' Rewrite the subscription notes in prices.json and pricing.html, then remove or update the transition block.');
+}
+
 // 8. Open weights and the host spread.
 //
 //    Both blocks were added 2026-08-29 with the three Chinese labs. They describe
