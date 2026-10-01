@@ -886,6 +886,7 @@ function recommend(pf,sig){
       .filter(m => reasoningMult(m) > 1)
       .every(m => (reasoningEntry(m) || {}).measured);
     why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.${thinks?` That includes the hidden thinking tokens a reasoning model bills at the output rate${thinkMeasured?` — measured against the provider’s own API, not estimated`:` — our estimate of them, not yet measured for this model`}.`:``}`);
+    if(be.fewLowest) why.push(`We haven’t measured how much ${labelModel(be.fewLowestModel)} thinks, so that prices it with no thinking tokens. If it thinks as much as ${labelModel(be.fewLowestLike)} did (×${be.fewLowestMult}, measured), the ${labelModel(be.fewLowestModel)} figure falls from ${fmtMsgs(be.fewLowestAt)} to ${fmtMsgs(be.fewLowest)} messages a day. The truth is probably in between.`);
     // Break-even is a per-day rate, so it has to be compared against an AVERAGE day.
     // Comparing it to the busy-day figure cleared the bar for people who only use it
     // twice a week, and told them a subscription was the cheaper option when it wasn't.
@@ -944,7 +945,7 @@ function recommend(pf,sig){
 // against Sonar answers a question nobody asked. API here is a flat map, so only the
 // prefix needs removing; pricing.html's rates are grouped, so it resolves the group.
 const bareModel = k => String(k).includes(':') ? String(k).split(':')[1] : String(k);
-function costPerMessage(prov, modelKey, arc){
+function costPerMessage(prov, modelKey, arc, multOverride){
   modelKey=bareModel(modelKey);
   const r=API[modelKey];
   if(!r || typeof r.in!=='number' || typeof r.out!=='number') return null;
@@ -953,8 +954,17 @@ function costPerMessage(prov, modelKey, arc){
   // halve the cost the day someone adds a document-sized one.
   const long=(RAW_LONG[modelKey] && arc.in>RAW_LONG[modelKey].over) ? RAW_LONG[modelKey] : null;
   // Thinking tokens bill at the output rate, and arc.out is the visible reply only.
-  const out=arc.out*reasoningMult(modelKey);
+  const out=arc.out*(typeof multOverride==='number' ? multOverride : reasoningMult(modelKey));
   return long ? arc.in*long.input + out*long.output : arc.in*r.in + out*r.out;
+}
+// For a reasoning model that was never measured: the multiplier it would have if it
+// thought as much as the measured model in unmeasured_range.up_to. Null otherwise.
+// Shown beside break-even only; recommendations still decide on reasoningMult().
+function rangeMult(modelKey){
+  const key=String(modelKey).split(':').pop();
+  const r=((((LIMITS&&LIMITS._meta)||{}).reasoning||{}).unmeasured_range||{}).models||{};
+  const e=r[key] && reasoningEntry(r[key].up_to);
+  return (e && typeof e.mid==='number' && e.mid>reasoningMult(modelKey)) ? {mult:e.mid, like:r[key].up_to} : null;
 }
 // From plan-limits.json, so the site has one list. 1 when a model does not reason by
 // default or we have no figure for it — an invented multiplier is worse than none.
@@ -976,14 +986,25 @@ function breakEven(prov, tier, arc){
   const ends=[];
   ['high','low'].forEach(which=>{
     const key=lim.value_models[which], c=costPerMessage(prov,key,arc);
-    if(c) ends.push({msgs: tier.price/c/days, model:key});
+    if(!c) return;
+    const end={msgs: tier.price/c/days, model:key}, rm=rangeMult(key);
+    if(rm) end.lowest={msgs: tier.price/costPerMessage(prov,key,arc,rm.mult)/days, mult:rm.mult, like:rm.like};
+    ends.push(end);
   });
   if(!ends.length) return null;
   // "high"/"low" are labels, not an ordering — several plans pair a flagship with a
   // pricier reasoning variant. Order by the answer.
   ends.sort((a,b)=>a.msgs-b.msgs);
-  return {few:ends[0].msgs, many:ends[ends.length-1].msgs,
+  const out={few:ends[0].msgs, many:ends[ends.length-1].msgs,
           fewModel:ends[0].model, manyModel:ends[ends.length-1].model};
+  // Same as pricing.html: how low it could go if an unmeasured model thinks as much
+  // as the measured one it is bounded by.
+  ends.forEach(e=>{
+    if(e.lowest && e.lowest.msgs < (out.fewLowest || out.few))
+      Object.assign(out,{fewLowest:e.lowest.msgs, fewLowestAt:e.msgs, fewLowestModel:e.model,
+                         fewLowestMult:e.lowest.mult, fewLowestLike:e.lowest.like});
+  });
+  return out;
 }
 function throughputMpm(){ return (LIMITS && LIMITS._meta && LIMITS._meta.throughput
   && LIMITS._meta.throughput.messages_per_active_minute) || 1; }

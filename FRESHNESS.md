@@ -545,6 +545,25 @@ that changes. Don't re-propose a paid run without a reason.
 `gpt-5.6-sol` again, whose measured 1.2 applies; only the Claude rows still run an
 unmeasured model (Opus 5.5) at 1x.
 
+**Update 2026-09-30 (later): the Claude rows now show the range instead of one number.**
+`plan-limits.json` `_meta.reasoning.unmeasured_range` bounds Opus 5.5 by Opus 5's measured
+1.8x. The headline still prices it at 1x and the Auditor still decides on 1x; the range is
+shown beside it on pricing.html (cell + math panel) and in the Auditor's break-even line.
+Standard archetype, Opus end: **Claude Pro 21–28 msgs/day, Max 5x 106–139, Max 20x 212–278.**
+Why 1.8x is a fair ceiling: anthropic.com/claude-opus-5-5 (read 2026-09-30) says Opus 5.5
+"uses fewer tokens per task" than Opus 5. That is from coding and agent tasks, so it gives no
+chat multiplier. Guards: `check-auditor.js` requires `up_to` to be a `measured: true` row and
+fails while a model sits in both `models` and `unmeasured_range`; `test-auditor.js` checks
+both pages agree on the low end and recomputes it from the raw JSON.
+
+**The fix command above did nothing until 2026-09-30.** `claude-opus-5-5` was not in
+`measure-reasoning.js` TARGETS, so `--models=claude-opus-5-5` filtered to zero models. It is
+there now (with `claude-sonnet-5-5`), unknown `--models` names exit 1, and `--write` finds
+the reasoning block by brace-matching. The old text search stopped inside the first
+pretty-printed row. `--write` also drops a newly measured model from `unmeasured_range`. The
+correct command is `--run --write --models=claude-opus-5-5`; `gpt-6-sol` no longer anchors
+anything. Still a paid run, still declined.
+
 **The homepage ticker was fixed while here.** It showed Gemini 3.5 Flash at **$0.50**
 (the real rate is $1.50), Grok 4.3 (not listed by xAI) and DeepSeek V3 (legacy key).
 It now shows Opus 5.5, GPT-6 Astra, Gemini 3.8 Flash (labelled promo), Grok 4.7,

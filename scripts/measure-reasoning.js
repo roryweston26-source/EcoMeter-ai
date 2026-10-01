@@ -71,8 +71,21 @@ const TARGETS = [
   { key: 'gpt-5.6-terra',          provider: 'openai',    api: 'gpt-5.6-terra' },
   { key: 'claude-opus-5',          provider: 'anthropic', api: 'claude-opus-5' },
   { key: 'claude-sonnet-5',        provider: 'anthropic', api: 'claude-sonnet-5' },
+  // The current Claude plan anchors (plan-limits.json value_models). Opus 5.5 is the
+  // one break-even prices at 1x for want of a measurement; see unmeasured_range.
+  { key: 'claude-opus-5-5',        provider: 'anthropic', api: 'claude-opus-5-5' },
+  { key: 'claude-sonnet-5-5',      provider: 'anthropic', api: 'claude-sonnet-5-5' },
   { key: 'gemini-3.1-pro-preview', provider: 'google',    api: 'gemini-3.1-pro-preview' },
 ];
+// FRESHNESS once told readers to run --models=claude-opus-5-5 when that model was not
+// in TARGETS, which filters to nothing and would have "measured" zero models. Refuse
+// an unknown name instead of silently doing less than was asked.
+const UNKNOWN = ONLY_MODELS.filter(m => !TARGETS.some(t => t.key === m));
+if (UNKNOWN.length) {
+  console.error('Not in TARGETS, so nothing would be measured for: ' + UNKNOWN.join(', ') +
+                '\nAdd them to TARGETS in scripts/measure-reasoning.js first.');
+  process.exit(1);
+}
 
 /* Keys come from the environment, or from a gitignored file if you would rather not
    fight PowerShell quoting — three attempts at exporting a key produced two syntax
@@ -397,18 +410,28 @@ function writeBack(report) {
     // Surgical, like derive-archetypes.js. Re-serialising the whole file reflowed
     // every row in it — a 300-line diff for a ten-number change, on the first run,
     // while changing no number at all.
+    // A measured model no longer needs its borrowed range, and check-auditor fails
+    // while both exist, so drop it here rather than leave the next step to a human.
+    const ur = (j._meta.reasoning.unmeasured_range || {}).models || {};
+    for (const key of Object.keys(results)) if (results[key].n && ur[key]) delete ur[key];
+    // The block is found by matching braces (string-aware), not by searching for an
+    // indented "}," — the pretty-printed rows contain that text, so the old search
+    // stopped inside the first model. The file is 2-space JSON, so re-serialising just
+    // this block reproduces every unchanged line byte for byte.
     const NL = raw.indexOf('\r\n') >= 0 ? '\r\n' : '\n';
-    const block = ['    "reasoning": {',
-      '      "comment": ' + JSON.stringify(j._meta.reasoning.comment) + ',',
-      '      "basis": ' + JSON.stringify(j._meta.reasoning.basis) + ',',
-      '      "models": {',
-      Object.entries(j._meta.reasoning.models).map(([k, v]) =>
-        '        ' + JSON.stringify(k) + ': ' + JSON.stringify(v)).join(',' + NL),
-      '      }', '    },'].join(NL);
-    const start = raw.indexOf('    "reasoning": {');
-    const end = raw.indexOf('    },', raw.indexOf('"models": {', start));
-    if (start < 0 || end < 0) throw new Error('cannot locate the reasoning block in plan-limits.json');
-    const out = raw.slice(0, start) + block + raw.slice(end + '    },'.length);
+    const start = raw.indexOf('"reasoning": {');
+    if (start < 0) throw new Error('cannot locate the reasoning block in plan-limits.json');
+    let end = raw.indexOf('{', start), depth = 0, inStr = false;
+    for (; end < raw.length; end++) {
+      const c = raw[end];
+      if (inStr) { if (c === '\\') end++; else if (c === '"') inStr = false; continue; }
+      if (c === '"') inStr = true;
+      else if (c === '{') depth++;
+      else if (c === '}' && --depth === 0) break;
+    }
+    const indent = raw.slice(raw.lastIndexOf('\n', start) + 1, start);
+    const block = '"reasoning": ' + JSON.stringify(j._meta.reasoning, null, 2).split('\n').join(NL + indent);
+    const out = raw.slice(0, start) + block + raw.slice(end + 1);
     JSON.parse(out);
     fs.writeFileSync(P, out);
     console.log('plan-limits.json updated — re-run check-auditor.js, and mirror the mids into pricing.html.');

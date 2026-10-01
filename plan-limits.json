@@ -84,6 +84,17 @@
           "hi": 5,
           "mid": 2.5
         }
+      },
+      "unmeasured_range": {
+        "comment": "Models that reason by default but have NO measured multiplier, so the headline prices them at 1x (reasoningMult() never invents one). That is the less harmful error, since it understates API cost and undersells the plan, but it is still an error of known size. For each model here, the page ALSO shows the break-even it would have if the model thought as much as the measured model named in up_to, so the reader sees the spread instead of one confident number. up_to must name a measured:true row; its mid is read live, so re-measuring that row moves this bound too. Nothing here changes a recommendation: the Auditor still decides on the 1x figure. Remove a model from this block the day it is measured.",
+        "models": {
+          "claude-opus-5-5": {
+            "up_to": "claude-opus-5",
+            "why": "Opus 5 measured 1.8x on 2026-08-27. Anthropic says Opus 5.5 'uses fewer tokens per task' than Opus 5, netting a 40% cost drop together with the 20% lower rate, but that is from coding and agent tasks, not ordinary chat, so it gives no chat multiplier. It does make Opus 5's 1.8x a sensible upper bound. The true figure is somewhere from 1x (what the headline assumes) to about 1.8x. Measuring it costs money and was declined on 2026-09-27.",
+            "source": "https://www.anthropic.com/claude-opus-5-5",
+            "read": "2026-09-30"
+          }
+        }
       }
     },
     "default_archetype": "standard",

@@ -9,6 +9,22 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-09-30 — Claude break-even shows a range for the unmeasured Opus 5.5 thinking
+
+Opus 5.5 reasons by default but has no measured multiplier, so it prices at 1x and Claude's
+break-even reads high. Rather than pay to measure it (declined 09-27), the page now shows how
+far it could fall if Opus 5.5 thinks as much as Opus 5 did (measured 1.8x): **Claude Pro 21–28
+msgs/day, Max 5x 106–139, Max 20x 212–278** at the standard archetype. Headline and
+recommendations are unchanged. Data in `plan-limits.json` `_meta.reasoning.unmeasured_range`,
+mirrored in `pricing.html`; guarded by `check-auditor.js` and `test-auditor.js` (122 checks).
+Also fixed `measure-reasoning.js`: Opus 5.5 was missing from its targets and `--write` could
+not find the reasoning block. See FRESHNESS A3.
+
+**Still free and not done:** Gemini 3.1 Pro's 3x is a guess on every paid Google plan (AI Pro
+is 27.5 msgs/day at 3x, 51.6 at 1x), and it errs in the direction that flatters the
+subscription. The measurement is free on the API free tier, but needs Rory to get an AI Studio
+key (refused 2026-08-28). Re-check that the free tier still exists before running.
+
 ### 2026-09-30 — ChatGPT Pro 200 reopened; Pro 500 added as not disclosed (FRESHNESS A2, B1)
 
 OpenAI reopened **Pro 200** to new subscribers on 09-29, with a lower allowance it doesn't
