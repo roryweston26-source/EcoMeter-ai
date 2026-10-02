@@ -1,17 +1,17 @@
 {
   "_meta": {
-    "anchor": "2026-08-08",
-    "last_rolled": "2026-08-08",
+    "anchor": "2026-10-01",
+    "last_rolled": "2026-10-01",
     "note": "Anchor levels + growth rates for the AI Clock (ai-clock.html reads this). 'anchor' is the 'as of' date for the scenario levels. The roll-clock workflow advances the anchor and rolls the levels along their growth curves quarterly, opening a PR; a human then re-anchors against fresh disclosures. Growth rates are human-judged, not scraped.",
-    "reanchor_log": "2026-08-08 (off-cycle, human): capex levels cut ~26% — the 1.77x rate matched big-four guidance exactly but the levels implied a $978B calendar-2026 total vs ~$725B actually guided. Tokens levels roughly doubled — the old anchor tracked Goldman's May 2026 estimate (5.6 quadrillion/month), since superseded by a ~11 quadrillion/month bottom-up run-rate. Energy trimmed to the IEA 2026 figure. Users rate cut 1.5 -> 1.35 as the leaders decelerate. CO2, water, spend, prompts, compute and frontier levels left as rolled. Also removed the unused unitCost/unitCostIndex fields — see why_no_unit_cost_field.",
+    "reanchor_log": "2026-10-01 (quarterly, human, on top of the mechanical roll): levels left as rolled after checking each against fresh disclosures — none had diverged enough to move. Two rates trimmed because reality undershot them. tokens 5 -> 4: Google's first-party API went 16B -> 22B tokens/minute in Q2 2026 (Alphabet Q2 call, 2026-07-22), ~3.6x annualised, and its surfaces went 1.3 -> 3.2 quadrillion/month Oct 2025 -> May 2026, ~4.7x annualised; both under 5. compute 3.4 -> 2.5: Epoch's chip-sales data (estimates generated 2026-08-27) sums to 12.2M H100e cumulative at 2025-06-30 and 31.0M at 2026-06-30, 2.54x year on year; the rolled moderate level (36.9M) matches that plus a Q3 in line with Q2's 6.0M. Capex anchor 725 -> 732.5B: the CNBC $725B (2026-07-28) predates Amazon (~220, cash), Meta (130-145) and Microsoft (~175 calendar 2026, restated from ~190 by a lease-accounting change, investment plans 'unchanged'); with Alphabet at 195-205 the big four guide 720-745. No company reports again until late October. Energy: no new IEA figure since April 2026. Users: Gemini app 1B monthly (Pichai, 2026-08-11); ChatGPT ~1B weekly is still press reporting of internal data (The Information, 2026-07-29), not an OpenAI disclosure — OpenAI's last own figure is 900M. Prompts, frontier: nothing new disclosed. | 2026-08-08 (off-cycle, human): capex levels cut ~26% — the 1.77x rate matched big-four guidance exactly but the levels implied a $978B calendar-2026 total vs ~$725B actually guided. Tokens levels roughly doubled — the old anchor tracked Goldman's May 2026 estimate (5.6 quadrillion/month), since superseded by a ~11 quadrillion/month bottom-up run-rate. Energy trimmed to the IEA 2026 figure. Users rate cut 1.5 -> 1.35 as the leaders decelerate. CO2, water, spend, prompts, compute and frontier levels left as rolled. Also removed the unused unitCost/unitCostIndex fields — see why_no_unit_cost_field.",
     "why_no_unit_cost_field": "This file deliberately does NOT carry a unit-cost decline rate, though it used to. Epoch's widely-cited ~40x/yr inference cost decline measures the price of a FIXED capability level over time (GPT-4-level output, 9x-900x/yr depending which milestone you pick). The per-unit panel in ai-clock.html measures something different: blended real-world spend per token across a shifting model mix, derived as spendPerYear / tokensPerYear and declining at rates.spend / rates.tokens. Both are defensible; they are not the same quantity, and the derived one is the honest match for what that panel claims. Per-token energy and water are derived the same way, so the three lines stay consistent. Don't re-add a unitCost field expecting the panel to use it — it won't, and a sourced-looking number that nothing reads is worse than no number. Epoch's figure, for context: https://epoch.ai/data-insights/llm-inference-price-trends",
     "why_no_external_token_price_index": "Researched 2026-08-28, deliberately not used. Ornn (ornn.com) publishes the Ornn Token Price Index — realized, volume-weighted dollars per million tokens per lab, built from executed transactions — behind a free no-key API at api.ornnai.com carrying one month of daily history for anthropic/openai/google/deepseek, plus a GPU compute index (OCPI) at three months for five GPU types. OTPI is the closest thing that exists to an external check on the per-unit cost panel, and the comparison is what exposed the spend-numerator problem in open_questions. We still cannot ship it: Ornn's terms at https://data.ornn.com/terms forbid republishing or redistributing their data, separately forbid using it to 'create, calculate, validate, benchmark' any index or derived data product, and state that attribution and caching do not constitute consent. Baking a value into this file would be the first; checking our levels against one in check-clock.js would be the second. Reading it privately to inform a human judgement is not the same act as publishing it. If an external cross-check is ever wanted here, get written consent from Ornn first — do not re-derive this and quietly paste a number in. The compute index would not have helped regardless: it prices GPU rental in dollars per hour, while this file's compute counter is a count of H100-equivalents, and price times unknown GPU-hours is neither quantity.",
     "open_questions": [
-      "tokens rate (5x/yr): near-term observation supports it (Google disclosed 7x YoY at I/O 2026), but forecasts to 2030 imply ~2.2x/yr. Kept at 5 because this model is re-anchored quarterly and is explicitly not for multi-year extrapolation. Revisit each quarter.",
+      "tokens rate: cut 5 -> 4 at the 2026-10-01 re-anchor (see reanchor_log). The two observations behind it are both Google and one is API-only, so 4 is a judgement between ~3.6x and ~4.7x, not a measurement. Forecasts to 2030 imply ~2.2x/yr. If the next disclosed figure annualises below 4, cut again.",
       "co2 levels imply 230/309/433 g CO2/kWh across the three scenarios, i.e. the grid-intensity assumption is part of what the scenarios bracket. This is deliberate — see the CO2 note in ai-clock.html — but it is not independently sourced.",
-      "frontier level could not be re-verified: no 2026 record training run is publicly confirmed. Still projected forward from Grok 4 (mid-2025). 'Not disclosed' is the honest state here.",
+      "frontier level could not be re-verified at the 2026-08-08 or 2026-10-01 re-anchors: no 2026 record training run is publicly confirmed, and Epoch's database holds no estimates for closed models after July 2025. Still projected forward from Grok 4 (mid-2025). 'Not disclosed' is the honest state here.",
       "frontier rate is 4.5x/yr; Epoch's central estimate is 5x/yr (CI 4-6x). Within the interval, left unchanged this cycle.",
-      "spend numerator is not what the counter's name implies. spendPerYear is anchored to MarketsandMarkets' AI inference market size, which that report scopes as infrastructure vendor revenue — accelerators (GPU/CPU/FPGA/TPU/ASIC), HBM and DDR memory, network adapters and interconnects, plus cloud inference services. So it overlaps capexPerYear (the same silicon, counted from the other side of the transaction) rather than being 'distinct from buildout capex' as the page claimed until 2026-08-28, and it is not the operational cost of running models. The prose was corrected; the LEVEL was deliberately left alone, because no better-sourced worldwide figure for inference operating spend was found and inventing one would be worse. Two consequences: (a) the per-unit cost line divides infrastructure revenue by all tokens including free-tier and internal ones, so it is directional only — the page now says so; (b) if a genuine inference-opex figure surfaces, re-level this counter, don't just re-label it. Next re-anchor: go looking for one."
+      "spend numerator is not what the counter's name implies. spendPerYear is anchored to MarketsandMarkets' AI inference market size, which that report scopes as infrastructure vendor revenue — accelerators (GPU/CPU/FPGA/TPU/ASIC), HBM and DDR memory, network adapters and interconnects, plus cloud inference services. So it overlaps capexPerYear (the same silicon, counted from the other side of the transaction) rather than being 'distinct from buildout capex' as the page claimed until 2026-08-28, and it is not the operational cost of running models. The prose was corrected; the LEVEL was deliberately left alone, because no better-sourced worldwide figure for inference operating spend was found and inventing one would be worse. Two consequences: (a) the per-unit cost line divides infrastructure revenue by all tokens including free-tier and internal ones, so it is directional only — the page now says so; (b) if a genuine inference-opex figure surfaces, re-level this counter, don't just re-label it. Next re-anchor: go looking for one. 2026-10-01: looked again. The closest buyer-side figure found is Gartner's AI-optimised IaaS forecast (press release 2026-08-10, read via secondary reporting because gartner.com blocks fetching): ~$42B in 2026, of which ~55% (~$23B) supports inference. That is rented cloud inference only — it leaves out the hyperscalers' own first-party inference and on-prem — so it is a floor, not a total, and does not replace the level."
     ],
     "sources": [
       {
@@ -19,8 +19,8 @@
         "url": "https://techcrunch.com/2026/02/27/chatgpt-reaches-900m-weekly-active-users/"
       },
       {
-        "for": "capex (~$725B big-four calendar 2026, +77% YoY — sets both level and 1.77x rate)",
-        "url": "https://www.cnbc.com/2026/07/28/hyperscalers-face-higher-capex-scrutiny-after-alphabet-report-panned.html"
+        "for": "capex (~$732.5B big-four calendar 2026 guidance midpoint, $720-745B; 1.77x rate) — Alphabet Q2 2026 call",
+        "url": "https://s206.q4cdn.com/479360582/files/doc_events/2026/Jul/22/2026_Q2_Earnings_Transcript.pdf"
       },
       {
         "for": "tokens — Google disclosed 3.2 quadrillion/month, 7x YoY (I/O, May 2026)",
@@ -35,8 +35,24 @@
         "url": "https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary"
       },
       {
-        "for": "installed compute growth (3.4x/yr) & datacenter power (~30 GW at Q4 2025)",
+        "for": "datacenter power (~30 GW at Q4 2025)",
         "url": "https://epoch.ai/data-insights/ai-datacenter-power"
+      },
+      {
+        "for": "capex — Microsoft calendar-2026 restated to ~$175B by lease accounting, plans unchanged (Jul 2026)",
+        "url": "https://www.cfodive.com/news/microsoft-holds-line-ai-spending-plans/826648/"
+      },
+      {
+        "for": "installed compute — Epoch AI chip sales by quarter (31.0M H100e cumulative at 2026-06-30, 2.54x YoY; sets the 2.5x rate)",
+        "url": "https://epoch.ai/data/ai-chip-sales"
+      },
+      {
+        "for": "tokens — Google first-party API 16B -> 22B tokens/minute, Q1 -> Q2 2026",
+        "url": "https://s206.q4cdn.com/479360582/files/doc_events/2026/Jul/22/2026_Q2_Earnings_Transcript.pdf"
+      },
+      {
+        "for": "users — Gemini app 1B monthly active users (Pichai, 2026-08-11)",
+        "url": "https://techcrunch.com/2026/08/11/googles-gemini-app-surges-to-one-billion-users/"
       }
     ],
     "plausibility": {
@@ -44,12 +60,12 @@
       "checks": [
         {
           "field": "capexPerYear",
-          "label": "hyperscaler buildout capex, calendar 2026",
-          "published": 725000000000,
+          "label": "big-four hyperscaler capex, calendar 2026 (guidance midpoint)",
+          "published": 732500000000,
           "unit": "USD/yr",
           "tolerance_pct": 20,
-          "source": "https://www.cnbc.com/2026/07/28/hyperscalers-face-higher-capex-scrutiny-after-alphabet-report-panned.html",
-          "note": "Big-four guided ~$725B for calendar 2026. This is the check that would have caught the 2026-08-08 error, where the levels implied $978B — 35% high and passing every other script."
+          "source": "https://s206.q4cdn.com/479360582/files/doc_events/2026/Jul/22/2026_Q2_Earnings_Transcript.pdf",
+          "note": "Big four guide $720-745B for calendar 2026 after the late-July reports: Amazon ~$220B cash capex, Alphabet $195-205B (Q2 call, 2026-07-22, the source above), Meta $130-145B incl. finance-lease principal, Microsoft ~$175B (restated from ~$190B by a lease-accounting change, investment plans unchanged). Was $725B from CNBC 2026-07-28, which predates three of the four reports. The 2026-08-08 error this check exists for implied $978B — 35% high and passing every other script."
         },
         {
           "field": "twhPerYear",
@@ -75,52 +91,52 @@
   },
   "scenarios": {
     "conservative": {
-      "promptsPerDay": 9170000000,
-      "tokensPerYear": 96000000000000000,
-      "twhPerYear": 160,
-      "waterBLPerYear": 365,
-      "spendPerYear": 120000000000,
-      "co2MtPerYear": 36.8,
-      "capexPerYear": 658000000000,
-      "usersNow": 1120000000,
-      "gpusNow": 26700000,
-      "frontierNow": 9.86e+26
-    },
-    "moderate": {
-      "promptsPerDay": 12000000000,
-      "tokensPerYear": 132000000000000000,
-      "twhPerYear": 180,
-      "waterBLPerYear": 585,
-      "spendPerYear": 135000000000,
-      "co2MtPerYear": 55.7,
-      "capexPerYear": 757000000000,
-      "usersNow": 1400000000,
-      "gpusNow": 30800000,
+      "promptsPerDay": 10600000000,
+      "tokensPerYear": 122000000000000000,
+      "twhPerYear": 168,
+      "waterBLPerYear": 379,
+      "spendPerYear": 125000000000,
+      "co2MtPerYear": 37.8,
+      "capexPerYear": 716000000000,
+      "usersNow": 1170000000,
+      "gpusNow": 32000000,
       "frontierNow": 1.23e+27
     },
-    "high": {
-      "promptsPerDay": 14700000000,
-      "tokensPerYear": 180000000000000000,
-      "twhPerYear": 206,
-      "waterBLPerYear": 895,
-      "spendPerYear": 146000000000,
-      "co2MtPerYear": 89.2,
-      "capexPerYear": 815000000000,
-      "usersNow": 1970000000,
+    "moderate": {
+      "promptsPerDay": 13900000000,
+      "tokensPerYear": 167000000000000000,
+      "twhPerYear": 189,
+      "waterBLPerYear": 608,
+      "spendPerYear": 141000000000,
+      "co2MtPerYear": 57.2,
+      "capexPerYear": 824000000000,
+      "usersNow": 1460000000,
       "gpusNow": 36900000,
-      "frontierNow": 1.48e+27
+      "frontierNow": 1.54e+27
+    },
+    "high": {
+      "promptsPerDay": 17100000000,
+      "tokensPerYear": 228000000000000000,
+      "twhPerYear": 217,
+      "waterBLPerYear": 930,
+      "spendPerYear": 153000000000,
+      "co2MtPerYear": 91.6,
+      "capexPerYear": 887000000000,
+      "usersNow": 2060000000,
+      "gpusNow": 44200000,
+      "frontierNow": 1.85e+27
     }
   },
   "rates": {
     "prompts": 2.75,
-    "tokens": 5,
+    "tokens": 4,
     "energy": 1.4,
     "water": 1.3,
     "spend": 1.35,
     "co2": 1.2,
     "capex": 1.77,
     "users": 1.35,
-    "compute": 3.4,
+    "compute": 2.5,
     "frontier": 4.5
   }
 }

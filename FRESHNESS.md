@@ -187,7 +187,7 @@ wrong number in front of a user.
 | **2027-01-01** | **RE-UPLOAD THE EXTENSION once the Gemini promos revert.** The extension reads its BUNDLED `prices.json` — there is no remote fetch — so the store copy freezes at whatever shipped. v6.15 carries the promo $0.75/$3.75; from 1 January that understates Gemini by **2×**, the direction that costs the reader money. `check-prices.js` fixes the repo automatically; only a manual upload fixes users. | [H4](#h4-the-shipped-build-vs-main), [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
 | **2026-09-27** ✅ DONE | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices)
-| 2026-10-01 | `roll-clock.yml` fires (09:00 UTC, quarterly). Opens a mechanical PR that is **not** a re-anchor. | [D1](#d1-clockjson-anchor-levels-and-rates) |
+| **2026-10-01** ✅ DONE, with a fault | `roll-clock.yml` fired and pushed `auto/clock-reanchor-1`, then **failed to open the PR**: "GitHub Actions is not permitted to create or approve pull requests." Opened by hand as #73 and re-anchored on 2026-10-02. **Next roll is 2027-01-01 and will fail the same way** unless Rory enables Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" (a security setting — his call). The `automated` / `ai-clock` labels it asks for don't exist either. | [D1](#d1-clockjson-anchor-levels-and-rates) |
 | Any day (announced 2026-09-28) | **Claude Haiku 5.5** — Sonnet 5.5's launch post says it "will join the Claude 5.5 family in the coming weeks". No rate is published, so none is recorded. When it lands: all seven places, and `value_models.low` on Claude Free and Pro. | [A3](#a3-the-model-line-up) |
 | 2026-10-23 | **OpenAI shuts down a batch of older snapshots.** Of ours, `gpt-4.1-nano`, `o1` and `o3-mini` are priced and not yet in `_legacy_keys`; move them there once they go (`gpt-4` and `gpt-4-turbo` already are). | [A3](#a3-the-model-line-up) |
 | **2026-10-29** | **Grandfathered ChatGPT Pro 200 subscribers move to the lower allowance**, at the same $200. OpenAI doesn't say how much lower. Both subscription notes describe the plan as it is before this date. `check-prices.js` §7c-iii warns from 30 days out and fails once the date passes: re-read the Pro tiers article, rewrite both notes, then update or remove `availability.transition`. | [A2](#a2-consumer-subscription-prices), [B1](#b1-the-caps-themselves) |
@@ -2493,9 +2493,17 @@ data sitting next to it.
 - **`frontier`** — no 2026 record training run is publicly confirmed; labs stopped
   disclosing training compute. Projected from Grok 4 (mid-2025) at 4.5×/yr and
   labelled on the page as the weakest number. **Don't quote it as sourced.**
-- **`tokens` rate (5×/yr)** — near-term observation supports it (Google disclosed
-  7× YoY at I/O 2026); forecasts to 2030 imply ~2.2×/yr. If the next anchor still
-  shows 5× diverging from reality, that's the counter to cut.
+- **`tokens` rate — CUT 5× → 4× at the 2026-10-01 re-anchor.** Google's first-party
+  API went 16B → 22B tokens/minute in one quarter (Alphabet Q2 2026 call), ~3.6×
+  annualised; its all-surfaces figure, 1.3 → 3.2 quadrillion/month Oct 2025 → May
+  2026, is ~4.7×. Both under 5, both Google, one API-only — so 4 is a judgement
+  between them. Forecasts to 2030 imply ~2.2×/yr. If the next disclosure annualises
+  below 4, cut again.
+- **`compute` rate — CUT 3.4× → 2.5× at the same re-anchor**, from Epoch's chip-sales
+  CSV (`epoch.ai/data/ai_chip_sales_timelines_by_chip.csv`, sum `Compute estimate in
+  H100e (median)` by `End date`, cumulative): 12.2M at 2025-06-30, 31.0M at
+  2026-06-30. That is chips **sold**, not chips still running. Re-derive the same way
+  next quarter; the latest quarter in the CSV is always incomplete.
 - **No `unitCost` field, deliberately.** Epoch's ~40×/yr decline measures price at
   *fixed capability*; the per-unit panel measures blended spend per token — a
   different quantity, derived as spend ÷ tokens. `_meta.why_no_unit_cost_field`
