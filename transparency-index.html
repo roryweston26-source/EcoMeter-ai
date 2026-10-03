@@ -139,7 +139,27 @@
   td.g-red{background:rgba(224,101,92,.07)}
   .grade{font-size:1rem;line-height:1}
   .grade-green{color:var(--green-2)} .grade-yellow{color:var(--gold)} .grade-red{color:var(--red)} .grade-pending{color:var(--muted-dim)}
+  /* Provider column stays put while the dimensions scroll sideways. */
+  th.provider-cell,thead th.provider-col{position:sticky;left:0;z-index:1;background:var(--panel)}
+  thead th.provider-col{z-index:2;background:var(--panel-2)}
+  .tally{display:flex;flex-wrap:wrap;gap:4px 9px;margin-top:7px;font-family:var(--mono);font-size:.68rem;font-weight:400;color:var(--muted)}
+  .grade-word{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;margin-left:6px;vertical-align:2px}
   .cell-note{display:block;margin-top:5px;color:var(--muted);line-height:1.45;font-size:.82rem}
+  /* Notes run to 1,500 characters. Clamp so the grades can be scanned; the full
+     text is one click away and nothing is removed from the page. */
+  .cell-note.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  .section-lede.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:0}
+  .section-lede + .more{margin:2px 0 16px}
+  .more{display:block;margin-top:4px;padding:0;text-align:left;align-self:flex-start;background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:.66rem;color:var(--green)}
+  .more:hover{color:var(--green-2);text-decoration:underline}
+  .more[hidden]{display:none}
+  .toolbar{display:flex;justify-content:flex-end;margin-top:14px}
+  .expand-all{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+  .expand-all:hover{color:var(--green-2);border-color:rgba(56,201,160,.4)}
+  button:focus-visible{outline:2px solid var(--green-2);outline-offset:2px}
+  tfoot td,tfoot th{padding:11px 14px;border-top:1px solid var(--line);background:var(--panel-2);vertical-align:top}
+  tfoot th{text-align:left;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;position:sticky;left:0}
+  tfoot .tally{margin-top:0}
   .cell-src{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:.68rem;color:var(--green);text-decoration:none}
   .cell-src:hover{color:var(--green-2);text-decoration:underline}
   .cell-date{font-family:var(--mono);font-size:.66rem;color:var(--muted-dim);margin-left:6px}
@@ -172,6 +192,8 @@
     tbody tr td:last-child{border-bottom:0}
     tbody td::before{content:attr(data-label);font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-dim);margin-bottom:2px}
     td.g-green,td.g-yellow,td.g-red{background:transparent}
+    th.provider-cell{position:static}
+    tfoot{display:none}
   }
   @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
@@ -332,17 +354,40 @@ function renderMeta(data){
 }
 
 /* ---------- nested disclosure-quality matrix (provider × dimension) ---------- */
-function renderMatrix(data, headId, bodyId){
+// Counts of each grade, in legend order. A count, never an average: the
+// dimensions are independent and a mean across them would claim otherwise.
+function tallyHtml(grades, labels){
+  const order = ["green", "yellow", "red", "pending"];
+  return `<span class="tally">` + order.filter(k => grades.some(g => g === k)).map(k => {
+    const n = grades.filter(g => g === k).length;
+    return `<span title="${esc(labels[k])}" aria-label="${n} ${esc(labels[k])}">${GRADE[k].sym} ${n}</span>`;
+  }).join("") + `</span>`;
+}
+
+function renderMatrix(data, headId, bodyId, legend){
   headId = headId || "grid-head"; bodyId = bodyId || "grid-body";
   const cols = data.columns || [];
+  const rows = data.rows || [];
+  // Grade words come from this table's own legend, which differs per axis.
+  const labels = Object.assign({}, BADGE_LABEL);
+  (legend || []).forEach(g => { if (g.grade) labels[g.grade] = g.label; });
+  const gradeOf = (row, col) => { const c = (row.cells || {})[col.key] || {}; return GRADE[c.grade] ? c.grade : "pending"; };
+
   document.getElementById(headId).innerHTML =
     `<tr><th class="provider-col" scope="col">Provider</th>` +
     cols.map(c => `<th scope="col">${esc(c.label)}</th>`).join("") + `</tr>`;
 
-  document.getElementById(bodyId).innerHTML = (data.rows || []).map(row => {
+  const table = document.getElementById(bodyId).closest("table");
+  const foot = table.tFoot || table.createTFoot();
+  foot.innerHTML = rows.length
+    ? `<tr><th scope="row">All providers</th>` +
+      cols.map(col => `<td>${tallyHtml(rows.map(r => gradeOf(r, col)), labels)}</td>`).join("") + `</tr>`
+    : "";
+
+  document.getElementById(bodyId).innerHTML = rows.map(row => {
     const cells = cols.map(col => {
       const c = (row.cells || {})[col.key] || {};
-      const g = GRADE[c.grade] || GRADE.pending;
+      const g = GRADE[gradeOf(row, col)];
       const srcName = c.source || "";
       let src;
       if (c.source_url) {
@@ -354,14 +399,77 @@ function renderMatrix(data, headId, bodyId){
       }
       src += c.source_date ? `<span class="cell-date">${esc(c.source_date)}</span>` : "";
       return `<td class="g-${g.cls}" data-label="${esc(col.label)}">` +
-               `<span class="grade grade-${g.cls}">${g.sym}</span>` +
-               (c.note ? `<span class="cell-note">${esc(c.note)}</span>` : "") +
+               `<span class="grade-line"><span class="grade grade-${g.cls}">${g.sym}</span><span class="grade-word grade-${g.cls}">${esc(labels[g.cls])}</span></span>` +
+               (c.note ? `<span class="cell-note clamp">${esc(c.note)}</span><button type="button" class="more" aria-expanded="false" hidden>Show more</button>` : "") +
                src +
              `</td>`;
     }).join("");
-    return `<tr><th class="provider-cell" scope="row">${esc(row.provider)}</th>${cells}</tr>`;
+    return `<tr><th class="provider-cell" scope="row">${esc(row.provider)}` +
+      tallyHtml(cols.map(col => gradeOf(row, col)), labels) + `</th>${cells}</tr>`;
   }).join("");
+
+  if (rows.length) { addExpandAll(table); syncMore(table); }
 }
+
+/* ---------- note clamping: per-cell "Show more", per-table "Expand all" ---------- */
+function setNote(btn, open){
+  btn.previousElementSibling.classList.toggle("clamp", !open);
+  btn.setAttribute("aria-expanded", String(open));
+  btn.textContent = open ? "Show less" : "Show more";
+}
+// Only offer "Show more" where the clamp actually cut something off. Re-run on
+// resize, since a note that fits at one width overflows at another.
+function syncMore(table){
+  table.querySelectorAll(".cell-note").forEach(n => {
+    const btn = n.nextElementSibling;
+    if (!btn || btn.getAttribute("aria-expanded") === "true") return;
+    btn.hidden = n.scrollHeight <= n.clientHeight + 1;
+  });
+}
+function addExpandAll(table){
+  const wrap = table.closest(".tablewrap");
+  if (!wrap || wrap.previousElementSibling && wrap.previousElementSibling.classList.contains("toolbar")) return;
+  const bar = document.createElement("div");
+  bar.className = "toolbar";
+  bar.innerHTML = `<button type="button" class="expand-all" aria-expanded="false">Expand all notes</button>`;
+  wrap.parentNode.insertBefore(bar, wrap);
+  const all = bar.firstChild;
+  all.addEventListener("click", () => {
+    const open = all.getAttribute("aria-expanded") !== "true";
+    table.querySelectorAll(".more").forEach(b => { setNote(b, open); if (open) b.hidden = false; });
+    all.setAttribute("aria-expanded", String(open));
+    all.textContent = open ? "Collapse all notes" : "Expand all notes";
+    if (!open) syncMore(table);
+  });
+  table.addEventListener("click", e => {
+    const b = e.target.closest(".more");
+    if (b) setNote(b, b.getAttribute("aria-expanded") !== "true");
+  });
+}
+// The matrix intros run to 2,500 characters; same clamp, same toggle.
+function clampLede(id){
+  const p = document.getElementById(id);
+  if (!p || !p.textContent) return;
+  if (!(p.nextElementSibling && p.nextElementSibling.classList.contains("more"))) {
+    p.classList.add("clamp");
+    p.insertAdjacentHTML("afterend", `<button type="button" class="more" aria-expanded="false" hidden>Show more</button>`);
+    p.nextElementSibling.addEventListener("click", e => setNote(e.currentTarget, e.currentTarget.getAttribute("aria-expanded") !== "true"));
+  }
+  syncLede(p);
+}
+function syncLede(p){
+  const btn = p.nextElementSibling;
+  if (btn && btn.classList.contains("more") && btn.getAttribute("aria-expanded") !== "true")
+    btn.hidden = p.scrollHeight <= p.clientHeight + 1;
+}
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    document.querySelectorAll("table").forEach(syncMore);
+    document.querySelectorAll(".section-lede.clamp").forEach(syncLede);
+  }, 150);
+});
 
 /* ---------- scored non-environmental axes (provider × dimension) ----------
    Each is driven by its own top-level key and its own provider set and columns —
@@ -379,7 +487,7 @@ function renderAxisMatrix(block, prefix){
     (block.grade_legend || []).map(g => `<span class="chip">${g.symbol || ""} ${esc(g.label)}</span>`).join("");
   document.getElementById(prefix + "-caveats").innerHTML =
     (block.caveats || []).map(c => `<li>${esc(c)}</li>`).join("");
-  renderMatrix(block, prefix + "-head", prefix + "-body");
+  renderMatrix(block, prefix + "-head", prefix + "-body", block.grade_legend);
 }
 
 /* ---------- environmental impact: capacity-weighted per-provider grade (computed) ----------
@@ -490,9 +598,11 @@ function renderEnv(dc){
 // Page copy + nested matrix come from transparency-index.json …
 fetch("transparency-index.json", { cache: "no-store" })
   .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-  .then(data => { renderMeta(data); renderMatrix(data);
+  .then(data => { renderMeta(data);
+                  renderMatrix(data, null, null, ((data._meta || {}).detail || {}).grade_legend);
                   renderAxisMatrix(data.pricing, "pricing");
-                  renderAxisMatrix(data.data_practices, "dp"); })
+                  renderAxisMatrix(data.data_practices, "dp");
+                  ["detail-note", "pricing-note", "dp-note"].forEach(clampLede); })
   .catch(() => { renderMeta(FALLBACK); renderMatrix(FALLBACK);
                  renderAxisMatrix(null, "pricing"); renderAxisMatrix(null, "dp"); });
 
