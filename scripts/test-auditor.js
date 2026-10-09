@@ -29,7 +29,13 @@ const stubEl = () => ({
   querySelector() { return stubEl(); }, querySelectorAll() { return []; }
 });
 const documentStub = { getElementById: stubEl, querySelector: stubEl, querySelectorAll: () => [] };
-const windowStub = { scrollTo() {} };
+// A fake localStorage, so the saved-audit code can be driven. `blocked` makes every
+// call throw, the way a private window or blocked site data does.
+const fakeStore = { data: {}, writes: 0, blocked: false,
+  getItem(k) { if (this.blocked) throw new Error('blocked'); return k in this.data ? this.data[k] : null; },
+  setItem(k, v) { if (this.blocked) throw new Error('blocked'); this.writes++; this.data[k] = String(v); },
+  removeItem(k) { if (this.blocked) throw new Error('blocked'); delete this.data[k]; } };
+const windowStub = { scrollTo() {}, localStorage: fakeStore };
 const FILES = { '/extension/prices.json': 'extension/prices.json',
                 '/student-access.json': 'student-access.json',
                 '/plan-limits.json': 'plan-limits.json' };
@@ -44,7 +50,8 @@ const EXPORTS = ['PLANS', 'API', 'MODELS', 'NAME', 'TOP_IS_FREE', 'LEGACY_ONLY',
   'recommend', 'profileFor', 'meetsNeeds', 'clearsNonModelNeeds', 'apiCostPerMonth',
   'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels', 'payOptions',
   'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK', 'studentNote', 'offerLive',
-  'needsSplit', 'shareLine', 'totalCard', 'money'];
+  'needsSplit', 'shareLine', 'totalCard', 'money',
+  'computeRecs', 'loadSaved', 'saveAudit', 'forgetAudit', 'resultDiff'];
 const A = new Function('document', 'window', 'fetch', 'FileReader',
   src + '\nreturn {' + EXPORTS.join(',') + '};')(documentStub, windowStub, fetchStub, FileReaderStub);
 
@@ -470,6 +477,43 @@ async function main() {
     const sum = recs.reduce((s, x) => s + (x.r.monthly || 0), 0);
     ok('the combined card shows the summed monthly cost', card.includes(A.money(sum) + '/mo all in'), { card, sum });
     ok('one tool gets no combined card', A.totalCard(recs.slice(0, 1), heavy, hs) === '');
+  }
+
+  /* ---------- 2c. remembering the last audit ----------
+     Opt-in, this browser only, deletable. The check on a return visit re-runs the
+     saved answers and must say "changed" only when the advice or its cost moved. */
+  {
+    ok('nothing is stored just by loading the page', fakeStore.writes === 0 && A.loadSaved() === null, fakeStore.data);
+    const srcCalls = (src.match(/\.setItem\(/g) || []).length;
+    ok('saveAudit is the only place the page writes to storage', srcCalls === 1, srcCalls);
+    const a = { tools: ['openai', 'anthropic'], split: 'even', messages: '20to50', frequency: 'mostDays',
+      purpose: 'writing', limits: 'never', frontier: 'sometimes', media: 'no',
+      pays: ['openai::ChatGPT Plus'], team: 'solo', priority: 'cost', student: 'no' };
+    const { recs } = A.computeRecs(a);
+    ok('saving works when storage is available', A.saveAudit(a, recs) === true);
+    const saved = A.loadSaved();
+    ok('the saved answers come back intact', saved && JSON.stringify(saved.answers) === JSON.stringify(a), saved);
+    ok('and carry the day they were saved', saved && /^\d{4}-\d{2}-\d{2}$/.test(saved.savedAt), saved && saved.savedAt);
+    ok('re-run at the same prices, nothing has changed', A.resultDiff(saved, A.computeRecs(saved.answers).recs).length === 0);
+    const moved = JSON.parse(JSON.stringify(saved));
+    moved.results[0].head = 'Something we said before.';
+    const d = A.resultDiff(moved, recs);
+    ok('a different recommendation is reported as a change', d.length === 1 && d[0].prov === moved.results[0].prov, d);
+    const cheaper = JSON.parse(JSON.stringify(saved));
+    cheaper.results[0].monthly = (cheaper.results[0].monthly || 0) + 5;
+    ok('a cost that moved $5 is a change', A.resultDiff(cheaper, recs).length === 1);
+    const pennies = JSON.parse(JSON.stringify(saved));
+    pennies.results[0].monthly = (pennies.results[0].monthly || 0) + 0.2;
+    ok('a few cents of drift is not', A.resultDiff(pennies, recs).length === 0);
+    A.forgetAudit();
+    ok('Forget deletes it', A.loadSaved() === null && Object.keys(fakeStore.data).length === 0, fakeStore.data);
+    fakeStore.data['legerly.auditor.saved.v1'] = '{not json';
+    ok('a corrupt entry reads as nothing saved', A.loadSaved() === null);
+    fakeStore.data = {};
+    fakeStore.blocked = true;
+    ok('blocked storage reads as nothing saved', A.loadSaved() === null);
+    ok('and saving reports that it failed rather than throwing', A.saveAudit(a, recs) === false);
+    fakeStore.blocked = false;
   }
 
   /* ---------- 3. EcoMeter import ---------- */

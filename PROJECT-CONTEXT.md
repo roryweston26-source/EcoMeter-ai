@@ -9,6 +9,18 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-10-09 — Auditor can remember the last audit (this browser only, opt-in)
+
+Prices move every few weeks and nobody re-takes a quiz to find out. The results page now
+offers **"Remember my answers on this device"**. Nothing is stored until it's clicked. On a
+later visit a banner re-runs the saved answers once `prices.json` has loaded and says whether
+the advice or its monthly cost moved (more than $0.50), with *See today's result*, *Edit my
+answers* and *Forget it*. If the live prices fail to load it says it can't tell, rather than
+comparing against the older inline fallback. One `localStorage` key
+(`legerly.auditor.saved.v1`); no new network calls. This is the same opt-in, local-only,
+deletable rule as EcoMeter's usage tracking. `test-auditor.js` 141 → 154 checks, including one
+that fails if anything but `saveAudit()` writes to storage.
+
 ### 2026-10-09 — Auditor sizes each tool on its share of the busy day
 
 Without an export, the quiz path gave **every** tool the reader's whole busy-day count: 50
