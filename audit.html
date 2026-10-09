@@ -573,10 +573,13 @@ const QUESTIONS = [
     {v:'quick',label:'Quick questions'},{v:'writing',label:'Writing & everyday tasks'},{v:'research',label:'Research & analysis'},{v:'coding',label:'Coding & building'},{v:'agentic',label:'Agents & automation'}]},
   {id:'limits',type:'single',q:'Do you hit usage limits or “try again later” walls?',options:[
     {v:'never',label:'Never'},{v:'rarely',label:'Rarely'},{v:'sometimes',label:'Sometimes'},{v:'often',label:'Often'},{v:'constant',label:'Constantly'}]},
-  {id:'frontier',type:'single',q:'Do you need the smartest models ('+frontierExamples()+'), or is the fast default fine?',
-   help:'Only ChatGPT and Claude put their best model behind a paywall. Gemini, Copilot and DeepSeek run the same models on every tier and charge for volume instead, so this answer can’t move those recommendations — and we won’t pretend it does.',
+  // "Top" is the provider's own ranking — the model it puts behind the paywall — not
+  // ours. This used to ask about "the smartest models", which claimed a measurement of
+  // quality we don't make: nothing here benchmarks models, it reads plan tables.
+  {id:'frontier',type:'single',q:'Do you need each provider’s top model ('+frontierExamples()+'), or is the default fine?',
+   help:'“Top” means the model the provider itself sells as its best — we don’t test which model is smartest. Only ChatGPT and Claude keep theirs for paying users. Gemini, Copilot and DeepSeek run the same models on every tier and charge for volume instead, so this answer can’t move those recommendations — and we won’t pretend it does.',
    options:[
-    {v:'default',label:'The default is fine'},{v:'sometimes',label:'Sometimes I want the best'},{v:'always',label:'I always want the best'}]},
+    {v:'default',label:'The default is fine'},{v:'sometimes',label:'Sometimes I want the top model'},{v:'always',label:'I always want the top model'}]},
   // Narrowed from "images or video, or voice / advanced features". Only image-gen and
   // video-gen gate anything in this engine, so the old wording collected a "yes" from
   // heavy VOICE users and spent it pushing them up a tier for image generation — and
