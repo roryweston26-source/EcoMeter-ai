@@ -43,7 +43,8 @@ function FileReaderStub() {}
 const EXPORTS = ['PLANS', 'API', 'MODELS', 'NAME', 'TOP_IS_FREE', 'LEGACY_ONLY', 'state',
   'recommend', 'profileFor', 'meetsNeeds', 'clearsNonModelNeeds', 'apiCostPerMonth',
   'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels', 'payOptions',
-  'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK', 'studentNote', 'offerLive'];
+  'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK', 'studentNote', 'offerLive',
+  'needsSplit', 'shareLine', 'totalCard', 'money'];
 const A = new Function('document', 'window', 'fetch', 'FileReader',
   src + '\nreturn {' + EXPORTS.join(',') + '};')(documentStub, windowStub, fetchStub, FileReaderStub);
 
@@ -399,6 +400,78 @@ async function main() {
        !rf.why.some(w => typeof w === 'string' && /sol-pro|image-gen|video-gen|extended-thinking/.test(w)), rf.why);
   }
 
+  /* ---------- 2b. more than one tool ----------
+     The quiz path used to give every tool the reader's WHOLE busy day, so a 50-a-day
+     user on ChatGPT and Claude was sized as 50 on each — double their real use, and
+     sometimes two subscriptions where one would do. The busy-day answer is now a total
+     across tools and each tool is sized on its share. */
+  let splitCombos = 0, twoPaidBefore = 0, twoPaidAfter = 0, splitChanged = 0;
+  {
+    const base = { messages: '20to50', frequency: 'mostDays', purpose: 'writing', limits: 'never',
+      frontier: 'default', media: 'no', pays: ['none'], team: 'solo', priority: 'cost', student: 'no' };
+    const mpd = a => A.profileFor(a.tools[0], a, sigFor(a)).messages_per_day;
+    const per = (a, p) => A.profileFor(p, a, sigFor(a)).messages_per_day;
+    const one = Object.assign({}, base, { tools: ['openai'] });
+    ok('one tool still gets the whole busy day', mpd(one) === 35, mpd(one));
+    ok('and is never asked how to split it', !A.needsSplit(one));
+    const two = Object.assign({}, base, { tools: ['openai', 'anthropic'], split: 'even' });
+    ok('two tools are asked how to split', A.needsSplit(two));
+    ok('an even split halves the busy day', per(two, 'openai') === 17.5 && per(two, 'anthropic') === 17.5,
+       [per(two, 'openai'), per(two, 'anthropic')]);
+    const unanswered = Object.assign({}, two, { split: undefined });
+    ok('no split answer falls back to even, never to the whole day', per(unanswered, 'openai') === 17.5);
+    const main = Object.assign({}, base, { tools: ['openai', 'anthropic', 'google'], split: 'anthropic' });
+    const shares = ['openai', 'anthropic', 'google'].map(p => per(main, p));
+    ok('"mostly" gives the main tool two-thirds', Math.abs(shares[1] - 35 * 2 / 3) < 1e-9, shares);
+    ok('and the rest share what is left', Math.abs(shares[0] - shares[2]) < 1e-9 && shares[0] < shares[1], shares);
+    ok('the shares add back up to the busy day', Math.abs(shares.reduce((s, x) => s + x, 0) - 35) < 1e-9, shares);
+    const stale = Object.assign({}, base, { tools: ['openai', 'google'], split: 'anthropic' });
+    ok('a main tool since deselected falls back to even', per(stale, 'openai') === 17.5);
+    const withOther = Object.assign({}, base, { tools: ['openai', 'other'], split: 'other' });
+    ok('"something else" takes its share too', Math.abs(per(withOther, 'openai') - 35 / 3) < 1e-9, per(withOther, 'openai'));
+    const sl = A.shareLine('anthropic', A.profileFor('anthropic', main, sigFor(main)), main);
+    ok('the card says the two-thirds is our assumption', /two-thirds is our assumption/.test(sl || ''), sl);
+    ok('a single tool gets no share line', A.shareLine('openai', A.profileFor('openai', one, sigFor(one)), one) === null);
+
+    // Sweep every pair of tools: the split must never make a tool MORE expensive than
+    // the old whole-day sizing, and count how often it changes the advice.
+    const provs = Object.keys(A.PLANS);
+    for (let i = 0; i < provs.length; i++) for (let j = i + 1; j < provs.length; j++)
+    for (const messages of MSG) for (const frequency of FREQ) for (const purpose of PUR)
+    for (const limits of LIM) for (const frontier of FRO) for (const media of MED)
+    for (const split of ['even', provs[i], provs[j]]) {
+      const pair = [provs[i], provs[j]];
+      const a = Object.assign({}, base, { tools: pair, messages, frequency, purpose, limits, frontier, media, split });
+      const sig = sigFor(a);
+      splitCombos++;
+      let paidNow = 0, paidOld = 0;
+      for (const p of pair) {
+        const now = A.recommend(A.profileFor(p, a, sig), sig);
+        const solo = Object.assign({}, a, { tools: [p] });
+        const old = A.recommend(A.profileFor(p, solo, sig), sig);
+        const cNow = now.monthly == null ? Infinity : now.monthly, cOld = old.monthly == null ? Infinity : old.monthly;
+        if (cNow > cOld + 1e-9) note('SPLIT_MADE_A_TOOL_DEARER', { p, a, now: now.head, old: old.head });
+        if (now.head !== old.head) splitChanged++;
+        if (now.paid) paidNow++; if (old.paid) paidOld++;
+      }
+      if (paidOld >= 2) twoPaidBefore++;
+      if (paidNow >= 2) twoPaidAfter++;
+    }
+    for (const t of Object.keys(problems)) if (/^SPLIT_/.test(t)) ok('split sweep: ' + t, false, problems[t]);
+    ok('the split sweep ran', splitCombos > 0, splitCombos);
+    ok('splitting never adds a second paid plan', twoPaidAfter <= twoPaidBefore, { twoPaidBefore, twoPaidAfter });
+
+    // The combined card sums the per-tool costs and names two paid plans out loud.
+    const heavy = Object.assign({}, base, { tools: ['openai', 'anthropic'], messages: '150plus',
+      frontier: 'always', split: 'even', pays: ['openai::ChatGPT Pro', 'anthropic::Claude Max 20×'] });
+    const hs = sigFor(heavy);
+    const recs = heavy.tools.map(p => ({ prov: p, r: A.recommend(A.profileFor(p, heavy, hs), hs) }));
+    const card = A.totalCard(recs, heavy, hs);
+    const sum = recs.reduce((s, x) => s + (x.r.monthly || 0), 0);
+    ok('the combined card shows the summed monthly cost', card.includes(A.money(sum) + '/mo all in'), { card, sum });
+    ok('one tool gets no combined card', A.totalCard(recs.slice(0, 1), heavy, hs) === '');
+  }
+
   /* ---------- 3. EcoMeter import ---------- */
   const load = log => { A.state.i = 0; A.state.answers = {}; A.applyEcometer(log); };
   const withRest = (o) => Object.assign(A.state.answers,
@@ -491,6 +564,18 @@ async function main() {
   const corrected = profile('openai');
   ok('corrected, the reader own answer wins', corrected.messages_per_day === 3, corrected.messages_per_day);
   ok('and we stop calling that volume measured', corrected.measured === false);
+  {
+    // A corrected count is a busy day across ALL tools, so with two platforms each
+    // gets its measured share of it, not the whole corrected total.
+    load({ version: 2, platforms: [
+      { provider: 'openai', messages_per_day: 30, input_tokens_per_day: 1000, output_tokens_per_day: 1000, models_used: ['gpt-5.6-luna'] },
+      { provider: 'anthropic', messages_per_day: 10, input_tokens_per_day: 1000, output_tokens_per_day: 1000, models_used: ['claude-sonnet-5'] }] });
+    withRest({ messages: '150plus' });
+    A.state.answers._ecoOverride = { messages: true };
+    const o = profile('openai').messages_per_day, c = profile('anthropic').messages_per_day;
+    ok('a corrected total is split by the export’s measured shares', o === 150 && c === 50, { o, c });
+    ok('and an export is never asked the split question', !A.needsSplit(A.state.answers));
+  }
   ok('but the measured per-message SIZE survives and rescales',
      Math.abs(corrected.input_tokens_per_day - 3 * (120000 / 30)) < 1, corrected.input_tokens_per_day);
 
@@ -716,7 +801,7 @@ async function main() {
   }
 
   console.log(bad ? '\n' + bad + ' FAILURE(S) of ' + ran + ' checks'
-                  : 'all auditor behaviour tests pass — ' + ran + ' checks, ' + combos + ' answer combinations swept');
+                  : 'all auditor behaviour tests pass — ' + ran + ' checks, ' + combos + ' answer combinations swept, plus ' + splitCombos + ' two-tool ones');
   process.exit(bad ? 1 : 0);
 }
 
