@@ -107,6 +107,15 @@
   .disclaimer{font-size:.8rem;color:var(--muted-dim);margin-top:22px;line-height:1.6}
   .center{text-align:center;margin-top:24px}
 
+  /* Saved audit (this browser only) */
+  .remember{font-size:.84rem;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+  .linkbtn{font:inherit;color:var(--green-2);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .linkbtn:hover{color:var(--ink)}
+  .returning{border:1px solid rgba(56,201,160,.35);border-radius:14px;background:var(--panel);padding:18px 20px;margin-bottom:22px;font-size:.9rem;color:var(--muted);line-height:1.6}
+  .returning b{color:var(--ink)}
+  .returning ul{margin:8px 0 4px;padding-left:20px}
+  .returning .ret-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
+
   /* Student / teacher routes */
   .student{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(212,168,67,.06),rgba(14,22,19,.35));padding:20px 22px;margin:20px 0 14px}
   .student .shdr{font-family:var(--display);font-weight:700;font-size:1.05rem;color:var(--gold);margin-bottom:10px}
@@ -152,6 +161,9 @@
     <p class="lede">Providers price AI to be confusing. Answer a few questions and get a straight answer: the plan, tier, or free option that actually fits how you use AI.</p>
     <span class="privacy"><span class="lock">🔒</span> Runs entirely in your browser — nothing you enter ever leaves your device.</span>
   </header>
+
+  <!-- Saved audit from an earlier visit (localStorage, opt-in) -->
+  <div class="returning hidden" id="returning"></div>
 
   <!-- EcoMeter connect (client-side file read only) -->
   <div class="eco" id="eco">
@@ -435,8 +447,8 @@ const PRACTICE_ROW = { openai:'OpenAI', anthropic:'Anthropic', google:'Google',
    as constants, which is one of the drifts this project keeps having to fix. The
    inline ARCHETYPE below is now only a fallback for a failed fetch, and
    scripts/check-auditor.js asserts it still matches the file. */
-let LIMITS = null;
-fetch('/plan-limits.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+let LIMITS = null, PRICES_LIVE = false;
+const limitsReady = fetch('/plan-limits.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
   if(!d) return;
   LIMITS=d;
   const arc=d._meta && d._meta.archetypes;
@@ -445,8 +457,9 @@ fetch('/plan-limits.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d
 }).catch(()=>{});
 
 /* keep prices + API rates fresh from the maintained file (no user data sent) */
-fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+const pricesReady = fetch('/extension/prices.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
   if(!d) return;
+  PRICES_LIVE=true;   // the saved-audit check only claims a change against live rates
   // Populate API rates from prices.json (the single source of truth) for EVERY model,
   // not just the handful of hardcoded fallbacks — so per-model cost can price whatever
   // a user actually ran, and rates stay current when prices.json is updated.
@@ -1312,12 +1325,53 @@ function totalCard(recs,a,sig){
   return recCard('All your tools together', head, why);
 }
 
-function finish(){
-  const a=state.answers, {level}=classify(a);
+// One answer set -> one result. finish() renders it; the saved-audit check re-runs
+// it at today's prices, so both must go through the same function.
+function computeRecs(a){
   const sig={ hits_limits:a.limits, media:a.media, media_generation:a.media!=='no', team:a.team==='team',
     current_plans:currentPlans(a), priority:a.priority };
   const provs=(a.tools||[]).filter(t=>t!=='other' && PLANS[t]);
-  const recs=provs.map(prov=>{ const pf=profileFor(prov,a,sig); return { prov, pf, r:recommend(pf,sig) }; });
+  return { sig, recs: provs.map(prov=>{ const pf=profileFor(prov,a,sig); return { prov, pf, r:recommend(pf,sig) }; }) };
+}
+
+/* ---------- remember the last audit (this browser only, opt-in) ----------
+   Prices and plans move every few weeks, and nobody re-takes a quiz to find out. So a
+   reader can ask us to keep their answers, and next visit we re-run them at today's
+   prices and say whether the advice changed. Nothing is stored until they click, it
+   lives only in this browser's localStorage, and "Forget" deletes it. If storage is
+   blocked (private window, cleared site data) every call quietly does nothing. */
+const SAVE_KEY='legerly.auditor.saved.v1';
+const store = () => { try{ return (typeof window!=='undefined' && window.localStorage) || null; }catch(e){ return null; } };
+function loadSaved(){
+  try{ const s=store(), raw=s && s.getItem(SAVE_KEY); if(!raw) return null;
+       const v=JSON.parse(raw); return (v && v.answers && Array.isArray(v.results)) ? v : null; }
+  catch(e){ return null; }
+}
+function saveAudit(a, recs){
+  try{ const s=store(); if(!s) return false;
+    s.setItem(SAVE_KEY, JSON.stringify({ savedAt:new Date().toISOString().slice(0,10),
+      answers:a, results:recs.map(x=>({ prov:x.prov, head:x.r.head, monthly:x.r.monthly })) }));
+    return true; }
+  catch(e){ return false; }
+}
+function forgetAudit(){ try{ const s=store(); if(s) s.removeItem(SAVE_KEY); }catch(e){} }
+// What moved between the saved result and the same answers re-run now. Compares the
+// advice (head) and its monthly cost; a tool added or dropped counts as a change.
+function resultDiff(saved, recs){
+  const now={}; recs.forEach(x=>{ now[x.prov]={ head:x.r.head, monthly:x.r.monthly }; });
+  const out=[];
+  saved.results.forEach(o=>{
+    const n=now[o.prov];
+    if(!n) return;
+    const costMoved = (o.monthly==null) !== (n.monthly==null) || (o.monthly!=null && Math.abs(o.monthly-n.monthly) >= 0.5);
+    if(o.head!==n.head || costMoved) out.push({ prov:o.prov, before:o, after:n });
+  });
+  return out;
+}
+
+function finish(){
+  const a=state.answers, {level}=classify(a);
+  const {sig, recs}=computeRecs(a);
   const cards=recs.map(({prov,pf,r})=>{
     const why=r.why.slice();
     const sl=shareLine(prov,pf,a);
@@ -1345,14 +1399,54 @@ function finish(){
     ${cards || '<p class="level-blurb">Pick at least one tool to get a recommendation.</p>'}
     ${studentPanel(a)}
     <div class="center"><button class="btn" id="restart">Start over</button></div>
+    <p class="remember" id="remember"></p>
     ${other}
     <p class="disclaimer">Prices are list prices, checked against each provider’s own pricing page. Most message limits are <em>not</em> published — where we show one, we say whether it’s the provider’s figure, an outside estimate, or ours. API comparisons assume typical conversation sizes, which is an assumption, not a measurement, and the biggest lever on every dollar here${measuredNote}. If you use more than one tool, each is sized on its share of your busy day, split the way you told us — where you said “mostly” one tool, giving it about two-thirds is our assumption. Confirm current limits on the provider’s site. Nothing you entered left your browser.</p>`;
   resultsEl.querySelector('#restart').addEventListener('click',()=>{
     state.i=0; state.answers={}; resultsEl.classList.add('hidden'); resultsEl.innerHTML='';
     quizEl.classList.remove('hidden'); render(); window.scrollTo({top:0,behavior:'smooth'});
   });
+  // Someone who already asked us to remember gets the saved copy kept current; anyone
+  // else is only offered it.
+  const remEl=resultsEl.querySelector('#remember');
+  const showRemember = saved => {
+    remEl.innerHTML = saved
+      ? `Saved in this browser only, so next time we can tell you if prices change your result. <button class="linkbtn" id="forget" type="button">Forget it</button>`
+      : `<button class="linkbtn" id="save" type="button">Remember my answers on this device</button> — next time you visit, we’ll re-check them at that day’s prices. Stored in this browser only, never sent anywhere.`;
+    const f=remEl.querySelector('#forget'), s=remEl.querySelector('#save');
+    if(f) f.addEventListener('click',()=>{ forgetAudit(); showRemember(false); });
+    if(s) s.addEventListener('click',()=>{ if(saveAudit(a,recs)) showRemember(true);
+      else remEl.textContent='This browser isn’t letting us save anything (a private window, or site data blocked), so there’s nothing stored.'; });
+  };
+  showRemember(!!loadSaved() && saveAudit(a,recs));
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+/* On a return visit, re-run the saved answers once today's prices have loaded, and
+   say plainly whether the advice moved. A failed price fetch leaves the inline
+   fallback rates, which are older, so in that case we don't claim anything changed. */
+function showReturning(pricesLoaded){
+  const saved=loadSaved(), el=document.getElementById('returning');
+  if(!saved || !el) return;
+  const {recs}=computeRecs(saved.answers);
+  const diff=resultDiff(saved, recs);
+  const what = !pricesLoaded
+    ? `We couldn’t load today’s prices, so we can’t say whether anything changed.`
+    : diff.length
+      ? `<b>Your result has changed since then:</b><ul>${diff.map(d=>`<li>${NAME[d.prov]}: ${d.before.head.replace(/\.$/,'')} → ${d.after.head.replace(/\.$/,'')}${
+          d.before.head===d.after.head && d.before.monthly!=null && d.after.monthly!=null ? ` (${money(d.before.monthly)} → ${money(d.after.monthly)}/mo)` : ''}</li>`).join('')}</ul>`
+      : `Nothing in your result has changed at today’s prices.`;
+  el.innerHTML = `<b>Your saved audit, from ${fmtDay(saved.savedAt)}.</b> ${what} If how you use AI has changed, edit your answers.
+    <div class="ret-row"><button class="btn btn-primary" id="retSee" type="button">See today’s result</button>
+    <button class="btn" id="retEdit" type="button">Edit my answers</button>
+    <button class="linkbtn" id="retForget" type="button">Forget it</button></div>`;
+  el.classList.remove('hidden');
+  const use = () => { state.answers=JSON.parse(JSON.stringify(saved.answers)); el.classList.add('hidden'); };
+  el.querySelector('#retSee').addEventListener('click',()=>{ use(); finish(); });
+  el.querySelector('#retEdit').addEventListener('click',()=>{ use(); state.i=0; render(); });
+  el.querySelector('#retForget').addEventListener('click',()=>{ forgetAudit(); el.classList.add('hidden'); });
+}
+Promise.all([pricesReady, limitsReady]).then(()=>showReturning(PRICES_LIVE), ()=>showReturning(false));
 
 /* ---------- EcoMeter connect (local file only) ---------- */
 const ecoBtn=document.getElementById('ecoBtn'), ecoFile=document.getElementById('ecoFile'), ecoNote=document.getElementById('ecoNote');
