@@ -560,10 +560,15 @@ const QUESTIONS = [
    help:'This sets how many days a month we bill you for — a busy day priced across all 30 overstates the cost for anyone who isn’t daily.',
    options:[
     {v:'rarely',label:'Rarely'},{v:'fewWeek',label:'A few times a week'},{v:'mostDays',label:'Most days'},{v:'manyDay',label:'Many times a day'},{v:'constant',label:'Constantly, all day'}]},
-  {id:'messages',type:'single',q:'On a busy day, how many messages do you send?',
-   help:'Your busiest day, not your average one — message caps bite on your worst day, so that’s the number that decides whether a limit is a problem.',
+  {id:'messages',type:'single',q:'On a busy day, how many messages do you send, across all your AI tools?',
+   help:'Your busiest day, not your average one — message caps bite on your worst day, so that’s the number that decides whether a limit is a problem. Count every tool together; if you use more than one, we’ll ask how you split it next.',
    options:[
     {v:'lt5',label:'Under 5'},{v:'5to20',label:'5–20'},{v:'20to50',label:'20–50'},{v:'50to150',label:'50–150'},{v:'150plus',label:'150+'}]},
+  // Only asked when there is something to split. See shareOf() for what each answer does.
+  {id:'split',type:'single',q:'How do you split that between your tools?',
+   when:needsSplit,
+   help:'Without this we’d count your whole busy day against every tool you use, and could tell you to pay for two plans when one would do.',
+   options:()=>splitOptions(state.answers)},
   {id:'purpose',type:'single',q:'What do you mostly use it for?',options:[
     {v:'quick',label:'Quick questions'},{v:'writing',label:'Writing & everyday tasks'},{v:'research',label:'Research & analysis'},{v:'coding',label:'Coding & building'},{v:'agentic',label:'Agents & automation'}]},
   {id:'limits',type:'single',q:'Do you hit usage limits or “try again later” walls?',options:[
@@ -629,6 +634,33 @@ function toolsCount(a){ return (a.tools||[]).filter(t=>t!=='other').length || 1;
 // can leave it unset. Fall back to the LOWEST band: guessing high here would push
 // someone toward a plan on volume we never measured.
 const msgsPerDay = a => MSG_MID[a.messages] != null ? MSG_MID[a.messages] : MSG_MID.lt5;
+/* How much of the busy day each tool gets. This used to be ALL of it, for every tool:
+   someone sending 50 messages a day split across ChatGPT and Claude was sized as 50 on
+   each, which is double their real use and could tell them to pay for both. The export
+   path already sized each provider on its own volume; the quiz path now does too.
+   "Mostly X" has no number behind it, so MAIN_SHARE is OUR assumption — about two-thirds
+   to the main tool — and the result says so. It errs low on the other tools' caps on
+   purpose: this tool's standing rule is to start on the cheaper tier and move up only if
+   you actually hit walls, never to sell a plan on volume we guessed. */
+const MAIN_SHARE = 2/3;
+const splitLabel = t => NAME[t] || 'something else';
+function needsSplit(a){
+  // An export measured each tool's own volume, so there is nothing to ask.
+  if(a._eco && Object.keys(a._eco).length) return false;
+  return (a.tools||[]).length >= 2;
+}
+function splitOptions(a){
+  return (a.tools||[]).map(t=>({v:t, label:`Mostly ${splitLabel(t)}`}))
+    .concat({v:'even', label:'About evenly'});
+}
+function shareOf(prov,a){
+  const tools=a.tools||[], n=tools.length;
+  if(n<2 || !tools.includes(prov)) return 1;
+  // A main tool the reader has since deselected falls back to an even split.
+  if(a.split && a.split!=='even' && tools.includes(a.split))
+    return prov===a.split ? MAIN_SHARE : (1-MAIN_SHARE)/(n-1);
+  return 1/n;
+}
 function classify(a){
   let s=0;
   for(const k of Object.keys(SCORE)) s += (SCORE[k][a[k]]||0);
@@ -718,7 +750,12 @@ function profileFor(prov,a,sig){
     const ecoArc = (eco.messages>0 && eco.inTok!=null)
       ? { in: eco.inTok/eco.messages, out: (eco.outTok||0)/eco.messages } : null;
     const useOwn = ovr('messages') || eco.messages==null;
-    const msgs = useOwn ? msgsPerDay(a) : eco.messages;
+    // A corrected count is a busy day across every tool, so hand this one its MEASURED
+    // share of it rather than all of it — the export knows the split even if it was
+    // wrong about the total.
+    const ecoTotal = Object.values(a._eco).reduce((s,e)=>s+(e.messages||0),0);
+    const ecoShare = (eco.messages>0 && ecoTotal>0) ? eco.messages/ecoTotal : shareOf(prov,a);
+    const msgs = useOwn ? msgsPerDay(a)*ecoShare : eco.messages;
     const useArc = ecoArc || arc;
     // Scale a per-model split to whatever message count we ended up with, so a
     // corrected volume is priced consistently across every model they ran.
@@ -733,12 +770,12 @@ function profileFor(prov,a,sig){
       arc: useArc, arcMeasured: !!ecoArc,
       signals:sig };
   }
-  const msgs=msgsPerDay(a);
+  const share=shareOf(prov,a), msgs=msgsPerDay(a)*share;
   return { provider:prov, messages_per_day:msgs,
     days_per_month:days, avg_messages_per_day: msgs*days/30,
     input_tokens_per_day:Math.round(msgs*arc.in), output_tokens_per_day:Math.round(msgs*arc.out),
     models_used: assumed, perModel:null, measured:false,
-    arc, arcMeasured:false, signals:sig };
+    arc, arcMeasured:false, share, signals:sig };
 }
 
 /* ---------- what "what matters most to you" actually does ----------
@@ -797,7 +834,7 @@ function recommend(pf,sig){
   const api=apiCostPerMonth(pf);
   const cur=(sig.current_plans||[]).find(c=>c.provider===pf.provider);
   const why=[];
-  if(!fit){ return { head:`Your ${NAME[pf.provider]} usage points to a Team plan.`, why:['Your volume or seats exceed the consumer tiers — look at '+NAME[pf.provider]+' Team.'] }; }
+  if(!fit){ return { head:`Your ${NAME[pf.provider]} usage points to a Team plan.`, why:['Your volume or seats exceed the consumer tiers — look at '+NAME[pf.provider]+' Team.'], monthly:null, paid:true }; }
 
   const known=new Set(); tiers.forEach(t=>t.models.forEach(m=>known.add(m)));
   const gating=(pf.models_used||[]).filter(m=>known.has(m));
@@ -846,7 +883,7 @@ function recommend(pf,sig){
     if(cur && cur.price>hybrid.total) why.push({save:true, html:`You pay <b>${money(cur.price)}</b> for ${cur.plan} — this saves <b>${money(cur.price-hybrid.total)}/mo</b> (${money((cur.price-hybrid.total)*12)}/yr).`});
     else if(cur && cur.price>0) why.push({save:true, html:`Cheaper than your ${cur.plan} (${money(cur.price)}/mo).`});
     return { head: t.price===0 ? `Drop to free ${NAME[pf.provider]} + pay-as-you-go.`
-                               : `${t.m} + pay-as-you-go for ${labels}.`, why };
+                               : `${t.m} + pay-as-you-go for ${labels}.`, why, monthly:hybrid.total, paid:t.price>0 };
   }
 
   let head, cost;
@@ -931,7 +968,7 @@ function recommend(pf,sig){
   if(sig.priority==='privacy') why.push(privacyLine(pf.provider));
   if(sig.priority==='feature'){ const fl=featureLine(pf.provider, fit); if(fl) why.push(fl); }
   if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier, and it has given no indication that’s the end of it. That rise cost it the lead: of the four providers this tool can price, DeepSeek is now the second cheapest rather than the first, behind OpenAI’s cheapest tier. Cheaper options exist outside this tool altogether — Z.ai and Mistral both undercut it — but neither sells a plan we compare here. DeepSeek also now charges by the clock: the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price, which at off-peak makes it the cheapest of the four again.`);
-  return { head, why };
+  return { head, why, monthly:cost, paid:cost>0 };
 }
 
 /* ---------- break even (ported from pricing.html; must agree with it) ----------
@@ -1173,10 +1210,17 @@ const sameAnswer = (x,y) => Array.isArray(x)||Array.isArray(y)
   ? JSON.stringify(Array.isArray(x)?x.slice().sort():x)===JSON.stringify(Array.isArray(y)?y.slice().sort():y)
   : x===y;
 
+// A question with `when` is only asked when it applies (the split question needs 2+
+// tools). state.i indexes this list, not QUESTIONS, so the count stays honest.
+const activeQuestions = () => QUESTIONS.filter(q=>!q.when || q.when(state.answers));
+
 function render(){
-  const total=QUESTIONS.length, q=QUESTIONS[state.i];
-  const sel=state.answers[q.id];
+  const qs=activeQuestions(); if(state.i>=qs.length) state.i=qs.length-1;
+  const total=qs.length, q=qs[state.i];
   const qOpts=optionsOf(q), qHelp=helpOf(q);
+  // An answer no longer on offer (the main tool, after it was deselected) is no answer.
+  let sel=state.answers[q.id];
+  if(q.type==='single' && sel!=null && !qOpts.some(o=>o.v===sel)) sel=state.answers[q.id]=undefined;
   const opts=qOpts.map(o=>{
     const on = q.type==='multi' ? Array.isArray(sel)&&sel.includes(o.v) : sel===o.v;
     return `<button class="opt ${q.type==='single'?'radio':''} ${on?'sel':''}" data-v="${o.v}">
@@ -1226,19 +1270,60 @@ function render(){
   if(nb) nb.addEventListener('click',()=>{ if(!answered) return; if(state.i<total-1){state.i++;render();} else finish(); });
 }
 
+const recCard = (title, head, why) => `<div class="rec"><div class="rec-prov">${title}</div><div class="rec-head">${head}</div><ul>${
+  why.map(w=> typeof w==='string'?`<li>${w}</li>`:`<li class="save">${w.html}</li>`).join('')}</ul></div>`;
+// Every figure on a card is sized on this tool's share of the busy day, so say what
+// that share was and where it came from — and which part of it is our assumption.
+function shareLine(prov,pf,a){
+  if(pf.share==null || pf.share>=1) return null;
+  const n=(a.tools||[]).length, main=(a.split && a.split!=='even' && a.tools.includes(a.split)) ? a.split : null;
+  const how = !main ? `an even split across your ${n} tools`
+    : main===prov ? `about two-thirds, because you said you mostly use ${splitLabel(main)} — the two-thirds is our assumption, not your number`
+    : `${n===2?'the':'a share of the'} third left over after ${splitLabel(main)}, your main tool — our assumption, not your number`;
+  return `Sized on ${fmtMsgs(pf.messages_per_day)} of your ${fmtMsgs(msgsPerDay(a))} busy-day messages: ${how}.`;
+}
+/* What the per-tool cards add up to. Someone using two tools was left to sum the
+   cards themselves, and nothing told them they had been sold two subscriptions. */
+function totalCard(recs,a,sig){
+  if(recs.length<2) return '';
+  const unpriced=recs.some(x=>x.r.monthly==null);
+  const all=recs.reduce((s,x)=>s+(x.r.monthly||0),0);
+  const hasApi=recs.some(x=>/pay-as-you-go/.test(x.r.head));
+  const provSet=new Set(recs.map(x=>x.prov));
+  const now=(sig.current_plans||[]).filter(c=>provSet.has(c.provider)).reduce((s,c)=>s+c.price,0);
+  const paid=recs.filter(x=>x.r.paid);
+  const why=[];
+  if(unpriced) why.push(`Plus a Team plan, which we can’t price from here.`);
+  if(hasApi) why.push(`The pay-as-you-go part is our estimate at your volume, not a fixed price.`);
+  if(!unpriced && now>all+0.005) why.push({save:true, html:`You pay <b>${money(now)}/mo</b> for these tools today — this is <b>${money(now-all)}/mo</b> less (${money((now-all)*12)}/yr).`});
+  if(paid.length>=2){
+    // Each card is right on its own terms, but two subscriptions for the same kind of
+    // work is the overpayment this page exists to catch, so name what dropping one saves.
+    const names=paid.map(x=>NAME[x.prov]).join(' and ');
+    const cheapest=paid.slice().sort((x,y)=>(x.r.monthly||0)-(y.r.monthly||0))[0];
+    const drop = cheapest.r.monthly ? ` Moving ${NAME[cheapest.prov]} to its free tier saves ${money(cheapest.r.monthly)}/mo (${money(cheapest.r.monthly*12)}/yr). You’d lose what its paid plan adds, so it’s only worth it if your other plan covers the same work for you.` : '';
+    why.push(`That’s ${paid.length} paid plans (${names})${a.split && a.split!=='even' ? `, even with most of your use on ${splitLabel(a.split)}` : ''}. Ask whether you need both.${drop}${!a.split || a.split==='even' ? ` If one tool really does most of your work, choosing it on the split question will show whether the other still needs paying for.` : ''}`);
+  }
+  // Plan prices are list prices; only a pay-as-you-go part is an estimate.
+  const head = all===0 && !unpriced ? `Free on every tool.` : `${hasApi?'About ':''}${money(all)}/mo all in.`;
+  return recCard('All your tools together', head, why);
+}
+
 function finish(){
   const a=state.answers, {level}=classify(a);
   const sig={ hits_limits:a.limits, media:a.media, media_generation:a.media!=='no', team:a.team==='team',
     current_plans:currentPlans(a), priority:a.priority };
   const provs=(a.tools||[]).filter(t=>t!=='other' && PLANS[t]);
-  const cards=provs.map(prov=>{
-    const r=recommend(profileFor(prov,a,sig),sig);
+  const recs=provs.map(prov=>{ const pf=profileFor(prov,a,sig); return { prov, pf, r:recommend(pf,sig) }; });
+  const cards=recs.map(({prov,pf,r})=>{
     const why=r.why.slice();
+    const sl=shareLine(prov,pf,a);
+    if(sl) why.unshift(sl);
     const sn=studentNote(prov,a);
     if(sn) why.push(sn);
-    const items=why.map(w=> typeof w==='string'?`<li>${w}</li>`:`<li class="save">${w.html}</li>`).join('');
-    return `<div class="rec"><div class="rec-prov">${NAME[prov]}</div><div class="rec-head">${r.head}</div><ul>${items}</ul></div>`;
+    return recCard(NAME[prov], r.head, why);
   }).join('');
+  const total=totalCard(recs,a,sig);
   const other=(a.tools||[]).includes('other') ? `<p class="disclaimer">We currently audit ChatGPT, Claude, Gemini, Copilot and DeepSeek — more tools coming.</p>` : '';
   // A connected export replaces the assumed conversation sizes with measured
   // billed-input tokens, so say which of the two the reader is looking at.
@@ -1253,11 +1338,12 @@ function finish(){
       <h2 class="level-name">You’re a <span class="accent">${level.label}</span></h2>
       <p class="level-blurb">${level.blurb}</p>
     </div>
+    ${total}
     ${cards || '<p class="level-blurb">Pick at least one tool to get a recommendation.</p>'}
     ${studentPanel(a)}
     <div class="center"><button class="btn" id="restart">Start over</button></div>
     ${other}
-    <p class="disclaimer">Prices are list prices, checked against each provider’s own pricing page. Most message limits are <em>not</em> published — where we show one, we say whether it’s the provider’s figure, an outside estimate, or ours. API comparisons assume typical conversation sizes, which is an assumption, not a measurement, and the biggest lever on every dollar here${measuredNote}. Figures are applied per tool, so if you split time across tools your per-tool need is lower. Confirm current limits on the provider’s site. Nothing you entered left your browser.</p>`;
+    <p class="disclaimer">Prices are list prices, checked against each provider’s own pricing page. Most message limits are <em>not</em> published — where we show one, we say whether it’s the provider’s figure, an outside estimate, or ours. API comparisons assume typical conversation sizes, which is an assumption, not a measurement, and the biggest lever on every dollar here${measuredNote}. If you use more than one tool, each is sized on its share of your busy day, split the way you told us — where you said “mostly” one tool, giving it about two-thirds is our assumption. Confirm current limits on the provider’s site. Nothing you entered left your browser.</p>`;
   resultsEl.querySelector('#restart').addEventListener('click',()=>{
     state.i=0; state.answers={}; resultsEl.classList.add('hidden'); resultsEl.innerHTML='';
     quizEl.classList.remove('hidden'); render(); window.scrollTo({top:0,behavior:'smooth'});

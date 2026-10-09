@@ -9,6 +9,22 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-10-09 — Auditor sizes each tool on its share of the busy day
+
+Without an export, the quiz path gave **every** tool the reader's whole busy-day count: 50
+a day across ChatGPT and Claude was priced as 50 on each, double the real use. The busy-day
+question now asks for the total across tools, and a new **split** question (asked only with
+2+ tools and no export) hands each tool its share: even, or **"mostly X" = ⅔ to X — our
+assumption**, said on the card. An export with a corrected count splits it by the measured
+shares. A new **"All your tools together"** card sums the cards, shows the saving against
+what they pay now, and when it recommends 2+ paid plans says what dropping one would save.
+
+Measured, not asserted: of 168,750 two-tool answer sets, recommending two paid plans fell from
+**71,256 (42%) to 63,798 (38%)**, and no tool ever got dearer (swept). Most of what's left is
+"I always want the best" on both ChatGPT and Claude, which needs both paid at any volume, so the
+consolidation line is what helps there, not the split. `test-auditor.js` 123 → 141 checks;
+turning the split off fails 8 of them.
+
 ### 2026-09-30 — Claude break-even shows a range for the unmeasured Opus 5.5 thinking
 
 Opus 5.5 reasons by default but has no measured multiplier, so it prices at 1x and Claude's
