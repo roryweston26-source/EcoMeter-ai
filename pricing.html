@@ -737,7 +737,7 @@
   // Measured by scripts/derive-archetypes.js with the real cl100k tokenizer over this
   // repo's prose, and shown in "show the math" so the conversion behind the archetypes
   // is visible rather than asserted. check-auditor.js fails if it drifts.
-  var CHARS_PER_TOKEN = 3.831;
+  var CHARS_PER_TOKEN = 3.781;
 
   var FALLBACK_LIMITS = {
     _meta: {
@@ -745,9 +745,9 @@
       default_archetype: "standard",
       archetypes: {
         // Owned by scripts/derive-archetypes.js — regenerate, don't hand-edit.
-        light:     { input: 641,   output: 235,  label: "Short exchanges, little history" },
-        standard:  { input: 3639,  output: 470,  label: "Typical multi-turn chat" },
-        heavy:     { input: 14975, output: 1096, label: "Long context, documents, code" }
+        light:     { input: 650,   output: 238,  label: "Short exchanges, little history" },
+        standard:  { input: 3689,  output: 476,  label: "Typical multi-turn chat" },
+        heavy:     { input: 15180, output: 1111, label: "Long context, documents, code" }
       },
       // Mirrors plan-limits.json _meta.reasoning.models — mid only; that file carries
       // the ranges and the basis. Thinking tokens bill at the output rate, so leaving

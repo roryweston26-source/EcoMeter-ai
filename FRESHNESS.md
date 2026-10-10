@@ -1315,13 +1315,28 @@ It splits the old assumption in half and measures the half that can be measured:
   judgement — but stated in characters, which a person can check against a real chat
   window. "A 1,800-character reply" is falsifiable; "500 output tokens" is not.
 - **Characters → tokens** is measured with the real cl100k tokenizer over this repo’s
-  prose: **3.882 chars/token, 165 samples.** No folk 4-chars-per-token constant.
+  prose: **3.781 chars/token, 388 samples** (re-derived 2026-10-09; 3.882 / 165 samples
+  when first written). No folk 4-chars-per-token constant.
 
 | Archetype | prompt | reply | history | → input | output |
 |---|---|---|---|---|---|
-| light | 220 ch | 900 ch | 2 turns | 635 | 232 |
-| standard | 450 ch | 1,800 ch | 6 turns | 3,596 | 464 |
-| heavy | 1,400 ch | 4,200 ch | 10 turns | 14,791 | 1,082 |
+| light | 220 ch | 900 ch | 2 turns | 650 | 238 |
+| standard | 450 ch | 1,800 ch | 6 turns | 3,689 | 476 |
+| heavy | 1,400 ch | 4,200 ch | 10 turns | 15,180 | 1,111 |
+
+**The ratio drifts down as these docs grow, and that is a known wart, not noise.** The
+corpus is `PROJECT-CONTEXT.md`, `CLAUDE.md`, `README.md` and this file. This file is
+most of it, and it fills with dense, figure-heavy prose (prices, dates, model ids),
+which takes more tokens per character than chat does. History: 3.882 (2026-08-26) →
+3.831 (written in `ad45944`, the 2026-09-19 pass) → 3.781 (2026-10-09). The 2026-10-09
+re-derive was set off by the `water-refit-large-class` branch: its F1e entry alone
+(`38b5ab4`, +169 lines here) moved the ratio from 3.784 (main before this entry) to 3.773. No other corpus file
+had changed, and the script itself had not changed. That pushed `CHARS_PER_TOKEN` past
+its guard. That guard is **±0.05 absolute (~1.3%)**, tighter than the archetypes' 2%,
+so it trips first. Effect of the re-derive: every archetype's token count is about 1.3%
+higher, so every break-even is about 1.3% lower. **Open:** a fixed calibration corpus
+(one that this file's growth can't move) would make this a real constant. Until then,
+expect to re-run `--write` every few weeks of doc growth.
 
 **Reproducibility:** the script normalises CRLF to LF before counting. Without
 that the measured ratio depends on the checkout — a Windows working copy and a Linux
