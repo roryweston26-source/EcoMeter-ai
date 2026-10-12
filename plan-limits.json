@@ -104,6 +104,41 @@
       "waking_hours": 16,
       "waking_hours_basis": "Used only to flag caps that cannot be reached by a person in a day."
     },
+    "openrouter": {
+      "comment": "The second 'pay per token instead' route, shown in each row's 'show the math' panel. Break-even prices usage at the model maker's own API rate, but using an API means a key, a client and a billing setup. OpenRouter sells the same models through one account and a chat window, at the maker's rate plus a fee on buying credits, which makes paying per token something a non-developer can actually do. The headline figure is NOT changed by this block. Rates are not stored here: OpenRouter passes the maker's rate through, so the panel reuses prices.json and adds the fee. 'models' records, per value model, the OpenRouter id IF OpenRouter routes it to its own maker at the same rate as prices.json (null if not). Third-party hosts are deliberately ignored even where far cheaper, because they run open-weight models at different precisions (FRESHNESS A9). Re-check with scripts/verify-openrouter.js.",
+      "fee": 0.055,
+      "fee_min_usd": 0.80,
+      "fee_basis": "Card purchases of credits: '5.5% ($0.80 minimum)' (FAQ); the pricing page lists the Standard pay-as-you-go platform fee as 5.5%. Crypto is 5%. Applied as cost x 1.055, which is exact for any top-up of $14.55 or more. Below that the $0.80 minimum makes the effective fee higher (8% on a $10 top-up), which the panel says.",
+      "markup": "none on inference, per OpenRouter's FAQ: 'We pass through the pricing of the underlying model providers without any markup'. Checked per model by verify-openrouter.js, not taken on trust.",
+      "privacy": "Messages pass through OpenRouter as well as the model maker: one more company holding your prompts. Prompt logging is opt-in (for a 1% discount).",
+      "chat_url": "https://openrouter.ai/chat",
+      "checked": "2026-10-12",
+      "sources": [
+        "https://openrouter.ai/pricing",
+        "https://openrouter.ai/docs/faq",
+        "https://openrouter.ai/api/v1/models"
+      ],
+      "models": {
+        "anthropic:claude-haiku-4-5-20251001": "anthropic/claude-haiku-4.5",
+        "anthropic:claude-opus-5": "anthropic/claude-opus-5",
+        "anthropic:claude-opus-5-5": "anthropic/claude-opus-5.5",
+        "anthropic:claude-sonnet-5": "anthropic/claude-sonnet-5",
+        "anthropic:claude-sonnet-5-5": "anthropic/claude-sonnet-5.5",
+        "deepseek:deepseek-v4-flash": null,
+        "deepseek:deepseek-v4-pro": null,
+        "google:gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
+        "google:gemini-3.6-flash": "google/gemini-3.6-flash",
+        "mistral:mistral-medium-3.5": "mistralai/mistral-medium-3-5",
+        "mistral:mistral-small-4": "mistralai/mistral-small-2603",
+        "openai:gpt-5.4-mini": "openai/gpt-5.4-mini",
+        "openai:gpt-5.6-luna": "openai/gpt-5.6-luna",
+        "openai:gpt-5.6-sol": "openai/gpt-5.6-sol",
+        "openai:gpt-5.6-terra": "openai/gpt-5.6-terra",
+        "xai:grok-4.6": "x-ai/grok-4.6",
+        "zai:glm-5.3": "z-ai/glm-5.3",
+        "zai:glm-5.3-flash": "z-ai/glm-5.3-flash"
+      }
+    },
     "credit_conversion": {
       "comment": "Turns a credit allowance into messages so the Ceiling column can price it. Every input here — the formula, the divisor, the per-model multipliers — is published by the provider, so the conversion is DERIVED, not estimated. Two choices are ours, and both make the ceiling SMALLER; see assumptions_are_conservative.",
       "assumptions_are_conservative": "Z.ai's own token table assumes a 95% cache hit, and the top end of its published token range assumes 100% off-peak use, where a credit costs half. Both would RAISE the ceiling. We take neither: cache_hit 0 and peak-rate credits. A ceiling that flatters the plan is the exact failure this column exists to avoid, and FRESHNESS A11 settled the peak/off-peak question the same way for DeepSeek — quote the end of the range you do not control.",
