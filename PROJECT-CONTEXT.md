@@ -9,6 +9,20 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-10-12 — Microsoft 365 Pro added; Microsoft break-even says why it's blank
+
+Started as "fill in Microsoft's missing break-even". It wasn't missing. `no_api_rate` is a
+recorded finding (FRESHNESS A1): Microsoft names no model for any consumer tier. Re-read
+2026-10-12 and that still holds, so the cell now says **"model not disclosed"** rather than
+the vaguer "no API rate". **Decided (Rory): keep it blank, don't price it on a guessed
+model.** The same read found **Microsoft 365 Pro, $99.99/mo**, now in the data (FRESHNESS
+A2 has the finding: on Microsoft's own table Pro gets the same chat label as the $9.99 tier).
+Plans 32 → 33, no allowance published 24 → 25. Also corrected some allowance counts in
+`transparency-index.json` that were already stale ("ten exceptions" → eight).
+
+Next on the break-even list (agreed order): OpenRouter as a second "pay per token
+instead" comparison, then Poe.
+
 ### 2026-10-09 — Auditor can remember the last audit (this browser only, opt-in)
 
 Prices move every few weeks and nobody re-takes a quiz to find out. The results page now

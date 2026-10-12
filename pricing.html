@@ -710,6 +710,7 @@
 
     { p:"microsoft",   m:"Copilot (Free)",         price:0 },
     { p:"microsoft",   m:"Microsoft 365 Premium",  price:19.99, note:"Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
+    { p:"microsoft",   m:"Microsoft 365 Pro",      price:99.99, note:"New top tier, on Microsoft's individuals pricing page by 2026-10-12. Monthly billing only." },
 
     { p:"mistral",     m:"Le Chat Free",           price:0 },
     { p:"mistral",     m:"Le Chat Pro",            price:14.99, note:"$5.99/mo for students. Mistral now brands the product \"Vibe\" — plan key kept as the cross-file join." },
@@ -816,8 +817,9 @@
       { p:"perplexity", m:"Perplexity Max", provenance:"disclosed", value_models:{ low:"openai:gpt-5.6-sol", high:"anthropic:claude-opus-5" },
         caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }] },
 
-      { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"the free Copilot tier" } },
-      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"not_disclosed" },
+      { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"the free Copilot tier" }, no_api_rate:true },
+      { p:"microsoft", m:"Microsoft 365 Premium", provenance:"not_disclosed", no_api_rate:true },
+      { p:"microsoft", m:"Microsoft 365 Pro", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-10-12" }, no_api_rate:true },
 
       { p:"mistral", m:"Le Chat Free", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31" }, value_models:{ low:"mistral-small-4", high:"mistral-medium-3.5" },
         third_party:[{ n:25, unit:"messages", window:"1d", scope:"all models", confidence:"low", source:"https://www.grizzlypeaksoftware.com/articles/p/mistral-ai-pricing-in-2026-pro-costs-free-tier-limits-and-api-rates-lx4o2n2v" }] },
@@ -1473,6 +1475,12 @@
       var be = breakEven(r, lim), beCell;
       if (r.price === 0) {
         beCell = '<span class="nd">n/a — free</span>';
+      } else if (lim && lim.no_api_rate) {
+        // Not a missing number: the provider won't say which model the plan runs, so
+        // there is no rate to compare against. Pricing it on a guessed model would print
+        // our inference as their cost (FRESHNESS A1). The blank is the finding.
+        beCell = '<span class="nd">model not disclosed' +
+                 '<span class="sub">the provider doesn’t say which model you get, so there’s no API rate to compare</span></span>';
       } else if (!be) {
         beCell = '<span class="nd">no API rate</span>';
       } else {

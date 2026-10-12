@@ -185,6 +185,7 @@
 
     { "p": "microsoft", "m": "Copilot (Free)", "price": 0 },
     { "p": "microsoft", "m": "Microsoft 365 Premium", "price": 19.99, "note": "Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
+    { "p": "microsoft", "m": "Microsoft 365 Pro", "price": 99.99, "note": "New top tier, on Microsoft's individuals pricing page by 2026-10-12. Monthly billing only." },
 
     { "p": "mistral", "m": "Le Chat Free", "price": 0 },
     { "p": "mistral", "m": "Le Chat Pro", "price": 14.99, "note": "$5.99/mo for students. Mistral now brands the product \"Vibe\" — plan key kept as the cross-file join." },

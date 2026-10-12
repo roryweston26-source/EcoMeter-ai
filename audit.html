@@ -301,8 +301,9 @@ let PLANS = {
       models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
   ],
   microsoft: [
-    // Microsoft publishes 60 AI credits/month for Personal and Family but nothing
-    // for Premium. Copilot resells OpenAI models and Microsoft publishes no
+    // Microsoft withdrew every usage figure in 2026-09 (incl. Personal/Family's 60 AI
+    // credits/month); its table is words only. Microsoft 365 Pro ($99.99) is deliberately
+    // not here (FRESHNESS A2). Copilot resells OpenAI models and Microsoft publishes no
     // per-token rate, so we never quote an API-equivalent cost for it.
     { m:'Copilot (Free)', price:0,    cap:200,  capSource:'estimate',
       models:['gpt-5.5'], features:[], seats:1 },
