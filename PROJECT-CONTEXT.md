@@ -9,6 +9,22 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-10-12 — Break-even: the same usage via OpenRouter, in "show the math"
+
+Break-even compares a plan with the maker's API, which most readers can't use without
+code. OpenRouter is the usable version: one account, a chat window, the maker's rate plus
+a **5.5% fee on buying credits ($0.80 minimum)**. Each row's math panel now gives that
+figure (break-even ÷ 1.055, so about 5% lower; ChatGPT Plus goes from 25 to 24 messages a day),
+and the callout says paying per token doesn't need code. **Headline numbers unchanged**
+(Rory's call: panel line + callout, not a toggle, because the fee is the only difference).
+
+"No markup" was checked per model by the new `scripts/verify-openrouter.js`, not taken on
+trust: 16 of 18 value models come from their own maker at our exact rate. DeepSeek is
+third-party hosts only (`null`, harmless: no paid plan). Cheaper third-party hosts for
+open-weight models are deliberately NOT used (different precisions, A9). Data lives in
+`plan-limits.json` → `_meta.openrouter`; guarded by `check-auditor.js` §19. Full detail and
+the GPT-5.6 Sol three-prices trap in FRESHNESS **A12**. Next on the list: Poe.
+
 ### 2026-10-12 — Microsoft 365 Pro added; Microsoft break-even says why it's blank
 
 Started as "fill in Microsoft's missing break-even". It wasn't missing. `no_api_rate` is a

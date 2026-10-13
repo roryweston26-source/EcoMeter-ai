@@ -672,6 +672,40 @@ for (const r of S.routes) {
   }
 }
 
+/* 19. The OpenRouter line in pricing.html's "show the math" (added 2026-10-12).
+       It says a model costs the SAME on OpenRouter as at its maker, plus a fee. That
+       claim is only as good as the per-model check behind it, so: every value model
+       must have been checked (a new one fails here until verify-openrouter.js is run),
+       the inline fallback must agree with the file, and the callout's printed fee must
+       be the fee the panel actually applies. */
+{
+  const OR = L._meta.openrouter;
+  if (!OR || typeof OR.fee !== 'number' || !OR.models) fail('plan-limits.json _meta.openrouter missing or malformed');
+  else {
+    for (const pl of L.plans) for (const k of Object.values(pl.value_models || {})) {
+      const key = k.includes(':') ? k : pl.p + ':' + k;
+      if (!(key in OR.models))
+        fail('value model ' + key + ' (' + pl.m + ') has no _meta.openrouter.models entry — run scripts/verify-openrouter.js and record the result, null included');
+    }
+    const s = pricing.indexOf('openrouter: { fee:'), e = pricing.indexOf('// Mirrors plan-limits.json _meta.credit_conversion');
+    if (s < 0 || e < s) fail('pricing.html FALLBACK_LIMITS has no openrouter mirror');
+    else {
+      const blk = pricing.slice(s, e);
+      const num = re => { const m = blk.match(re); return m ? Number(m[1]) : NaN; };
+      if (num(/fee:\s*([\d.]+)/) !== OR.fee) fail('pricing.html openrouter fallback fee differs from plan-limits.json');
+      if (num(/fee_min_usd:\s*([\d.]+)/) !== OR.fee_min_usd) fail('pricing.html openrouter fallback fee_min_usd differs from plan-limits.json');
+      if (!blk.includes('checked: "' + OR.checked + '"')) fail('pricing.html openrouter fallback "checked" differs from plan-limits.json (' + OR.checked + ')');
+      const inline = {};
+      for (const m of blk.matchAll(/"([\w.-]+:[\w.-]+)":\s*(null|"([^"]+)")/g)) inline[m[1]] = m[3] || null;
+      for (const k of new Set([...Object.keys(inline), ...Object.keys(OR.models)]))
+        if (inline[k] !== OR.models[k]) fail('pricing.html openrouter fallback drift on ' + k + ': inline=' + inline[k] + ' file=' + OR.models[k]);
+    }
+    const shown = (pricing.match(/<span id="or-fee">([\d.]+)%<\/span>/) || [])[1];
+    if (Number(shown) !== +(OR.fee * 100).toFixed(1))
+      fail('pricing.html callout prints an OpenRouter fee of ' + shown + '% but plan-limits.json applies ' + (OR.fee * 100) + '%');
+  }
+}
+
 console.log(bad
   ? '\n' + bad + ' PROBLEM(S)' + (warned ? ' and ' + warned + ' warning(s)' : '')
   : 'AUDITOR CHECKS PASS — ' + Object.keys(PLANS).length + ' providers, ' +

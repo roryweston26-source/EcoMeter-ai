@@ -179,6 +179,7 @@ wrong number in front of a user.
 
 | Date | What | Entry |
 |---|---|---|
+| **2026-11-21** | **Re-run `scripts/verify-openrouter.js` when GPT-5.6 Sol's promo ends.** The OpenRouter line in "show the math" says Sol costs the same there as at OpenAI; if OpenAI's rate moves and OpenRouter's doesn't (or the other way), that sentence is false until re-checked. | [A12](#a12-openrouter--the-pay-per-token-route-added-2026-10-12) |
 | **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. **It is also the ChatGPT Plus / Pro / Pro 20x break-even anchor again (since 2026-09-30), so those figures move with it.** | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** **v6.15** (uploaded 2026-09-19) bundles the Gemini Flash promo rate, and the extension reads its OWN bundled `prices.json` — no remote fetch — so a build freezes its prices. After the promo reverts, a still-shipped v6.15 understates Gemini by 2×. Shipping v6.15 closed every OTHER drift and moved this deadline not at all. | [H4](#h4-the-shipped-build-vs-main) |
 | ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
@@ -1501,6 +1502,54 @@ break-even down) and prompt caching (pushes it up). They partly cancel, by an un
 amount.
 
 # B. Plan limits, caps and disclosure
+
+## A12. OpenRouter — the pay-per-token route (added 2026-10-12)
+
+**What it is:** each subscription row's "show the math" panel now gives break-even
+for the same usage bought through OpenRouter, and the callout says you can pay per
+token without code. The headline break-even is **not** changed: it still prices at
+the maker's own API rate. OpenRouter is the version of "pay per token" a non-developer
+can actually use (one account, a chat window at openrouter.ai/chat).
+
+**Source of truth:** `plan-limits.json` → `_meta.openrouter` (fee, minimum, and per
+value model the OpenRouter id, or `null`). **No rates are stored**: OpenRouter passes
+the maker's rate through, so the panel reuses `prices.json` × (1 + fee).
+
+**Copies:** `pricing.html` → `FALLBACK_LIMITS._meta.openrouter` and the callout's
+`<span id="or-fee">`. Both diffed by `check-auditor.js` §19, which also fails when a
+value model has no `models` entry, so a new anchor model forces a re-check.
+
+**Read at source 2026-10-12:**
+- Fee: **5.5% on card credit purchases, $0.80 minimum** (FAQ; pricing page lists
+  Standard pay-as-you-go at 5.5%). Crypto 5%. No minimum spend. Business tier is 8%.
+  We apply × 1.055, exact for top-ups of $14.55 or more; the panel says small ones cost more.
+- Markup: "We pass through the pricing of the underlying model providers without any
+  markup" (FAQ). **Checked per model, not taken on trust:** 16 of 18 value models are
+  served by their own maker on OpenRouter at exactly our `prices.json` rate. The two
+  DeepSeek models have third-party hosts only, so they are `null`. That costs nothing
+  today, because DeepSeek has no paid plan.
+- **OpenRouter lists three OpenAI-served prices for GPT-5.6 Sol: $1/$5, $2/$10, $4/$20.**
+  Its model list shows the lowest, which made Sol look half price at first glance. We
+  match the $4/$20 endpoint. **We have not established which one a chat request gets**,
+  which is why the panel says "same rate" only where an endpoint at our exact rate exists.
+
+**Deliberately not used: third-party hosts.** For open-weight models they are often
+far cheaper (GLM-5.3 spans $0.06–$2.80/M input across 40 hosts against Z.ai's $1.40),
+but they run at different precisions, so they are not the same computation (A9).
+Rory's call, 2026-10-12: first-party rate only.
+
+**Privacy, said on the page:** messages pass through OpenRouter as well as the maker.
+Recommending an intermediary is a trade the reader should see, not one we make for them.
+
+**Verify:** `node scripts/verify-openrouter.js` (add `--print` for a paste-ready
+`models` block; it does not write the file, because re-serialising reformats it). Re-run
+whenever `prices.json` moves an anchor model's rate. The promo dates on GPT-5.6 Sol
+(2026-11-21) and Gemini 3.6 Flash (2026-12-31) are the next forced re-checks. Re-read the
+fee on the pricing page and the FAQ; the FAQ's fee string is rendered by a script.
+
+**Guard:** `check-auditor.js` §19
+
+---
 
 ## B1. The caps themselves
 

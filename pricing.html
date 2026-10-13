@@ -428,7 +428,7 @@
   <div class="callout" id="callout">
     <h2>What the providers won't tell you</h2>
     <p id="callout-body">—</p>
-    <p>So "how much is my plan worth" can't be answered from the ceiling for most plans. What <em>can</em> be answered, from published API rates alone, is the other direction: <strong>how long you'd have to use a plan each day before it beats paying per token.</strong> That's the break-even column — and it's the one worth reading. As of August 2026 not one plan here has a cap solid enough to compute a ceiling from, so that column is now mostly a record of what nobody will tell you. Where a figure did exist, it needed more hours a day than anyone is awake for — which was already the point: the cap was never what limited the plan's value to you. Your time is.</p>
+    <p>So "how much is my plan worth" can't be answered from the ceiling for most plans. What <em>can</em> be answered, from published API rates alone, is the other direction: <strong>how long you'd have to use a plan each day before it beats paying per token.</strong> That's the break-even column — and it's the one worth reading. Paying per token doesn't need code, either: <a href="https://openrouter.ai/chat" target="_blank" rel="noopener">OpenRouter</a> sells most of these models through a chat window at the makers' own rates plus a <span id="or-fee">5.5%</span> fee on buying credits. "Show the math" on any row gives the break-even that way.As of August 2026 not one plan here has a cap solid enough to compute a ceiling from, so that column is now mostly a record of what nobody will tell you. Where a figure did exist, it needed more hours a day than anyone is awake for — which was already the point: the cap was never what limited the plan's value to you. Your time is.</p>
   </div>
 
   <footer>
@@ -770,6 +770,30 @@
       unmeasured_range: { models: {
         "claude-opus-5-5":        { up_to: "claude-opus-5" }
       } } },
+      // Mirrors plan-limits.json _meta.openrouter (fee + which value models OpenRouter
+      // serves from their own maker at the prices.json rate). Only the math panel reads
+      // it; the headline break-even never does. check-auditor.js diffs the two.
+      openrouter: { fee: 0.055, fee_min_usd: 0.80, chat_url: "https://openrouter.ai/chat", checked: "2026-10-12",
+        models: {
+          "anthropic:claude-haiku-4-5-20251001": "anthropic/claude-haiku-4.5",
+          "anthropic:claude-opus-5": "anthropic/claude-opus-5",
+          "anthropic:claude-opus-5-5": "anthropic/claude-opus-5.5",
+          "anthropic:claude-sonnet-5": "anthropic/claude-sonnet-5",
+          "anthropic:claude-sonnet-5-5": "anthropic/claude-sonnet-5.5",
+          "deepseek:deepseek-v4-flash": null,
+          "deepseek:deepseek-v4-pro": null,
+          "google:gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
+          "google:gemini-3.6-flash": "google/gemini-3.6-flash",
+          "mistral:mistral-medium-3.5": "mistralai/mistral-medium-3-5",
+          "mistral:mistral-small-4": "mistralai/mistral-small-2603",
+          "openai:gpt-5.4-mini": "openai/gpt-5.4-mini",
+          "openai:gpt-5.6-luna": "openai/gpt-5.6-luna",
+          "openai:gpt-5.6-sol": "openai/gpt-5.6-sol",
+          "openai:gpt-5.6-terra": "openai/gpt-5.6-terra",
+          "xai:grok-4.6": "x-ai/grok-4.6",
+          "zai:glm-5.3": "z-ai/glm-5.3",
+          "zai:glm-5.3-flash": "z-ai/glm-5.3-flash"
+        } },
       // Mirrors plan-limits.json _meta.credit_conversion. Without it a credit
       // allowance cannot be converted to messages, and the only plans that publish a
       // full allowance would lose their Ceiling whenever the live fetch fails.
@@ -1682,6 +1706,29 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  // The same usage bought through OpenRouter: the maker's rate passed through, plus the
+  // fee on buying credits. Break-even asks about an API most readers can't use without
+  // writing code; this is the version of "pay per token" they can. It never changes the
+  // headline figure, only explains it. Same model as the "Break even" line above.
+  function openRouterLine(sub, be) {
+    var orr = PLAN_LIMITS._meta && PLAN_LIMITS._meta.openrouter;
+    if (!orr || !orr.models) return "";
+    var key = String(be.fewModel).indexOf(":") > -1 ? be.fewModel : sub.p + ":" + be.fewModel;
+    if (!(key in orr.models)) return "";
+    var name = esc(modelLabel(be.fewModel));
+    if (!orr.models[key]) {
+      return '<dt>Same usage via OpenRouter</dt><dd>Not a like-for-like option: OpenRouter doesn’t serve ' + name +
+             ' from its maker at this rate, only from third-party hosts. Checked ' + esc(orr.checked) + '.</dd>';
+    }
+    var pct = +(orr.fee * 100).toFixed(1);
+    var msgs = be.few / (1 + orr.fee);
+    return '<dt>Same usage via OpenRouter</dt><dd>' + name + ' at the same rate (OpenRouter passes it through), plus ' +
+           pct + '% when you buy credits by card ($' + orr.fee_min_usd.toFixed(2) + ' minimum, so more on small top-ups). ' +
+           'Break even falls to ' + fmtNum(msgs) + ' messages/day (' + fmtTime(msgs) + '). ' +
+           'No code needed: it has a <a href="' + esc(orr.chat_url) + '" target="_blank" rel="noopener">chat window</a>. ' +
+           'Your messages pass through OpenRouter as well as the model maker. Checked ' + esc(orr.checked) + '.</dd>';
+  }
+
   // The expandable working: every number on the row, where it came from, and what we assumed.
   function mathHTML(sub, lim, be, ceil) {
     var a = archetype(), out = "";
@@ -1719,6 +1766,7 @@
              (cpm ? '<dt>Cost per message</dt><dd>$' + cpm.toFixed(4) + '</dd>' : "") +
              '<dt>Break even</dt><dd>$' + sub.price + ' ÷ cost ÷ ' + monthDays() + ' days = ' + fmtNum(be.few) + ' messages/day</dd>' +
              '<dt>As time</dt><dd>' + fmtTime(be.few) + '/day at ' + throughput().mpm + ' message/minute of active use</dd>' +
+             openRouterLine(sub, be) +
              '</dl>';
     }
 
