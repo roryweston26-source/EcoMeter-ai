@@ -337,7 +337,7 @@ the second belongs in that list.
 **Goes stale:** less often, but sharply. Google AI Plus went $7.99 → $4.99;
 Copilot Pro finished retiring 1 Aug 2026.
 
-**Source of truth:** `extension/prices.json` → `subscriptions` (32 plans, 2026-09-30).
+**Source of truth:** `extension/prices.json` → `subscriptions` (33 plans, 2026-10-12).
 
 **Copies:** `plan-limits.json` → `plans` (joins on `p` + `m`) · `audit.html` →
 `PLANS[].price`
@@ -361,6 +361,21 @@ number). Pro 500 is in `prices.json`, `pricing.html` and `plan-limits.json` as
 is still open (A3), and a plan with no published allowance gives the Auditor nothing to
 size. The name `ChatGPT Pro (20×)` is kept as the join key even though OpenAI no longer
 states a multiple; the subscription note says so.
+
+**Recent movement (2026-10-12):** Microsoft launched **Microsoft 365 Pro** at **$99.99/mo**
+(monthly billing only), sold as "Highest usage limits". Added to `prices.json`,
+`pricing.html` and `plan-limits.json` as `not_disclosed` with `no_api_rate`, and
+**not in `audit.html`**, on the Pro 500 precedent: no allowance and no model, so nothing
+for the Auditor to size. **The finding:** in Microsoft's own limits table (support
+article, "Last updated: October 2026") Pro carries the same word as Premium ($19.99) and
+Personal ($9.99) for Chat and Deep reasoning, "Extensive usage". It differs only on
+Voice and Vision ("Highest" vs "More"). Words are not allowances, so this does not prove
+the limits are equal; it proves Microsoft hasn't said how they differ. The individuals
+pricing page names no model at any tier ("AI models selected by Microsoft"), so the
+Microsoft break-even cells now say **"model not disclosed"** instead of "no API rate".
+The blank is deliberate. See A1 on why we don't price Copilot on a stand-in model.
+**Not added:** Personal ($9.99) and Family ($12.99), which now include Copilot chat
+"with higher usage than free". They are Office bundles first; Rory's call, 2026-10-12.
 
 **Guard:** `check-prices.js`, `check-auditor.js`
 
@@ -1497,7 +1512,7 @@ cap anyone published.
 `disclosed` / `derived` / `third_party` / `not_disclosed`.
 
 **Copies:**
-- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 32 rows (2026-09-30), **generated from `plan-limits.json`, not hand-copied** (2026-08-30). It had drifted to 27 rows with no Z.ai at all while the callout derived "31 plans / 5 disclosed" from whatever was loaded, so a failed fetch printed a different finding from the one the data supports. `pricing.html` → `SUBSCRIPTIONS` had drifted the same way, to 26.
+- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 33 rows (2026-10-12), **generated from `plan-limits.json`, not hand-copied** (2026-08-30). It had drifted to 27 rows with no Z.ai at all while the callout derived "31 plans / 5 disclosed" from whatever was loaded, so a failed fetch printed a different finding from the one the data supports. `pricing.html` → `SUBSCRIPTIONS` had drifted the same way, to 26.
 - `audit.html` → `PLANS[].cap` + `.capSource` — uses `estimate` where `plan-limits.json` says `not_disclosed`, because the Auditor needs a working number. **Only `disclosed` may be shown to a user as fact.**
 - `audit.html` → `PLANS[].unquantifiedWindow` — the fetch-failure fallback for B6. Diffed both ways by `check-auditor.js` §18.
 
@@ -2009,7 +2024,7 @@ assumptions. It is a pure statement about two numbers the provider published.
 | `ratio` | 3 (Z.ai) | **6.7× tighter** + both figures |
 | `sized` | 1 | the long window, published, with nothing comparable to set against it |
 | `named` | 12 | *weekly — not published* |
-| `none` | 12 | *none published* + **the date it was read** |
+| `none` | 13 | *none published* + **the date it was read** |
 | `unchecked` | 3 | *not checked — our gap, not their silence* |
 | `unknown` | 1 (DeepSeek) | *not established* |
 
@@ -2791,7 +2806,7 @@ key is missing.
 **What rots here, in order of speed:**
 
 1. **`allowance` — fastest-moving thing on the page.** It is 🔴 × 8 today because
-   23 of 31 plans publish nothing (25 of 27 in August; OpenAI and Microsoft both withdrew figures on 2026-09-19 — see B1, E1k). That count comes from `plan-limits.json`, so
+   25 of 33 plans publish nothing (24 of 32 on 2026-09-30, 25 of 27 in August; OpenAI and Microsoft both withdrew figures on 2026-09-19 — see B1, E1k). That count comes from `plan-limits.json`, so
    **re-count it whenever that file is verified** rather than trusting the prose.
    The trend is one-directional and hostile: OpenAI *deleted* its only general cap
    between two checks. A 🔴 here is not safe to assume permanent in either
