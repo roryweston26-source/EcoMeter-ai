@@ -9,6 +9,22 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-10-13 — Poe added: five points plans with a computed Ceiling
+
+Poe (Quora) resells most labs' models on one subscription metered in **points**, and it
+publishes both halves: each tier's points (plan list is login-walled; Rory signed in in the
+in-app browser, I read it) and a per-bot rate card in points, plus "$30 per 1M points". So
+the five paid rows are the first reseller rows where **both Break even and Ceiling compute**.
+The finding: the monthly tiers are worth almost exactly their price in points (660k = $19.80
+for $19.99), so a Poe plan is prepaid usage at about the API rate and only pays off if you
+spend nearly every point. Poe is ~9% under OpenAI on GPT-5.5 and ~1% over Anthropic on Opus 5.5.
+
+Code: `pricing.html` treats `points` like `credits` (`isCreditUnit`), with Poe's own panel
+wording. Fixed on the way: a sub-dollar allowance printed "$0", a point's value would have
+printed "0.00 cents", and the callout's "Most of what is published bounds a single feature"
+became false (now derived). Plans 33 → 39, disclosed 8 → 13, 10 providers. Poe is not graded
+on the Transparency Index (same as Z.ai; the axis note now says so). Detail: FRESHNESS **A13**.
+
 ### 2026-10-12 — Break-even: the same usage via OpenRouter, in "show the math"
 
 Break-even compares a plan with the maker's API, which most readers can't use without

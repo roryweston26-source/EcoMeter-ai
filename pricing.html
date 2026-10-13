@@ -454,6 +454,7 @@
     xai:        { name: "xAI",         color: "#c9d1cc" },
     mistral:    { name: "Mistral",    color: "#e0863f" },
     perplexity: { name: "Perplexity", color: "#3fb6c9" },
+    poe:        { name: "Poe",        color: "#a77fe0" },
     microsoft:  { name: "Microsoft",  color: "#6f9fe0" },
     deepseek:   { name: "DeepSeek",   color: "#8a7fe0" },
     alibaba:    { name: "Alibaba",    color: "#e0705f" },
@@ -708,6 +709,13 @@
     { p:"perplexity",  m:"Perplexity Pro",         price:20 },
     { p:"perplexity",  m:"Perplexity Max",         price:200 },
 
+    { p:"poe",         m:"Poe (Free)",             price:0, note:"Daily points, number not published" },
+    { p:"poe",         m:"Poe 10k points/day",     price:4.99, note:"Resells most labs' models, metered in points. $49.99/yr" },
+    { p:"poe",         m:"Poe 660k points/mo",     price:19.99, note:"$199.99/yr" },
+    { p:"poe",         m:"Poe 1.65M points/mo",    price:49.99, note:"$499.99/yr" },
+    { p:"poe",         m:"Poe 3.3M points/mo",     price:99.99, note:"$999.99/yr" },
+    { p:"poe",         m:"Poe 8.25M points/mo",    price:249.99, note:"$2,499.99/yr" },
+
     { p:"microsoft",   m:"Copilot (Free)",         price:0 },
     { p:"microsoft",   m:"Microsoft 365 Premium",  price:19.99, note:"Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
     { p:"microsoft",   m:"Microsoft 365 Pro",      price:99.99, note:"New top tier, on Microsoft's individuals pricing page by 2026-10-12. Monthly billing only." },
@@ -787,6 +795,8 @@
           "mistral:mistral-medium-3.5": "mistralai/mistral-medium-3-5",
           "mistral:mistral-small-4": "mistralai/mistral-small-2603",
           "openai:gpt-5.4-mini": "openai/gpt-5.4-mini",
+          "openai:gpt-5.4-nano": "openai/gpt-5.4-nano",
+          "openai:gpt-5.5": "openai/gpt-5.5",
           "openai:gpt-5.6-luna": "openai/gpt-5.6-luna",
           "openai:gpt-5.6-sol": "openai/gpt-5.6-sol",
           "openai:gpt-5.6-terra": "openai/gpt-5.6-terra",
@@ -802,6 +812,15 @@
         models: {
           "glm-5.3": { input: 6.9, cached: 1.7, output: 24 },
           "glm-5.3-flash": { input: 2.3, cached: 0.56, output: 8 }
+        }
+      }, poe: {
+        unit: "points", usd_per_credit: 0.00003, published: true,
+        formula: "the approximate cost of pre-purchasing those points at a rate of $30 per 1M points",
+        source: "https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs",
+        divisor: 1000, cache_hit: 0, peak: true,
+        models: {
+          "gpt-5.5": { input: 150, cached: 15, output: 900 },
+          "claude-opus-5-5": { input: 134, cached: 6.7, output: 667 }
         }
       } }
     },
@@ -840,6 +859,18 @@
         third_party:[{ n:125, unit:"advanced-model queries", window:"7d", scope:"advanced models (e.g. Gemini 3.1 Pro, Thinking)", confidence:"low", source:"https://www.androidauthority.com/perplexity-pro-advanced-ai-limits-reduced-3667942/" }] },
       { p:"perplexity", m:"Perplexity Max", provenance:"disclosed", value_models:{ low:"openai:gpt-5.6-sol", high:"anthropic:claude-opus-5" },
         caps:[{ n:10000, unit:"credits", window:"30d", scope:"Computer", soft:false, scope_limited:true }] },
+
+      { p:"poe", m:"Poe (Free)", provenance:"not_disclosed", value_models:{ low:"openai:gpt-5.4-nano", high:"openai:gpt-5.4-nano" } },
+      { p:"poe", m:"Poe 10k points/day", provenance:"disclosed", window_check:{ result:"none stated", checked:"2026-10-13" }, value_models:{ low:"anthropic:claude-opus-5-5", high:"openai:gpt-5.5" },
+        caps:[{ n:10000, unit:"points", window:"1d", scope:"all bots", soft:false, scope_limited:false }] },
+      { p:"poe", m:"Poe 660k points/mo", provenance:"disclosed", value_models:{ low:"anthropic:claude-opus-5-5", high:"openai:gpt-5.5" },
+        caps:[{ n:660000, unit:"points", window:"30d", scope:"all bots", soft:false, scope_limited:false }] },
+      { p:"poe", m:"Poe 1.65M points/mo", provenance:"disclosed", value_models:{ low:"anthropic:claude-opus-5-5", high:"openai:gpt-5.5" },
+        caps:[{ n:1650000, unit:"points", window:"30d", scope:"all bots", soft:false, scope_limited:false }] },
+      { p:"poe", m:"Poe 3.3M points/mo", provenance:"disclosed", value_models:{ low:"anthropic:claude-opus-5-5", high:"openai:gpt-5.5" },
+        caps:[{ n:3300000, unit:"points", window:"30d", scope:"all bots", soft:false, scope_limited:false }] },
+      { p:"poe", m:"Poe 8.25M points/mo", provenance:"disclosed", value_models:{ low:"anthropic:claude-opus-5-5", high:"openai:gpt-5.5" },
+        caps:[{ n:8250000, unit:"points", window:"30d", scope:"all bots", soft:false, scope_limited:false }] },
 
       { p:"microsoft", m:"Copilot (Free)", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31", scope:"the free Copilot tier" }, no_api_rate:true },
       { p:"microsoft", m:"Microsoft 365 Premium", provenance:"not_disclosed", no_api_rate:true },
@@ -987,6 +1018,11 @@
 
   var WINDOW_HOURS = { "1h":1, "3h":3, "5h":5, "1d":24, "24h":24, "7d":168, "30d":720 };
 
+  // A provider-minted unit that _meta.credit_conversion can price. Poe calls its
+  // "points"; the arithmetic is the same as Z.ai's credits, so the name is the only
+  // difference. Anything else is refused by capMessages, never guessed at.
+  function isCreditUnit(u) { return u === "credits" || u === "points"; }
+
   // How many credits one message exchange costs, from the provider's OWN published
   // formula. Z.ai publishes the divisor, the per-model multipliers and the cached
   // rate, so this is derived arithmetic rather than an estimate — and it is the only
@@ -1024,7 +1060,7 @@
   // one is arithmetic we did, and the reader is entitled to know which they are
   // reading — the same distinction the whole Transparency Index turns on.
   function creditValue(lim, cap) {
-    if (!cap || cap.unit !== "credits" || typeof cap.n !== "number") return null;
+    if (!cap || !isCreditUnit(cap.unit) || typeof cap.n !== "number") return null;
     var conv = ((PLAN_LIMITS._meta || {}).credit_conversion || {})[lim.p];
     if (!conv) return null;
     if (typeof conv.usd_per_credit === "number")
@@ -1044,7 +1080,7 @@
   function capMessages(lim, c) {
     if (!c || typeof c.n !== "number") return null;
     if (!c.unit || c.unit === "messages") return c.n;
-    if (c.unit === "credits") {
+    if (isCreditUnit(c.unit)) {
       var per = creditsPerMessage(lim);
       return (per && per > 0) ? c.n / per : null;
     }
@@ -1775,7 +1811,19 @@
       // first row, and showing the others is the point: a reader who only saw the
       // 5-hour figure would put this plan 6.72x higher than it belongs.
       var wins = ceil.windows || [{ perDay: ceil.perDay, msgs: ceil.cap.n, cap: ceil.cap }];
-      var creditCost = (ceil.cap.unit === 'credits') ? creditsPerMessage(lim) : null;
+      var creditCost = isCreditUnit(ceil.cap.unit) ? creditsPerMessage(lim) : null;
+      // Poe meters in points from a per-bot rate card; Z.ai in credits from a formula,
+      // a divisor and peak/off-peak multipliers. Same arithmetic, different promises,
+      // so each gets its own sentence rather than one that is wrong for the other.
+      var creditWhy = ceil.cap.unit === 'points'
+        ? 'Points per message</dt><dd>' + (creditCost || 0).toFixed(0) +
+          ' <span class="why">— ' + esc(provName(sub.p)) + '’s own rate card for ' + esc(modelLabel(ceil.model)) +
+          ', applied to this archetype at no cache discount. ' + esc(provName(sub.p)) + '’s own “standard size message” is about 500 points; ' +
+          'ours is larger because it re-sends the conversation so far, which a real chat does.</span></dd>'
+        : 'Credits per message</dt><dd>' + (creditCost || 0).toFixed(2) +
+          ' <span class="why">— ' + esc(provName(sub.p)) + '’s own published formula and multipliers, applied to this archetype' +
+          ' at no cache discount and peak-rate credits. Both of those choices make the ceiling smaller; ' +
+          esc(provName(sub.p)) + '’s own table assumes a 95% cache hit.</span></dd>';
       out += '<dl>' +
              wins.map(function (w, i) {
                return '<dt>' + (i === 0 ? 'Published cap — this is the one that binds' : 'Also published') + '</dt><dd>' +
@@ -1783,10 +1831,7 @@
                       (w.cap.scope ? ' (' + esc(w.cap.scope) + ')' : "") +
                       ' = ' + fmtNum(w.perDay) + ' msgs/day' + (i === 0 ? '' : ' if it could be hit around the clock') + '</dd>';
              }).join('') +
-             (creditCost ? '<dt>Credits per message</dt><dd>' + creditCost.toFixed(2) +
-               ' <span class="why">— ' + esc(provName(sub.p)) + '\u2019s own published formula and multipliers, applied to this archetype' +
-               ' at no cache discount and peak-rate credits. Both of those choices make the ceiling smaller; ' +
-               esc(provName(sub.p)) + '\u2019s own table assumes a 95% cache hit.</span></dd>' : "") +
+             (creditCost ? '<dt>' + creditWhy : "") +
              (ceil.via ? '<dt>Multiplier</dt><dd>' + ceil.via.x + '× ' + esc(ceil.via.of) + ', as stated by the provider</dd>' : "") +
              '<dt>Ceiling</dt><dd>' + fmtNum(ceil.perDay) + ' msgs/day × ' + monthDays() + ' days at ' + esc(modelLabel(ceil.model)) + ' rates = ' + money0(ceil.perMonth) + '</dd>' +
              '</dl>' +
@@ -1819,8 +1864,9 @@
       if (cvRows.length) {
         var v0 = cvRows[0].v;
         out += '<dl>' + cvRows.map(function (x) {
-          return '<dt>What ' + fmtNum(x.c.n) + ' credits buy</dt><dd>' +
-                 money0(x.v.usd) + ' of usage' +
+          return '<dt>What ' + fmtNum(x.c.n) + ' ' + esc(x.c.unit) + ' buy</dt><dd>' +
+                 // A daily allowance can be worth cents (Poe's 10k points = $0.30); whole dollars would print $0.
+                 (x.v.usd < 10 ? '$' + x.v.usd.toFixed(2) : money0(x.v.usd)) + ' of usage' +
                  (x.c.scope ? ' on ' + esc(x.c.scope) : '') + ', per ' + esc(x.c.window) +
                  // Only set this against the price when the WINDOW is monthly. "$20 per
                  // 7d against an $18/mo plan" invites a comparison between two
@@ -1836,9 +1882,11 @@
           : '<strong>Derived, not published.</strong> ' + esc(provName(sub.p)) + ' publishes the credit ' +
             'multipliers and its own per-token rates but never the rate between them, so this is what ' +
             'the credits for one message cost against what that message costs on its API. ') +
-        'A credit here is worth about ' + (v0.perCredit >= 0.01 ? '$' + v0.perCredit.toFixed(2)
+        // A Poe point is worth $0.00003, which 'cents' at two decimals would print as 0.00.
+        'A ' + (cvRows[0].c.unit === 'points' ? 'point' : 'credit') + ' here is worth about ' + (v0.perCredit >= 0.01 ? '$' + v0.perCredit.toFixed(2)
+                                                                 : v0.perCredit < 0.0001 ? '$' + fmtNum(v0.perCredit * 1e6) + ' per million'
                                                                  : (v0.perCredit * 100).toFixed(2) + ' cents') + '. ' +
-        '<em>Credits are not a unit</em> — every provider mints its own, and the same word buys ' +
+        '<em>Credits and points are not units</em> — every provider mints its own, and the same word buys ' +
         'different amounts from each. That is worth knowing before comparing two plans that both quote them.' +
         (cvRows[0].c.scope_limited
           ? ' This allowance covers ' + esc(cvRows[0].c.scope) + ' only, not the whole plan, so it is not a ceiling and we do not print one.'
@@ -1971,7 +2019,7 @@
         var figure = fmtNum(c.n) + (c.n_high != null ? '\u2013' + fmtNum(c.n_high) : '');
         return '<b>' + figure + (i === 0 || c.unit !== cs[0].unit ? ' ' + esc(c.unit) : '') + '</b> ' +
                (WINDOW[c.window] || 'per ' + esc(c.window)) +
-               (c.scope ? ' for ' + esc(c.scope) + ' only' : '');
+               (c.scope ? ' for ' + esc(c.scope) + (/^all/i.test(c.scope) ? '' : ' only') : '');
       });
       return join(parts) + ' on ' + esc(l.m);
     };
@@ -2018,7 +2066,8 @@
       (partial.length
         ? (partial.length === 1
             ? 'The one plan with a published figure bounds a single feature rather than the plan itself: '
-            : 'Most of what is published bounds a single feature rather than the plan. ' +
+            // 'Most' was true until Poe's five whole-plan allowances arrived (2026-10-13); derive it.
+            : (partial.length > whole.length ? 'Most' : 'Some') + ' of what is published bounds a single feature rather than the plan. ' +
               'Across ' + partial.length + ' plans that is: ') +
           join(partial) + '. '
         : '') +

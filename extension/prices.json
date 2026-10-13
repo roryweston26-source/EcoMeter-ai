@@ -182,6 +182,12 @@
     { "p": "perplexity", "m": "Perplexity Free", "price": 0 },
     { "p": "perplexity", "m": "Perplexity Pro", "price": 20 },
     { "p": "perplexity", "m": "Perplexity Max", "price": 200 },
+    { "p": "poe", "m": "Poe (Free)", "price": 0, "note": "Daily points, number not published" },
+    { "p": "poe", "m": "Poe 10k points/day", "price": 4.99, "note": "Resells most labs' models, metered in points. $49.99/yr" },
+    { "p": "poe", "m": "Poe 660k points/mo", "price": 19.99, "note": "$199.99/yr" },
+    { "p": "poe", "m": "Poe 1.65M points/mo", "price": 49.99, "note": "$499.99/yr" },
+    { "p": "poe", "m": "Poe 3.3M points/mo", "price": 99.99, "note": "$999.99/yr" },
+    { "p": "poe", "m": "Poe 8.25M points/mo", "price": 249.99, "note": "$2,499.99/yr" },
 
     { "p": "microsoft", "m": "Copilot (Free)", "price": 0 },
     { "p": "microsoft", "m": "Microsoft 365 Premium", "price": 19.99, "note": "Replaced Copilot Pro ($20), which stopped renewing 1 Aug 2026" },
