@@ -9,7 +9,7 @@
       "third_party": "Measured or reported by someone other than the provider. Treat as indicative.",
       "not_disclosed": "The provider does not publish a usable figure."
     },
-    "finding": "As of 2026-10-12, 8 of the 33 consumer plans tracked here publish any usage figure at all about their own product; 25 publish nothing (the 24th is ChatGPT Pro 500, added 2026-09-30; the 25th is Microsoft 365 Pro, added 2026-10-12). Of those 8, 5 bound A SINGLE FEATURE rather than the plan — OpenAI's Codex five-hour message table on Plus and the two Pro tiers, Perplexity Max's Computer credits, and Mistral's 150 Flash answers a day. Only 3 publish an allowance that bounds the whole product, and all 3 belong to Z.ai — which also publishes the credit formula, the per-model multipliers, the peak/off-peak rule and a token conversion table, so the allowance can actually be checked rather than merely quoted. THE COUNT FELL BY TWO THIS PASS, AND BOTH LOSSES WERE WITHDRAWALS RATHER THAN RESTATEMENTS. OpenAI deleted ChatGPT Go's \"10 messages every 5 hours after enabling Thinking\" — one of the only two absolute consumer figures that existed — and its pricing page now carries no numeric allowance of any kind. Microsoft deleted all four of its published figures at once (Agents 25 tasks/month, Vision 15 min/day, Voice 60 min/day, and the 60 AI credits/month that applied to the CHEAP tiers) and replaced them with \"Extensive use\" / \"Standard usage\" / \"More usage\" / \"Highest usage\". Everything else is still sold on a relative multiplier against a base nobody states: OpenAI's Pro tiers as \"5x or 20x more usage\" than Plus, Anthropic's Max as \"5x/20x more usage than Pro\", Google's tiers as \"2x/4x/20x higher than standard limits\" with its own footnote defining the base as \"non-AI subscribers\". Anthropic, Google and OpenAI all meter in ways that vary with prompt complexity, feature use, model and chat length, and Google reserves the right to change limits \"without notice, including due to capacity constraints.\" The pattern holds and has strengthened: disclosure gets worse as the price goes up, and over the last month it got worse outright.",
+    "finding": "As of 2026-10-13, 13 of the 39 consumer plans tracked here publish any usage figure at all about their own product; 26 publish nothing (the 24th is ChatGPT Pro 500, added 2026-09-30; the 25th is Microsoft 365 Pro, added 2026-10-12; the 26th is Poe (Free), added 2026-10-13). Of those 13, 5 bound A SINGLE FEATURE rather than the plan — OpenAI's Codex five-hour message table on Plus and the two Pro tiers, Perplexity Max's Computer credits, and Mistral's 150 Flash answers a day. Only 8 publish an allowance that bounds the whole product: 3 belong to Z.ai, which also publishes the credit formula, the per-model multipliers, the peak/off-peak rule and a token conversion table, and 5 to Poe, which publishes each tier's points, a per-bot rate card in points and what a point costs, so both can actually be checked rather than merely quoted. Neither is a Western frontier lab: Poe resells their models, and publishes more about them than they do. THE COUNT FELL BY TWO THIS PASS, AND BOTH LOSSES WERE WITHDRAWALS RATHER THAN RESTATEMENTS. OpenAI deleted ChatGPT Go's \"10 messages every 5 hours after enabling Thinking\" — one of the only two absolute consumer figures that existed — and its pricing page now carries no numeric allowance of any kind. Microsoft deleted all four of its published figures at once (Agents 25 tasks/month, Vision 15 min/day, Voice 60 min/day, and the 60 AI credits/month that applied to the CHEAP tiers) and replaced them with \"Extensive use\" / \"Standard usage\" / \"More usage\" / \"Highest usage\". Everything else is still sold on a relative multiplier against a base nobody states: OpenAI's Pro tiers as \"5x or 20x more usage\" than Plus, Anthropic's Max as \"5x/20x more usage than Pro\", Google's tiers as \"2x/4x/20x higher than standard limits\" with its own footnote defining the base as \"non-AI subscribers\". Anthropic, Google and OpenAI all meter in ways that vary with prompt complexity, feature use, model and chat length, and Google reserves the right to change limits \"without notice, including due to capacity constraints.\" The pattern holds and has strengthened: disclosure gets worse as the price goes up, and over the last month it got worse outright.",
     "context_windows_are_now_disclosed": "Counter-example to the finding above, added 2026-08-24, and recorded because a file that only collects evidence for its own thesis is not evidence. OpenAI's plan table now publishes a per-plan CONTEXT WINDOW for every consumer tier — Instant 27K/54K/54K/128K and Reasoning Varies/256K/256K/400K across Free/Go/Plus/Pro. That is a real, absolute, provider-published number about its own product, and the first any provider has ADDED rather than withdrawn in the period this file covers. It does not weaken the finding, because a context window bounds how much fits in one conversation, not how many conversations you get — the allowance question is still unanswered everywhere. But \"nobody discloses anything\" would now be false, and the honest statement is narrower: nobody discloses an ALLOWANCE.",
     "disclosure_is_getting_worse": "Between the 2026-07-28 and 2026-08-08 checks, OpenAI DELETED the only general absolute cap anyone published — '160 GPT-5.5 Instant messages per 3 hours', which had applied identically to Go at $8 and Plus at $20. The replacement language is that limits 'can be dynamic and may vary based on factors that include market, system conditions, abuse-prevention guardrails, and individual usage'. ChatGPT Plus is now the most expensive consumer tier of any provider carrying no published usage figure of any kind. This is worth re-checking every time this file is verified: the trend is one-directional, and a figure being here today is not evidence it will be next quarter. SECOND ENTRY, 2026-09-19, and it is two providers in one pass. (1) OPENAI deleted ChatGPT Go's \"10 messages every 5 hours after enabling Thinking\" from openai.com/chatgpt/pricing, sometime after 2026-08-24. Go is now described only in comparatives — \"More messages with tools\", \"More uploads\", \"More image creation\". The whole pricing page contains zero numeric allowances; the strings \"every 5 hours\" and \"10 messages\" do not appear anywhere on it. This was one of only two absolute consumer usage figures published by anyone, so the loss is disproportionate to its size. (2) MICROSOFT rewrote its AI-credits article (\"Last updated: September 2026\") and deleted EVERY figure in it: Agents 25 tasks/month, Vision 15 minutes/day and Voice 60 minutes/day on Premium, plus the hard 60 AI credits/month that had applied to Personal and Family. The replacement table grades four tiers entirely in words — \"Extensive use\", \"Standard usage\", \"More usage\", \"Highest usage\", \"Not available\". Verified by regex over the rendered page at both URLs this file cited: not one numeric allowance phrase survives. Microsoft is also the provider whose per-site datacenter disclosure produced the first positive grade movement this project ever recorded (E1g), so the two directions are running at once and should not be summarised as one attitude. SEPARATELY, and not a disclosure loss but an availability one: OpenAI paused new sign-ups and upgrades to ChatGPT Pro $200 (Pro 20x) on 2026-09-10, and $200 no longer appears on its pricing page. UPDATED 2026-09-30: that availability loss reversed — OpenAI reopened Pro 200 on 2026-09-29 and added a $500 Pro 500 tier — but disclosure did not improve. New Pro 200 subscriptions carry a LOWER allowance that OpenAI does not size, its Pro tiers article no longer states a 5x or 20x multiple, and its Codex page dropped the Pro columns from the five-hour table ('Pro plans currently have no five-hour limit'). The withdrawal tally below has NOT been updated for those, and the two Pro rows have not been re-graded. THE TREND REMAINS ONE-DIRECTIONAL. In fourteen months this log records four withdrawals and zero additions from the Western providers; every figure gained in that time came from Z.ai. A figure being here today is not evidence it will be next quarter — re-check every one of them every pass, because two of eight went this time.",
     "archetypes": {
@@ -131,6 +131,8 @@
         "mistral:mistral-medium-3.5": "mistralai/mistral-medium-3-5",
         "mistral:mistral-small-4": "mistralai/mistral-small-2603",
         "openai:gpt-5.4-mini": "openai/gpt-5.4-mini",
+        "openai:gpt-5.4-nano": "openai/gpt-5.4-nano",
+        "openai:gpt-5.5": "openai/gpt-5.5",
         "openai:gpt-5.6-luna": "openai/gpt-5.6-luna",
         "openai:gpt-5.6-sol": "openai/gpt-5.6-sol",
         "openai:gpt-5.6-terra": "openai/gpt-5.6-terra",
@@ -150,6 +152,23 @@
         "comment": "Perplexity publishes the conversion in dollars directly, which is simpler than Z.ai's and rarer: it states what a credit is WORTH rather than what it costs in tokens. It does NOT produce a Ceiling — the allowance is scope_limited to Computer, and pricing a whole plan off one feature is the refusal that already protects ChatGPT Go. What it produces is a value the reader can check against the sticker price, which is the useful half.",
         "source": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity",
         "as_of": "2026-08-29"
+      },
+      "poe": {
+        "unit": "points",
+        "usd_per_credit": 0.00003,
+        "published": true,
+        "formula": "the approximate cost of pre-purchasing those points at a rate of $30 per 1M points",
+        "divisor": 1000,
+        "cache_hit": 0,
+        "peak": true,
+        "models": {
+          "gpt-5.5": { "input": 150, "cached": 15, "output": 900 },
+          "claude-opus-5-5": { "input": 134, "cached": 6.7, "output": 667 }
+        },
+        "rate_basis": "Points per 1,000 tokens, read from each bot's 'Rates' panel on poe.com on 2026-10-13 (signed in, free account). Divisor 1000 turns that into points per token. Poe shows the same rates in USD beside them: GPT-5.5 $4.55/$27.27 per 1M (BELOW OpenAI's own $5/$30, about 9% cheaper) and Claude Opus 5.5 $4.04/$20.20 (about 1% ABOVE Anthropic's $4/$20). Poe has no peak/off-peak pricing; peak:true here only means no discount is assumed. Cached rates are recorded but unused: cache_hit is 0, as for Z.ai.",
+        "comment": "Poe publishes BOTH halves, which nobody else on this page does: what a point is worth in dollars (like Perplexity) AND what a message costs in points per model (like Z.ai). So its allowance gives a computed Ceiling AND a published dollar value. The finding the two together produce: the monthly plans are worth almost exactly their price in points at Poe's own add-on rate ($19.99 buys 660k points = $19.80), so a Poe plan is prepaid metered usage at roughly the maker's API rate, not a discount, and unused points do not roll over. The 10k/day tier is the exception: 300k points a month for $4.99, but only if used every day.",
+        "source": "https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs",
+        "as_of": "2026-10-13"
       },
       "zai": {
         "divisor": 10000,
@@ -809,6 +828,84 @@
       },
       "source": "https://www.perplexity.ai/help-center/en/articles/13838041-how-credits-work-on-perplexity",
       "as_of": "2026-09-19"
+    },
+    {
+      "p": "poe",
+      "m": "Poe (Free)",
+      "provenance": "not_disclosed",
+      "value_models": { "low": "openai:gpt-5.4-nano", "high": "openai:gpt-5.4-nano" },
+      "stated": "Poe says non-paying users 'receive points daily, which reset at the end of each 24-hour period' and does not say how many. A signed-in free account showed 'Available points 300' on 2026-10-13. That is OUR observation, not Poe's statement, and it may be the remaining balance rather than the daily grant, so it is not used as a cap. Poe's Assistant routes free users' general queries to GPT-5.4-Nano (its own model description, api.poe.com/v1/models). Its home page features GPT-6-Astra, which a free account cannot actually use.",
+      "source": "https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs",
+      "as_of": "2026-10-13"
+    },
+    {
+      "p": "poe",
+      "m": "Poe 10k points/day",
+      "provenance": "disclosed",
+      "value_models": { "low": "anthropic:claude-opus-5-5", "high": "openai:gpt-5.5" },
+      "caps": [
+        { "n": 10000, "unit": "points", "window": "1d", "scope": "all bots", "soft": false, "scope_limited": false }
+      ],
+      "window_check": {
+        "result": "none stated",
+        "checked": "2026-10-13",
+        "pages_read": [
+          "https://poe.com/ (signed in: 'Get more points' plan list, 'What's included?')",
+          "https://help.poe.com/hc/en-us/articles/19945140063636-Poe-Purchases-FAQs"
+        ],
+        "note": "Each tier is sold on ONE window: points per day on this tier, points per month on the others. No second window is stated for any tier. Unscoped because the one plan list covers every Poe tier."
+      },
+      "stated": "'10 thousand points/day', $4.99/mo ($49.99/yr). 'What's included?' says: 'at current rates, send up to 20 standard size messages to GPT-6-Astra, 20 to Claude-Opus-5.5, 20 to Claude-Fable-5.1, or 20 to Grok-4.7', i.e. Poe's own standard message is about 500 points. Our standard archetype re-sends six turns of history and comes to about 980 points on GPT-5.5, so our ceiling is roughly half Poe's message count, and both are arithmetic on the same published rates. Unused points do not roll over.",
+      "source": "https://poe.com/",
+      "as_of": "2026-10-13"
+    },
+    {
+      "p": "poe",
+      "m": "Poe 660k points/mo",
+      "provenance": "disclosed",
+      "value_models": { "low": "anthropic:claude-opus-5-5", "high": "openai:gpt-5.5" },
+      "caps": [
+        { "n": 660000, "unit": "points", "window": "30d", "scope": "all bots", "soft": false, "scope_limited": false }
+      ],
+      "stated": "'660 thousand points/month', $19.99/mo ($199.99/yr). At Poe's $30-per-1M add-on rate that is $19.80 of points for $19.99.",
+      "source": "https://poe.com/",
+      "as_of": "2026-10-13"
+    },
+    {
+      "p": "poe",
+      "m": "Poe 1.65M points/mo",
+      "provenance": "disclosed",
+      "value_models": { "low": "anthropic:claude-opus-5-5", "high": "openai:gpt-5.5" },
+      "caps": [
+        { "n": 1650000, "unit": "points", "window": "30d", "scope": "all bots", "soft": false, "scope_limited": false }
+      ],
+      "stated": "'1.65 million points/month', $49.99/mo ($499.99/yr). $49.50 of points at the add-on rate.",
+      "source": "https://poe.com/",
+      "as_of": "2026-10-13"
+    },
+    {
+      "p": "poe",
+      "m": "Poe 3.3M points/mo",
+      "provenance": "disclosed",
+      "value_models": { "low": "anthropic:claude-opus-5-5", "high": "openai:gpt-5.5" },
+      "caps": [
+        { "n": 3300000, "unit": "points", "window": "30d", "scope": "all bots", "soft": false, "scope_limited": false }
+      ],
+      "stated": "'3.3 million points/month', $99.99/mo ($999.99/yr). $99 of points at the add-on rate.",
+      "source": "https://poe.com/",
+      "as_of": "2026-10-13"
+    },
+    {
+      "p": "poe",
+      "m": "Poe 8.25M points/mo",
+      "provenance": "disclosed",
+      "value_models": { "low": "anthropic:claude-opus-5-5", "high": "openai:gpt-5.5" },
+      "caps": [
+        { "n": 8250000, "unit": "points", "window": "30d", "scope": "all bots", "soft": false, "scope_limited": false }
+      ],
+      "stated": "'8.25 million points/month', $249.99/mo ($2,499.99/yr). $247.50 of points at the add-on rate.",
+      "source": "https://poe.com/",
+      "as_of": "2026-10-13"
     },
     {
       "p": "microsoft",

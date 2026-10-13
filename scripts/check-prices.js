@@ -499,7 +499,7 @@ for (const [prov, m] of Object.entries(p.api)) {
   const conv = (L._meta || {}).credit_conversion || {};
   for (const s of L.plans) for (const c of (s.caps || [])) {
     if (c.unit === 'messages' || c.scope_limited) continue;
-    if (c.unit !== 'credits') { fail('plan-limits: ' + s.m + ' has a whole-plan cap in an ' +
+    if (c.unit !== 'credits' && c.unit !== 'points') { fail('plan-limits: ' + s.m + ' has a whole-plan cap in an ' +
       'unpriceable unit "' + c.unit + '" — either add a conversion or mark it scope_limited'); continue; }
     const cc = conv[s.p];
     if (!cc || !cc.models) { fail('plan-limits: ' + s.m + ' publishes a credit allowance but ' +

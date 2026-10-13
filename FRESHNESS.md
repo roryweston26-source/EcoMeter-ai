@@ -338,7 +338,7 @@ the second belongs in that list.
 **Goes stale:** less often, but sharply. Google AI Plus went $7.99 → $4.99;
 Copilot Pro finished retiring 1 Aug 2026.
 
-**Source of truth:** `extension/prices.json` → `subscriptions` (33 plans, 2026-10-12).
+**Source of truth:** `extension/prices.json` → `subscriptions` (39 plans, 2026-10-13).
 
 **Copies:** `plan-limits.json` → `plans` (joins on `p` + `m`) · `audit.html` →
 `PLANS[].price`
@@ -1503,6 +1503,65 @@ amount.
 
 # B. Plan limits, caps and disclosure
 
+## A13. Poe — points plans, the first reseller with a computed ceiling (added 2026-10-13)
+
+**What it is:** Poe (Quora) resells most labs' models behind one subscription metered
+in **points**. Six rows: Free plus five paid tiers. **Read signed in** (Rory's free
+account, in the in-app browser) because the plan list is login-walled. Public pages
+give the rate cards and the $30-per-1M figure but not the tiers.
+
+| Plan (join key) | Price | Points | At $30/1M |
+|---|---|---|---|
+| Poe 10k points/day | $4.99/mo ($49.99/yr) | 10k/day | ~$9/mo if used daily |
+| Poe 660k points/mo | $19.99/mo ($199.99/yr) | 660k/month | $19.80 |
+| Poe 1.65M points/mo | $49.99/mo ($499.99/yr) | 1.65M/month | $49.50 |
+| Poe 3.3M points/mo | $99.99/mo ($999.99/yr) | 3.3M/month | $99.00 |
+| Poe 8.25M points/mo | $249.99/mo ($2,499.99/yr) | 8.25M/month | $247.50 |
+
+**The findings:**
+- **Poe publishes both halves**: what a point is worth (like Perplexity) and what a
+  message costs in points (like Z.ai). So these are the first reseller rows with a
+  computed Ceiling **and** a published dollar value.
+- **The monthly plans are prepaid usage at about the API rate, not a discount.** Each
+  tier's points are worth almost exactly its price at Poe's add-on rate. Unused points
+  don't roll over. So break-even and ceiling land close together: the plan only pays
+  off if you spend nearly every point. The 10k/day tier is the exception (about 1.8×
+  its price in points) if you use it every day.
+- **Poe's rates differ from the makers' in both directions.** GPT-5.5 is $4.55/$27.27
+  per 1M on Poe vs OpenAI's $5/$30 (~9% cheaper). Claude Opus 5.5 is $4.04/$20.20 vs
+  $4/$20 (~1% dearer). At our standard archetype on the $19.99 tier: GPT-5.5 break-even
+  ~20 msgs/day vs ceiling ~22; on Opus 5.5 even every point does not quite reach break-even.
+- **Poe's "standard size message" is ~500 points** ("20 standard size messages" from
+  10k). Ours is ~980 on GPT-5.5 because it re-sends six turns of history. Both are
+  arithmetic on the same published rates; the panel says so.
+- **Web search is on by default** for these bots and costs 300–334 points a search,
+  which break-even does not carry (A7). Same direction as everywhere else.
+- **Free:** Poe says free users get daily points but not how many. Rory's free account
+  showed "Available points 300". That is our observation, may be the remaining balance,
+  and is not used as a cap. The home page features GPT-6-Astra, which a free account
+  can't use (Rory hit this).
+
+**Anchors:** `value_models` high = **GPT-5.5** (what Poe's Assistant sends subscribers'
+general queries to, per its own model description at api.poe.com/v1/models) and low =
+**Claude Opus 5.5** (featured flagship). The ceiling prices on GPT-5.5, which costs
+more points per message, so it is the smaller ceiling. Free uses GPT-5.4-Nano, the
+Assistant's non-subscriber route.
+
+**Source of truth:** `plan-limits.json` → the six `poe` rows and
+`_meta.credit_conversion.poe` (unit `points`, rate cards per 1k tokens, divisor 1000).
+**Copies:** `extension/prices.json` → `subscriptions`; `pricing.html` → `SUBSCRIPTIONS`,
+`FALLBACK_LIMITS` rows and its `credit_conversion.poe` mirror.
+
+**Verify:** sign in to poe.com → "Get more points" (toggle Billed monthly) for tiers;
+each bot's "Rates" panel for points per 1k tokens; the Poe FAQs article for the $30/1M.
+Rate cards can move without the tiers moving. **Not graded on the Transparency Index**,
+same as Z.ai; the pricing-axis note says so (check-transparency enforces it).
+
+**Guard:** `check-prices.js` (credit-unit and conversion shape), `check-transparency.js`
+(counts), `check-auditor.js` §19 (OpenRouter entries for the new anchors)
+
+---
+
 ## A12. OpenRouter — the pay-per-token route (added 2026-10-12)
 
 **What it is:** each subscription row's "show the math" panel now gives break-even
@@ -1561,7 +1620,7 @@ cap anyone published.
 `disclosed` / `derived` / `third_party` / `not_disclosed`.
 
 **Copies:**
-- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 33 rows (2026-10-12), **generated from `plan-limits.json`, not hand-copied** (2026-08-30). It had drifted to 27 rows with no Z.ai at all while the callout derived "31 plans / 5 disclosed" from whatever was loaded, so a failed fetch printed a different finding from the one the data supports. `pricing.html` → `SUBSCRIPTIONS` had drifted the same way, to 26.
+- `pricing.html` → `FALLBACK_LIMITS` — a **seventh** copy of this data, 39 rows (2026-10-13), **generated from `plan-limits.json`, not hand-copied** (2026-08-30). It had drifted to 27 rows with no Z.ai at all while the callout derived "31 plans / 5 disclosed" from whatever was loaded, so a failed fetch printed a different finding from the one the data supports. `pricing.html` → `SUBSCRIPTIONS` had drifted the same way, to 26.
 - `audit.html` → `PLANS[].cap` + `.capSource` — uses `estimate` where `plan-limits.json` says `not_disclosed`, because the Auditor needs a working number. **Only `disclosed` may be shown to a user as fact.**
 - `audit.html` → `PLANS[].unquantifiedWindow` — the fetch-failure fallback for B6. Diffed both ways by `check-auditor.js` §18.
 
@@ -2071,9 +2130,9 @@ assumptions. It is a pure statement about two numbers the provider published.
 | State | Rows | Reads |
 |---|---|---|
 | `ratio` | 3 (Z.ai) | **6.7× tighter** + both figures |
-| `sized` | 1 | the long window, published, with nothing comparable to set against it |
+| `sized` | 5 | the long window, published, with nothing comparable to set against it |
 | `named` | 12 | *weekly — not published* |
-| `none` | 13 | *none published* + **the date it was read** |
+| `none` | 15 | *none published* + **the date it was read** |
 | `unchecked` | 3 | *not checked — our gap, not their silence* |
 | `unknown` | 1 (DeepSeek) | *not established* |
 
@@ -2273,6 +2332,7 @@ different things.** The distinction is the point, and it is labelled on the page
 |---|---|---|---|
 | Perplexity | "100 credits equals $1" | **$0.01/credit** | **published** |
 | Z.ai | credit multipliers + per-token rates, never the rate between them | **~0.20 cents/credit** | **derived** |
+| Poe (2026-10-13) | "$30 per 1M points" **and** a per-bot rate card in points | **$0.00003/point** | **published** |
 
 **So a Perplexity credit is worth about 5× a Z.ai credit.** That is the finding, and
 it is why the panel says *credits are not a unit*: every provider mints its own and
@@ -2855,7 +2915,7 @@ key is missing.
 **What rots here, in order of speed:**
 
 1. **`allowance` — fastest-moving thing on the page.** It is 🔴 × 8 today because
-   25 of 33 plans publish nothing (24 of 32 on 2026-09-30, 25 of 27 in August; OpenAI and Microsoft both withdrew figures on 2026-09-19 — see B1, E1k). That count comes from `plan-limits.json`, so
+   26 of 39 plans publish nothing (25 of 33 on 2026-10-12, 24 of 32 on 2026-09-30, 25 of 27 in August; OpenAI and Microsoft both withdrew figures on 2026-09-19 — see B1, E1k). That count comes from `plan-limits.json`, so
    **re-count it whenever that file is verified** rather than trusting the prose.
    The trend is one-directional and hostile: OpenAI *deleted* its only general cap
    between two checks. A 🔴 here is not safe to assume permanent in either
