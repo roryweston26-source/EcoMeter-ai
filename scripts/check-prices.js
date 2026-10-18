@@ -415,9 +415,18 @@ for (const [prov, m] of Object.entries(p.api)) {
   if (/cheapest provider we track/i.test(audit))
     fail('audit.html reuses the retired phrase "the cheapest provider we track". Auditor ranking: ' + aud.fmt);
   // The sentence states both a rank and a count; both must still hold.
-  if (audit.includes('second cheapest rather than the first') && dsRank !== 2)
-    fail('audit.html says DeepSeek is second cheapest of the Auditor set; it is now #' + dsRank +
+  if (audit.includes('DeepSeek is now the third cheapest') && dsRank !== 3)
+    fail('audit.html says DeepSeek is third cheapest of the Auditor set; it is now #' + dsRank +
          '. Rewrite that sentence. Auditor ranking: ' + aud.fmt);
+  // The off-peak clause makes its own claim: half of DeepSeek's peak blend is second of the
+  // four, behind Anthropic. Checked separately because a peak rank can hold while this fails.
+  if (audit.includes('at off-peak lifts it to second of the four, still behind Haiku 5.5') && cheapest.deepseek != null) {
+    const off = Object.entries(cheapest).filter(([k]) => AUDITOR.includes(k) && k !== 'deepseek')
+      .filter(([, v]) => v < cheapest.deepseek / 2).map(([k]) => k);
+    if (off.length !== 1 || off[0] !== 'anthropic')
+      fail('audit.html says off-peak DeepSeek is second, behind Haiku 5.5 only; at $' + (cheapest.deepseek / 2).toFixed(3) +
+           ' it is beaten by: ' + (off.join(', ') || 'nobody') + '. Auditor ranking: ' + aud.fmt);
+  }
   if (audit.includes('four providers this tool can price') && aud.order.length !== 4)
     fail('audit.html says "four providers this tool can price" but ' + aud.order.length +
          ' now have a priceable value_model: ' + aud.order.join(', '));

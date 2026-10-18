@@ -273,22 +273,25 @@ let PLANS = {
     // anthropic.com/claude/sonnet says "Anyone can chat with Claude using Sonnet 5.5", and the
     // family-level table above has Sonnet on every tier. Which Sonnet is Free's DEFAULT is not
     // published, so Sonnet 5 stays listed rather than being dropped on a guess.
+    // Haiku 5.5 (launched 2026-10-07) is on every tier: anthropic.com/claude/haiku says Free, Pro,
+    // Max, Team and Enterprise can select it. Haiku 4.5 stays listed, not re-checked.
     { m:'Claude Free',   price:0,   cap:40,  capSource:'estimate',
-      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001'], features:[], seats:1 },
+      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001'], features:[], seats:1 },
     { m:'Claude Pro',    price:20,  cap:144, capSource:'third_party', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8'],
+      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8'],
       features:['projects','extended-thinking'], seats:1 },
     { m:'Claude Max 5×', price:100, cap:720, capSource:'third_party', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
+      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
       features:['projects','extended-thinking','priority'], seats:1 },
     { m:'Claude Max 20×',price:200, cap:null, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
+      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
       features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
-    // Every Google tier runs the SAME models — Gemini 3.1 Pro is the flagship and
-    // the free app already gets it (limited daily). What you buy is quota and
-    // features (video generation, Deep Research volume), never model access. The
+    // Gemini 3.1 Pro is on every tier, the free app included (limited daily), so for
+    // 3.1 Pro what you buy is quota and features. Gemini 4 Argon (GA 2026-10-13) is the
+    // exception: gemini.google/subscriptions, read 2026-10-18, lists it on AI Pro and
+    // Ultra only. MODELS.google.top is still 3.1 Pro; moving it is a separate call. The
     // 2x/4x/20x multipliers are against "standard limits", which Google has never
     // published, so the caps below are our own working figures.
     { m:'Gemini (Free)',  price:0,    cap:60,  capSource:'estimate', unquantifiedWindow:'7d',
@@ -296,9 +299,9 @@ let PLANS = {
     { m:'Google AI Plus', price:4.99, cap:120, capSource:'not_disclosed', unquantifiedWindow:'7d',
       models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['image-gen'], seats:1 },
     { m:'Google AI Pro',  price:19.99,cap:240, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['deep-research','image-gen','video-gen'], seats:1 },
+      models:['gemini-3.6-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen'], seats:1 },
     { m:'Google AI Ultra',price:99.99,cap:null,capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
+      models:['gemini-3.6-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
   ],
   microsoft: [
     // Microsoft withdrew every usage figure in 2026-09 (incl. Personal/Family's 60 AI
@@ -329,10 +332,10 @@ let API = {
   'gpt-5.5':{in:5e-6,out:3e-5}, 'gpt-5.4':{in:2.5e-6,out:1.5e-5}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
   'o3':{in:2e-6,out:8e-6}, 'o4-mini':{in:1.1e-6,out:4.4e-6}, 'gpt-4.1':{in:2e-6,out:8e-6},
   'claude-sonnet-5-5':{in:2e-6,out:1e-5}, 'claude-sonnet-5':{in:2e-6,out:1e-5}, 'claude-sonnet-4-6':{in:3e-6,out:1.5e-5},
-  'claude-haiku-4-5-20251001':{in:1e-6,out:5e-6},
+  'claude-haiku-5-5':{in:1e-7,out:5e-7}, 'claude-haiku-4-5-20251001':{in:1e-6,out:5e-6},
   'claude-opus-5-5':{in:4e-6,out:2e-5}, 'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
   'gemini-3.6-flash':{in:7.5e-7,out:3.75e-6}, 'gemini-3.5-flash':{in:1.5e-6,out:9e-6},
-  'gemini-3.1-pro-preview':{in:2e-6,out:1.2e-5},
+  'gemini-3.1-pro-preview':{in:2e-6,out:1.2e-5}, 'gemini-4-argon':{in:2e-6,out:1e-5},
   // DeepSeek's warned increase landed: ~3x input, ~4.5x output. These are the PEAK
   // (undiscounted) rates — off-peak is half, but it depends on a UTC window the user
   // does not control, and this engine's cheapest advice leans on DeepSeek hardest.
@@ -405,13 +408,13 @@ const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus
   'gpt-6-astra':'GPT-6 Astra', 'gpt-6.1-sol':'GPT-6.1 Sol', 'gpt-6-sol':'GPT-6 Sol', 'gpt-6-luna':'GPT-6 Luna', 'claude-opus-5-5':'Claude Opus 5.5',
   'gpt-5.6-sol':'GPT-5.6 Sol', 'gpt-5.6-terra':'GPT-5.6 Terra', 'gpt-5.6-luna':'GPT-5.6 Luna',
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
-  'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-3.5-flash':'Gemini 3.5 Flash',
+  'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-4-argon':'Gemini 4 Argon', 'gemini-3.5-flash':'Gemini 3.5 Flash',
   'gemini-3.6-flash':'Gemini 3.6 Flash', 'gemini-3.7-flash':'Gemini 3.7 Flash', 'gemini-3.8-flash':'Gemini 3.8 Flash',
   'grok-4.5':'Grok 4.5', 'grok-4.6':'Grok 4.6', 'grok-4.7':'Grok 4.7',
   'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek Flash', 'deepseek-r1':'DeepSeek R1',
   // Every plan-limits value_model needs a label or its raw key leaks into the
   // break-even copy — check-auditor.js enforces that.
-  'gpt-5.4-mini':'GPT-5 Thinking Mini', 'claude-haiku-4-5-20251001':'Claude Haiku 4.5',
+  'gpt-5.4-mini':'GPT-5 Thinking Mini', 'claude-haiku-4-5-20251001':'Claude Haiku 4.5', 'claude-haiku-5-5':'Claude Haiku 5.5',
   'claude-sonnet-5-5':'Claude Sonnet 5.5', 'claude-sonnet-5':'Claude Sonnet 5', 'claude-sonnet-4-6':'Claude Sonnet 4.6',
   'gemini-2.5-flash-lite':'Gemini 2.5 Flash-Lite', 'gemini-3.1-flash-lite':'Gemini 3.1 Flash-Lite',
   'gemini-2.5-pro':'Gemini 2.5 Pro', 'gpt-4o':'GPT-4o' };
@@ -939,7 +942,17 @@ function recommend(pf,sig){
     const thinkMeasured = [be.fewModel, be.manyModel]
       .filter(m => reasoningMult(m) > 1)
       .every(m => (reasoningEntry(m) || {}).measured);
-    why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${pf.arcMeasured?`, priced on your own measured message sizes`:``}.${thinks?` That includes the hidden thinking tokens a reasoning model bills at the output rate${thinkMeasured?` — measured against the provider’s own API, not estimated`:` — our estimate of them, not yet measured for this model`}.`:``}`);
+    // A cheap model can push the many-end past 24 hours (Haiku 5.5 at $0.10/$0.50 needs
+    // ~1,100 messages a day on Claude Pro), which printed "2.5 days of use a day".
+    // pricing.html already says "never pays off" there; say the same thing here.
+    const overADay = n => n/throughputMpm()/60 > 24;
+    const tail = `${pf.arcMeasured?`, priced on your own measured message sizes`:``}.${thinks?` That includes the hidden thinking tokens a reasoning model bills at the output rate${thinkMeasured?` — measured against the provider’s own API, not estimated`:` — our estimate of them, not yet measured for this model`}.`:``}`;
+    if(overADay(be.few))
+      why.push(`Break even at more than a day of use a day, which never happens: even on ${labelModel(be.fewModel)} it would take ${fmtMsgs(be.few)} messages a day (${fmtTime(be.few)} of nonstop use) before ${money(fit.price)}/mo beats paying per token${tail}`);
+    else if(Math.round(be.few)!==Math.round(be.many) && overADay(be.many))
+      why.push(`Break even at ${fmtTime(be.few)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)} — before ${money(fit.price)}/mo beats paying per token. On ${labelModel(be.manyModel)} it never does: that would take ${fmtMsgs(be.many)} messages a day, more than a day of nonstop use${tail}`);
+    else
+      why.push(`Break even at ${fmtTime(be.few)}–${fmtTime(be.many)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)}, or ${fmtMsgs(be.many)} on ${labelModel(be.manyModel)} — before ${money(fit.price)}/mo beats paying per token${tail}`);
     if(be.fewLowest) why.push(`We haven’t measured how much ${labelModel(be.fewLowestModel)} thinks, so that prices it with no thinking tokens. If it thinks as much as ${labelModel(be.fewLowestLike)} did (×${be.fewLowestMult}, measured), the ${labelModel(be.fewLowestModel)} figure falls from ${fmtMsgs(be.fewLowestAt)} to ${fmtMsgs(be.fewLowest)} messages a day. The truth is probably in between.`);
     // Break-even is a per-day rate, so it has to be compared against an AVERAGE day.
     // Comparing it to the busy-day figure cleared the bar for people who only use it
@@ -978,13 +991,17 @@ function recommend(pf,sig){
   // and it was third the moment the rise landed; the 2026-08-24 pass recorded the
   // new rates but never re-ran the ranking the old rates had justified.
   // Off-peak (half of every stored rate) blends to $0.33, which puts it second.
+  // UPDATED 2026-10-18: Claude Haiku 5.5 ($0.10/$0.50) became Claude Free/Pro's low
+  // value_model and blends to $0.20, so DeepSeek Flash ($0.30/$1.20 since 09-19, $0.525
+  // blended) is THIRD of the four behind Anthropic and OpenAI ($0.45). Off-peak ($0.263)
+  // it is second, not first: the old "cheapest of the four again" stopped being true.
   // A stale superlative on the provider this engine's cheapest advice leans on
   // hardest is the worst place to leave one.
   // Question 11 pays its way here. `cost` and `capability` have already decided a
   // tie above; these two add what the reader told us they came for.
   if(sig.priority==='privacy') why.push(privacyLine(pf.provider));
   if(sig.priority==='feature'){ const fl=featureLine(pf.provider, fit); if(fl) why.push(fl); }
-  if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier, and it has given no indication that’s the end of it. That rise cost it the lead: of the four providers this tool can price, DeepSeek is now the second cheapest rather than the first, behind OpenAI’s cheapest tier. Cheaper options exist outside this tool altogether — Z.ai and Mistral both undercut it — but neither sells a plan we compare here. DeepSeek also now charges by the clock: the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price, which at off-peak makes it the cheapest of the four again.`);
+  if(pf.provider==='deepseek') why.push(`One caveat worth having: DeepSeek carried out the price rise it had been warning about — as of our 2026-08-24 check its rates are roughly 3× higher on input and 4.5× on output than a month earlier, and it has given no indication that’s the end of it. That rise cost it the lead: of the four providers this tool can price, DeepSeek is now the third cheapest, behind Claude’s cheapest model (Haiku 5.5, since 2026-10-07) and OpenAI’s cheapest tier. Cheaper options exist outside this tool altogether — Z.ai and Mistral both undercut it — but neither sells a plan we compare here. DeepSeek also now charges by the clock: the rates above are its peak rate, and everything outside 01:00–04:00 and 06:00–10:00 UTC on weekdays is half price, which at off-peak lifts it to second of the four, still behind Haiku 5.5.`);
   return { head, why, monthly:cost, paid:cost>0 };
 }
 

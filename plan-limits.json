@@ -120,6 +120,7 @@
       ],
       "models": {
         "anthropic:claude-haiku-4-5-20251001": "anthropic/claude-haiku-4.5",
+        "anthropic:claude-haiku-5-5": "anthropic/claude-haiku-5.5",
         "anthropic:claude-opus-5": "anthropic/claude-opus-5",
         "anthropic:claude-opus-5-5": "anthropic/claude-opus-5.5",
         "anthropic:claude-sonnet-5": "anthropic/claude-sonnet-5",
@@ -439,7 +440,7 @@
       "provenance": "not_disclosed",
       "stated": "'Free for everyone.' No usage figure published.",
       "value_models": {
-        "low": "claude-haiku-4-5-20251001",
+        "low": "claude-haiku-5-5",
         "high": "claude-sonnet-5-5"
       },
       "source": "https://www.claude.com/pricing",
@@ -467,7 +468,7 @@
         }
       ],
       "value_models": {
-        "low": "claude-haiku-4-5-20251001",
+        "low": "claude-haiku-5-5",
         "high": "claude-opus-5-5"
       },
       "unquantified_windows": [

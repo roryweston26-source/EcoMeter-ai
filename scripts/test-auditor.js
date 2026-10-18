@@ -146,6 +146,10 @@ async function main() {
       try { pf = A.profileFor(prov, a, sig); r = A.recommend(pf, sig); }
       catch (e) { note('THREW', { prov, a, e: String(e) }); continue; }
       if (!r || !r.head || !Array.isArray(r.why) || !r.why.length) { note('EMPTY_RESULT', { prov, a }); continue; }
+      // A duration past 24 hours inside a per-day figure reads as nonsense ("2.5 days of
+      // use a day"). Haiku 5.5's $0.10/$0.50 made it happen on Claude Pro on 2026-10-18.
+      if (r.why.some(w => typeof w === 'string' && /days (of use a day|\/day)/.test(w)))
+        note('DURATION_OVER_A_DAY_PER_DAY', { prov, a, line: r.why.find(w => /days (of use a day|\/day)/.test(w)) });
 
       const got = parse(prov, r);
       if (got.kind === 'team') {
@@ -307,8 +311,8 @@ async function main() {
     ok('the DeepSeek price caveat reaches the user', !!line, r.why);
     ok('it does NOT claim DeepSeek is the cheapest provider',
        !!line && !/cheapest provider we track/i.test(line), line);
-    ok('it places DeepSeek second of the Auditor set, and credits off-peak for first',
-       !!line && /second cheapest rather than the first/.test(line) && /cheapest of the four again/.test(line), line);
+    ok('it places DeepSeek third of the Auditor set (behind Haiku 5.5), and second off-peak',
+       !!line && /now the third cheapest/.test(line) && /off-peak lifts it to second of the four/.test(line) && !/cheapest of the four again/.test(line), line);
     ok('it still carries the peak/off-peak clock warning',
        !!line && /half price/.test(line), line);
   }

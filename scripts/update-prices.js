@@ -89,6 +89,10 @@ async function fetchAnthropic() {
 
   // Hardcoded from https://www.anthropic.com/pricing (stable, updated manually)
   const prices = {
+    // Haiku 5.5 launched 2026-10-07 (Anthropic release notes; pricing page read 2026-10-18).
+    // $0.10/$0.50 is the rate for prompts up to 100k tokens. The >100k rate ($0.50/$2.50)
+    // lives in prices.json's `long` block, which the merge below preserves.
+    'claude-haiku-5-5':          { input: perM(0.10),  output: perM(0.50)  },
     'claude-haiku-4-5-20251001': { input: perM(1.00),  output: perM(5.00)  },
     'claude-haiku':              { input: perM(1.00),  output: perM(5.00)  },
     // Sonnet 5.5 launched 2026-09-28 at the same $2/$10 as Sonnet 5 (Anthropic's launch post and

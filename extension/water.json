@@ -65,6 +65,7 @@
     "claude-sonnet-4-6":         { "class": "medium", "host": "aws" },
     "claude-sonnet-4-5":         { "class": "medium", "host": "aws" },
     "claude-sonnet":             { "class": "medium", "host": "aws" },
+    "claude-haiku-5-5":         { "class": "small", "host": "aws" },
     "claude-haiku-4-5-20251001": { "class": "small", "host": "aws" },
     "claude-haiku":              { "class": "small", "host": "aws" }
   },
@@ -97,6 +98,7 @@
   },
 
   "google": {
+    "gemini-4-argon":         { "class": "large", "host": "google" },
     "gemini-3.8-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
     "gemini-3.7-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
     "gemini-3.6-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
