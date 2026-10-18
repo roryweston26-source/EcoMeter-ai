@@ -876,8 +876,8 @@ has no model table; it adds one line: a subscriber who hits the limit "can conti
 conversation with Flash-Lite". The Gemini app release notes have no entry for the change.
 
 **What this means.** 3.1 Pro has left Free, and from 2026-10-14 the Plus card no longer lists
-a Pro model either. So for Google the top model is now paid, `TOP_IS_FREE` is wrong for
-Google, and `free_tiers.google` (3.6 Flash + 3.1 Pro, verified 2026-08-24) is two models out
+a Pro model either. So for Google the top model is now paid (#83 has since taken Google out of
+`TOP_IS_FREE` and made Argon its top model, for the Argon reason), and `free_tiers.google` (3.6 Flash + 3.1 Pro, verified 2026-08-24) is two models out
 of date. The versions are the last ones Google named: Free 3.5 Flash-Lite, Plus 3.6 Flash, Pro
 and Ultra 3.8 Flash. **That is an inference from what the page said on 2026-10-13, labelled as such.**
 One honest doubt: Plus lost "Access to 3.1 Pro" when the card was rewritten in generic
@@ -886,11 +886,11 @@ $19.99 when $4.99 would do. The page is the only source, and it no longer says P
 
 **The proposed change** (all 11 scripts pass on it): `free_tiers.google` → 3.5 Flash-Lite
 only; `PLANS` Free [3.5 Flash-Lite], Plus [+ 3.6 Flash], Pro / Ultra [+ 3.8 Flash, 3.1 Pro,
-Argon]; `MODELS.google.free` → 3.5 Flash-Lite; Google out of `TOP_IS_FREE`; the frontier
-help text now says Gemini keeps its top model for paying users. `value_models`: Free
+Argon]; `MODELS.google.free` → 3.5 Flash-Lite; Google out of `TOP_IS_FREE` and the frontier
+help text rewritten (both now already done by #83). `value_models`: Free
 3.5 Flash-Lite / 3.5 Flash-Lite, Plus 3.6 Flash / 3.6 Flash. Pro and Ultra anchors untouched.
 
-**Measured, before the change against after it** (the 45,000 single-tool Google answers `test-auditor.js` sweeps, and `breakEven()` for every plan):
+**Measured against PR #83's FIRST commit (13b9e14), before its Argon-anchor commit cffb238 — so these figures are SUPERSEDED and must be re-taken on top of cffb238.** cffb238 already removes Google from `TOP_IS_FREE`, so much of the Auditor move below now belongs to #83, not to this change. As first measured (the 45,000 single-tool Google answers `test-auditor.js` sweeps, and `breakEven()` for every plan):
 - **Published break-even: one row moves.** Google AI Plus, standard archetype, goes from
   **6.8–36.5 to 36.5 msgs/day** (the 3.1 Pro end is gone). Free still has none; Pro / Ultra
   are unchanged. Every other plan is identical.

@@ -20,8 +20,9 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
   model" only and Plus "our Flash model" only; 3.1 Pro and Argon are AI Pro / Ultra only.
   Archived copies (2026-10-09 to 13) named 3.5 Flash-Lite, 3.6 Flash and 3.8 Flash. So Google
   is no longer `TOP_IS_FREE`. The fix is on branch `google-free-tier-flash-lite` (draft PR):
-  it moves Google AI Plus's break-even from 6.8–36.5 to 36.5 msgs/day and changes 10,800 of
-  45,000 Google Auditor answers, all from readers who want the top model. Rory's call.
+  it moves Google AI Plus's break-even from 6.8–36.5 to 36.5 msgs/day. The Auditor figure (10,800
+  of 45,000 answers) was taken before #83 dropped Google from `TOP_IS_FREE`, so it needs
+  re-measuring on top of #83. Rory's call.
 
 ### 2026-10-18 — Claude Haiku 5.5 and Gemini 4 Argon added (FRESHNESS A3)
 
