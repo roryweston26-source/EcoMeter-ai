@@ -181,7 +181,7 @@ wrong number in front of a user.
 |---|---|---|
 | **2026-11-21** | **Re-run `scripts/verify-openrouter.js` when GPT-5.6 Sol's promo ends.** The OpenRouter line in "show the math" says Sol costs the same there as at OpenAI; if OpenAI's rate moves and OpenRouter's doesn't (or the other way), that sentence is false until re-checked. | [A12](#a12-openrouter--the-pay-per-token-route-added-2026-10-12) |
 | **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. **It is also the ChatGPT Plus / Pro / Pro 20x break-even anchor again (since 2026-09-30), so those figures move with it.** | [A1](#a1-per-token-api-prices) |
-| **2026-11-30** | **Gemini 4 Argon's $2/$10 ends; $4/$20 from 2026-12-01** (Google's pricing page states both). Carried as a `promo` block, so `check-prices.js` fails once the date passes. Argon is not a break-even anchor, so no published break-even moves with it, but the extension bundles the promo rate: a build shipped before December understates Argon by 2× after it. | [A6](#a6-promotional-rates) |
+| **2026-11-30** | **Gemini 4 Argon's $2/$10 ends; $4/$20 from 2026-12-01** (Google's pricing page states both). Carried as a `promo` block, so `check-prices.js` fails once the date passes. **Argon has been the high break-even anchor on AI Pro / Ultra / Ultra 20× since 2026-10-18, so those figures halve on the Argon end** (Pro, standard: 55 to about 27 msgs/day), and about 1,750 Auditor answers move from pay-as-you-go to AI Pro (measured; see A3). A build shipped before December also understates Argon by 2× in the extension. | [A6](#a6-promotional-rates) |
 | **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** **v6.15** (uploaded 2026-09-19) bundles the Gemini Flash promo rate, and the extension reads its OWN bundled `prices.json` — no remote fetch — so a build freezes its prices. After the promo reverts, a still-shipped v6.15 understates Gemini by 2×. Shipping v6.15 closed every OTHER drift and moved this deadline not at all. | [H4](#h4-the-shipped-build-vs-main) |
 | ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
@@ -750,16 +750,33 @@ Haiku 5.5 on Claude.ai"). As the 2026-09-30 entry planned, it replaced Haiku 4.5
 went from 27–110 to 27–1,098 msgs/day** (27 min–18 h). Only the Haiku end moved; the Opus
 5.5 end is unchanged. Free has no break-even. Haiku 4.5 stays listed everywhere, not re-checked.
 
-**Gemini 4 Argon — six of the seven places, deliberately not `value_models`.**
+**Gemini 4 Argon — all seven places, and the Google anchor moved (Rory, 2026-10-18).**
 gemini.google/subscriptions lists it on **AI Pro and Ultra only** ("Access to Gemini 4
-Argon"); Free and Plus do not get it. It is in `PLANS[].models` for those two tiers, so
-the Auditor now says AI Pro adds Argon, and the old comment that every Google tier "runs
-the SAME models" is rewritten. **Not an anchor, and `MODELS.google.top` is still 3.1 Pro.**
-Making it the `high` anchor on Pro / Ultra would price those break-evens on $2/$10 now and
-$4/$20 from December. That is a published-number change, so it is Rory's call, like the Opus
-5.5 and GPT-6 Sol anchors were. Water tier large/google (INFERRED from 3.1 Pro, no energy curve).
+Argon"); Free and Plus do not get it. It is in `PLANS[].models` for those two tiers, the
+`high` value_model on AI Pro, Ultra and Ultra 20×, and `MODELS.google.top`. Free and Plus
+keep 3.1 Pro as `high`. **Google has left `TOP_IS_FREE`**: paying for Pro now buys a better
+model, not just volume, so "I always want the best" moves Gemini answers the way it moves
+ChatGPT and Claude ones. The frontier question's help text says so.
+Water tier large/google (INFERRED from 3.1 Pro, no energy curve).
 
-**What it did to the Auditor**, swept over all 225,000 answer combinations, `main` against
+**What the Argon anchor did**, measured against the Haiku-only state of this PR:
+- **Break-even, standard archetype, Argon end only:** AI Pro 27 → **55** msgs/day, Ultra
+  136 → **275**, Ultra 20× 272 → **549**. The Flash end is unchanged.
+- **Most of that is thinking tokens, not price.** 3.1 Pro carries an ESTIMATED 3.0x (not
+  measured); Argon is unmeasured and runs at the standing 1x, with no range shown, because
+  `unmeasured_range` needs a measured sibling and Google has none. Google bills Argon's
+  thinking at the output rate, so 1x understates its API cost.
+- **Auditor: 10,800 of 45,000 Gemini answers changed headline (24%)**, all of them people who
+  answered "sometimes" or "always" to the top-model question: 5,184 free → free +
+  pay-as-you-go for Argon, 3,384 Plus → Plus + pay-as-you-go, 1,816 Plus → Pro, 416 free →
+  Pro. No other provider moved.
+- **It leans toward the API until one of two things happens.** Re-swept with Argon at its
+  December $4/$20: 1,756 of those answers move to AI Pro. With 3.1 Pro's 3x estimate: 1,482
+  do. Both errors run the way the project treats as worse (API looks cheaper than it is).
+  The promo half fixes itself on 2026-12-01. The thinking half needs a measurement, which
+  Rory has declined to pay for, so it stays labelled here.
+
+**What Haiku 5.5 did to the Auditor** (before the Argon anchor), swept over all 225,000 answer combinations, `main` against
 this branch: **0 recommendations changed for any provider.** Only reasons changed: 4,528
 Claude answers quote the new Haiku 5.5 break-even, 1,845 Google answers mention Argon or
 get the fix below, and all 15,000 DeepSeek answers get the corrected ranking sentence.

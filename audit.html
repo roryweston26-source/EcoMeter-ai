@@ -291,7 +291,7 @@ let PLANS = {
     // Gemini 3.1 Pro is on every tier, the free app included (limited daily), so for
     // 3.1 Pro what you buy is quota and features. Gemini 4 Argon (GA 2026-10-13) is the
     // exception: gemini.google/subscriptions, read 2026-10-18, lists it on AI Pro and
-    // Ultra only. MODELS.google.top is still 3.1 Pro; moving it is a separate call. The
+    // Ultra only. It is MODELS.google.top and the high anchor on both (Rory, 2026-10-18). The
     // 2x/4x/20x multipliers are against "standard limits", which Google has never
     // published, so the caps below are our own working figures.
     { m:'Gemini (Free)',  price:0,    cap:60,  capSource:'estimate', unquantifiedWindow:'7d',
@@ -347,15 +347,15 @@ const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsof
 // be on that provider's free tier or the answer can never change the result.
 const MODELS = {
   openai:{free:'gpt-5.6-luna',top:'gpt-5.6-sol'}, anthropic:{free:'claude-sonnet-5-5',top:'claude-opus-5-5'},
-  google:{free:'gemini-3.6-flash',top:'gemini-3.1-pro-preview'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
+  google:{free:'gemini-3.6-flash',top:'gemini-4-argon'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
   deepseek:{free:'deepseek-v4-flash',top:'deepseek-v4-pro'},
 };
 // Providers whose best model is already on the free tier, so "I always want the
-// best" must NOT force a paid plan: Google gates on quota (Gemini 3.1 Pro is in
-// the free app, limited daily), Copilot runs the same model on both tiers, and
+// best" must NOT force a paid plan: Copilot runs the same model on both tiers, and
 // DeepSeek's free chat exposes the whole line-up. For these, paying buys volume
-// and features — never smarter output.
-const TOP_IS_FREE = new Set(['google','microsoft','deepseek']);
+// and features — never smarter output. Google LEFT this set on 2026-10-18: Gemini 4
+// Argon is on AI Pro and Ultra only, so "always the best" now means paying for Pro.
+const TOP_IS_FREE = new Set(['microsoft','deepseek']);
 // Providers that publish no comparable per-token rate — never quote API cost for them.
 const LEGACY_ONLY = new Set(['microsoft']);
 // What each `features` string means in words. Only image-gen and video-gen ever
@@ -515,8 +515,8 @@ const TOOLS = [
 ];
 /* The examples named in the `frontier` question must be models that are actually
    PAYWALLED somewhere. This used to name Gemini 3.1 Pro, which promised an upgrade
-   the engine is right to refuse: Google sits in TOP_IS_FREE because it gates on
-   quota, not model access, so "I always want the best" can never move a Google
+   the engine was right to refuse while Google sat in TOP_IS_FREE because it gated on
+   quota, not model access (until Argon, 2026-10-18), so "I always want the best" could not move a Google
    recommendation. Derived from MODELS so it cannot drift when a flagship changes;
    check-auditor.js asserts no TOP_IS_FREE provider's top model is named here. */
 const frontierExamples = () => Object.keys(MODELS).filter(p=>!TOP_IS_FREE.has(p))
@@ -594,7 +594,7 @@ const QUESTIONS = [
   // ours. This used to ask about "the smartest models", which claimed a measurement of
   // quality we don't make: nothing here benchmarks models, it reads plan tables.
   {id:'frontier',type:'single',q:'Do you need each provider’s top model ('+frontierExamples()+'), or is the default fine?',
-   help:'“Top” means the model the provider itself sells as its best — we don’t test which model is smartest. Only ChatGPT and Claude keep theirs for paying users. Gemini, Copilot and DeepSeek run the same models on every tier and charge for volume instead, so this answer can’t move those recommendations — and we won’t pretend it does.',
+   help:'“Top” means the model the provider itself sells as its best — we don’t test which model is smartest. Only ChatGPT, Claude and Gemini keep theirs for paying users. Copilot and DeepSeek run the same models on every tier and charge for volume instead, so this answer can’t move those recommendations — and we won’t pretend it does.',
    options:[
     {v:'default',label:'The default is fine'},{v:'sometimes',label:'Sometimes I want the top model'},{v:'always',label:'I always want the top model'}]},
   // Narrowed from "images or video, or voice / advanced features". Only image-gen and
