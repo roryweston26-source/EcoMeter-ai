@@ -74,7 +74,7 @@ const FALLBACK_API = {
     'gpt-5.4-mini': { input: 0.75/1e6, output:  4.50/1e6 },
   },
   google: {
-    'gemini-3.5-flash': { input: 0.50/1e6, output: 3.00/1e6 },
+    'gemini-3.5-flash-lite': { input: 0.30/1e6, output: 2.50/1e6 },
   },
 };
 // Full model catalog for the picker — every model EcoMeter can cost, including
@@ -116,9 +116,7 @@ const MODEL_CATALOG = [
   { label:'Gemini', models:[
     { key:'gemini-4-argon', name:'Gemini 4 Argon' },
     { key:'gemini-3.8-flash', name:'Gemini 3.8 Flash' },
-    { key:'gemini-3.7-flash', name:'Gemini 3.7 Flash' },
     { key:'gemini-3.6-flash', name:'Gemini 3.6 Flash' },
-    { key:'gemini-3.5-flash', name:'Gemini 3.5 Flash' },
     { key:'gemini-3.5-flash-lite', name:'Gemini 3.5 Flash-Lite' },
     { key:'gemini-3.1-pro-preview', name:'Gemini 3.1 Pro' },
     { key:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash-Lite' },
