@@ -89,6 +89,7 @@ const MODEL_CATALOG = [
     { key:'claude-opus-5-5', name:'Claude Opus 5.5' },
     { key:'claude-opus-5', name:'Claude Opus 5' },
     { key:'claude-opus-4-8', name:'Claude Opus 4.8' },
+    { key:'claude-haiku-5-5', name:'Claude Haiku 5.5' },
     { key:'claude-haiku-4-5-20251001', name:'Claude Haiku 4.5' },
     { key:'claude-fable-5', name:'Claude Fable 5' },
     { key:'claude-fable-5-1', name:'Claude Fable 5.1' },
@@ -113,6 +114,7 @@ const MODEL_CATALOG = [
     { key:'o4-mini', name:'o4-mini' },
   ]},
   { label:'Gemini', models:[
+    { key:'gemini-4-argon', name:'Gemini 4 Argon' },
     { key:'gemini-3.8-flash', name:'Gemini 3.8 Flash' },
     { key:'gemini-3.7-flash', name:'Gemini 3.7 Flash' },
     { key:'gemini-3.6-flash', name:'Gemini 3.6 Flash' },
@@ -940,7 +942,7 @@ function estimateBilledInput(messages) {
 // ── Long-context pricing tiers ────────────────────────────
 // OpenAI (>272k input tokens), Google (>200k) and xAI (>=200k) charge roughly
 // double past a threshold, and the higher rate applies to EVERY token in that
-// request, not just the excess. Anthropic does not tier this way.
+// request, not just the excess. Anthropic tiers only Claude Haiku 5.5 (>100k).
 //
 // The tier is a property of a single API call, not of the conversation: each turn
 // resends the whole history plus the hidden system prompt, so a long chat crosses

@@ -181,6 +181,7 @@ wrong number in front of a user.
 |---|---|---|
 | **2026-11-21** | **Re-run `scripts/verify-openrouter.js` when GPT-5.6 Sol's promo ends.** The OpenRouter line in "show the math" says Sol costs the same there as at OpenAI; if OpenAI's rate moves and OpenRouter's doesn't (or the other way), that sentence is false until re-checked. | [A12](#a12-openrouter--the-pay-per-token-route-added-2026-10-12) |
 | **2026-11-21** | **GPT-5.6 Sol's $4/$20 is promotional "at least through" this date** — OpenAI does NOT say what it reverts to, so `promo.standard` is `null` and the guard demands a re-read rather than asserting a number. "At least through" can move out as well as arrive. **It is also the ChatGPT Plus / Pro / Pro 20x break-even anchor again (since 2026-09-30), so those figures move with it.** | [A1](#a1-per-token-api-prices) |
+| **2026-11-30** | **Gemini 4 Argon's $2/$10 ends; $4/$20 from 2026-12-01** (Google's pricing page states both). Carried as a `promo` block, so `check-prices.js` fails once the date passes. **Argon has been the high break-even anchor on AI Pro / Ultra / Ultra 20× since 2026-10-18, so those figures halve on the Argon end** (Pro, standard: 55 to about 27 msgs/day), and about 1,750 Auditor answers move from pay-as-you-go to AI Pro (measured; see A3). A build shipped before December also understates Argon by 2× in the extension. | [A6](#a6-promotional-rates) |
 | **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** **v6.15** (uploaded 2026-09-19) bundles the Gemini Flash promo rate, and the extension reads its OWN bundled `prices.json` — no remote fetch — so a build freezes its prices. After the promo reverts, a still-shipped v6.15 understates Gemini by 2×. Shipping v6.15 closed every OTHER drift and moved this deadline not at all. | [H4](#h4-the-shipped-build-vs-main) |
 | ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
@@ -189,7 +190,7 @@ wrong number in front of a user.
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
 | **2026-09-27** ✅ DONE | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices)
 | **2026-10-01** ✅ DONE, with a fault | `roll-clock.yml` fired and pushed `auto/clock-reanchor-1`, then **failed to open the PR**: "GitHub Actions is not permitted to create or approve pull requests." Opened by hand as #73 and re-anchored on 2026-10-02. **Next roll is 2027-01-01 and will fail the same way** unless Rory enables Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" (a security setting — his call). The `automated` / `ai-clock` labels it asks for don't exist either. | [D1](#d1-clockjson-anchor-levels-and-rates) |
-| Any day (announced 2026-09-28) | **Claude Haiku 5.5** — Sonnet 5.5's launch post says it "will join the Claude 5.5 family in the coming weeks". No rate is published, so none is recorded. When it lands: all seven places, and `value_models.low` on Claude Free and Pro. | [A3](#a3-the-model-line-up) |
+| ~~Any day~~ ✅ DONE 2026-10-18 | **Claude Haiku 5.5** launched 2026-10-07 and is now in all seven places, with `value_models.low` on Claude Free and Pro. | [A3](#a3-the-model-line-up) |
 | 2026-10-23 | **OpenAI shuts down a batch of older snapshots.** Of ours, `gpt-4.1-nano`, `o1` and `o3-mini` are priced and not yet in `_legacy_keys`; move them there once they go (`gpt-4` and `gpt-4-turbo` already are). | [A3](#a3-the-model-line-up) |
 | **2026-10-29** | **Grandfathered ChatGPT Pro 200 subscribers move to the lower allowance**, at the same $200. OpenAI doesn't say how much lower. Both subscription notes describe the plan as it is before this date. `check-prices.js` §7c-iii warns from 30 days out and fails once the date passes: re-read the Pro tiers article, rewrite both notes, then update or remove `availability.transition`. | [A2](#a2-consumer-subscription-prices), [B1](#b1-the-caps-themselves) |
 | 2026-11-30 | **Anthropic retires Claude Sonnet 4.5** on the Claude API (deprecated 2026-09-30; successor Sonnet 5.5). We price it but do not show it. Carried as a `sunset` block on `claude-sonnet-4-5` — `check-prices.js` warns from 30 days out and fails once past. When it goes: remove it from `prices.json`, `water.json` and `update-prices.js`. | [A3](#a3-the-model-line-up) |
@@ -723,6 +724,92 @@ dated calendar.
   (developers.openai.com/api/docs/deprecations). Of ours: `gpt-4.1-nano`, `o1` and `o3-mini`
   are priced and not yet in `_legacy_keys`; `gpt-4` and `gpt-4-turbo` already are.
 
+**Added 2026-10-18 — Claude Haiku 5.5 and Gemini 4 Argon, a sweep of Anthropic and Google only.**
+Read at source the same day: Anthropic's release notes and pricing table, claude.com/pricing,
+anthropic.com/claude/haiku; Google's Gemini API changelog, pricing page and
+gemini.google/subscriptions. OpenRouter's model list carries both at the same rates, an
+independent read of the same numbers. Other providers were not re-read.
+
+| key | rate (short / long) | released | read at |
+|---|---|---|---|
+| `claude-haiku-5-5` | $0.10 / $0.50; **prompts over 100k: $0.50 / $2.50** for the whole request | 2026-10-07 | platform.claude.com pricing, anthropic.com/claude/haiku |
+| `gemini-4-argon` | $2 / $10 **promo to 2026-11-30**, then $4 / $20; one rate across its 1M context | GA 2026-10-13 | ai.google.dev pricing and changelog |
+
+**Haiku 5.5 is the first Claude model with a long-context tier.** The `long` block (over
+100000) is the same shape as OpenAI's and Google's, and every consumer of it already
+handles any provider, so no code changed for it. The "Anthropic does not tier this way"
+lines in `prices.json` and `sidepanel.js` were wrong from the day it launched and now name
+the exception. It is 10x cheaper than Haiku 4.5, it uses the newer tokenizer (~30% more
+tokens for the same text), and adaptive thinking is on by default. No reasoning multiplier:
+unmeasured, and there is no measured Haiku to borrow a range from, so it runs at 1x.
+
+**Haiku 5.5 — all seven places, and it moved one published number.** It is on every Claude
+tier (anthropic.com/claude/haiku: "Free, Pro, Max, Team, and Enterprise users can select
+Haiku 5.5 on Claude.ai"). As the 2026-09-30 entry planned, it replaced Haiku 4.5 as
+`value_models.low` on Claude Free and Pro. **Claude Pro's break-even, standard archetype,
+went from 27–110 to 27–1,098 msgs/day** (27 min–18 h). Only the Haiku end moved; the Opus
+5.5 end is unchanged. Free has no break-even. Haiku 4.5 stays listed everywhere, not re-checked.
+
+**Gemini 4 Argon — all seven places, and the Google anchor moved (Rory, 2026-10-18).**
+gemini.google/subscriptions lists it on **AI Pro and Ultra only** ("Access to Gemini 4
+Argon"); Free and Plus do not get it. It is in `PLANS[].models` for those two tiers, the
+`high` value_model on AI Pro, Ultra and Ultra 20×, and `MODELS.google.top`. Free and Plus
+keep 3.1 Pro as `high`. **Google has left `TOP_IS_FREE`**: paying for Pro now buys a better
+model, not just volume, so "I always want the best" moves Gemini answers the way it moves
+ChatGPT and Claude ones. The frontier question's help text says so.
+Water tier large/google (INFERRED from 3.1 Pro, no energy curve).
+
+**What the Argon anchor did**, measured against the Haiku-only state of this PR:
+- **Break-even, standard archetype, Argon end only:** AI Pro 27 → **55** msgs/day, Ultra
+  136 → **275**, Ultra 20× 272 → **549**. The Flash end is unchanged.
+- **Most of that is thinking tokens, not price.** 3.1 Pro carries an ESTIMATED 3.0x (not
+  measured); Argon is unmeasured and runs at the standing 1x, with no range shown, because
+  `unmeasured_range` needs a measured sibling and Google has none. Google bills Argon's
+  thinking at the output rate, so 1x understates its API cost.
+- **Auditor: 10,800 of 45,000 Gemini answers changed headline (24%)**, all of them people who
+  answered "sometimes" or "always" to the top-model question: 5,184 free → free +
+  pay-as-you-go for Argon, 3,384 Plus → Plus + pay-as-you-go, 1,816 Plus → Pro, 416 free →
+  Pro. No other provider moved.
+- **It leans toward the API until one of two things happens.** Re-swept with Argon at its
+  December $4/$20: 1,756 of those answers move to AI Pro. With 3.1 Pro's 3x estimate: 1,482
+  do. Both errors run the way the project treats as worse (API looks cheaper than it is).
+  The promo half fixes itself on 2026-12-01. The thinking half needs a measurement, which
+  Rory has declined to pay for, so it stays labelled here.
+
+**What Haiku 5.5 did to the Auditor** (before the Argon anchor), swept over all 225,000 answer combinations, `main` against
+this branch: **0 recommendations changed for any provider.** Only reasons changed: 4,528
+Claude answers quote the new Haiku 5.5 break-even, 1,845 Google answers mention Argon or
+get the fix below, and all 15,000 DeepSeek answers get the corrected ranking sentence.
+
+**Two stale claims this exposed, both fixed:**
+- **DeepSeek is now THIRD of the Auditor's four, not second.** Haiku 5.5 blends to $0.20 per
+  1M (3:1), under GPT-5.6 Luna's $0.45 and DeepSeek Flash's $0.525. Off-peak ($0.263) it is
+  second, so "at off-peak makes it the cheapest of the four again" was also false.
+  `check-prices.js` caught the first half; it now guards the off-peak clause too (both
+  verified by putting Haiku 4.5 back as the anchor).
+- **"Break even at 1.5 h–2.5 days of use a day".** When the cheap end of a range needs more
+  than 24 hours, `pricing.html` already said "never pays off", but `audit.html` printed the
+  days. Haiku 5.5 made it happen on Claude Pro (1,080 answers). **It was already live on
+  `main` for 360 Google AI Ultra answers** ("5.6 h–1.7 days"). The Auditor now says "On
+  Haiku 5.5 it never does", and `test-auditor.js` fails if any of the 225,000 answers
+  prints a day-plus figure per day (1,080 failures on the unfixed page, 0 after).
+
+**Seen, not acted on** (each a separate job):
+- **Google deprecated `gemini-3.7-flash` and `gemini-3.5-flash` on 2026-10-08.** Neither can be
+  picked in AI Studio, and API calls are routed to 3.8 Flash and 3.6 Flash. Neither is on the
+  pricing page now. 3.7 Flash is billed the same either way. **3.5 Flash is not:** we store
+  $1.50/$9.00, and a call to it is now served by 3.6 Flash at $0.75/$3.75, so the picker
+  overstates it. Both belong in `_legacy_keys` or should leave the picker.
+- **The Gemini app's Free card now says "Access to our Flash-Lite model"** and Plus says "our
+  Flash model" (gemini.google/subscriptions, 2026-10-18). `free_tiers.google` and Free's
+  `value_models` still say 3.6 Flash (verified 2026-08-24). Needs a proper A4 re-read.
+- Anthropic cut Sonnet 5.5 cache reads to $0.10 (0.05x) on 2026-10-07. Caching is not
+  modelled, and no page claims Sonnet 5.5's cache rate, so nothing is wrong. The 2026-09-30
+  table above that says "0.1x base ($0.20)" was true when written.
+- `gemini-nano-banana-2.1` (image generation, GA 2026-10-06): not a chat model.
+- `update-prices.js` gets Haiku 5.5, not Argon. Like Gemini 3.8 Flash, a promo rate there
+  would be one more place to revert in December.
+
 ## A4. What the free tiers include
 
 **Goes stale faster than prices, and it moves the Auditor's whole answer.**
@@ -854,6 +941,8 @@ promotions rather than standing prices. They carry a machine-readable block:
 ```json
 "promo": { "until": "2026-12-31", "standard": { "input": 1.5e-06, "output": 7.5e-06 } }
 ```
+
+**Added 2026-10-18:** `gemini-4-argon`, $2/$10 through **2026-11-30**, then $4/$20. Google's page states both rates, so `standard` is filled in. In the dated calendar.
 
 **Currently promotional:** `gemini-3.7-flash` and `gemini-3.6-flash`, both at half
 price through **2026-12-31**, reverting to $1.50/$7.50 — and **`glm-5.3-flash`, half

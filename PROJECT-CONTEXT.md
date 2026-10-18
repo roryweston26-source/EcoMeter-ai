@@ -9,6 +9,26 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-10-18 — Claude Haiku 5.5 and Gemini 4 Argon added (FRESHNESS A3)
+
+Both read at source: Haiku 5.5 is $0.10/$0.50, or $0.50/$2.50 for prompts over 100k (the
+first Claude model with a `long` block). Argon is $2/$10 to 2026-11-30, then $4/$20 (a
+`promo` block). **These are extension changes too** (`prices.json`, `water.json`, the
+picker), so they reach users only with the next store upload.
+- **Haiku 5.5 is now the low anchor on Claude Free and Pro**, as planned on 2026-09-30.
+  Claude Pro's break-even moved from 27–110 to 27–1,098 msgs/day. No Auditor
+  recommendation changed (0 of 225,000).
+- **Argon is on AI Pro and Ultra only, and is now their high break-even anchor and
+  Google's top model (Rory's call, same day).** Google left `TOP_IS_FREE`. AI Pro's Argon
+  end moved 27 → 55 msgs/day, and 24% of Gemini Auditor answers changed (all from people
+  who want the top model). Argon runs at 1x thinking, unmeasured, and on a promo rate
+  until 2026-11-30, so the advice leans toward the API until December (A3 has the sizes).
+- Fixed on the way: DeepSeek is now third of the Auditor's four, not second, and the
+  Auditor no longer prints "2.5 days of use a day". That bug was already live on `main` for
+  360 Google AI Ultra answers.
+- Open: Google deprecated 3.7 Flash and 3.5 Flash (3.5 is now billed as 3.6), and the
+  Gemini Free card now says Flash-Lite. Both are in A3 as separate jobs.
+
 ### 2026-10-13 — Poe added: five points plans with a computed Ceiling
 
 Poe (Quora) resells most labs' models on one subscription metered in **points**, and it

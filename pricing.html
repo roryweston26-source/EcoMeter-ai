@@ -469,6 +469,7 @@
     { p:"anthropic", key:"claude-sonnet-5-5",         m:"Claude Sonnet 5.5", note:"current Sonnet · on every plan, free included · same $2 / $10 as Sonnet 5" },
     { p:"anthropic", key:"claude-sonnet-5",           m:"Claude Sonnet 5", note:"previous Sonnet · $2 / $10 is the standard rate" },
     { p:"anthropic", key:"claude-sonnet-4-6",         m:"Claude Sonnet 4.6" },
+    { p:"anthropic", key:"claude-haiku-5-5",         m:"Claude Haiku 5.5", note:"current Haiku · on every plan, free included" },
     { p:"anthropic", key:"claude-haiku-4-5-20251001", m:"Claude Haiku 4.5" },
     { p:"anthropic", key:"claude-opus-5-5",           m:"Claude Opus 5.5", note:"current Opus · cache hits 0.05x base, not the usual 0.1x" },
     { p:"anthropic", key:"claude-opus-5",             m:"Claude Opus 5" },
@@ -498,6 +499,7 @@
     { p:"openai", key:"o3",           m:"o3" },
     { p:"openai", key:"o4-mini",      m:"o4-mini" },
 
+    { p:"google", key:"gemini-4-argon",         m:"Gemini 4 Argon", note:"newest Gemini · in the app on AI Pro and Ultra, not Free or Plus · $2/$10 through 2026-11-30, then $4/$20" },
     { p:"google", key:"gemini-3.8-flash",       m:"Gemini 3.8 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
     { p:"google", key:"gemini-3.7-flash",       m:"Gemini 3.7 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
     { p:"google", key:"gemini-3.6-flash",       m:"Gemini 3.6 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
@@ -548,6 +550,7 @@
   var FALLBACK_PRICES = {
     "_last_updated": "2026-08-29",
     "anthropic": {
+      "claude-haiku-5-5":         { input: 1e-7,    output: 5e-7, long: { over: 100000, input: 5e-7, output: 2.5e-6 } },
       "claude-haiku-4-5-20251001": { input: 1e-6,    output: 5e-6 },
       "claude-sonnet-5-5":         { input: 2e-6,    output: 1e-5 },
       "claude-sonnet-5":           { input: 2e-6,    output: 1e-5 },
@@ -582,6 +585,7 @@
       "o4-mini":      { input: 1.1e-6,  output: 4.4e-6 }
     },
     "google": {
+      "gemini-4-argon":         { input: 2e-6,    output: 1e-5 },
       "gemini-3.8-flash":       { input: 7.5e-7,  output: 3.75e-6 },
       "gemini-3.7-flash":       { input: 7.5e-7,  output: 3.75e-6 },
       "gemini-3.6-flash":       { input: 7.5e-7,  output: 3.75e-6 },
@@ -784,6 +788,7 @@
       openrouter: { fee: 0.055, fee_min_usd: 0.80, chat_url: "https://openrouter.ai/chat", checked: "2026-10-12",
         models: {
           "anthropic:claude-haiku-4-5-20251001": "anthropic/claude-haiku-4.5",
+          "anthropic:claude-haiku-5-5": "anthropic/claude-haiku-5.5",
           "anthropic:claude-opus-5": "anthropic/claude-opus-5",
           "anthropic:claude-opus-5-5": "anthropic/claude-opus-5.5",
           "anthropic:claude-sonnet-5": "anthropic/claude-sonnet-5",
@@ -791,6 +796,7 @@
           "deepseek:deepseek-v4-flash": null,
           "deepseek:deepseek-v4-pro": null,
           "google:gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
+          "google:gemini-4-argon": "google/gemini-4-argon",
           "google:gemini-3.6-flash": "google/gemini-3.6-flash",
           "mistral:mistral-medium-3.5": "mistralai/mistral-medium-3-5",
           "mistral:mistral-small-4": "mistralai/mistral-small-2603",
@@ -835,17 +841,17 @@
         caps:[{ n:200, n_high:2000, unit:"messages", window:"5h", scope:"Codex (GPT-5.6 Sol, local messages)", soft:false, scope_limited:true }] },
       { p:"openai", m:"ChatGPT Pro 500", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-09-30", scope:"ChatGPT chat surfaces" }, value_models:{ low:"gpt-5.4-mini", high:"gpt-5.6-sol" } },
 
-      { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-sonnet-5-5" } },
-      { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-4-5-20251001", high:"claude-opus-5-5" },
+      { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-5-5", high:"claude-sonnet-5-5" } },
+      { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-5-5", high:"claude-opus-5-5" },
         third_party:[{ n:45, unit:"messages", window:"5h", scope:"all models", confidence:"medium", source:"https://claudelimit.com/claude-pro-limits/" }] },
       { p:"anthropic", m:"Claude Max 5×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false }, value_models:{ low:"claude-sonnet-5-5", high:"claude-opus-5-5" } },
       { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:20, base_disclosed:false }, value_models:{ low:"claude-sonnet-5-5", high:"claude-opus-5-5" } },
 
       { p:"google", m:"Gemini (Free)", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
       { p:"google", m:"Google AI Plus", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:2, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
-      { p:"google", m:"Google AI Pro", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:4, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
-      { p:"google", m:"Google AI Ultra", provenance:"not_disclosed", multiplier:{ of:"Google AI Pro", x:5, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
-      { p:"google", m:"Google AI Ultra (20×)", provenance:"not_disclosed", multiplier:{ of:"Google AI Pro", x:20, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.1-pro-preview" } },
+      { p:"google", m:"Google AI Pro", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:4, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-4-argon" } },
+      { p:"google", m:"Google AI Ultra", provenance:"not_disclosed", multiplier:{ of:"Google AI Pro", x:5, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-4-argon" } },
+      { p:"google", m:"Google AI Ultra (20×)", provenance:"not_disclosed", multiplier:{ of:"Google AI Pro", x:20, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-4-argon" } },
 
       { p:"xai", m:"Grok (Free)", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
       { p:"xai", m:"SuperGrok Lite", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
