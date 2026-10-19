@@ -4369,7 +4369,28 @@ change with it.
 
 ## H4. The shipped build vs `main`
 
-### v6.16 BUILT 2026-10-01 — not yet uploaded; the store is behind `main` again
+### v6.17 BUMPED 2026-10-19 — not yet built or uploaded
+
+**Why:** v6.16 is in the store, and `main` has moved since it was built. Extension-side
+changes since the 6.16 bump: Claude Haiku 5.5 and Gemini 4 Argon added to `prices.json`,
+`sidepanel.js` and `water.json` (#83); Poe points plans and Microsoft 365 Pro in the shared
+`prices.json` (#81, #79). Bumped manually 6.16 → 6.17 (G5 permits it; 6.16 would be rejected
+as a duplicate).
+
+**No release-day re-read of provider pages was done for this bump** — unlike 6.16. The
+rates it carries are as last recorded in `prices.json`; `check-prices.js` passes on them.
+
+🚨 **Three dated risks ship inside v6.17:**
+- **Gemini 4 Argon is bundled at its promo $2/$10.** It goes to $4/$20 on 2026-12-01, so
+  from then v6.17 understates Argon by 2× until a later build ships.
+- **The Gemini Flash promos** (3.6 / 3.7 / 3.8, $0.75/$3.75) revert 2026-12-31 — same
+  January re-upload as before.
+- Claude Sonnet 4.5 retires 2026-11-30; v6.17 still prices it (not in the picker).
+
+**Still needs Rory:** load-unpacked smoke test at 6.17, upload, record the outcome here.
+Permissions are unchanged since 6.16, so the privacy policy needs no redeploy.
+
+### v6.16 BUILT 2026-10-01 — uploaded and in the store by 2026-10-19 (Rory confirmed; upload date not recorded)
 
 **v6.15 in the store is now wrong in a way users can see.** Diffed its bundled `prices.json`
 against `main`: it still lists **Sonar Pro, Sonar and Sonar Reasoning Pro** in the picker,
