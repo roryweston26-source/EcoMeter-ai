@@ -4440,7 +4440,7 @@ change with it.
 
 ## H4. The shipped build vs `main`
 
-### v6.17 BUMPED 2026-10-19 — not yet built or uploaded
+### v6.17 BUMPED 2026-10-19 — APPROVED in the store by 2026-10-20 (Rory confirmed; upload date not recorded)
 
 **Why:** v6.16 is in the store, and `main` has moved since it was built. Extension-side
 changes since the 6.16 bump: Claude Haiku 5.5 and Gemini 4 Argon added to `prices.json`,
@@ -4458,8 +4458,12 @@ rates it carries are as last recorded in `prices.json`; `check-prices.js` passes
   January re-upload as before.
 - Claude Sonnet 4.5 retires 2026-11-30; v6.17 still prices it (not in the picker).
 
-**Still needs Rory:** load-unpacked smoke test at 6.17, upload, record the outcome here.
+**Done (Rory, 2026-10-20):** uploaded and approved. Smoke-test result not recorded.
 Permissions are unchanged since 6.16, so the privacy policy needs no redeploy.
+
+⚠️ **v6.17 predates #84**, so its picker still lists Gemini 3.7 Flash and 3.5 Flash, both
+deprecated 2026-10-08. 3.5 Flash shows $1.50/$9.00 while a call to it is served as 3.6 Flash
+($0.75/$3.75), so a user who picks it sees an overstated cost until the next upload (A3).
 
 ### v6.16 BUILT 2026-10-01 — uploaded and in the store by 2026-10-19 (Rory confirmed; upload date not recorded)
 
