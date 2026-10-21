@@ -807,7 +807,7 @@ get the fix below, and all 15,000 DeepSeek answers get the corrected ranking sen
   overstates it. Both belong in `_legacy_keys` or should leave the picker. **Done 2026-10-18**, below.
 - **The Gemini app's Free card now says "Access to our Flash-Lite model"** and Plus says "our
   Flash model" (gemini.google/subscriptions, 2026-10-18). `free_tiers.google` and Free's
-  `value_models` still say 3.6 Flash (verified 2026-08-24). Needs a proper A4 re-read. **Re-read 2026-10-18 (A4): measured, waiting on Rory.**
+  `value_models` still say 3.6 Flash (verified 2026-08-24). Needs a proper A4 re-read. **Re-read 2026-10-18 (A4); Rory said go 2026-10-20.**
 - Anthropic cut Sonnet 5.5 cache reads to $0.10 (0.05x) on 2026-10-07. Caching is not
   modelled, and no page claims Sonnet 5.5's cache rate, so nothing is wrong. The 2026-09-30
   table above that says "0.1x base ($0.20)" was true when written.
@@ -848,7 +848,7 @@ picker) and `audit.html` → the price-0 row of each `PLANS` provider.
 
 **Why it matters more than it looks:** `advancedModels()` derives itself from the
 free rows, so a wrong free tier misreads a paying frontier user as a free-tier
-one. And `TOP_IS_FREE` (`google`, `microsoft`, `deepseek`) encodes *"paying buys
+one. And `TOP_IS_FREE` (`microsoft`, `deepseek`; Google left it 2026-10-18) encodes *"paying buys
 quota and features, never smarter output"* — if one of those providers starts
 gating its best model behind a paywall, that set is wrong and the Auditor will
 stop recommending an upgrade that has become justified.
@@ -858,11 +858,11 @@ unlimited pushes a user to pay for volume that now costs nothing. That was the
 single most expensive error found on 2026-08-08, and it pointed at the user's
 wallet.
 
-**Re-read 2026-10-18 — Google now gates on MODELS, not just quota. Our data says it
-doesn't. Measured, NOT shipped: Rory's call** (branch `google-free-tier-flash-lite`, draft PR).
-gemini.google/subscriptions, read live 2026-10-18, names no versions any more:
+**Re-read 2026-10-18 and 2026-10-20 — Google now gates on MODELS, not just quota.** Rory said
+go on 2026-10-20; the data change is in the PR from branch `google-free-tier-flash-lite`, and it
+ships when that merges. gemini.google/subscriptions, read live on both dates, names no versions:
 
-| card | says (2026-10-18) | archived 2026-10-09 to 10-13 | archived up to 2026-10-06 |
+| card | says (2026-10-18, unchanged 10-20) | archived 2026-10-09 to 10-13 | archived up to 2026-10-06 |
 |---|---|---|---|
 | Free | "Access to our Flash-Lite model" | "Access to 3.5 Flash-Lite" | "Access to 3.6 Flash", "Varying access to 3.1 Pro" |
 | AI Plus | "Access to our Flash model" | "Access to 3.6 Flash", "Access to 3.1 Pro" | (no model line found) |
@@ -870,37 +870,41 @@ gemini.google/subscriptions, read live 2026-10-18, names no versions any more:
 | AI Ultra | Argon, "Highest access to our Pro model / Flash model" | "Access to 3.8 Flash", "Access to 3.1 Pro" | (no model line found) |
 
 The archived columns are the Wayback Machine's copies of the same page (web.archive.org,
-CDX listing, then the raw `id_` captures). That is a third-party copy, so it dates the
-change; it is not the source. The help article (support.google.com/gemini/answer/16275805)
+CDX listing, then the raw `id_` captures, which arrive gzipped). That is a third-party copy, so
+it dates the change; it is not the source. The help article (support.google.com/gemini/answer/16275805)
 has no model table; it adds one line: a subscriber who hits the limit "can continue your
 conversation with Flash-Lite". The Gemini app release notes have no entry for the change.
 
 **What this means.** 3.1 Pro has left Free, and from 2026-10-14 the Plus card no longer lists
-a Pro model either. So for Google the top model is now paid (#83 has since taken Google out of
-`TOP_IS_FREE` and made Argon its top model, for the Argon reason), and `free_tiers.google` (3.6 Flash + 3.1 Pro, verified 2026-08-24) is two models out
-of date. The versions are the last ones Google named: Free 3.5 Flash-Lite, Plus 3.6 Flash, Pro
-and Ultra 3.8 Flash. **That is an inference from what the page said on 2026-10-13, labelled as such.**
-One honest doubt: Plus lost "Access to 3.1 Pro" when the card was rewritten in generic
-words. If Plus in fact still serves Pro, the change below sends some readers to AI Pro at
-$19.99 when $4.99 would do. The page is the only source, and it no longer says Pro.
+a Pro model either. `free_tiers.google` (3.6 Flash + 3.1 Pro, verified 2026-08-24) was two
+models out of date. #83 had already taken Google out of `TOP_IS_FREE` and made Argon its top
+model, for the Argon reason. The versions are the last ones Google named: Free 3.5 Flash-Lite,
+Plus 3.6 Flash, Pro and Ultra 3.8 Flash. **That is an inference from what the page said on
+2026-10-13, labelled as such.** One honest doubt: Plus lost "Access to 3.1 Pro" when the card
+was rewritten in generic words. If Plus in fact still serves Pro, Plus's break-even below is
+too high. The page is the only source, and it no longer says Pro.
 
-**The proposed change** (all 11 scripts pass on it): `free_tiers.google` → 3.5 Flash-Lite
-only; `PLANS` Free [3.5 Flash-Lite], Plus [+ 3.6 Flash], Pro / Ultra [+ 3.8 Flash, 3.1 Pro,
-Argon]; `MODELS.google.free` → 3.5 Flash-Lite; Google out of `TOP_IS_FREE` and the frontier
-help text rewritten (both now already done by #83). `value_models`: Free
-3.5 Flash-Lite / 3.5 Flash-Lite, Plus 3.6 Flash / 3.6 Flash. Pro and Ultra anchors untouched.
+**The change:** `free_tiers.google` → 3.5 Flash-Lite only; `PLANS` Free [3.5 Flash-Lite], Plus
+[+ 3.6 Flash], Pro / Ultra [+ 3.8 Flash, 3.1 Pro, Argon] (3.6 Flash stays on Pro / Ultra only
+to keep the ladder monotonic); `MODELS.google.free` → 3.5 Flash-Lite; `value_models` Free
+3.5 Flash-Lite / 3.5 Flash-Lite, Plus 3.6 Flash / 3.6 Flash; OpenRouter map gains 3.5 Flash-Lite
+(`verify-openrouter.js`: Google AI Studio, same rate). Pro and Ultra anchors untouched.
 
-**Measured against PR #83's FIRST commit (13b9e14), before its Argon-anchor commit cffb238 — so these figures are SUPERSEDED and must be re-taken on top of cffb238.** cffb238 already removes Google from `TOP_IS_FREE`, so much of the Auditor move below now belongs to #83, not to this change. As first measured (the 45,000 single-tool Google answers `test-auditor.js` sweeps, and `breakEven()` for every plan):
+**Measured on top of #83 (main at 5970b96 + #84), before against after** — the 45,000
+single-tool Google answers `test-auditor.js` sweeps, and `breakEven()` for every plan:
 - **Published break-even: one row moves.** Google AI Plus, standard archetype, goes from
   **6.8–36.5 to 36.5 msgs/day** (the 3.1 Pro end is gone). Free still has none; Pro / Ultra
   are unchanged. Every other plan is identical.
-- **Auditor: 10,800 of 45,000 Google answers change their recommendation**, every one from
-  a reader who wants the top model "sometimes" or "always": Free → Free + pay-as-you-go for
-  3.1 Pro (4,224), Plus → AI Pro (2,630), Plus → Plus + pay-as-you-go (2,570), Free → AI Pro
-  (1,376). Readers happy with the default: 0 changed; 7,500 of their answers quote a lower
-  API cost because it is now priced on Flash-Lite. 11,700 in all change reasons only (those 7,500 included).
-- Direction: today's data tells a Pro-wanting Gemini reader that Free covers them. It no
-  longer does. That error saves them money on paper and fails them in the app.
+- **Auditor: 0 recommendations change.** #83's Argon switch already sends "top model" readers
+  to AI Pro. 9,046 answers change their reasons only: 7,500 default-model answers quote a
+  lower API cost because it is now priced on Flash-Lite (never by $0.50/mo or more), and 1,546
+  "what matters is a feature" answers now list 3.6 / 3.8 Flash and 3.1 Pro among what AI Pro
+  adds over Free. (The 2026-10-18 figure of 10,800 changed answers was measured before #83's
+  Argon commit and mostly belonged to it.)
+- **A copy bug it exposed, fixed:** with both anchors on one model, the Auditor printed "2.0 h–2.0
+  h of use a day — 121 messages on Gemini 3.6 Flash, or 121 on Gemini 3.6 Flash" (2,600
+  answers). It now prints one figure, and `test-auditor.js` fails on the pattern (verified by
+  disabling the fix: 2,600 failures, 0 after).
 
 **Moved on 2026-08-24 — all four are the kind of change that silently invalidates
 a recommendation:**

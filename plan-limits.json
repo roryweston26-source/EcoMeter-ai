@@ -128,6 +128,7 @@
         "deepseek:deepseek-v4-flash": null,
         "deepseek:deepseek-v4-pro": null,
         "google:gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
+        "google:gemini-3.5-flash-lite": "google/gemini-3.5-flash-lite",
         "google:gemini-4-argon": "google/gemini-4-argon",
         "google:gemini-3.6-flash": "google/gemini-3.6-flash",
         "mistral:mistral-medium-3.5": "mistralai/mistral-medium-3-5",
@@ -620,11 +621,12 @@
         }
       ],
       "value_models": {
-        "low": "gemini-3.6-flash",
-        "high": "gemini-3.1-pro-preview"
+        "low": "gemini-3.5-flash-lite",
+        "high": "gemini-3.5-flash-lite"
       },
       "source": "https://support.google.com/gemini/answer/16275805",
-      "as_of": "2026-08-26"
+      "value_models_source": "https://gemini.google/subscriptions/ (read 2026-10-18 and 2026-10-20: Free card says 'Access to our Flash-Lite model' only; version last named as 3.5 Flash-Lite in archived copies 2026-10-09 to 2026-10-13)",
+      "as_of": "2026-10-20"
     },
     {
       "p": "google",
@@ -638,10 +640,11 @@
       },
       "value_models": {
         "low": "gemini-3.6-flash",
-        "high": "gemini-3.1-pro-preview"
+        "high": "gemini-3.6-flash"
       },
       "source": "https://support.google.com/gemini/answer/16275805",
-      "as_of": "2026-08-26"
+      "value_models_source": "https://gemini.google/subscriptions/ (read 2026-10-18 and 2026-10-20: Plus card says 'Access to our Flash model' only, no Pro model; archived copies 2026-10-09 to 2026-10-13 named it 3.6 Flash and still listed 3.1 Pro, the copy from 2026-10-14 on does not)",
+      "as_of": "2026-10-20"
     },
     {
       "p": "google",

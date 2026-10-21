@@ -150,6 +150,10 @@ async function main() {
       // use a day"). Haiku 5.5's $0.10/$0.50 made it happen on Claude Pro on 2026-10-18.
       if (r.why.some(w => typeof w === 'string' && /days (of use a day|\/day)/.test(w)))
         note('DURATION_OVER_A_DAY_PER_DAY', { prov, a, line: r.why.find(w => /days (of use a day|\/day)/.test(w)) });
+      // Both anchors can be the same model (Google AI Plus, 2026-10-20). The range copy then
+      // printed "121 messages on Gemini 3.6 Flash, or 121 on Gemini 3.6 Flash".
+      if (r.why.some(w => typeof w === 'string' && /messages on ([^,—]+), or [\d,.]+ on \1 —/.test(w)))
+        note('SAME_MODEL_PRINTED_AS_A_RANGE', { prov, a, line: r.why.find(w => / or [\d,.]+ on /.test(w)) });
 
       const got = parse(prov, r);
       if (got.kind === 'team') {
