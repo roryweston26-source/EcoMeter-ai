@@ -288,20 +288,24 @@ let PLANS = {
       features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
-    // Gemini 3.1 Pro is on every tier, the free app included (limited daily), so for
-    // 3.1 Pro what you buy is quota and features. Gemini 4 Argon (GA 2026-10-13) is the
-    // exception: gemini.google/subscriptions, read 2026-10-18, lists it on AI Pro and
-    // Ultra only. It is MODELS.google.top and the high anchor on both (Rory, 2026-10-18). The
-    // 2x/4x/20x multipliers are against "standard limits", which Google has never
-    // published, so the caps below are our own working figures.
+    // Google gates on MODELS, not just quota. gemini.google/subscriptions, read 2026-10-18
+    // and 2026-10-20: Free gets "our Flash-Lite model", Plus adds "our Flash model", and only
+    // AI Pro and Ultra list "our Pro model" and Gemini 4 Argon (MODELS.google.top and the
+    // Pro / Ultra high anchor, Rory 2026-10-18). The page names no versions; archived copies
+    // from 2026-10-09 to 2026-10-13 named 3.5 Flash-Lite (Free), 3.6 Flash (Plus) and 3.8
+    // Flash (Pro, Ultra), so those are the versions used here. Until 2026-10-06 the Free card
+    // still offered 3.6 Flash and "varying access to 3.1 Pro". 3.6 Flash stays on Pro and
+    // Ultra only to keep the ladder monotonic (check-auditor 5). The 2x/4x/20x multipliers
+    // are against "standard limits", which Google has never published, so the caps below
+    // are our own figures.
     { m:'Gemini (Free)',  price:0,    cap:60,  capSource:'estimate', unquantifiedWindow:'7d',
-      models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:[], seats:1 },
+      models:['gemini-3.5-flash-lite'], features:[], seats:1 },
     { m:'Google AI Plus', price:4.99, cap:120, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.6-flash','gemini-3.1-pro-preview'], features:['image-gen'], seats:1 },
+      models:['gemini-3.5-flash-lite','gemini-3.6-flash'], features:['image-gen'], seats:1 },
     { m:'Google AI Pro',  price:19.99,cap:240, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.6-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen'], seats:1 },
+      models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen'], seats:1 },
     { m:'Google AI Ultra',price:99.99,cap:null,capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.6-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
+      models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
   ],
   microsoft: [
     // Microsoft withdrew every usage figure in 2026-09 (incl. Personal/Family's 60 AI
@@ -335,6 +339,7 @@ let API = {
   'claude-haiku-5-5':{in:1e-7,out:5e-7}, 'claude-haiku-4-5-20251001':{in:1e-6,out:5e-6},
   'claude-opus-5-5':{in:4e-6,out:2e-5}, 'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
   'gemini-3.6-flash':{in:7.5e-7,out:3.75e-6}, 'gemini-3.5-flash':{in:1.5e-6,out:9e-6},
+  'gemini-3.8-flash':{in:7.5e-7,out:3.75e-6}, 'gemini-3.5-flash-lite':{in:3e-7,out:2.5e-6},
   'gemini-3.1-pro-preview':{in:2e-6,out:1.2e-5}, 'gemini-4-argon':{in:2e-6,out:1e-5},
   // DeepSeek's warned increase landed: ~3x input, ~4.5x output. These are the PEAK
   // (undiscounted) rates — off-peak is half, but it depends on a UTC window the user
@@ -347,14 +352,15 @@ const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsof
 // be on that provider's free tier or the answer can never change the result.
 const MODELS = {
   openai:{free:'gpt-5.6-luna',top:'gpt-5.6-sol'}, anthropic:{free:'claude-sonnet-5-5',top:'claude-opus-5-5'},
-  google:{free:'gemini-3.6-flash',top:'gemini-4-argon'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
+  google:{free:'gemini-3.5-flash-lite',top:'gemini-4-argon'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
   deepseek:{free:'deepseek-v4-flash',top:'deepseek-v4-pro'},
 };
 // Providers whose best model is already on the free tier, so "I always want the
 // best" must NOT force a paid plan: Copilot runs the same model on both tiers, and
 // DeepSeek's free chat exposes the whole line-up. For these, paying buys volume
 // and features — never smarter output. Google LEFT this set on 2026-10-18: Gemini 4
-// Argon is on AI Pro and Ultra only, so "always the best" now means paying for Pro.
+// Argon is on AI Pro and Ultra only, so "always the best" now means paying for Pro. The
+// Free card dropped 3.1 Pro the same week (Flash-Lite only), so Pro is paid-only too.
 const TOP_IS_FREE = new Set(['microsoft','deepseek']);
 // Providers that publish no comparable per-token rate — never quote API cost for them.
 const LEGACY_ONLY = new Set(['microsoft']);
@@ -416,7 +422,7 @@ const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus
   // break-even copy — check-auditor.js enforces that.
   'gpt-5.4-mini':'GPT-5 Thinking Mini', 'claude-haiku-4-5-20251001':'Claude Haiku 4.5', 'claude-haiku-5-5':'Claude Haiku 5.5',
   'claude-sonnet-5-5':'Claude Sonnet 5.5', 'claude-sonnet-5':'Claude Sonnet 5', 'claude-sonnet-4-6':'Claude Sonnet 4.6',
-  'gemini-2.5-flash-lite':'Gemini 2.5 Flash-Lite', 'gemini-3.1-flash-lite':'Gemini 3.1 Flash-Lite',
+  'gemini-2.5-flash-lite':'Gemini 2.5 Flash-Lite', 'gemini-3.1-flash-lite':'Gemini 3.1 Flash-Lite', 'gemini-3.5-flash-lite':'Gemini 3.5 Flash-Lite',
   'gemini-2.5-pro':'Gemini 2.5 Pro', 'gpt-4o':'GPT-4o' };
 const labelModel = k => { const b=String(k).includes(':')?String(k).split(':')[1]:String(k); return LABELS[b] || b; };
 const money = n => { if(!n) return '$0'; const r=Math.round(n*100)/100; return '$'+(Number.isInteger(r)?r:r.toFixed(2)); };
@@ -946,9 +952,14 @@ function recommend(pf,sig){
     // ~1,100 messages a day on Claude Pro), which printed "2.5 days of use a day".
     // pricing.html already says "never pays off" there; say the same thing here.
     const overADay = n => n/throughputMpm()/60 > 24;
+    const one = be.fewModel === be.manyModel;
     const tail = `${pf.arcMeasured?`, priced on your own measured message sizes`:``}.${thinks?` That includes the hidden thinking tokens a reasoning model bills at the output rate${thinkMeasured?` — measured against the provider’s own API, not estimated`:` — our estimate of them, not yet measured for this model`}.`:``}`;
     if(overADay(be.few))
       why.push(`Break even at more than a day of use a day, which never happens: even on ${labelModel(be.fewModel)} it would take ${fmtMsgs(be.few)} messages a day (${fmtTime(be.few)} of nonstop use) before ${money(fit.price)}/mo beats paying per token${tail}`);
+    // Both anchors can be ONE model (Google AI Plus serves only Flash since 2026-10-18).
+    // The range copy then read "2.0 h–2.0 h — 121 messages on 3.6 Flash, or 121 on 3.6 Flash".
+    else if(one)
+      why.push(`Break even at ${fmtTime(be.few)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)} — before ${money(fit.price)}/mo beats paying per token${tail}`);
     else if(Math.round(be.few)!==Math.round(be.many) && overADay(be.many))
       why.push(`Break even at ${fmtTime(be.few)} of use a day — ${fmtMsgs(be.few)} messages on ${labelModel(be.fewModel)} — before ${money(fit.price)}/mo beats paying per token. On ${labelModel(be.manyModel)} it never does: that would take ${fmtMsgs(be.many)} messages a day, more than a day of nonstop use${tail}`);
     else
@@ -960,9 +971,9 @@ function recommend(pf,sig){
     const mpd=pf.avg_messages_per_day!=null?pf.avg_messages_per_day:pf.messages_per_day;
     const spread=(pf.days_per_month||30)<30?` (your ${fmtMsgs(pf.messages_per_day)} on a busy day, spread over the ${pf.days_per_month} days a month you said you use it)`:'';
     const src=`${pf.measured?'Your measured':'Your estimated'} ${fmtMsgs(mpd)} messages/day${spread}`;
-    if(mpd>=be.many) why.push(`${src} clears that on either model, so the plan is the cheaper of the two.`);
+    if(mpd>=be.many) why.push(one ? `${src} clears that, so the plan is the cheaper option.` : `${src} clears that on either model, so the plan is the cheaper of the two.`);
     else if(mpd>=be.few) why.push(`${src} clears it if you're mostly on ${labelModel(be.fewModel)}, but not if you're mostly on ${labelModel(be.manyModel)}.`);
-    else why.push(`${src} is below break-even on both — so what you're buying here isn't volume, it's the models or features the cheaper tiers don't carry.`);
+    else why.push(`${src} is below break-even${one?'':' on both'} — so what you're buying here isn't volume, it's the models or features the cheaper tiers don't carry.`);
   }
   // A weekly cap only bites someone using it most days — for a four-days-a-month user
   // it is noise, and this page is already long. days_per_month carries exactly that
