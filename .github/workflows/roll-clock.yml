@@ -48,7 +48,7 @@ jobs:
 
       - name: Open pull request
         if: steps.diff.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0 (pinned to a commit; tags can be moved)
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: auto/clock-reanchor-${{ github.run_number }}
