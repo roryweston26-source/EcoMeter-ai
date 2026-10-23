@@ -185,7 +185,7 @@ wrong number in front of a user.
 | **2026-12-31** | ⚠️ **The SHIPPED extension becomes wrong in the harmful direction.** **v6.15** (uploaded 2026-09-19) bundles the Gemini Flash promo rate, and the extension reads its OWN bundled `prices.json` — no remote fetch — so a build freezes its prices. After the promo reverts, a still-shipped v6.15 understates Gemini by 2×. Shipping v6.15 closed every OTHER drift and moved this deadline not at all. | [H4](#h4-the-shipped-build-vs-main) |
 | ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
-| **2026-12-31** | **Google's promotional rate on `gemini-3.7-flash` and `gemini-3.6-flash` expires** — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
+| **2026-12-31** | **Google's promotional rate on `gemini-3.8-flash` and `gemini-3.6-flash` expires** (and on the retired `gemini-3.7-flash` key) — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
 | **2027-01-01** | **RE-UPLOAD THE EXTENSION once the Gemini promos revert.** The extension reads its BUNDLED `prices.json` — there is no remote fetch — so the store copy freezes at whatever shipped. v6.15 carries the promo $0.75/$3.75; from 1 January that understates Gemini by **2×**, the direction that costs the reader money. `check-prices.js` fixes the repo automatically; only a manual upload fixes users. | [H4](#h4-the-shipped-build-vs-main), [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
 | **2026-09-27** ✅ DONE | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices)
@@ -446,6 +446,11 @@ list to join against — those stay a manual read.
 current page are retained at last-known rates because they stay selectable in the
 picker — record them in `_meta.caveats._legacy_keys` and treat those numbers as
 historical, not current.
+**Routed, not shut down (added 2026-10-18):** when a provider deprecates a model and
+routes its calls to a successor, keep the key and rate (logged usage still prices) but
+take it out of the picker and `MODEL_REGISTRY`. Nobody can pick it any more, and a stored
+rate that differs from the successor's would price new usage wrong. Gemini 3.7 / 3.5 Flash
+are the first case.
 
 **Deliberately untracked** — decide, don't default: `deepseek-v4-flash-vision-exp`
 ($0.44/$1.32 peak, seen on api-docs.deepseek.com 2026-08-27 — experimental vision
@@ -799,16 +804,38 @@ get the fix below, and all 15,000 DeepSeek answers get the corrected ranking sen
   picked in AI Studio, and API calls are routed to 3.8 Flash and 3.6 Flash. Neither is on the
   pricing page now. 3.7 Flash is billed the same either way. **3.5 Flash is not:** we store
   $1.50/$9.00, and a call to it is now served by 3.6 Flash at $0.75/$3.75, so the picker
-  overstates it. Both belong in `_legacy_keys` or should leave the picker.
+  overstates it. Both belong in `_legacy_keys` or should leave the picker. **Done 2026-10-18**, below.
 - **The Gemini app's Free card now says "Access to our Flash-Lite model"** and Plus says "our
   Flash model" (gemini.google/subscriptions, 2026-10-18). `free_tiers.google` and Free's
-  `value_models` still say 3.6 Flash (verified 2026-08-24). Needs a proper A4 re-read.
+  `value_models` still say 3.6 Flash (verified 2026-08-24). Needs a proper A4 re-read. **Re-read 2026-10-18 (A4): measured, waiting on Rory.**
 - Anthropic cut Sonnet 5.5 cache reads to $0.10 (0.05x) on 2026-10-07. Caching is not
   modelled, and no page claims Sonnet 5.5's cache rate, so nothing is wrong. The 2026-09-30
   table above that says "0.1x base ($0.20)" was true when written.
 - `gemini-nano-banana-2.1` (image generation, GA 2026-10-06): not a chat model.
 - `update-prices.js` gets Haiku 5.5, not Argon. Like Gemini 3.8 Flash, a promo rate there
   would be one more place to revert in December.
+
+**Retired 2026-10-18 — Gemini 3.7 Flash and 3.5 Flash.** Read at source the same day:
+ai.google.dev/gemini-api/docs/changelog (2026-10-08 entry) and /deprecations. Both are
+"deprecated", "no longer available to select in Google AI Studio", and API requests are
+"automatically routed" to 3.8 Flash and 3.6 Flash. The deprecations table gives neither a
+shutdown date ("the endpoint is not shutting down"). Neither is on the pricing page.
+- **Kept:** both keys and rates in `prices.json`, `water.json` and `update-prices.js`, so
+  usage already logged against them still prices; `audit.html` keeps its labels and the
+  3.5 Flash fallback rate, because an EcoMeter export can still name them. Both recorded in
+  `_legacy_keys` and a `retired_2026-10-18` note in `_meta`.
+- **Removed:** from the extension picker (`MODEL_CATALOG`), `pricing.html` (`MODEL_REGISTRY`
+  and `FALLBACK_PRICES`) and the README model list. 66 shown → 64. A user whose stored
+  model was one of them sees the picker reset to "pick a model" after the next store upload.
+- **3.5 Flash's $1.50/$9.00 is now historical.** A call to it is served as 3.6 Flash
+  ($0.75/$3.75). Google does not say how routed calls are billed, so "billed as 3.6 Flash"
+  is our inference. 3.7 Flash costs the same either way.
+- **Also fixed:** the sidepanel's `FALLBACK_API` had `gemini-3.5-flash` at $0.50/$3.00, a
+  rate that was never right (see A1, 2026-07-28). It now carries 3.5 Flash-Lite at its
+  standing $0.30/$2.50. No published number moved: neither model was a break-even anchor.
+- **Not changed:** the `promo` block on `gemini-3.7-flash` stays, so `check-prices.js` still
+  makes someone revert it on 2026-12-31. These are extension changes, so they reach users
+  only with the next store upload.
 
 ## A4. What the free tiers include
 
@@ -831,6 +858,50 @@ unlimited pushes a user to pay for volume that now costs nothing. That was the
 single most expensive error found on 2026-08-08, and it pointed at the user's
 wallet.
 
+**Re-read 2026-10-18 — Google now gates on MODELS, not just quota. Our data says it
+doesn't. Measured, NOT shipped: Rory's call** (branch `google-free-tier-flash-lite`, draft PR).
+gemini.google/subscriptions, read live 2026-10-18, names no versions any more:
+
+| card | says (2026-10-18) | archived 2026-10-09 to 10-13 | archived up to 2026-10-06 |
+|---|---|---|---|
+| Free | "Access to our Flash-Lite model" | "Access to 3.5 Flash-Lite" | "Access to 3.6 Flash", "Varying access to 3.1 Pro" |
+| AI Plus | "Access to our Flash model" | "Access to 3.6 Flash", "Access to 3.1 Pro" | (no model line found) |
+| AI Pro | Argon, "our Pro model", "our Flash model" | "Access to 3.8 Flash", "Access to 3.1 Pro" | (no model line found) |
+| AI Ultra | Argon, "Highest access to our Pro model / Flash model" | "Access to 3.8 Flash", "Access to 3.1 Pro" | (no model line found) |
+
+The archived columns are the Wayback Machine's copies of the same page (web.archive.org,
+CDX listing, then the raw `id_` captures). That is a third-party copy, so it dates the
+change; it is not the source. The help article (support.google.com/gemini/answer/16275805)
+has no model table; it adds one line: a subscriber who hits the limit "can continue your
+conversation with Flash-Lite". The Gemini app release notes have no entry for the change.
+
+**What this means.** 3.1 Pro has left Free, and from 2026-10-14 the Plus card no longer lists
+a Pro model either. So for Google the top model is now paid (#83 has since taken Google out of
+`TOP_IS_FREE` and made Argon its top model, for the Argon reason), and `free_tiers.google` (3.6 Flash + 3.1 Pro, verified 2026-08-24) is two models out
+of date. The versions are the last ones Google named: Free 3.5 Flash-Lite, Plus 3.6 Flash, Pro
+and Ultra 3.8 Flash. **That is an inference from what the page said on 2026-10-13, labelled as such.**
+One honest doubt: Plus lost "Access to 3.1 Pro" when the card was rewritten in generic
+words. If Plus in fact still serves Pro, the change below sends some readers to AI Pro at
+$19.99 when $4.99 would do. The page is the only source, and it no longer says Pro.
+
+**The proposed change** (all 11 scripts pass on it): `free_tiers.google` → 3.5 Flash-Lite
+only; `PLANS` Free [3.5 Flash-Lite], Plus [+ 3.6 Flash], Pro / Ultra [+ 3.8 Flash, 3.1 Pro,
+Argon]; `MODELS.google.free` → 3.5 Flash-Lite; Google out of `TOP_IS_FREE` and the frontier
+help text rewritten (both now already done by #83). `value_models`: Free
+3.5 Flash-Lite / 3.5 Flash-Lite, Plus 3.6 Flash / 3.6 Flash. Pro and Ultra anchors untouched.
+
+**Measured against PR #83's FIRST commit (13b9e14), before its Argon-anchor commit cffb238 — so these figures are SUPERSEDED and must be re-taken on top of cffb238.** cffb238 already removes Google from `TOP_IS_FREE`, so much of the Auditor move below now belongs to #83, not to this change. As first measured (the 45,000 single-tool Google answers `test-auditor.js` sweeps, and `breakEven()` for every plan):
+- **Published break-even: one row moves.** Google AI Plus, standard archetype, goes from
+  **6.8–36.5 to 36.5 msgs/day** (the 3.1 Pro end is gone). Free still has none; Pro / Ultra
+  are unchanged. Every other plan is identical.
+- **Auditor: 10,800 of 45,000 Google answers change their recommendation**, every one from
+  a reader who wants the top model "sometimes" or "always": Free → Free + pay-as-you-go for
+  3.1 Pro (4,224), Plus → AI Pro (2,630), Plus → Plus + pay-as-you-go (2,570), Free → AI Pro
+  (1,376). Readers happy with the default: 0 changed; 7,500 of their answers quote a lower
+  API cost because it is now priced on Flash-Lite. 11,700 in all change reasons only (those 7,500 included).
+- Direction: today's data tells a Pro-wanting Gemini reader that Free covers them. It no
+  longer does. That error saves them money on paper and fails them in the app.
+
 **Moved on 2026-08-24 — all four are the kind of change that silently invalidates
 a recommendation:**
 - **GPT-5.5 has finished leaving ChatGPT Free.** On 2026-08-08 that rollout was mid-flight and the honest record was "still there, limited". It has now completed: OpenAI files GPT-5.5 under "Legacy models" (Free: No, Go: No). Free is Luna + Thinking Mini only.
@@ -844,7 +915,7 @@ and the next pass should know these were looked at rather than assumed:
 - **Google** ✅ `gemini.google/subscriptions` Free card still reads "Access to 3.6 Flash"
   and "Varying access to 3.1 Pro". Our pair is exact. Note 3.7 Flash is priced in
   the API but is **not** on the free app — do not promote it on the strength of the
-  API list alone.
+  API list alone. **Superseded 2026-10-18:** the Free card now offers Flash-Lite only (below).
 - **OpenAI** ✅ read from the compare grid’s per-cell labels, not the visual grid.
   Free column: Luna **Yes**, Thinking Mini **Yes**, Sol **No**, Sol Pro **No**,
   Legacy models **No**. Terra on Free is "Limited access in Work and Codex on
@@ -944,7 +1015,7 @@ promotions rather than standing prices. They carry a machine-readable block:
 
 **Added 2026-10-18:** `gemini-4-argon`, $2/$10 through **2026-11-30**, then $4/$20. Google's page states both rates, so `standard` is filled in. In the dated calendar.
 
-**Currently promotional:** `gemini-3.7-flash` and `gemini-3.6-flash`, both at half
+**Currently promotional:** `gemini-3.8-flash`, `gemini-3.6-flash` and the retired `gemini-3.7-flash` key (A3), all at half
 price through **2026-12-31**, reverting to $1.50/$7.50 — and **`glm-5.3-flash`, half
 price through 2026-09-09**, reverting to $0.15/$0.50.
 
@@ -4369,7 +4440,7 @@ change with it.
 
 ## H4. The shipped build vs `main`
 
-### v6.17 BUMPED 2026-10-19 — not yet built or uploaded
+### v6.17 BUMPED 2026-10-19 — APPROVED in the store by 2026-10-20 (Rory confirmed; upload date not recorded)
 
 **Why:** v6.16 is in the store, and `main` has moved since it was built. Extension-side
 changes since the 6.16 bump: Claude Haiku 5.5 and Gemini 4 Argon added to `prices.json`,
@@ -4387,8 +4458,12 @@ rates it carries are as last recorded in `prices.json`; `check-prices.js` passes
   January re-upload as before.
 - Claude Sonnet 4.5 retires 2026-11-30; v6.17 still prices it (not in the picker).
 
-**Still needs Rory:** load-unpacked smoke test at 6.17, upload, record the outcome here.
+**Done (Rory, 2026-10-20):** uploaded and approved. Smoke-test result not recorded.
 Permissions are unchanged since 6.16, so the privacy policy needs no redeploy.
+
+⚠️ **v6.17 predates #84**, so its picker still lists Gemini 3.7 Flash and 3.5 Flash, both
+deprecated 2026-10-08. 3.5 Flash shows $1.50/$9.00 while a call to it is served as 3.6 Flash
+($0.75/$3.75), so a user who picks it sees an overstated cost until the next upload (A3).
 
 ### v6.16 BUILT 2026-10-01 — uploaded and in the store by 2026-10-19 (Rory confirmed; upload date not recorded)
 

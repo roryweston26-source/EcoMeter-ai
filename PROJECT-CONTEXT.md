@@ -9,6 +9,21 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-10-18 — Gemini 3.7 / 3.5 Flash retired; Google's Free tier is Flash-Lite now (FRESHNESS A3, A4)
+
+- **Retired (shipped in this PR):** Google deprecated both on 2026-10-08 and routes their
+  calls to 3.8 Flash and 3.6 Flash. They left the extension picker and `pricing.html`; keys
+  and rates stay in `prices.json` (`_legacy_keys`) so logged usage still prices. 3.5 Flash
+  had been shown at $1.50/$9.00 while a call to it is served as 3.6 Flash at $0.75/$3.75. No
+  published number moved. Extension change, so it reaches users with the next upload.
+- **Measured, held for Rory:** gemini.google/subscriptions now gives Free "our Flash-Lite
+  model" only and Plus "our Flash model" only; 3.1 Pro and Argon are AI Pro / Ultra only.
+  Archived copies (2026-10-09 to 13) named 3.5 Flash-Lite, 3.6 Flash and 3.8 Flash. So Google
+  is no longer `TOP_IS_FREE`. The fix is on branch `google-free-tier-flash-lite` (draft PR):
+  it moves Google AI Plus's break-even from 6.8–36.5 to 36.5 msgs/day. The Auditor figure (10,800
+  of 45,000 answers) was taken before #83 dropped Google from `TOP_IS_FREE`, so it needs
+  re-measuring on top of #83. Rory's call.
+
 ### 2026-10-18 — Claude Haiku 5.5 and Gemini 4 Argon added (FRESHNESS A3)
 
 Both read at source: Haiku 5.5 is $0.10/$0.50, or $0.50/$2.50 for prompts over 100k (the
@@ -26,8 +41,7 @@ picker), so they reach users only with the next store upload.
 - Fixed on the way: DeepSeek is now third of the Auditor's four, not second, and the
   Auditor no longer prints "2.5 days of use a day". That bug was already live on `main` for
   360 Google AI Ultra answers.
-- Open: Google deprecated 3.7 Flash and 3.5 Flash (3.5 is now billed as 3.6), and the
-  Gemini Free card now says Flash-Lite. Both are in A3 as separate jobs.
+- Open then, both handled the same day: see the entry above.
 
 ### 2026-10-13 — Poe added: five points plans with a computed Ceiling
 
