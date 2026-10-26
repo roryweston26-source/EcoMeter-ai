@@ -16,6 +16,8 @@ One repo, two products (details in `PROJECT-CONTEXT.md`):
 
 Tied together by `prices.json` (single source of truth for pricing) and the measure→recommend loop: EcoMeter tracks real local usage → the Subscription Auditor recommends the plan that fits it.
 
+**Direction (set 2026-10-25): the AI Transparency Index (`transparency-index.html`, the disclosure table) is being faded out and will eventually come off the site.** Effort goes to the Legerly service instead: **helping people pick the right plan**, meaning the Subscription Auditor (`audit.html`) and the break-even columns on the Price Tracker (`pricing.html`). When choosing what to work on, favor those. Don't extend the index or open new grading work on it. Keep it accurate while it's still live. The Auditor reads `transparency-index.json` for its privacy tie-break, so taking the page down doesn't mean deleting that file. See `PROJECT-CONTEXT.md` §7.
+
 ## Principles — strong; don't erode without asking
 
 These are the point of the project. The user may change them, but a session should never quietly trade them away for convenience. If a task seems to require breaking one, stop and raise it.
