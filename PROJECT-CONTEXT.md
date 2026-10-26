@@ -1089,6 +1089,8 @@ Volume is averaged **per active day**, **lifetime**. The optional **`model_usage
 
 ## 7. The AI Transparency Index (`transparency-index.html`)
 
+> **Being faded out (decided 2026-10-25).** The index will eventually come off the site so effort can go to the Legerly service: plan choice, meaning the Subscription Auditor (`audit.html`) and break-even on the Price Tracker (`pricing.html`). Until then: keep it accurate, but add no new axes, providers or grading passes. **What removal touches:** the tool card in `index.html`, the link in `audit.html` (`/transparency-index.html`, privacy tie-break copy), `scripts/check-transparency.js` and its step in `validate-site.yml`, the index's FRESHNESS entries (E1*), and the README. **`transparency-index.json` is not page-only.** `audit.html` fetches its `data_practices` rows for the `privacy` tie-break, and `check-auditor.js` checks `PRACTICE_ROW` against them. Either keep that slice or move it before deleting the file.
+
 Grades **how openly** providers let the public see what their AI costs — transparency, not the footprint. Three **independent** axes, never averaged:
 
 | Axis | Status |
