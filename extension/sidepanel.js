@@ -92,6 +92,7 @@ const MODEL_CATALOG = [
     { key:'claude-haiku-5-5', name:'Claude Haiku 5.5' },
     { key:'claude-haiku-4-5-20251001', name:'Claude Haiku 4.5' },
     { key:'claude-fable-5', name:'Claude Fable 5' },
+    { key:'claude-fable-5-2', name:'Claude Fable 5.2' },
     { key:'claude-fable-5-1', name:'Claude Fable 5.1' },
     { key:'claude-mythos-5-1', name:'Claude Mythos 5.1' },
     { key:'claude-mythos-5', name:'Claude Mythos 5' },
@@ -99,6 +100,7 @@ const MODEL_CATALOG = [
   { label:'ChatGPT', models:[
     { key:'gpt-6-astra', name:'GPT-6 Astra' },
     { key:'gpt-6.1-sol', name:'GPT-6.1 Sol' },
+    { key:'gpt-6.1-terra', name:'GPT-6.1 Terra' },
     { key:'gpt-6-sol', name:'GPT-6 Sol' },
     { key:'gpt-6-luna', name:'GPT-6 Luna' },
     { key:'gpt-5.6-sol', name:'GPT-5.6 Sol' },
@@ -111,9 +113,9 @@ const MODEL_CATALOG = [
     { key:'gpt-4.1', name:'GPT-4.1' },
     { key:'gpt-4.1-mini', name:'GPT-4.1 mini' },
     { key:'o3', name:'o3' },
-    { key:'o4-mini', name:'o4-mini' },
   ]},
   { label:'Gemini', models:[
+    { key:'gemini-4-carbon', name:'Gemini 4 Carbon' },
     { key:'gemini-4-argon', name:'Gemini 4 Argon' },
     { key:'gemini-3.8-flash', name:'Gemini 3.8 Flash' },
     { key:'gemini-3.6-flash', name:'Gemini 3.6 Flash' },
@@ -135,6 +137,7 @@ const MODEL_CATALOG = [
     { key:'grok-3-mini', name:'Grok 3 Mini' },
   ]},
   { label:'Mistral', models:[
+    { key:'mistral-large-4', name:'Mistral Large 4' },
     { key:'mistral-large-3', name:'Mistral Large 3' },
     { key:'mistral-medium-3.5', name:'Mistral Medium 3.5' },
     { key:'mistral-medium-3', name:'Mistral Medium 3' },

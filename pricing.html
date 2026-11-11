@@ -474,6 +474,8 @@
     { p:"anthropic", key:"claude-opus-5-5",           m:"Claude Opus 5.5", note:"current Opus · cache hits 0.05x base, not the usual 0.1x" },
     { p:"anthropic", key:"claude-opus-5",             m:"Claude Opus 5" },
     { p:"anthropic", key:"claude-opus-4-8",           m:"Claude Opus 4.8", note:"Opus 4.5 / 4.6 / 4.7 priced the same" },
+    { p:"anthropic", key:"claude-fable-5-2",          m:"Claude Fable 5.2", note:"newest Fable · launched 2026-11-09 · in Max and Ultra up to half the weekly limit; on Pro it runs on usage credits · cache hits 0.025x base" },
+    { p:"anthropic", key:"claude-mythos-5-2",         m:"Claude Mythos 5.2", note:"verified organizations only · same price as Fable 5.2" },
     { p:"anthropic", key:"claude-fable-5",            m:"Claude Fable 5", note:"paid" },
     { p:"anthropic", key:"claude-fable-5-1",          m:"Claude Fable 5.1", note:"paid · cache hits 0.025x base, not the usual 0.1x" },
     { p:"anthropic", key:"claude-mythos-5-1",         m:"Claude Mythos 5.1", note:"paid · limited availability · cache hits 0.025x base" },
@@ -481,6 +483,7 @@
 
     { p:"openai", key:"gpt-6-astra",  m:"GPT-6 Astra", note:"powers GPT-6 Pro · Pro plans in chat, Plus in Work and Codex" },
     { p:"openai", key:"gpt-6.1-sol",  m:"GPT-6.1 Sol", note:"newest Sol · Work and Codex only, not regular ChatGPT chat · Pro first, rolling out to Plus · not on Free or Go" },
+    { p:"openai", key:"gpt-6.1-terra", m:"GPT-6.1 Terra", note:"new 2026-10-26 · Work and Codex on Plus and Pro, not regular ChatGPT chat" },
     { p:"openai", key:"gpt-6-sol",    m:"GPT-6 Sol", note:"superseded by GPT-6.1 Sol · Work and Codex on Plus and Pro, not regular ChatGPT chat · not on Free or Go" },
     { p:"openai", key:"gpt-6-luna",   m:"GPT-6 Luna", note:"Work and Codex on Plus and Pro, not regular ChatGPT chat · not on Free or Go" },
     { p:"openai", key:"gpt-5.6-sol",   m:"GPT-5.6 Sol", note:"powers Medium / High / Extra High reasoning in ChatGPT" },
@@ -493,20 +496,19 @@
     { p:"openai", key:"gpt-5.4-nano", m:"GPT-5.4 nano" },
     { p:"openai", key:"gpt-4.1",      m:"GPT-4.1" },
     { p:"openai", key:"gpt-4.1-mini", m:"GPT-4.1 mini" },
-    { p:"openai", key:"gpt-4.1-nano", m:"GPT-4.1 nano" },
-    { p:"openai", key:"gpt-4o",       m:"GPT-4o" },
+    { p:"openai", key:"gpt-4o",       m:"GPT-4o", note:"OpenAI shuts it down 2027-01-14" },
     { p:"openai", key:"gpt-4o-mini",  m:"GPT-4o mini" },
-    { p:"openai", key:"o3",           m:"o3" },
-    { p:"openai", key:"o4-mini",      m:"o4-mini" },
+    { p:"openai", key:"o3",           m:"o3", note:"OpenAI shuts it down 2026-12-11" },
 
+    { p:"google", key:"gemini-4-carbon",        m:"Gemini 4 Carbon", note:"Google’s strongest reasoning model · GA 2026-11-10 · API only, not yet on any Gemini plan · $2/$10 through 2026-11-30, then $4/$20" },
     { p:"google", key:"gemini-4-argon",         m:"Gemini 4 Argon", note:"newest Gemini · in the app on AI Pro and Ultra, not Free or Plus · $2/$10 through 2026-11-30, then $4/$20" },
     { p:"google", key:"gemini-3.8-flash",       m:"Gemini 3.8 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
     { p:"google", key:"gemini-3.6-flash",       m:"Gemini 3.6 Flash", note:"Half price through 2026-12-31, then $1.50/$7.50" },
     { p:"google", key:"gemini-3.5-flash-lite",  m:"Gemini 3.5 Flash-Lite" },
     { p:"google", key:"gemini-3.1-pro-preview", m:"Gemini 3.1 Pro", note:"Preview · doubles above 200k tokens" },
     { p:"google", key:"gemini-3.1-flash-lite",  m:"Gemini 3.1 Flash-Lite" },
-    { p:"google", key:"gemini-2.5-pro",         m:"Gemini 2.5 Pro" },
-    { p:"google", key:"gemini-2.5-flash",       m:"Gemini 2.5 Flash" },
+    { p:"google", key:"gemini-2.5-pro",         m:"Gemini 2.5 Pro", note:"from 2026-12-01 Google routes it to Gemini 3.8 Flash" },
+    { p:"google", key:"gemini-2.5-flash",       m:"Gemini 2.5 Flash", note:"from 2026-12-01 Google routes it to Gemini 3.5 Flash-Lite" },
     { p:"google", key:"gemini-2.5-flash-lite",  m:"Gemini 2.5 Flash-Lite" },
 
     { p:"xai", key:"grok-4.7",    m:"Grok 4.7", note:"API flagship · not yet in the Grok apps" },
@@ -518,8 +520,9 @@
     { p:"xai", key:"grok-3",      m:"Grok 3", note:"no longer listed by xAI · last known rate" },
     { p:"xai", key:"grok-3-mini", m:"Grok 3 Mini", note:"no longer listed by xAI · last known rate" },
 
-    { p:"mistral", key:"mistral-medium-3.5", m:"Mistral Medium 3.5" },
-    { p:"mistral", key:"mistral-large-3",    m:"Mistral Large 3" },
+    { p:"mistral", key:"mistral-large-4",    m:"Mistral Large 4", note:"Mistral’s current generalist flagship" },
+    { p:"mistral", key:"mistral-medium-3.5", m:"Mistral Medium 3.5", note:"deprecated by Mistral · last listed rate" },
+    { p:"mistral", key:"mistral-large-3",    m:"Mistral Large 3", note:"deprecated by Mistral · last listed rate" },
     { p:"mistral", key:"mistral-small-4",    m:"Mistral Small 4" },
     { p:"mistral", key:"codestral",          m:"Codestral" },
 
@@ -536,8 +539,9 @@
     { p:"zai", key:"glm-5.3",       m:"GLM-5.3" },
     { p:"zai", key:"glm-5.3-flash", m:"GLM-5.3 Flash", note:"doubled to $0.15/$0.50 on 2026-09-09 when the half-price promo ended" },
 
+    { p:"moonshot", key:"kimi-k3.1-pro",  m:"Kimi K3.1 Pro", note:"Moonshot’s new flagship · cheaper than K3" },
     { p:"moonshot", key:"kimi-k3",        m:"Kimi K3" },
-    { p:"moonshot", key:"kimi-k2.7-code", m:"Kimi K2.7 Code" }
+    { p:"moonshot", key:"kimi-k2.7-code", m:"Kimi K2.7 Code", note:"closed to new sign-ups · Moonshot plans to retire it by end of 2026" }
   ];
 
   // ---- Path to the live prices file (same file the Monday Action maintains) ----
@@ -558,12 +562,15 @@
       "claude-opus-4-8":           { input: 5e-6,    output: 2.5e-5 },
       "claude-fable-5":            { input: 1e-5,    output: 5e-5 },
       "claude-mythos-5":           { input: 1e-5,    output: 5e-5 },
+      "claude-fable-5-2":          { input: 8e-6,    output: 4e-5 },
+      "claude-mythos-5-2":         { input: 8e-6,    output: 4e-5 },
       "claude-fable-5-1":          { input: 1e-5,    output: 5e-5 },
       "claude-mythos-5-1":         { input: 1e-5,    output: 5e-5 }
     },
     "openai": {
       "gpt-6-astra":   { input: 1e-5,   output: 5e-5, long: { over: 272000, input: 2e-5, output: 7.5e-5 } },
       "gpt-6.1-sol":   { input: 2e-6,   output: 1e-5, long: { over: 272000, input: 4e-6, output: 1.5e-5 } },
+      "gpt-6.1-terra": { input: 1e-6,   output: 5e-6, long: { over: 272000, input: 2e-6, output: 7.5e-6 } },
       "gpt-6-sol":     { input: 2e-6,   output: 1e-5, long: { over: 272000, input: 4e-6, output: 1.5e-5 } },
       "gpt-6-luna":    { input: 1e-7,   output: 5e-7, long: { over: 272000, input: 2e-7, output: 7.5e-7 } },
       "gpt-5.6-sol":   { input: 4e-6,   output: 2e-5, long: { over: 272000, input: 0.000008, output: 0.00003 } },
@@ -583,6 +590,7 @@
       "o4-mini":      { input: 1.1e-6,  output: 4.4e-6 }
     },
     "google": {
+      "gemini-4-carbon":        { input: 2e-6,    output: 1e-5 },
       "gemini-4-argon":         { input: 2e-6,    output: 1e-5 },
       "gemini-3.8-flash":       { input: 7.5e-7,  output: 3.75e-6 },
       "gemini-3.6-flash":       { input: 7.5e-7,  output: 3.75e-6 },
@@ -605,6 +613,7 @@
     },
     "mistral": {
       "mistral-medium-3.5": { input: 1.5e-6, output: 7.5e-6 },
+      "mistral-large-4":  { input: 7e-7,    output: 2.1e-6 },
       "mistral-large-3":  { input: 5e-7,    output: 1.5e-6 },
       "mistral-small-4":  { input: 1.5e-7,  output: 6e-7 },
       "codestral":        { input: 3e-7,    output: 9e-7 }
@@ -626,6 +635,7 @@
       "glm-5.3-flash": { input: 1.5e-7,  output: 5e-7 }
     },
     "moonshot": {
+      "kimi-k3.1-pro":  { input: 2e-6,    output: 1e-5 },
       "kimi-k3":        { input: 3e-6,    output: 1.5e-5 },
       "kimi-k2.7-code": { input: 9.5e-7,  output: 4e-6 }
     }
@@ -685,13 +695,13 @@
     { p:"openai",      m:"ChatGPT Go",             price:8 },
     { p:"openai",      m:"ChatGPT Plus",           price:20 },
     { p:"openai",      m:"ChatGPT Pro",            price:100 },
-    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200, note:"Open to new subscribers again as of 2026-09-29, with a lower allowance than before. OpenAI doesn't say how much lower, and its help article no longer gives a multiple, so treat 20× as unconfirmed. Subscribers from before OpenAI's cutoff keep the old allowance until 2026-10-29." },
+    { p:"openai",      m:"ChatGPT Pro (20×)",      price:200, note:"Pro 200. On 2026-10-29 OpenAI cancelled the lower allowance it had announced for new subscribers: everyone on Pro 200 now gets the same, higher Work and Codex allowance. OpenAI says it is more than Pro 100 but gives no number and no multiple, so treat \u201c20\u00d7\u201d as the old name, not a figure." },
     { p:"openai",      m:"ChatGPT Pro 500",        price:500, note:"New as of 2026-09-29. OpenAI says it has the highest included usage of its three Pro plans but gives no number. Includes Astra Ultrafast. Web only at launch." },
 
     { p:"anthropic",   m:"Claude Free",            price:0 },
-    { p:"anthropic",   m:"Claude Pro",             price:20, note:"$17/mo billed annually" },
-    { p:"anthropic",   m:"Claude Max 5×",          price:100 },
-    { p:"anthropic",   m:"Claude Max 20×",         price:200 },
+    { p:"anthropic",   m:"Claude Pro",             price:20, note:"$17/mo billed annually. Fable is not in the plan; it runs on pay-as-you-go usage credits." },
+    { p:"anthropic",   m:"Claude Max",             price:100, note:"Was Max 5×. Includes $100 a month of Claude API credits (claim on claude.ai; API only, not the chat app or interactive Claude Code), counted here as a bonus, not a discount. Fable included up to half the weekly limit." },
+    { p:"anthropic",   m:"Claude Ultra",           price:200, note:"Was Max 20×, renamed 2026-11-10 at the same $200. Weekly usage is now 10× Pro (it was sold as 20× per session), with no 5-hour limit once the account is verified. Includes $200 a month of Claude API credits, counted here as a bonus, not a discount." },
 
     { p:"google",      m:"Gemini (Free)",          price:0 },
     { p:"google",      m:"Google AI Plus",         price:4.99 },
@@ -700,10 +710,10 @@
     { p:"google",      m:"Google AI Ultra (20×)",  price:199.99 },
 
     { p:"xai",         m:"Grok (Free)",            price:0 },
-    { p:"xai",         m:"SuperGrok Lite",         price:10 },
-    { p:"xai",         m:"SuperGrok",              price:30, note:"X Premium+ bundle: $40/mo" },
-    { p:"xai",         m:"SuperGrok Plus",         price:100, note:"New tier, live on x.ai/pricing by 2026-08-24" },
-    { p:"xai",         m:"SuperGrok Heavy",        price:300 },
+    { p:"xai",         m:"Grok Plus",              price:8, note:"Replaced SuperGrok Lite ($10) on x.ai/pricing by 2026-11-10. Includes X Premium. Its AI usage pool is shared with Cursor, and xAI gives no size for it." },
+    { p:"xai",         m:"Grok Premium",           price:30, note:"Replaced SuperGrok at the same $30. xAI says 4× Plus usage but never sizes Plus. The pool is shared with Cursor." },
+    { p:"xai",         m:"Grok Super",             price:100, note:"Replaced SuperGrok Plus at the same $100. xAI says 15× Plus usage, against an unsized base. The pool is shared with Cursor." },
+    { p:"xai",         m:"Grok Ultra",             price:200, note:"Replaced SuperGrok Heavy, which was $300. xAI says 50× Plus usage, against an unsized base. The pool is shared with Cursor." },
 
     { p:"perplexity",  m:"Perplexity Free",        price:0 },
     { p:"perplexity",  m:"Perplexity Pro",         price:20 },
@@ -776,14 +786,15 @@
       },
       // Mirrors plan-limits.json _meta.reasoning.unmeasured_range — up_to only.
       unmeasured_range: { models: {
+        "claude-fable-5-2":       { up_to: "claude-opus-5" },
         "claude-opus-5-5":        { up_to: "claude-opus-5" }
       } } },
       // Mirrors plan-limits.json _meta.openrouter (fee + which value models OpenRouter
       // serves from their own maker at the prices.json rate). Only the math panel reads
       // it; the headline break-even never does. check-auditor.js diffs the two.
-      openrouter: { fee: 0.055, fee_min_usd: 0.80, chat_url: "https://openrouter.ai/chat", checked: "2026-10-12",
+      openrouter: { fee: 0.055, fee_min_usd: 0.80, chat_url: "https://openrouter.ai/chat", checked: "2026-11-10",
         models: {
-          "anthropic:claude-haiku-4-5-20251001": "anthropic/claude-haiku-4.5",
+          "anthropic:claude-fable-5-2": "anthropic/claude-fable-5.2",
           "anthropic:claude-haiku-5-5": "anthropic/claude-haiku-5.5",
           "anthropic:claude-opus-5": "anthropic/claude-opus-5",
           "anthropic:claude-opus-5-5": "anthropic/claude-opus-5.5",
@@ -791,7 +802,6 @@
           "anthropic:claude-sonnet-5-5": "anthropic/claude-sonnet-5.5",
           "deepseek:deepseek-v4-flash": null,
           "deepseek:deepseek-v4-pro": null,
-          "google:gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
           "google:gemini-3.5-flash-lite": "google/gemini-3.5-flash-lite",
           "google:gemini-4-argon": "google/gemini-4-argon",
           "google:gemini-3.6-flash": "google/gemini-3.6-flash",
@@ -841,8 +851,8 @@
       { p:"anthropic", m:"Claude Free", provenance:"not_disclosed", value_models:{ low:"claude-haiku-5-5", high:"claude-sonnet-5-5" } },
       { p:"anthropic", m:"Claude Pro", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"claude-haiku-5-5", high:"claude-opus-5-5" },
         third_party:[{ n:45, unit:"messages", window:"5h", scope:"all models", confidence:"medium", source:"https://claudelimit.com/claude-pro-limits/" }] },
-      { p:"anthropic", m:"Claude Max 5×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false }, value_models:{ low:"claude-sonnet-5-5", high:"claude-opus-5-5" } },
-      { p:"anthropic", m:"Claude Max 20×", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:20, base_disclosed:false }, value_models:{ low:"claude-sonnet-5-5", high:"claude-opus-5-5" } },
+      { p:"anthropic", m:"Claude Max", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:5, base_disclosed:false, applies_to:"5h", longer_window_multiple_stated:true }, value_models:{ low:"claude-sonnet-5-5", high:"claude-fable-5-2" } },
+      { p:"anthropic", m:"Claude Ultra", provenance:"not_disclosed", multiplier:{ of:"Claude Pro", x:10, base_disclosed:false, applies_to:"7d" }, value_models:{ low:"claude-sonnet-5-5", high:"claude-fable-5-2" } },
 
       { p:"google", m:"Gemini (Free)", provenance:"not_disclosed", unquantified_windows:[{ window:"7d" }], value_models:{ low:"gemini-3.5-flash-lite", high:"gemini-3.5-flash-lite" } },
       { p:"google", m:"Google AI Plus", provenance:"not_disclosed", multiplier:{ of:"Gemini (Free)", x:2, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-3.6-flash" } },
@@ -851,10 +861,10 @@
       { p:"google", m:"Google AI Ultra (20×)", provenance:"not_disclosed", multiplier:{ of:"Google AI Pro", x:20, base_disclosed:false }, value_models:{ low:"gemini-3.6-flash", high:"gemini-4-argon" } },
 
       { p:"xai", m:"Grok (Free)", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
-      { p:"xai", m:"SuperGrok Lite", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
-      { p:"xai", m:"SuperGrok", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-08-31" }, value_models:{ low:"grok-4.6", high:"grok-4.6" } },
-      { p:"xai", m:"SuperGrok Plus", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
-      { p:"xai", m:"SuperGrok Heavy", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"Grok Plus", provenance:"not_disclosed", value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"Grok Premium", provenance:"not_disclosed", window_check:{ result:"none stated", checked:"2026-11-10" }, multiplier:{ of:"Grok Plus", x:4, base_disclosed:false }, value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"Grok Super", provenance:"not_disclosed", multiplier:{ of:"Grok Plus", x:15, base_disclosed:false }, value_models:{ low:"grok-4.6", high:"grok-4.6" } },
+      { p:"xai", m:"Grok Ultra", provenance:"not_disclosed", multiplier:{ of:"Grok Plus", x:50, base_disclosed:false }, value_models:{ low:"grok-4.6", high:"grok-4.6" } },
 
       { p:"perplexity", m:"Perplexity Free", provenance:"not_disclosed", value_models:{ low:"openai:gpt-5.6-terra", high:"anthropic:claude-sonnet-5" },
         third_party:[{ n:5, unit:"Pro searches", window:"1d", scope:"Pro Search", confidence:"low", source:"https://www.toolcolumn.com/learn/perplexity-pro-search-limits-explained" }] },
