@@ -240,13 +240,13 @@ let PLANS = {
     // (FRESHNESS A3): listing a model here is about what the plan INCLUDES, the anchor is about
     // what the chat surface this tool prices actually RUNS.
     { m:'ChatGPT Plus', price:20,  cap:null, capSource:'not_disclosed',
-      models:['gpt-6-astra','gpt-6.1-sol','gpt-6-sol','gpt-6-luna','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-6.1-sol','gpt-6.1-terra','gpt-6-sol','gpt-6-luna','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research'], seats:1 },
     // Pro's differentiator is Sol at Extra High plus Sol Pro — reasoning levels, not
     // a distinct model key. There is no gpt-5.6-sol-pro rate to price, so it stays a
     // feature rather than an invented model.
     { m:'ChatGPT Pro',  price:100, cap:null, capSource:'not_disclosed',
-      models:['gpt-6-astra','gpt-6.1-sol','gpt-6-sol','gpt-6-luna','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
+      models:['gpt-6-astra','gpt-6.1-sol','gpt-6.1-terra','gpt-6-sol','gpt-6-luna','gpt-5.6-luna','gpt-5.5','gpt-5.4-mini','gpt-5.6-sol','gpt-5.6-terra','gpt-5.4','o3','o4-mini','gpt-4.1'],
       features:['image-gen','voice','projects','research','sol-pro'], seats:1 },
   ],
   anthropic: [
@@ -280,11 +280,11 @@ let PLANS = {
     { m:'Claude Pro',    price:20,  cap:144, capSource:'third_party', unquantifiedWindow:'7d',
       models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8'],
       features:['projects','extended-thinking'], seats:1 },
-    { m:'Claude Max 5×', price:100, cap:720, capSource:'third_party', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
+    { m:'Claude Max',    price:100, cap:720, capSource:'third_party', apiCredits:100, unquantifiedWindow:'7d',
+      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-2','claude-fable-5-1','claude-fable-5'],
       features:['projects','extended-thinking','priority'], seats:1 },
-    { m:'Claude Max 20×',price:200, cap:null, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-1','claude-fable-5'],
+    { m:'Claude Ultra',  price:200, cap:null, capSource:'not_disclosed', apiCredits:200, unquantifiedWindow:'7d',
+      models:['claude-sonnet-5-5','claude-sonnet-5','claude-sonnet-4-6','claude-haiku-5-5','claude-haiku-4-5-20251001','claude-opus-5-5','claude-opus-5','claude-opus-4-8','claude-fable-5-2','claude-fable-5-1','claude-fable-5'],
       features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
@@ -331,7 +331,7 @@ let PLANS = {
 // unnoticed for ten days in Aug 2026 (gemini-3.5-flash was a third of the real
 // rate), which made pay-per-token look cheaper than it is whenever the fetch broke.
 let API = {
-  'gpt-6-astra':{in:1e-5,out:5e-5}, 'gpt-6.1-sol':{in:2e-6,out:1e-5}, 'gpt-6-sol':{in:2e-6,out:1e-5}, 'gpt-6-luna':{in:1e-7,out:5e-7},
+  'gpt-6-astra':{in:1e-5,out:5e-5}, 'gpt-6.1-sol':{in:2e-6,out:1e-5}, 'gpt-6.1-terra':{in:1e-6,out:5e-6}, 'gpt-6-sol':{in:2e-6,out:1e-5}, 'gpt-6-luna':{in:1e-7,out:5e-7},
   'gpt-5.6-luna':{in:2e-7,out:1.2e-6}, 'gpt-5.6-sol':{in:4e-6,out:2e-5}, 'gpt-5.6-terra':{in:2e-6,out:1.2e-5},
   'gpt-5.5':{in:5e-6,out:3e-5}, 'gpt-5.4':{in:2.5e-6,out:1.5e-5}, 'gpt-5.4-mini':{in:7.5e-7,out:4.5e-6},
   'o3':{in:2e-6,out:8e-6}, 'o4-mini':{in:1.1e-6,out:4.4e-6}, 'gpt-4.1':{in:2e-6,out:8e-6},
@@ -410,8 +410,8 @@ function advancedModels(){
   return s;
 }
 const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus 4.8', 'claude-fable-5':'Claude Fable', 'claude-mythos-5':'Claude Mythos',
-  'claude-fable-5-1':'Claude Fable 5.1', 'claude-mythos-5-1':'Claude Mythos 5.1',
-  'gpt-6-astra':'GPT-6 Astra', 'gpt-6.1-sol':'GPT-6.1 Sol', 'gpt-6-sol':'GPT-6 Sol', 'gpt-6-luna':'GPT-6 Luna', 'claude-opus-5-5':'Claude Opus 5.5',
+  'claude-fable-5-2':'Claude Fable 5.2', 'claude-fable-5-1':'Claude Fable 5.1', 'claude-mythos-5-1':'Claude Mythos 5.1',
+  'gpt-6-astra':'GPT-6 Astra', 'gpt-6.1-sol':'GPT-6.1 Sol', 'gpt-6.1-terra':'GPT-6.1 Terra', 'gpt-6-sol':'GPT-6 Sol', 'gpt-6-luna':'GPT-6 Luna', 'claude-opus-5-5':'Claude Opus 5.5',
   'gpt-5.6-sol':'GPT-5.6 Sol', 'gpt-5.6-terra':'GPT-5.6 Terra', 'gpt-5.6-luna':'GPT-5.6 Luna',
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
   'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-4-argon':'Gemini 4 Argon', 'gemini-3.5-flash':'Gemini 3.5 Flash',
@@ -986,6 +986,11 @@ function recommend(pf,sig){
   if(api!=null) why.push(`At your volume, API pay-as-you-go ≈ ${money(api)}/mo${(()=>{const rs=(pf.models_used||[]).filter(k=>reasoningMult(k)>1);if(!rs.length) return ``;const allMeasured=rs.every(k=>(reasoningEntry(k)||{}).measured);return `, including the thinking tokens a reasoning model bills at the output rate (${allMeasured?`measured against the provider’s own API`:`our estimate — not yet measured for this model`})`;})()}`
     + ((pf.days_per_month||30)<30 ? ` — billed across the ${pf.days_per_month} days a month you actually use it, not all 30` : '')
     + (fit.price>0 && api<fit.price ? ` — cheaper on tokens alone.` : `.`));
+  // Max and Ultra include monthly Claude API credits. Shown, not netted (Rory, 2026-11-10):
+  // they only spend on the API, so they replace the pay-per-token route rather than adding
+  // to the chat plan, and netting them would make the plan look free against the very
+  // route they pay for. plan-limits.json api_credits carries the terms and the source.
+  if(fit.apiCredits) why.push(`This plan also includes ${money(fit.apiCredits)} a month of Claude API credits. You have to claim them on claude.ai, and they only work on the API (not the chat app or interactive Claude Code). We don’t subtract them from the price: they’re worth it only if you’d build on the API anyway.`);
   // A bare "the API is cheaper" is the one recommendation here that can send
   // someone somewhere materially worse, so it never ships without what it costs
   // them. The hybrid branch above already said this; do not say it twice.

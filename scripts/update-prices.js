@@ -115,6 +115,8 @@ async function fetchAnthropic() {
     'claude-opus':               { input: perM(5.00),  output: perM(25.00) },
     'claude-fable-5':            { input: perM(10.00), output: perM(50.00) },
     'claude-mythos-5':           { input: perM(10.00), output: perM(50.00) },
+    'claude-fable-5-2':          { input: perM(8.00),  output: perM(40.00) },
+    'claude-mythos-5-2':         { input: perM(8.00),  output: perM(40.00) },
   };
 
   try {
@@ -146,6 +148,7 @@ async function fetchOpenAI() {
   const prices = {
     'gpt-6-astra':  { input: perM(10.00),  output: perM(50.00)  },
     'gpt-6.1-sol':  { input: perM(2.00),   output: perM(10.00)  },
+    'gpt-6.1-terra':{ input: perM(1.00),   output: perM(5.00)   },
     'gpt-6-sol':    { input: perM(2.00),   output: perM(10.00)  },
     'gpt-6-luna':   { input: perM(0.10),   output: perM(0.50)   },
     'gpt-5.6-sol':  { input: perM(4.00),   output: perM(20.00)  },
@@ -160,7 +163,6 @@ async function fetchOpenAI() {
     'gpt-4o':      { input: perM(2.50),   output: perM(10.00)  },
     'gpt-4.1':     { input: perM(2.00),   output: perM(8.00)   },
     'gpt-4.1-mini':{ input: perM(0.40),   output: perM(1.60)   },
-    'o4-mini':     { input: perM(1.10),   output: perM(4.40)   },
     'o3':          { input: perM(2.00),   output: perM(8.00)   },
   };
 

@@ -275,6 +275,29 @@ async function main() {
     }
   }
 
+  /* ---------- 1b-credits. Max / Ultra API credits are shown, never netted ----------
+     Rory, 2026-11-10: the $100 / $200 monthly Claude API credits only spend on the API,
+     so they are a bonus line, not a discount. Any Claude recommendation landing on Max or
+     Ultra must say so; no other tier may. */
+  {
+    let onCredit = 0, offCredit = 0, wrong = [];
+    for (const messages of MSG)
+      for (const frontier of FRO)
+        for (const purpose of PUR) {
+          const a = { tools: ['anthropic'], messages, frequency: 'constant', purpose, limits: 'often',
+                      frontier, media: 'no', team: 'solo', pays: ['none'], priority: 'capability', student: 'no' };
+          const sig = sigFor(a);
+          let r; try { r = A.recommend(A.profileFor('anthropic', a, sig), sig); } catch (e) { continue; }
+          const got = parse('anthropic', r); const tier = got.tier && got.tier.m;
+          const has = (r.why || []).some(w => typeof w === 'string' && /a month of Claude API credits/.test(w));
+          const should = tier === 'Claude Max' || tier === 'Claude Ultra';
+          if (should) onCredit++; else offCredit++;
+          if (has !== should) wrong.push(tier + ' ' + messages + ' ' + frontier);
+        }
+    ok('Max / Ultra recommendations name their API credits, and no other tier does (' + onCredit + ' on, ' + offCredit + ' off)',
+       wrong.length === 0 && onCredit > 0, wrong.slice(0, 5));
+  }
+
   /* ---------- 1c. break-even appears on a paid recommendation ---------- */
   {
     const a = { tools: ['anthropic'], messages: '50to150', frequency: 'constant', purpose: 'coding',
@@ -348,9 +371,9 @@ async function main() {
 
     const a = { tools: ['anthropic'], messages: '5to20', frequency: 'mostDays', purpose: 'writing',
                 limits: 'never', frontier: 'default', media: 'no', team: 'solo',
-                pays: ['anthropic::Claude Max 20\u00d7'], priority: 'cost', student: 'no' };
+                pays: ['anthropic::Claude Ultra'], priority: 'cost', student: 'no' };
     const cp = A.currentPlans(a);
-    ok('Claude Max 20x resolves to its own $200 price', cp.length === 1 && cp[0].price === 200, cp);
+    ok('Claude Ultra (was Max 20x) resolves to its own $200 price', cp.length === 1 && cp[0].price === 200, cp);
     const sig = sigFor(a);
     const r = A.recommend(A.profileFor('anthropic', a, sig), sig);
     const save = r.why.find(w => typeof w === 'object' && /saves/.test(w.html));
@@ -478,7 +501,7 @@ async function main() {
 
     // The combined card sums the per-tool costs and names two paid plans out loud.
     const heavy = Object.assign({}, base, { tools: ['openai', 'anthropic'], messages: '150plus',
-      frontier: 'always', split: 'even', pays: ['openai::ChatGPT Pro', 'anthropic::Claude Max 20×'] });
+      frontier: 'always', split: 'even', pays: ['openai::ChatGPT Pro', 'anthropic::Claude Ultra'] });
     const hs = sigFor(heavy);
     const recs = heavy.tools.map(p => ({ prov: p, r: A.recommend(A.profileFor(p, heavy, hs), hs) }));
     const card = A.totalCard(recs, heavy, hs);

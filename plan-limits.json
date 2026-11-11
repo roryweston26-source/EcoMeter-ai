@@ -88,6 +88,12 @@
       "unmeasured_range": {
         "comment": "Models that reason by default but have NO measured multiplier, so the headline prices them at 1x (reasoningMult() never invents one). That is the less harmful error, since it understates API cost and undersells the plan, but it is still an error of known size. For each model here, the page ALSO shows the break-even it would have if the model thought as much as the measured model named in up_to, so the reader sees the spread instead of one confident number. up_to must name a measured:true row; its mid is read live, so re-measuring that row moves this bound too. Nothing here changes a recommendation: the Auditor still decides on the 1x figure. Remove a model from this block the day it is measured.",
         "models": {
+          "claude-fable-5-2": {
+            "up_to": "claude-opus-5",
+            "why": "Fable 5.2 thinks on every request (Anthropic: Thinking 'Adaptive (always on)', default effort high) and has never been measured here. Unlike Opus 5.5, nothing Anthropic publishes makes Opus 5's 1.8x an UPPER bound for it: Fable is the heavier reasoner, so it may well think more. This shows what the break-even would be at Opus 5's measured level, as a second reading, not a ceiling. Measuring it is a paid API run, which this project does not do (no paid runs).",
+            "source": "https://platform.claude.com/docs/en/about-claude/models/overview",
+            "read": "2026-11-10"
+          },
           "claude-opus-5-5": {
             "up_to": "claude-opus-5",
             "why": "Opus 5 measured 1.8x on 2026-08-27. Anthropic says Opus 5.5 'uses fewer tokens per task' than Opus 5, netting a 40% cost drop together with the 20% lower rate, but that is from coding and agent tasks, not ordinary chat, so it gives no chat multiplier. It does make Opus 5's 1.8x a sensible upper bound. The true figure is somewhere from 1x (what the headline assumes) to about 1.8x. Measuring it costs money and was declined on 2026-09-27.",
@@ -112,14 +118,14 @@
       "markup": "none on inference, per OpenRouter's FAQ: 'We pass through the pricing of the underlying model providers without any markup'. Checked per model by verify-openrouter.js, not taken on trust.",
       "privacy": "Messages pass through OpenRouter as well as the model maker: one more company holding your prompts. Prompt logging is opt-in (for a 1% discount).",
       "chat_url": "https://openrouter.ai/chat",
-      "checked": "2026-10-12",
+      "checked": "2026-11-10",
       "sources": [
         "https://openrouter.ai/pricing",
         "https://openrouter.ai/docs/faq",
         "https://openrouter.ai/api/v1/models"
       ],
       "models": {
-        "anthropic:claude-haiku-4-5-20251001": "anthropic/claude-haiku-4.5",
+        "anthropic:claude-fable-5-2": "anthropic/claude-fable-5.2",
         "anthropic:claude-haiku-5-5": "anthropic/claude-haiku-5.5",
         "anthropic:claude-opus-5": "anthropic/claude-opus-5",
         "anthropic:claude-opus-5-5": "anthropic/claude-opus-5.5",
@@ -127,7 +133,6 @@
         "anthropic:claude-sonnet-5-5": "anthropic/claude-sonnet-5.5",
         "deepseek:deepseek-v4-flash": null,
         "deepseek:deepseek-v4-pro": null,
-        "google:gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
         "google:gemini-3.5-flash-lite": "google/gemini-3.5-flash-lite",
         "google:gemini-4-argon": "google/gemini-4-argon",
         "google:gemini-3.6-flash": "google/gemini-3.6-flash",
@@ -389,18 +394,14 @@
         "low": "gpt-5.4-mini",
         "high": "gpt-5.6-sol"
       },
-      "note": "CHANGED 2026-09-30, after the quote above was last checked (2026-09-19). (1) OpenAI's Pro tiers article no longer says '20x usage than Plus', or any multiple. It now says only 'Pro 200 includes more usage than Pro 100. Pro 500 offers the highest included usage of the three plans.' It also says new Pro 200 subscriptions carry 'a lower usage allowance than previously offered', and gives no figure for how much lower. (2) OpenAI's Codex pricing page has dropped the Pro columns from its five-hour table and now says 'Pro plans currently have no five-hour limit', so the 200–2,000 figure shown as a published cap is no longer published. We have not yet re-graded this row for either change.",
+      "note": "RE-READ 2026-11-10: the Pro tiers article still gives no multiple ('Pro 200 includes more usage than Pro 100'), and the lower allowance for new subscribers was cancelled on 2026-10-29 (see availability.effect). Earlier: CHANGED 2026-09-30, after the quote above was last checked (2026-09-19). (1) OpenAI's Pro tiers article no longer says '20x usage than Plus', or any multiple. It now says only 'Pro 200 includes more usage than Pro 100. Pro 500 offers the highest included usage of the three plans.' It also says new Pro 200 subscriptions carry 'a lower usage allowance than previously offered', and gives no figure for how much lower. (2) OpenAI's Codex pricing page has dropped the Pro columns from its five-hour table and now says 'Pro plans currently have no five-hour limit', so the 200–2,000 figure shown as a published cap is no longer published. We have not yet re-graded this row for either change.",
       "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
       "as_of": "2026-09-19",
       "availability": {
         "status": "open",
         "since": "2026-09-29",
         "stated": "OpenAI release notes, 2026-09-29: 'Pro 200 is available for new subscriptions again at $200/month.' and 'Included usage allowances are changing.' The Pro tiers help article: 'New subscriptions that aren’t eligible for grandfathering include a lower usage allowance than previously offered with Pro 200 to reflect our increasingly efficient models. The monthly price remains $200.' And: 'If your Pro 200 subscription was active at the eligibility cutoff or during the seven days before it, you’re eligible to keep your previous included usage allowance through Oct 29, 2026 while you have an active Pro 200 subscription. After that date, your subscription will move to the lower included usage allowance.' The cutoff date is not stated, and neither is the size of the lower allowance.",
-        "effect": "Reverses the closure this block recorded from 2026-09-10 (OpenAI: 'As of September 10, 2026, we're temporarily pausing new sign-ups and upgrades to the ChatGPT Pro $200 plan (Pro 20X)'), so the 'cannot be bought' warning is retired from both subscription copies. What is for sale is not what the rest of this row was written about: a NEW $200 subscription carries a lower allowance than the plan had, by an amount OpenAI does not state, and its article no longer gives a multiple, so '20×' in the plan name is unconfirmed for new subscribers. The name is a join key across prices.json, plan-limits.json and audit.html (FRESHNESS rule 6) and is left alone, with the caveat carried in the subscription note — the same way the Mistral 'Vibe' rename is handled. Nothing here prices the lower allowance: no figure exists to price it with. Corroboration read 2026-09-30: the release notes (two 2026-09-29 entries), learn.chatgpt.com/docs/pricing ('Plans at $100, $200, or $500 USD per month') and chatgpt.com/pricing, which shows 'From $100' and 'Your choice of 3 usage tiers' but, logged out, prints neither $200 nor $500 — so the help article, not the pricing table, is what this rests on.",
-        "transition": {
-          "on": "2026-10-29",
-          "what": "OpenAI: subscribers who held Pro 200 at its eligibility cutoff, or in the seven days before it, keep the previous included allowance 'through Oct 29, 2026', then move to the lower one at the same $200. Both subscription notes say so in words. Re-read the Pro tiers article once this date passes and rewrite them."
-        },
+        "effect": "UPDATED 2026-11-10: the lower allowance never landed. OpenAI's release notes (2026-10-29) and the Pro tiers article (re-read 2026-11-10) say: 'We\u2019ve also canceled the Pro 200 reduction announced in our September 29 email. If you already had the higher Work and Codex allowance, you keep it. Starting October 29, Pro 200 subscribers on the lower allowance get twice their previous Work and Codex allowance, bringing them up to the same limit.' Weekly GPT-6 Pro message limits on Pro 200 were levelled up the same way. So every Pro 200 subscriber, old or new, has the same allowance again; the 2026-10-29 transition block is removed because the change it watched for was cancelled. Still unstated: any figure, and any multiple of Plus or Pro 100. Pro 100 and Pro 500 also doubled their Work and Codex allowance on 2026-10-29. HISTORY: Reverses the closure this block recorded from 2026-09-10 (OpenAI: 'As of September 10, 2026, we're temporarily pausing new sign-ups and upgrades to the ChatGPT Pro $200 plan (Pro 20X)'), so the 'cannot be bought' warning is retired from both subscription copies. What is for sale is not what the rest of this row was written about: a NEW $200 subscription carries a lower allowance than the plan had, by an amount OpenAI does not state, and its article no longer gives a multiple, so '20×' in the plan name is unconfirmed for new subscribers. The name is a join key across prices.json, plan-limits.json and audit.html (FRESHNESS rule 6) and is left alone, with the caveat carried in the subscription note — the same way the Mistral 'Vibe' rename is handled. Nothing here prices the lower allowance: no figure exists to price it with. Corroboration read 2026-09-30: the release notes (two 2026-09-29 entries), learn.chatgpt.com/docs/pricing ('Plans at $100, $200, or $500 USD per month') and chatgpt.com/pricing, which shows 'From $100' and 'Your choice of 3 usage tiers' but, logged out, prints neither $200 nor $500 — so the help article, not the pricing table, is what this rests on.",
         "source": "https://help.openai.com/en/articles/9793128-what-is-chatgpt-pro",
         "corroborated_by": [
           "https://help.openai.com/en/articles/6825453-chatgpt-release-notes",
@@ -493,17 +494,6 @@
           "effect": "The ~45/5h third-party figure therefore describes a BURST, not a sustained rate, and any per-day number derived from it is an upper bound Anthropic has itself said cannot be held for 30 days. Biased high, and high on a cap flatters the plan.",
           "scope": "all models",
           "as_of": "2026-09-19"
-        },
-        {
-          "window": "7d",
-          "scope": "Opus only",
-          "stated": "Anthropic states TWO weekly meters, not one: \"Weekly limits: Check when your plan’s weekly usage limit resets for Opus only and all other models.\" Read at source 2026-09-06. This closes the open question recorded on this file on 2026-09-01, which inferred a sibling meter from the \"Weekly · all models\" label and deliberately declined to assert it. Anthropic has now asserted it. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
-          "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
-          "as_of": "2026-09-19",
-          "applies_to_plans": "Pro, Max, Team and seat-based Enterprise, per the same sentence",
-          "contradiction": "Anthropic’s own two pages disagree on how many weekly meters exist. The Max article says the weekly is a single limit \"that applies across all models\" (read 2026-09-06); the best-practices article says the weekly resets \"for Opus only and all other models\". Both are current. We record both rather than picking the tidier one.",
-          "observed_gap": "Neither meter is sized, and on the one Pro account we have read the panel showed only two meters (session-0, weekly_all-1) with no Opus sibling, on 2026-09-02 and 2026-09-03. So either the documentation over-describes what Pro shows, or the Opus meter appears only once Opus use crosses some threshold. Unresolved; recorded rather than guessed.",
-          "why_it_matters": "A second unsized weekly meter means the plan a consumer is buying has at least THREE limits, of which Anthropic sizes none, while publishing a precise 5x/20x multiplier for one of them. The count of hidden meters is itself a disclosure fact."
         }
       ],
       "overage_pricing": {
@@ -513,30 +503,32 @@
         "why_it_matters": "It does not size the allowance, but it settles the UNIT, which is the thing that has been missing. Past the cap, compute costs standard API rates — the same rates prices.json already carries. So the included allowance is denominated in dollars-of-API-compute, exactly the unit this site computes every other figure in. Pair that with the in-product percentage meter and the weekly cap becomes MEASURABLE rather than guessable: tokens per percentage point, priced at the published rate. That is the route to the first non-Z.ai Ceiling figure on the table, and it needs no disclosure from Anthropic at all.",
         "caveat": "\"Standard API rates\" is a pointer to a page that moves, not a number, and Anthropic reserves the right to change it. Re-read alongside the rate card rather than treating the link as a constant."
       },
-      "note": "Two INDEPENDENT meters, confirmed in-product 2026-09-01: a rolling 5-hour window and a weekly one, each shown as its own percentage. The weekly is what binds anyone who is not bursting — a week holds 33.6 five-hour windows, and no provider that publishes both sets the weekly anywhere near 33.6x the short one (Z.ai, the only one that does publish both, sets it at 5x). So the 5-hour limit is a speed bump that clears itself in hours; the weekly is the actual budget. Anthropic sizes neither. See unquantified_windows, and _meta.caveats for why we label the bias rather than invent the missing number.",
+      "note": "2026-11-10: Pro is back to ONE weekly meter. The Opus-only weekly meter recorded from 2026-09-06 is no longer named; Anthropic's best-practices article now names a separate weekly limit for Fable only on plans that include Fable, and Pro does not (Fable runs on usage credits there). Earlier: Two INDEPENDENT meters, confirmed in-product 2026-09-01: a rolling 5-hour window and a weekly one, each shown as its own percentage. The weekly is what binds anyone who is not bursting — a week holds 33.6 five-hour windows, and no provider that publishes both sets the weekly anywhere near 33.6x the short one (Z.ai, the only one that does publish both, sets it at 5x). So the 5-hour limit is a speed bump that clears itself in hours; the weekly is the actual budget. Anthropic sizes neither. See unquantified_windows, and _meta.caveats for why we label the bias rather than invent the missing number.",
       "source": "https://support.anthropic.com/en/articles/11647753-understanding-usage-and-length-limits",
       "as_of": "2026-09-19"
     },
     {
       "p": "anthropic",
-      "m": "Claude Max 5×",
+      "m": "Claude Max",
       "provenance": "not_disclosed",
-      "stated": "'5x more usage than Pro' — a disclosed multiplier against an undisclosed base.",
+      "stated": "'5x Pro usage every 5 hours and every week' (claude.com/pricing, read 2026-11-10). Renamed from Max 5× when Max 20× became Ultra. A disclosed multiplier against an undisclosed base, and since 2026-11-10 it is stated for the WEEK as well as the session.",
       "multiplier": {
         "of": "Claude Pro",
         "x": 5,
         "base_disclosed": false,
         "applies_to": "5h",
-        "applies_to_stated": "Max 5x provides five times more usage PER SESSION than the Pro plan.",
-        "longer_window_multiple_stated": false,
+        "applies_to_stated": "Max article, re-read 2026-11-10: 'Get five times the Pro plan's usage every five hours and every week.' It used to say 'five times more usage PER SESSION than the Pro plan' and nothing about the week.",
+        "longer_window_multiple_stated": true,
         "source": "https://support.claude.com/en/articles/11049741-what-is-the-max-plan",
-        "as_of": "2026-09-06",
-        "why_it_matters": "The multiplier is attached to the session window and to nothing else. The very next sentence introduces the weekly limit separately, with no multiple, no size and no stated relation to the 5x/20x: \"Your session-based usage limit will reset every five hours. Max plans also have a weekly usage limit that applies across all models.\" So upgrading buys a STATED multiple on the window that clears itself in five hours and an UNSTATED one on the window that governs the month. That asymmetry is published, not inferred, and it can be said without measuring anything."
+        "as_of": "2026-11-10",
+        "why_it_matters": "FIXED IN ANTHROPIC'S FAVOUR 2026-11-10. Until now the 5x was stated for the five-hour session only, and the weekly limit had no stated relation to it. Both the pricing page and the Max article now say 5x every five hours AND every week, so the window that governs the month is covered by the multiple. The base is still unsized: 5x of an unpublished number is still unpublished."
       },
       "value_models": {
         "low": "claude-sonnet-5-5",
-        "high": "claude-opus-5-5"
+        "high": "claude-fable-5-2"
       },
+      "value_models_source": "Fable 5.2 is the high anchor from 2026-11-10 (Rory's call): support.claude.com/en/articles/15424964 says Max and Ultra include Fable models 'as a standard part of your plan', up to 50% of the weekly limit. Opus 5.5 stays the Pro anchor, where Fable runs on usage credits.",
+      "api_credits": { "usd_per_month": 100, "counted_in_break_even": false, "claim_required": true, "covers": "Claude API, Message Batches, Console Playground, Managed Agents and the Agent SDK", "excludes": "the chat app, interactive Claude Code, extra usage, and Claude on Bedrock, Vertex AI or Foundry", "why_not_netted": "The credits only spend on the API, so they replace the pay-per-token route rather than adding to the chat plan. Netting them would make the plan look free against the very route they pay for. Shown as a bonus for people who would use the API anyway (Rory, 2026-11-10).", "source": "https://support.claude.com/en/articles/17154008-monthly-api-credits-for-max-ultra-and-team-plans", "as_of": "2026-11-10" },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-09-19",
       "unquantified_windows": [
@@ -550,38 +542,38 @@
         },
         {
           "window": "7d",
-          "scope": "Opus only",
-          "stated": "Anthropic states TWO weekly meters, not one: \"Weekly limits: Check when your plan’s weekly usage limit resets for Opus only and all other models.\" Read at source 2026-09-06. This closes the open question recorded on this file on 2026-09-01, which inferred a sibling meter from the \"Weekly · all models\" label and deliberately declined to assert it. Anthropic has now asserted it. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
+          "scope": "Fable only",
+          "stated": "Usage limit best practices, re-read 2026-11-10: 'Weekly limits: Check when your plan’s weekly usage limit resets, for all models, and for Fable (if included in your plan).' And: 'Weekly limits apply across all models, and some plans also have a separate weekly limit for Fable.' The Max and Ultra articles say the same of their own plans. The OPUS-only weekly meter this entry recorded from 2026-09-06 is no longer named anywhere we read; Fable has taken its place.",
           "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
-          "as_of": "2026-09-19",
-          "applies_to_plans": "Pro, Max, Team and seat-based Enterprise, per the same sentence",
-          "contradiction": "Anthropic’s own two pages disagree on how many weekly meters exist. The Max article says the weekly is a single limit \"that applies across all models\" (read 2026-09-06); the best-practices article says the weekly resets \"for Opus only and all other models\". Both are current. We record both rather than picking the tidier one.",
-          "observed_gap": "Neither meter is sized, and on the one Pro account we have read the panel showed only two meters (session-0, weekly_all-1) with no Opus sibling, on 2026-09-02 and 2026-09-03. So either the documentation over-describes what Pro shows, or the Opus meter appears only once Opus use crosses some threshold. Unresolved; recorded rather than guessed.",
-          "why_it_matters": "A second unsized weekly meter means the plan a consumer is buying has at least THREE limits, of which Anthropic sizes none, while publishing a precise 5x/20x multiplier for one of them. The count of hidden meters is itself a disclosure fact."
+          "as_of": "2026-11-10",
+          "replaces": "An Opus-only weekly meter, recorded 2026-09-06 to 2026-11-10. The contradiction it carried (the Max article naming one weekly limit while best-practices named two) is resolved: both pages now name the same two.",
+          "why_it_matters": "Fable is included up to 50% of the weekly limit, so it has its own meter on top of the all-models one, and Anthropic sizes neither. A plan with no five-hour window (Ultra, verified) still has two unsized weekly ones."
         }
       ],
-      "note": "Two windows, and Anthropic sizes neither. The 5x/20x multiplier it does publish covers only the five-hour session. The Max page also reserves the right to more: \"to manage capacity and ensure fair access to all users, we may limit your usage in other ways, such as weekly and monthly caps or model and feature usage, at our discretion\" — so even the meters we can name are a floor, not the full set."
+      "note": "2026-11-10: the Max article now names THREE windows — 'a five-hour limit, a weekly usage limit that applies across all models, and a separate weekly limit for Fable' — and sizes none of them; the Opus-only weekly meter below was not re-read today. Earlier: Two windows, and Anthropic sizes neither. The 5x/20x multiplier it does publish covers only the five-hour session. The Max page also reserves the right to more: \"to manage capacity and ensure fair access to all users, we may limit your usage in other ways, such as weekly and monthly caps or model and feature usage, at our discretion\" — so even the meters we can name are a floor, not the full set."
     },
     {
       "p": "anthropic",
-      "m": "Claude Max 20×",
+      "m": "Claude Ultra",
       "provenance": "not_disclosed",
-      "stated": "'20x more usage than Pro' — a disclosed multiplier against an undisclosed base.",
+      "stated": "'10x Pro usage every week' and 'No 5-hour limit for verified accounts' (claude.com/pricing and the Ultra article, both read 2026-11-10). 'The Max 20x plan is now called the Ultra plan. Existing Max 20x subscribers move to Ultra automatically, with no price change.' A disclosed multiplier against an undisclosed base.",
       "multiplier": {
         "of": "Claude Pro",
-        "x": 20,
+        "x": 10,
         "base_disclosed": false,
-        "applies_to": "5h",
-        "applies_to_stated": "Max 20x provides 20 times more usage PER SESSION than the Pro plan.",
-        "longer_window_multiple_stated": false,
-        "source": "https://support.claude.com/en/articles/11049741-what-is-the-max-plan",
-        "as_of": "2026-09-06",
-        "why_it_matters": "The multiplier is attached to the session window and to nothing else. The very next sentence introduces the weekly limit separately, with no multiple, no size and no stated relation to the 5x/20x: \"Your session-based usage limit will reset every five hours. Max plans also have a weekly usage limit that applies across all models.\" So upgrading buys a STATED multiple on the window that clears itself in five hours and an UNSTATED one on the window that governs the month. That asymmetry is published, not inferred, and it can be said without measuring anything."
+        "applies_to": "7d",
+        "applies_to_stated": "Ultra article, read 2026-11-10: 'Get 10 times the Pro plan's usage every week.' Verified accounts have no five-hour limit; unverified ones get a temporary one, unsized.",
+        "longer_window_multiple_stated": true,
+        "source": "https://support.claude.com/en/articles/17728952",
+        "as_of": "2026-11-10",
+        "why_it_matters": "The $200 plan's stated multiple on Pro HALVED on 2026-11-10, from 20x to 10x, at the same price — though the old 20x covered the five-hour session and the new 10x covers the week, so they bound different windows and nothing published says whether a heavy user gets more or less in a month. What it removes is the five-hour cap, for verified accounts. Anthropic presents it as a rename."
       },
       "value_models": {
         "low": "claude-sonnet-5-5",
-        "high": "claude-opus-5-5"
+        "high": "claude-fable-5-2"
       },
+      "value_models_source": "Same as Claude Max: Fable 5.2 is included up to 50% of the weekly limit (support.claude.com/en/articles/15424964, read 2026-11-10).",
+      "api_credits": { "usd_per_month": 200, "counted_in_break_even": false, "claim_required": true, "covers": "Claude API, Message Batches, Console Playground, Managed Agents and the Agent SDK", "excludes": "the chat app, interactive Claude Code, extra usage, and Claude on Bedrock, Vertex AI or Foundry", "why_not_netted": "Same reason as Claude Max.", "source": "https://support.claude.com/en/articles/17154008-monthly-api-credits-for-max-ultra-and-team-plans", "as_of": "2026-11-10" },
       "source": "https://www.claude.com/pricing",
       "as_of": "2026-09-19",
       "unquantified_windows": [
@@ -595,17 +587,15 @@
         },
         {
           "window": "7d",
-          "scope": "Opus only",
-          "stated": "Anthropic states TWO weekly meters, not one: \"Weekly limits: Check when your plan’s weekly usage limit resets for Opus only and all other models.\" Read at source 2026-09-06. This closes the open question recorded on this file on 2026-09-01, which inferred a sibling meter from the \"Weekly · all models\" label and deliberately declined to assert it. Anthropic has now asserted it. RE-READ 2026-09-19, all three pages together as B9 instructs. NOTHING MOVED: the best-practices article still says the panel shows when your weekly limit resets 'for Opus only and all other models', the Max article still calls it 'a weekly usage limit that applies across all models', and the two still contradict each other on how many weekly meters exist. The negative claim also re-verified: the usage-and-length-limits article contains the word 'weekly' ZERO times. The 5x/20x wording is unchanged and still session-only — 'Max 20x includes 20 times the Pro plan's per-session usage allowance', with the weekly limit introduced separately in the next breath and never multiplied. NEW THIS PASS, and deliberately NOT turned into a window: the Max article also reserves the right to 'limit your usage in other ways, such as weekly and MONTHLY caps or model and feature usage, at our discretion.' That names a monthly cap, but as a reserved right rather than a statement that one exists, so it is recorded here and not given an unquantified_windows entry — asserting a monthly meter on the strength of 'we may' would put a limit in Anthropic's mouth they have not claimed. Watch it: if the wording ever hardens from 'may' to 'do', it becomes a third window.",
+          "scope": "Fable only",
+          "stated": "Usage limit best practices, re-read 2026-11-10: 'Weekly limits: Check when your plan’s weekly usage limit resets, for all models, and for Fable (if included in your plan).' And: 'Weekly limits apply across all models, and some plans also have a separate weekly limit for Fable.' The Max and Ultra articles say the same of their own plans. The OPUS-only weekly meter this entry recorded from 2026-09-06 is no longer named anywhere we read; Fable has taken its place.",
           "source": "https://support.claude.com/en/articles/9797557-usage-limit-best-practices",
-          "as_of": "2026-09-19",
-          "applies_to_plans": "Pro, Max, Team and seat-based Enterprise, per the same sentence",
-          "contradiction": "Anthropic’s own two pages disagree on how many weekly meters exist. The Max article says the weekly is a single limit \"that applies across all models\" (read 2026-09-06); the best-practices article says the weekly resets \"for Opus only and all other models\". Both are current. We record both rather than picking the tidier one.",
-          "observed_gap": "Neither meter is sized, and on the one Pro account we have read the panel showed only two meters (session-0, weekly_all-1) with no Opus sibling, on 2026-09-02 and 2026-09-03. So either the documentation over-describes what Pro shows, or the Opus meter appears only once Opus use crosses some threshold. Unresolved; recorded rather than guessed.",
-          "why_it_matters": "A second unsized weekly meter means the plan a consumer is buying has at least THREE limits, of which Anthropic sizes none, while publishing a precise 5x/20x multiplier for one of them. The count of hidden meters is itself a disclosure fact."
+          "as_of": "2026-11-10",
+          "replaces": "An Opus-only weekly meter, recorded 2026-09-06 to 2026-11-10. The contradiction it carried (the Max article naming one weekly limit while best-practices named two) is resolved: both pages now name the same two.",
+          "why_it_matters": "Fable is included up to 50% of the weekly limit, so it has its own meter on top of the all-models one, and Anthropic sizes neither. A plan with no five-hour window (Ultra, verified) still has two unsized weekly ones."
         }
       ],
-      "note": "Two windows, and Anthropic sizes neither. The 5x/20x multiplier it does publish covers only the five-hour session. The Max page also reserves the right to more: \"to manage capacity and ensure fair access to all users, we may limit your usage in other ways, such as weekly and monthly caps or model and feature usage, at our discretion\" — so even the meters we can name are a floor, not the full set."
+      "note": "2026-11-10: Ultra has no five-hour window for verified accounts, so the two windows below are the weekly ones — 'a weekly usage limit that applies across all models, and a separate weekly limit for Fable' (Ultra article) — and neither is sized. The Opus-only meter was not re-read today. Earlier: Two windows, and Anthropic sizes neither. The 5x/20x multiplier it does publish covers only the five-hour session. The Max page also reserves the right to more: \"to manage capacity and ensure fair access to all users, we may limit your usage in other ways, such as weekly and monthly caps or model and feature usage, at our discretion\" — so even the meters we can name are a floor, not the full set."
     },
     {
       "p": "google",
@@ -709,25 +699,28 @@
         "low": "grok-4.6",
         "high": "grok-4.6"
       },
-      "as_of": "2026-08-26"
+      "as_of": "2026-11-10"
     },
     {
+      "_comment": "x.ai/pricing, read 2026-11-10, replaced the whole SuperGrok ladder with Free / Plus $8 / Premium $30 / Super $100 / Ultra $200, one 'shared AI usage pool' per plan covering Grok Chat, Voice, Imagine, Build AND Cursor, and relative sizes only: 'Basic' for Plus, then 4x, 15x and 50x Plus. The page no longer names a Grok version per plan ('Latest Grok models' from Premium up), so grok-4.6 is CARRIED from the 2026-08-26 read, not re-confirmed. Cursor usage draws on the same pool, so the chat allowance a subscriber gets depends on how much they code — one more reason no ceiling is computed.",
       "p": "xai",
-      "m": "SuperGrok Lite",
+      "m": "Grok Plus",
       "provenance": "not_disclosed",
       "value_models": {
         "low": "grok-4.6",
         "high": "grok-4.6"
       },
-      "as_of": "2026-08-26"
+      "source": "https://x.ai/pricing",
+      "as_of": "2026-11-10"
     },
     {
       "p": "xai",
-      "m": "SuperGrok",
+      "m": "Grok Premium",
       "provenance": "not_disclosed",
       "window_check": {
         "result": "none stated",
-        "checked": "2026-08-31",
+        "first_checked": "2026-08-31",
+        "checked": "2026-11-10",
         "pages_read": [
           "https://x.ai/pricing",
           "https://x.ai/grok",
@@ -735,32 +728,49 @@
         ],
         "note": "Read at source on three xAI- and X-owned pages. Every reference to Grok volume is relative and unwindowed — “higher rate limits”, “increased usage limits on Grok”, “higher limits on Grok” — with no base, no period and no reset. This is the only provider of the five checked on 2026-08-31 that names no window at all, and it is a 🔴 rather than a ⚪ because the pages rendered and were read. help.x.com served a Cloudflare interstitial on the first request and the real page on a retry; check the <title> before trusting a body."
       },
+      "multiplier": {
+        "of": "Grok Plus",
+        "x": 4,
+        "base_disclosed": false
+      },
       "value_models": {
         "low": "grok-4.6",
         "high": "grok-4.6"
       },
-      "as_of": "2026-08-26"
-    },
-    {
-      "_comment": "New tier between SuperGrok and Heavy, found on x.ai/pricing 2026-08-24. xAI publishes no usage figure for it — the card says 'significantly higher usage' against a base it never quantifies.",
-      "p": "xai",
-      "m": "SuperGrok Plus",
-      "provenance": "not_disclosed",
-      "value_models": {
-        "low": "grok-4.6",
-        "high": "grok-4.6"
-      },
-      "as_of": "2026-08-26"
+      "source": "https://x.ai/pricing",
+      "as_of": "2026-11-10"
     },
     {
       "p": "xai",
-      "m": "SuperGrok Heavy",
+      "m": "Grok Super",
       "provenance": "not_disclosed",
+      "multiplier": {
+        "of": "Grok Plus",
+        "x": 15,
+        "base_disclosed": false
+      },
       "value_models": {
         "low": "grok-4.6",
         "high": "grok-4.6"
       },
-      "as_of": "2026-08-26"
+      "source": "https://x.ai/pricing",
+      "as_of": "2026-11-10"
+    },
+    {
+      "p": "xai",
+      "m": "Grok Ultra",
+      "provenance": "not_disclosed",
+      "multiplier": {
+        "of": "Grok Plus",
+        "x": 50,
+        "base_disclosed": false
+      },
+      "value_models": {
+        "low": "grok-4.6",
+        "high": "grok-4.6"
+      },
+      "source": "https://x.ai/pricing",
+      "as_of": "2026-11-10"
     },
     {
       "p": "perplexity",
