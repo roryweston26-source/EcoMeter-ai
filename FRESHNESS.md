@@ -4457,6 +4457,24 @@ change with it.
 
 ## H4. The shipped build vs `main`
 
+### v6.18 BUMPED AND BUILT 2026-11-10 — not yet uploaded
+
+**Why:** v6.17 is in the store and `main` moved with #89. What 6.18 adds to the extension: Claude Fable 5.2, GPT-6.1 Terra, Gemini 4 Carbon and Mistral Large 4 in the picker (Mythos 5.2 and Kimi K3.1 Pro are priced and watered, not in the picker); o4-mini out of the picker after OpenAI shut it down; the Claude Max / Ultra and Grok plan renames in the shared `prices.json`. Bumped with `bump-version.js` (manifest and `prices.json` together); `build-extension.js --check` passed, then built to `ecometer-ai-v6.18.zip` (new file, nothing overwritten). The zip was opened and its `prices.json` confirmed to carry 6.18, Fable 5.2 and Terra. Permissions unchanged (the manifest diff is the version line only), so no privacy-policy redeploy.
+
+**Provider pages were re-read the same day** for #89 — the ten API rate cards plus Anthropic, OpenAI, Google and xAI plan pages. NOT re-read: Perplexity, Poe, Microsoft, Le Chat and Z.ai plans, and every free tier.
+
+⚠️ **Shipping 6.18 does NOT fix the December price change — correcting what the 2026-11-10 session first said.** The extension never reads `promo.until`: it uses whatever `input`/`output` it was built with. So 6.18 bundles Argon AND Carbon at the promo /0 and is wrong by 2× on both from 2026-12-01, exactly as 6.17 is on Argon. The reason to upload 6.18 is the new models and the retirements, not the date.
+
+🚨 **Dated risks shipping inside v6.18:**
+- **Gemini 4 Argon and Gemini 4 Carbon** at promo /0; /0 from 2026-12-01.
+- **GPT-5.6 Sol** at promo /0 until 2026-11-30, reverting rate unpublished.
+- **Gemini Flash promos** (3.6 / 3.7 / 3.8, /usr/bin/bash.75/.75) revert 2027-01-01.
+- **Claude Sonnet 4.5** still priced; retires 2026-11-30 (not in the picker).
+- **Gemini 2.5 Pro / Flash** still in the picker; Google routes them to 3.8 Flash / 3.5 Flash-Lite from 2026-12-01.
+- **o3** still in the picker; OpenAI shuts it down 2026-12-11.
+
+**Still needs Rory:** load-unpacked smoke test at 6.18, upload, record the outcome here. Open question raised 2026-11-10: make the extension switch to `promo.standard` once `promo.until` has passed, so one build covers the 12-01 and 01-01 changes instead of a re-upload for each.
+
 ### v6.17 BUMPED 2026-10-19 — APPROVED in the store by 2026-10-20 (Rory confirmed; upload date not recorded)
 
 **Why:** v6.16 is in the store, and `main` has moved since it was built. Extension-side
