@@ -3,8 +3,8 @@
     "title": "AI Transparency Index",
     "lede": "How openly the major AI providers let the public see what their AI costs — in dollars, in data, and in water and energy. We grade transparency, not the underlying footprint: whether a real figure is findable at all, and who had to surface it. 'Not disclosed' is a finding, not a gap to paper over.",
     "last_verified": "2026-09-19",
-    "status": "ok",
-    "status_note": "",
+    "status": "retired",
+    "status_note": "The Index page was retired on 2026-11-12. Only data_practices is maintained: the Subscription Auditor reads it for its privacy answer, and check-transparency.js guards it. The environmental (columns/rows) and pricing axes are frozen as last verified on 2026-09-19 and are no longer re-checked; treat them as history.",
     "axes": [
       {
         "key": "environmental",

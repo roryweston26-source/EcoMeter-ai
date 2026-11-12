@@ -770,10 +770,10 @@ node scripts/check-auditor.js     # audit.html + pricing.html fallback vs prices
 node scripts/test-auditor.js      # sweeps all 56,250 answer combos + the EcoMeter import
 node scripts/test-cost-model.js   # 44 assertions: billed input, image tokens, tiers, export v2
 node scripts/calibrate-tokenizer.js  # measures the estimator; fails if the UI band is optimistic
-node scripts/check-clock.js       # clock fallback parity + level plausibility vs published totals
 node scripts/validate-site.js     # pre-deploy HTML/JSON gate
-node scripts/check-transparency.js  # index self-promises: sourcing, public copy, doc-table drift
+node scripts/check-transparency.js  # the data-practices grades the Auditor shows: graded, sourced, no links to retired pages
 ```
+**Updated 2026-11-12:** CI (`validate-site.yml`) runs ten checks: validate-site.js, check-prices.js, test-cost-model.js, test-water-model.js, check-extension.js, check-auditor.js, test-auditor.js, check-transparency.js, test-limit-ticks.js and test-limit-envelope.js. `check-clock.js` is deleted. The paragraph below is the 2026-08-29 picture, kept as history.
 `validate-site.yml` now runs FIVE on every PR — `validate-site.js`, `check-auditor.js`, `test-auditor.js` (added 2026-08-08), `check-clock.js` (added 2026-08-24) and `check-transparency.js` (added 2026-08-29). `check-prices.js`, `test-cost-model.js` and `calibrate-tokenizer.js` are still manual; running them is part of a `FRESHNESS.md` pass.
 `check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **`test-auditor.js` found a live bug on its first run:** the volume-aware downgrade kept its own copy of "does this tier clear your needs" that never received the image-generation gate, so **450 of 56,250 combinations told people who generate images regularly to drop to a free tier that throttles it**. The two definitions are now one function (`clearsNonModelNeeds`). **All six pass/fail guards pass on `main` as of 2026-08-25** (`check-prices`, `check-auditor`, `check-clock`, `test-auditor`, `test-cost-model`, `validate-site`) — re-run, not assumed. The seventh script in the heading above, `calibrate-tokenizer.js`, is a **measurement** tool rather than a gate, which is why the count reads seven there and six here.
 
