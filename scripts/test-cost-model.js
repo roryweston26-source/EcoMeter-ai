@@ -153,5 +153,43 @@ console.log('\nusage export v2:');
   ok(oa && oa.billed_input_tokens_per_day === undefined, 'no billed data -> field omitted, never zeroed');
 }
 
+// ── Promotional rates expire inside a shipped build ───────
+// The extension reads its BUNDLED prices.json, so without this a build kept quoting
+// a promo rate after it ended (v6.17 and Gemini 4 Argon, 2026-12-01). Added 2026-11-10.
+console.log('\npromo expiry in the extension:');
+{
+  eval(lift('localDay'));
+  eval(lift('effectiveRate'));
+  var FLAT_PRICES = {};
+  eval(lift('parsePrices'));
+  const e = { input: 2e-6, output: 1e-5, promo: { until: '2026-11-30', standard: { input: 4e-6, output: 2e-5 } } };
+  ok(effectiveRate(e, '2026-11-29').input === 2e-6, 'before the end date: promo rate');
+  ok(effectiveRate(e, '2026-11-30').output === 1e-5, 'on the end date (inclusive): still the promo rate');
+  const after = effectiveRate(e, '2026-12-01');
+  ok(after.input === 4e-6 && after.output === 2e-5, 'the day after: the standard rate');
+  ok(after.promo === undefined && e.promo !== undefined, 'switching does not mutate prices.json data');
+  const unknown = { input: 4e-6, output: 2e-5, promo: { until: '2026-11-30', standard: null } };
+  ok(effectiveRate(unknown, '2027-01-01') === unknown, 'standard: null is left alone, never invented');
+  ok(effectiveRate({ input: 1, output: 2 }, '2030-01-01').input === 1, 'no promo: untouched');
+  ok(/^\d{4}-\d{2}-\d{2}$/.test(localDay(new Date(2026, 0, 5))) && localDay(new Date(2026, 0, 5)) === '2026-01-05', 'localDay is YYYY-MM-DD, zero-padded');
+
+  // Against the real bundled file, so a renamed field cannot pass these silently.
+  const P = JSON.parse(fs.readFileSync(path.join(__dirname, '../extension/prices.json'), 'utf8')).api;
+  const promos = [];
+  for (const prov in P) for (const k in P[prov]) if (P[prov][k] && P[prov][k].promo) promos.push([k, P[prov][k]]);
+  ok(promos.length > 0, promos.length + ' promo rates in the bundled prices.json');
+  const last = promos.map(([, v]) => v.promo.until).sort().pop();
+  const dayAfter = (() => { const d = new Date(last + 'T12:00:00'); d.setDate(d.getDate() + 1); return localDay(d); })();
+  parsePrices(P, dayAfter);
+  const wrong = promos.filter(([k, v]) => {
+    const got = FLAT_PRICES[k];
+    return v.promo.standard ? (got.input !== v.promo.standard.input || got.output !== v.promo.standard.output)
+                            : (got.input !== v.input || got.output !== v.output);
+  }).map(([k]) => k);
+  ok(wrong.length === 0, 'after every promo ends, each model prices at its standard rate (or is unchanged when none is published)' + (wrong.length ? ': ' + wrong.join(', ') : ''));
+  parsePrices(P, '2026-01-01');
+  ok(promos.every(([k, v]) => FLAT_PRICES[k].input === v.input), 'before any promo ends, every model keeps its stored rate');
+}
+
 console.log(fail ? '\n' + fail + ' FAILURE(S)' : '\nall cost-model tests pass');
 process.exit(fail ? 1 : 0);
