@@ -9,6 +9,14 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-11-12 — the AI Clock and the Transparency Index are retired; Legerly is the services only
+
+- **Rory's call:** the site now does one job, plan choice — the Subscription Auditor, the Price Tracker's break-even and EcoMeter. `ai-clock.html` and `transparency-index.html` are short `noindex` notices that point to those three, so old links don't 404. The homepage lost both cards.
+- **Deleted:** `clock.json`, `scripts/roll-clock.js`, `scripts/check-clock.js`, `.github/workflows/roll-clock.yml` and `datacenters.json` (only the Index page and `calibrate-tokenizer.js`'s URL sample read it; the sample now uses `water.json` instead).
+- **Kept:** `transparency-index.json`. The Auditor's privacy answer reads its `data_practices` rows and now links each graded point to that cell's `source_url` instead of to the retired page. `check-transparency.js` was cut down to guard exactly that: every data-practices cell graded, noted and sourced (https for the two the Auditor shows), every `PRACTICE_ROW` provider present, no live page linking to a retired one, and a warning once the grades are 120 days old. `test-auditor.js` now loads the file and checks the graded sentence for all five Auditor providers; before this it only ever saw the "couldn't load" fallback.
+- **Everything below about the clock, the environmental and pricing axes, and `datacenters.json` is history.** It is kept because it explains past decisions, not because any of it is live.
+- **Still Rory's call:** CLAUDE.md's Principles section still names grading and the AI Clock as examples. Principles are not edited without asking; a proposed wording is in the PR.
+
 ### 2026-10-18 — Gemini 3.7 / 3.5 Flash retired; Google's Free tier is Flash-Lite now (FRESHNESS A3, A4)
 
 - **Retired (#84):** Google deprecated both on 2026-10-08 and routes their
@@ -762,10 +770,10 @@ node scripts/check-auditor.js     # audit.html + pricing.html fallback vs prices
 node scripts/test-auditor.js      # sweeps all 56,250 answer combos + the EcoMeter import
 node scripts/test-cost-model.js   # 44 assertions: billed input, image tokens, tiers, export v2
 node scripts/calibrate-tokenizer.js  # measures the estimator; fails if the UI band is optimistic
-node scripts/check-clock.js       # clock fallback parity + level plausibility vs published totals
 node scripts/validate-site.js     # pre-deploy HTML/JSON gate
-node scripts/check-transparency.js  # index self-promises: sourcing, public copy, doc-table drift
+node scripts/check-transparency.js  # the data-practices grades the Auditor shows: graded, sourced, no links to retired pages
 ```
+**Updated 2026-11-12:** CI (`validate-site.yml`) runs ten checks: validate-site.js, check-prices.js, test-cost-model.js, test-water-model.js, check-extension.js, check-auditor.js, test-auditor.js, check-transparency.js, test-limit-ticks.js and test-limit-envelope.js. `check-clock.js` is deleted. The paragraph below is the 2026-08-29 picture, kept as history.
 `validate-site.yml` now runs FIVE on every PR — `validate-site.js`, `check-auditor.js`, `test-auditor.js` (added 2026-08-08), `check-clock.js` (added 2026-08-24) and `check-transparency.js` (added 2026-08-29). `check-prices.js`, `test-cost-model.js` and `calibrate-tokenizer.js` are still manual; running them is part of a `FRESHNESS.md` pass.
 `check-prices.js` caught a fallback that silently missed a patch during the 2026-08-02 refresh. `calibrate-tokenizer.js` is what proved the 8% claim wrong. `check-auditor.js` was written on 2026-08-08 because **`check-prices.js` never opens `audit.html`** — and the auditor turned out to be a sixth copy of the price table carrying a rate corrected ten days earlier. **`test-auditor.js` found a live bug on its first run:** the volume-aware downgrade kept its own copy of "does this tier clear your needs" that never received the image-generation gate, so **450 of 56,250 combinations told people who generate images regularly to drop to a free tier that throttles it**. The two definitions are now one function (`clearsNonModelNeeds`). **All six pass/fail guards pass on `main` as of 2026-08-25** (`check-prices`, `check-auditor`, `check-clock`, `test-auditor`, `test-cost-model`, `validate-site`) — re-run, not assumed. The seventh script in the heading above, `calibrate-tokenizer.js`, is a **measurement** tool rather than a gate, which is why the count reads seven there and six here.
 
@@ -844,12 +852,10 @@ Two deliberate softenings, both to stop the script becoming noise people ignore:
 ```
 index.html                Homepage (tool cards)
 pricing.html              AI Price Tracker (per-token / subscriptions / free-tier)
-ai-clock.html             The AI Clock (live global-AI-usage counters)
+ai-clock.html             RETIRED 2026-11-12 — a short notice pointing to the services
 audit.html                Subscription Auditor (quiz → plan recommendation)
-transparency-index.html   AI Transparency Index (env-impact scoring + disclosure matrix)
-clock.json                AI Clock anchor levels + growth rates
-transparency-index.json   Transparency page copy (_meta) + the disclosure-quality matrix
-datacenters.json          Per-site AI-datacenter environmental data (the scored env axis)
+transparency-index.html   RETIRED 2026-11-12 — a short notice pointing to the services
+transparency-index.json   Disclosure grades; only data_practices is live (the Auditor's privacy answer)
 CNAME                     legerlyai.com
 PROJECT-CONTEXT.md        (this file)
 
@@ -876,7 +882,6 @@ extension/                The Chrome extension (load THIS folder unpacked)
 scripts/
   update-prices.js          Writes prices.json api section (hardcoded values)
   bump-version.js           Increments manifest + prices.json version (reactive)
-  roll-clock.js             Rolls clock.json anchor forward
   fetch-tokenizers.js       Stages real provider tokenizer assets for exact-local counts
   validate-site.js          Pre-deploy sanity check for the static site
   deploy.sh
@@ -885,7 +890,6 @@ scripts/
   publish.yml               Weekly: refresh prices → build (stages tokenizer assets if configured) → CWS draft
   update-prices.yml         Manual PR-based price updates (cron disabled)
   release.yml               On push: build zip + GitHub Release + artifact
-  roll-clock.yml            Quarterly: roll the AI Clock anchor, open a PR
   validate-site.yml         PR/push to main: run validate-site.js
 ```
 
@@ -899,9 +903,9 @@ Served by GitHub Pages from `main` root. **Ship a website change: merge to `main
 |---|---|---|
 | `index.html` | Homepage + tool cards; links the live tools + the EcoMeter store listing. | — |
 | `pricing.html` | AI Price Tracker — Per-token (API), Subscriptions, Free tier. | fetches `/extension/prices.json` |
-| `ai-clock.html` | The AI Clock — live-ticking global AI usage/footprint counters. | fetches `/clock.json` |
+| `ai-clock.html` | Retired 2026-11-12: a notice pointing to the Auditor, the Price Tracker and EcoMeter. | nothing |
 | `audit.html` | Subscription Auditor (§6). | fetches `/extension/prices.json` |
-| `transparency-index.html` | AI Transparency Index (§7). | fetches `/datacenters.json` + `/transparency-index.json` |
+| `transparency-index.html` | Retired 2026-11-12: the same kind of notice (§7). | nothing |
 
 ### 3a. Subscriptions view — Break even / Ceiling (added 2026-07-28)
 
@@ -1003,7 +1007,7 @@ Added 2026-08-08 for the student-facing launch. Read by `audit.html` when the us
 - **⚠️ `partner_institutions` is EXAMPLES, never a directory.** Anthropic publishes nine logos, no list, no terms, and Syracuse's own release calls itself "one of the first" — so any snapshot is incomplete and growing. Rendering it as a lookup would tell a student at an unlisted school they can't get access, which is both false and the exact failure mode this project exists to prevent. `not_exhaustive: true` is enforced, and the guard also asserts `audit.html` still carries the "not a directory" wording.
 - **Nothing here came from a third-party blog**, deliberately — that whole genre is wrong about the base prices, never mind the discounts. `_meta.caveats` records why.
 
-### `clock.json` — AI Clock model
+### `clock.json` — AI Clock model (DELETED 2026-11-12 with the clock; kept below as history)
 `{ _meta:{anchor,last_rolled,reanchor_log,open_questions,sources}, scenarios:{conservative|moderate|high}, rates }`. **Re-anchored 2026-08-08** (off-cycle, against fresh disclosures). Two-force projection (volume up, per-unit cost down); rolled quarterly by `roll-clock.yml` (opens a PR for a human to drop in fresh disclosures).
 - `_meta.reanchor_log` records what changed and why at each human re-anchor; `_meta.open_questions` carries the unresolved judgement calls forward to the next one. Read both before re-anchoring — they're the handoff.
 - **The inline `SCENARIOS`/`RATES` block in `ai-clock.html` is a fallback copy of `clock.json`.** Update both together, or a failed fetch silently serves stale numbers.
@@ -1022,7 +1026,7 @@ Added 2026-08-08 for the student-facing launch. Read by `audit.html` when the us
 
 `renderMatrix(data, headId, bodyId)` renders any of them; `renderAxisMatrix(block, prefix)` drives the two top-level ones. **A fourth axis is one `<section>`, one call and a data block** — and a block whose key is absent leaves its section hidden rather than rendering empty. See §7.
 
-### `datacenters.json` — per-site AI-datacenter environmental data
+### `datacenters.json` — per-site AI-datacenter environmental data (DELETED 2026-11-12 with the Index page; kept below as history)
 `{ _meta:{last_updated, methodology_note}, sites:[…] }`. Each site: `provider`, `name`, `location`, `power_mw` (+optional `power_mw_planned`), `water_grade` (transparent|partial|opaque), `water_note`, `sources[]`, `as_of`. `transparency-index.html` computes provider grades from this. See §7.
 
 ### `extension/water.json` — per-**token** model water-intensity tiers (extension only). Distinct from `datacenters.json` (per-**facility**).
@@ -1089,6 +1093,8 @@ Volume is averaged **per active day**, **lifetime**. The optional **`model_usage
 
 ## 7. The AI Transparency Index (`transparency-index.html`)
 
+> **RETIRED 2026-11-12.** The page is now a short notice. Only the data-practices axis is live, as Auditor data: `audit.html` `privacyLine()` reads it and links each graded point to its `source_url`, and `check-transparency.js` guards exactly that. Everything else in this section (the environmental and pricing axes, `renderEnv()`, `datacenters.json`) is history. Re-read the data-practices grades per FRESHNESS E1f; open no other grading work.
+>
 > **Being faded out (decided 2026-10-25).** The index will eventually come off the site so effort can go to the Legerly service: plan choice, meaning the Subscription Auditor (`audit.html`) and break-even on the Price Tracker (`pricing.html`). Until then: keep it accurate, but add no new axes, providers or grading passes. **What removal touches:** the tool card in `index.html`, the link in `audit.html` (`/transparency-index.html`, privacy tie-break copy), `scripts/check-transparency.js` and its step in `validate-site.yml`, the index's FRESHNESS entries (E1*), and the README. **`transparency-index.json` is not page-only.** `audit.html` fetches its `data_practices` rows for the `privacy` tie-break, and `check-auditor.js` checks `PRACTICE_ROW` against them. Either keep that slice or move it before deleting the file.
 
 Grades **how openly** providers let the public see what their AI costs — transparency, not the footprint. Three **independent** axes, never averaged:
@@ -1214,7 +1220,7 @@ The other six answer an **easier, adjacent question**: whether they *sell or sha
 | `publish.yml` | Mon 09:15 UTC + manual | Refresh prices → if changed (or manual), **stage exact-local tokenizer assets** (only if `reference.json` committed) → build → upload draft to CWS → tag + open a "ready to publish" issue. **Reactive versioning:** only bumps on `PKG_INVALID_VERSION_NUMBER`. |
 | `update-prices.yml` | Manual only | PR-based price refresh. |
 | `release.yml` | Push to `main` | Build zip + GitHub Release + 30-day artifact. |
-| `roll-clock.yml` | Quarterly + manual | Roll `clock.json` anchor; open a re-anchor PR. Last roll 2026-08-08. |
+| ~~`roll-clock.yml`~~ | — | Deleted 2026-11-12 with the AI Clock. |
 | `validate-site.yml` | PR into `main` (`**.html`/`**.json`) + push | Runs `scripts/validate-site.js`: zero-dep no-build gate (doctype, balanced tags, broken local refs, malformed JSON). |
 
 **Secrets:** `CWS_CLIENT_ID/SECRET/REFRESH_TOKEN/EXTENSION_ID`; optional **`HF_TOKEN`** (license-gated tokenizer repos). ⚠️ The Google OAuth **consent screen must be "Production"** or the refresh token expires every 7 days.

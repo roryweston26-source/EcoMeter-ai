@@ -80,7 +80,7 @@ const code = [
 const fenced = chunk(read('PROJECT-CONTEXT.md'), 2500).filter(s => s.includes('```'));
 // URL-dense text — exercises the URL branch.
 const urls = (() => {
-  const all = (read('datacenters.json') + read('plan-limits.json') + read('transparency-index.json'))
+  const all = (read('plan-limits.json') + read('extension/water.json') + read('transparency-index.json'))
     .match(/https?:\/\/[^\s"'<>)]+/g) || [];
   const out = [];
   for (let i = 0; i < all.length; i += 8) {

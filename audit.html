@@ -829,24 +829,27 @@ function featureLine(prov,t){
   return `You said a specific feature is what matters. Over the free tier, ${t.m} adds ${bits.join(' — plus ')}. If none of that is the thing you need, the free tier is doing the same job for nothing.`;
 }
 // What the provider DISCLOSES about training on your conversations, from the
-// Transparency Index. That axis grades disclosure, never conduct, and this copy has
+// data-practices axis of transparency-index.json. That axis grades disclosure, never conduct, and this copy has
 // to keep that distinction: a provider that plainly admits an unflattering practice
 // scores well here, and saying otherwise would be us grading behaviour we said we
 // would not grade.
 function privacyLine(prov){
-  const link='<a href="/transparency-index.html">Transparency Index</a>';
+  // Each graded point links to the provider page it was read from (the cell's
+  // source_url in transparency-index.json). The Index page itself was retired on
+  // 2026-11-12; only this data_practices axis is still read and kept current.
   if(!PRACTICES || !Array.isArray(PRACTICES.rows))
-    return `You said privacy matters most. We grade what each provider discloses about training on your chats in the ${link} — worth reading before you pick.`;
+    return `You said privacy matters most. We couldn't load our notes on what each provider discloses about training on your chats, so check its privacy policy for two things before you pick: whether it trains on your chats by default, and how to opt out.`;
   const row=PRACTICES.rows.find(r=>r.provider===PRACTICE_ROW[prov]);
-  if(!row || !row.cells) return `You said privacy matters most. We haven't assessed ${NAME[prov]}'s data disclosures yet — see the ${link}.`;
+  if(!row || !row.cells) return `You said privacy matters most. We haven't read ${NAME[prov]}'s data disclosures, so we can't tell you whether it trains on your chats by default. Check its privacy policy before you pick.`;
   const word={ green:'states it plainly', yellow:'states it, but hedged or hard to act on',
                red:'does not state it', pending:'we have not assessed it' };
-  const g=k=>(row.cells[k]||{}).grade;
+  const cell=k=>row.cells[k]||{};
+  const src=k=>{ const u=cell(k).source_url||cell(k).source; return /^https:\/\//.test(u||'') ? ` (<a href="${u}" target="_blank" rel="noopener">source</a>)` : ''; };
   const bits=[];
-  if(word[g('training_default')]) bits.push(`whether it trains on your chats by default — ${word[g('training_default')]}`);
-  if(word[g('optout')]) bits.push(`how to opt out — ${word[g('optout')]}`);
-  if(!bits.length) return `You said privacy matters most. See the ${link} for what ${row.provider} discloses.`;
-  return `You said privacy matters most. On ${row.provider}'s own consumer documents: ${bits.join('; ')}. That grades what they DISCLOSE, not what they do — and note the pattern across this whole market: the paying business customer is opted out of training by default while the consumer is opted in and has to go find the toggle. Full detail in the ${link}.`;
+  if(word[cell('training_default').grade]) bits.push(`whether it trains on your chats by default — ${word[cell('training_default').grade]}${src('training_default')}`);
+  if(word[cell('optout').grade]) bits.push(`how to opt out — ${word[cell('optout').grade]}${src('optout')}`);
+  if(!bits.length) return `You said privacy matters most. We haven't graded what ${row.provider} discloses about training on your chats. Check its privacy policy before you pick.`;
+  return `You said privacy matters most. On ${row.provider}'s own consumer documents: ${bits.join('; ')}. That grades what they DISCLOSE, not what they do — and note the pattern across this whole market: the paying business customer is opted out of training by default while the consumer is opted in and has to go find the toggle.`;
 }
 /* What the per-token comparison leaves out. The API is a FLOOR on what a plan is
    worth, not a substitute for it: the same models with none of the product built

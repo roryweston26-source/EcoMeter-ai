@@ -10,27 +10,26 @@ It also feeds Legerly's **Subscription Auditor**. With opt-in, local, lifetime u
 
 ## Why Legerly
 
-AI runs on **asymmetric information**: providers know exactly what each conversation costs — in dollars, energy, and water — and structure things so you don't. That gap is a market failure, and it's helping AI concentrate wealth rather than spread it. [Legerly](https://legerlyai.com) builds privacy-first, ad-free tools that hand that information back to the people using AI, so the benefit flows to them. EcoMeter AI is one of those tools; the full set (AI Price Tracker, the AI Clock, Subscription Auditor, AI Transparency Index) lives at [legerlyai.com](https://legerlyai.com).
+AI runs on **asymmetric information**: providers know exactly what each conversation costs — in dollars, energy, and water — and structure things so you don't. That gap is a market failure, and it's helping AI concentrate wealth rather than spread it. [Legerly](https://legerlyai.com) builds privacy-first, ad-free tools that hand that information back to the people using AI, so the benefit flows to them. EcoMeter AI is one of those tools; the others (the Subscription Auditor and the AI Price Tracker) live at [legerlyai.com](https://legerlyai.com). All three do one job: help you pay the right amount for the AI you actually use.
 
 ## What else is in this repo
 
-This repo holds two products. EcoMeter AI (`extension/`) is the one this README is about; the rest of the tree is the **Legerly website**, four self-contained static pages served straight to GitHub Pages from `main`:
+This repo holds two products. EcoMeter AI (`extension/`) is the one this README is about; the rest of the tree is the **Legerly website**, self-contained static pages served straight to GitHub Pages from `main`:
 
 | Page | What it does |
 |---|---|
 | `pricing.html` | AI Price Tracker — per-token rates, subscriptions, free tiers, plus what a plan is actually worth |
 | `audit.html` | Subscription Auditor — which plan fits your real usage, and the student/teacher routes that genuinely exist |
-| `ai-clock.html` | The AI Clock — modelled global AI usage and footprint counters (a projection, re-anchored quarterly) |
-| `transparency-index.html` | AI Transparency Index — how openly each provider discloses its environmental impact |
+| `ai-clock.html`, `transparency-index.html` | Retired 2026-11-12. Each is now a short notice pointing to the Auditor and the Price Tracker, so old links still land somewhere |
 
 They share `extension/prices.json` as the single source of truth for prices, which is what ties the extension to the site: EcoMeter measures your real local usage, the Auditor prices it.
 
-**Two docs carry the context:** [`PROJECT-CONTEXT.md`](PROJECT-CONTEXT.md) is the architecture and how-to-ship deep dive, and [`FRESHNESS.md`](FRESHNESS.md) lists everything in here that goes stale — prices, plan caps, student offers, clock anchors, DOM selectors, store state — with the check that proves each one.
+**Two docs carry the context:** [`PROJECT-CONTEXT.md`](PROJECT-CONTEXT.md) is the architecture and how-to-ship deep dive, and [`FRESHNESS.md`](FRESHNESS.md) lists everything in here that goes stale — prices, plan caps, student offers, DOM selectors, store state — with the check that proves each one.
 
-**Seven guard scripts**, four of them in CI. Run them after touching data:
+**Guard scripts**, most of them in CI. Run them after touching data:
 
 ```bash
-node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/test-auditor.js && node scripts/check-clock.js && node scripts/test-cost-model.js && node scripts/calibrate-tokenizer.js && node scripts/validate-site.js
+node scripts/check-prices.js && node scripts/check-auditor.js && node scripts/test-auditor.js && node scripts/test-cost-model.js && node scripts/calibrate-tokenizer.js && node scripts/validate-site.js
 ```
 
 Each exists because something was wrong and nothing caught it. They have found a 2× billing error, a 51× image-token error, a false accuracy claim, prices drifting between six files, and a recommendation that sent image users to a tier that throttles image generation.
@@ -92,17 +91,15 @@ ecometer-ai/
 │   └── tokenizer_o200k.js
 ├── scripts/
 │   ├── update-prices.js  # Writes the prices.json api section
-│   ├── bump-version.js   # Increments manifest + prices.json version (reactive, on collision)
-│   └── roll-clock.js     # Rolls the AI Clock anchor forward
+│   └── bump-version.js   # Increments manifest + prices.json version (reactive, on collision)
 └── .github/
     └── workflows/
         ├── publish.yml         # Weekly: refresh prices → build → upload draft to Chrome Web Store
         ├── update-prices.yml   # Manual: PR-based price refresh
-        ├── release.yml         # On push to main → builds zip + GitHub Release
-        └── roll-clock.yml      # Quarterly: re-anchor the AI Clock, open a PR
+        └── release.yml         # On push to main → builds zip + GitHub Release
 ```
 
-This repo also hosts the **[Legerly website](https://legerlyai.com)** (`index.html`, `pricing.html`, `ai-clock.html`, `audit.html`, `transparency-index.html`) served by GitHub Pages from `main`.
+This repo also hosts the **[Legerly website](https://legerlyai.com)** (`index.html`, `audit.html`, `pricing.html`) served by GitHub Pages from `main`.
 
 ## Pricing Updates
 
