@@ -27,6 +27,9 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    # Read-only token: this job only checks files, and it runs on outside PRs.
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
