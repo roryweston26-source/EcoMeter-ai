@@ -114,6 +114,8 @@ added across all six files. **Eleven guards, all in CI, all passing.**_
 
 _**2026-11-10 — not a full pass; a new-model and plan sweep of all ten providers** (prices.json `_meta.checked_2026-11-10` lists every page read). **Six models added** in all the places A3 names: Claude Fable 5.2 and Mythos 5.2 ($8/$40 — cheaper than Fable 5.1), GPT-6.1 Terra, Gemini 4 Carbon (promo to 2026-11-30, API only), Mistral Large 4 and Kimi K3.1 Pro. Four OpenAI models retired, three new sunsets dated. **Two plan ladders changed under us.** Anthropic renamed Max 20× to **Claude Ultra** (same $200, weekly multiple on Pro cut from 20× to 10×, no 5-hour cap for verified accounts) and Max 5× to **Claude Max**, bundled $100/$200 a month of API credits into them, and swapped the Opus-only weekly meter for a Fable-only one. xAI replaced every SuperGrok plan with **Grok Plus / Premium / Super / Ultra** ($8/$30/$100/$200) on one usage pool shared with Cursor. Rory's calls: rename to the new names; **show the API credits, never net them**; **anchor Max and Ultra on Fable 5.2** (break-even top end halves: Max 137 → 69, Ultra 275 → 137 msgs/day, standard archetype). OpenAI **cancelled** the Pro 200 cut, which is what had the guard failing. **All eleven checks pass.** Not re-read: Perplexity, Poe, Microsoft, Le Chat and Z.ai plans, every free tier, C (student), D, E, F. The extension was NOT bumped or shipped — see H4 and the 2026-11-30 / 2027-01-01 rows above._
 
+_**2026-11-12 — the AI Clock and the Transparency Index are retired** (Rory: "only provide the services"). **D is retired whole**: `clock.json`, `roll-clock.js`, `check-clock.js` and `roll-clock.yml` are deleted, so the quarterly re-anchor and its 2027-01-01 roll no longer happen. **E is retired except E1f**: the Auditor's privacy answer still reads the data-practices axis of `transparency-index.json`, so those grades still need their re-read; the environmental and pricing axes and `datacenters.json` (deleted) are history. `check-transparency.js` now guards only what the Auditor shows. **Ten guards, all passing.** Sections D and E are kept below as history; do not run them._
+
 ---
 
 ## The one prompt
@@ -191,7 +193,7 @@ wrong number in front of a user.
 | **2027-01-01** | **No re-upload needed IF v6.18 is in the store by then** — from 6.18 the extension switches expired promos to `promo.standard` on its own (H4). Otherwise: **RE-UPLOAD THE EXTENSION once the Gemini promos revert.** The extension reads its BUNDLED `prices.json` — there is no remote fetch — so the store copy freezes at whatever shipped. v6.15 carries the promo $0.75/$3.75; from 1 January that understates Gemini by **2×**, the direction that costs the reader money. `check-prices.js` fixes the repo automatically; only a manual upload fixes users. | [H4](#h4-the-shipped-build-vs-main), [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
 | **2026-09-27** ✅ DONE | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices)
-| **2026-10-01** ✅ DONE, with a fault | `roll-clock.yml` fired and pushed `auto/clock-reanchor-1`, then **failed to open the PR**: "GitHub Actions is not permitted to create or approve pull requests." Opened by hand as #73 and re-anchored on 2026-10-02. **Next roll is 2027-01-01 and will fail the same way** unless Rory enables Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" (a security setting — his call). The `automated` / `ai-clock` labels it asks for don't exist either. | [D1](#d1-clockjson-anchor-levels-and-rates) |
+| **2026-10-01** ✅ DONE, with a fault | `roll-clock.yml` fired and pushed `auto/clock-reanchor-1`, then **failed to open the PR**: "GitHub Actions is not permitted to create or approve pull requests." Opened by hand as #73 and re-anchored on 2026-10-02. ~~**Next roll is 2027-01-01 and will fail the same way**~~ **No next roll: the AI Clock and `roll-clock.yml` were retired 2026-11-12.** Struck text follows for history: unless Rory enables Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" (a security setting — his call). The `automated` / `ai-clock` labels it asks for don't exist either. | [D1](#d1-clockjson-anchor-levels-and-rates) |
 | ~~Any day~~ ✅ DONE 2026-10-18 | **Claude Haiku 5.5** launched 2026-10-07 and is now in all seven places, with `value_models.low` on Claude Free and Pro. | [A3](#a3-the-model-line-up) |
 | ~~2026-10-23~~ ✅ DONE 2026-11-10 | OpenAI shut down `o1`, `o3-mini`, `o4-mini` and `gpt-4.1-nano`; all four are gone from its rate card. Moved to `_legacy_keys`, and out of the picker and `MODEL_REGISTRY` (`o4-mini` stays in the Auditor's `LEGACY_MODELS` for old exports). | [A3](#a3-the-model-line-up) |
 | ~~2026-10-29~~ ✅ CANCELLED | **OpenAI cancelled the Pro 200 allowance cut** on 2026-10-29: everyone on Pro 200 now has the same, higher allowance (still unsized). Found 2026-11-10 when the `transition` guard fired; the block is removed and both subscription notes rewritten. | [A2](#a2-consumer-subscription-prices), [B1](#b1-the-caps-themselves) |
@@ -242,7 +244,7 @@ a source you're about to change.
 2. **B** — plan limits and caps
 3. **C** — student access
 4. **F** — water tiers (needs A's final model list)
-5. **D**, **E** — clock, transparency index (independent of the above)
+5. ~~**D**~~ retired 2026-11-12. **E** — only E1f, the data-practices grades the Auditor shows (independent of the above)
 6. **G**, **H** — extension and store (needs A and B settled)
 7. **I**, **J** — copy, docs, hygiene (they describe everything above)
 8. **Verification suite** — last, all seven
@@ -2727,6 +2729,8 @@ survives any rewrite.
 
 # D. The AI Clock
 
+> **RETIRED 2026-11-12.** The clock is off the site (`ai-clock.html` is a notice) and `clock.json`, `roll-clock.js`, `check-clock.js` and `roll-clock.yml` are deleted. Nothing in this section is live; it is kept as history. Do not re-anchor anything.
+
 ## D1. `clock.json` anchor, levels and rates
 
 **Goes stale by design** — it's a projection, re-anchored quarterly.
@@ -2887,6 +2891,8 @@ data sitting next to it.
 ---
 
 # E. Transparency Index and datacenters
+
+> **RETIRED 2026-11-12, except E1f.** The Index page is a notice and `datacenters.json` is deleted. **E1f stays live:** the Auditor's privacy answer reads the data-practices grades, links each to its `source_url`, and `check-transparency.js` warns when they are 120 days old. Everything else in E is history; open no new grading work.
 
 ## E1. `transparency-index.json`
 

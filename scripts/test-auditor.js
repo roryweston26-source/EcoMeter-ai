@@ -38,7 +38,8 @@ const fakeStore = { data: {}, writes: 0, blocked: false,
 const windowStub = { scrollTo() {}, localStorage: fakeStore };
 const FILES = { '/extension/prices.json': 'extension/prices.json',
                 '/student-access.json': 'student-access.json',
-                '/plan-limits.json': 'plan-limits.json' };
+                '/plan-limits.json': 'plan-limits.json',
+                '/transparency-index.json': 'transparency-index.json' };
 const fetchStub = url => {
   const f = FILES[String(url).split('?')[0]];
   if (!f) return Promise.resolve({ ok: false });
@@ -51,7 +52,7 @@ const EXPORTS = ['PLANS', 'API', 'MODELS', 'NAME', 'TOP_IS_FREE', 'LEGACY_ONLY',
   'currentPlans', 'classify', 'applyEcometer', 'limitsFactor', 'advancedModels', 'payOptions',
   'breakEven', 'costPerMessage', 'ARCHETYPE', 'PURPOSE_TOK', 'studentNote', 'offerLive',
   'needsSplit', 'shareLine', 'totalCard', 'money',
-  'computeRecs', 'loadSaved', 'saveAudit', 'forgetAudit', 'resultDiff'];
+  'computeRecs', 'loadSaved', 'saveAudit', 'forgetAudit', 'resultDiff', 'privacyLine', 'loadPractices'];
 const A = new Function('document', 'window', 'fetch', 'FileReader',
   src + '\nreturn {' + EXPORTS.join(',') + '};')(documentStub, windowStub, fetchStub, FileReaderStub);
 
@@ -430,6 +431,16 @@ async function main() {
     const rp = A.recommend(A.profileFor('openai', a, sigFor(a)), sigFor(a));
     ok('the privacy answer gets an actual answer back',
        rp.why.some(w => typeof w === 'string' && /privacy matters most/.test(w)), rp.why);
+    // The graded branch. The fake fetch above used not to serve transparency-index.json,
+    // so the assertion just above only ever saw the 'couldn't load' fallback. Since the
+    // Index page was retired (2026-11-12) each graded point links to the provider's own
+    // page instead, and nothing may link to the retired page.
+    await A.loadPractices();
+    for (const prov of ['openai', 'anthropic', 'google', 'microsoft', 'deepseek']) {
+      const line = A.privacyLine(prov);
+      ok('privacy answer for ' + prov + ' is graded, with a provider source link', /states it|does not state it/.test(line) && line.includes('<a href="https://'), line);
+      ok('privacy answer for ' + prov + ' does not link to the retired Index', !line.includes('transparency-index.html'), line);
+    }
     const b = Object.assign({}, a, { priority: 'feature' });
     const rf = A.recommend(A.profileFor('openai', b, sigFor(b)), sigFor(b));
     ok('the feature answer names what the tier actually adds',

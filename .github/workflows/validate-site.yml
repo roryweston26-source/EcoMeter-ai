@@ -14,7 +14,6 @@ on:
       - 'scripts/validate-site.js'
       - 'scripts/check-auditor.js'
       - 'scripts/test-auditor.js'
-      - 'scripts/check-clock.js'
       - 'scripts/check-transparency.js'
       - 'scripts/measure-claude-limits.js'
       - 'scripts/test-limit-ticks.js'
@@ -82,20 +81,10 @@ jobs:
       - name: Test Auditor recommendations
         run: node scripts/test-auditor.js
 
-      # The clock's levels are the one thing no other script judges. validate-site
-      # was perfectly happy with a capex level 35% above what four companies had
-      # publicly guided, for a whole quarter. This asserts the scenarios still
-      # bracket the published totals, that ai-clock.html's fallback copy hasn't
-      # drifted, and that the anchor date isn't hardcoded in the prose again.
-      - name: Check AI Clock plausibility
-        run: node scripts/check-clock.js
-
-      # The Transparency Index makes promises about itself — that every grade links
-      # to a source, that its notes are written for a reader rather than a
-      # maintainer, and that the tables in the docs match the JSON. On 2026-08-29 a
-      # re-read found eight wrong cells across two axes, and every one of them
-      # passed validate-site.js. This gates the promises, not the syntax.
-      - name: Check Transparency Index consistency
+      # The Index page is retired (2026-11-12), but the Auditor's privacy answer still
+      # reads the data-practices axis of transparency-index.json and links each graded
+      # point to its source. This checks every cell it can show is graded and sourced.
+      - name: Check the data-practices grades the Auditor shows
         run: node scripts/check-transparency.js
 
       # The tick-bracket estimator is how the weekly usage cap gets measured, and its
