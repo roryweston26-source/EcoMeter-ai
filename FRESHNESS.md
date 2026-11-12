@@ -4473,7 +4473,7 @@ change with it.
 - **Gemini 2.5 Pro / Flash** still in the picker; Google routes them to 3.8 Flash / 3.5 Flash-Lite from 2026-12-01.
 - **o3** still in the picker; OpenAI shuts it down 2026-12-11.
 
-**Published.** The uploaded zip is the one rebuilt with `--force` after the promo switch went in (the only 6.18 zip ever on disk), so the store build includes `effectiveRate()`. The store and `main` are level again once #90 merges.
+**Published.** INFERRED, not checked against the store: the first 6.18 zip was overwritten by the `--force` rebuild that added the promo switch before Rory said it was published, and that rebuild is the only 6.18 zip left on disk. So the store build most likely includes `effectiveRate()`. To confirm, load the store copy and check that Gemini 4 Argon prices at $4/$20 after 2026-12-01. The store and `main` are level again once #90 merges.
 
 ### v6.17 BUMPED 2026-10-19 — APPROVED in the store by 2026-10-20 (Rory confirmed; upload date not recorded)
 
