@@ -43,13 +43,36 @@ const exactStatus    = document.getElementById('exact-status');
 // ── Pricing — loaded from prices.json ────────────────────
 let FLAT_PRICES = {};
 
-function parsePrices(json) {
+// A build freezes prices.json, so a promotional rate would otherwise outlive its end
+// date for as long as that build stays in the store, understating cost (2x for the
+// Gemini promos), which is the harmful direction. prices.json records each promo as
+// { until, standard }: once the user's local date is past `until`, use `standard`.
+// `until` is the last promo day, inclusive. When the provider never published the
+// reverting rate (`standard: null`, e.g. GPT-5.6 Sol) the rate is left alone, since
+// inventing one is worse; a later build has to fix that case. Local date, not the
+// provider's time zone, so the switch can be off by a few hours at the boundary.
+function localDay(d) {
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function effectiveRate(entry, today) {
+  const promo = entry && entry.promo;
+  if (!promo || !promo.until || !promo.standard) return entry;
+  if (typeof promo.standard.input !== 'number' || typeof promo.standard.output !== 'number') return entry;
+  if (today <= promo.until) return entry;
+  const out = Object.assign({}, entry, { input: promo.standard.input, output: promo.standard.output });
+  delete out.promo;
+  return out;
+}
+
+function parsePrices(json, today) {
+  const day = today || localDay(new Date());
   const temp = {};
   for (const provider in json) {
     if (provider.startsWith('_')) continue;
     const group = json[provider];
     for (const modelId in group) {
-      if (group[modelId]?.input !== undefined) temp[modelId] = group[modelId];
+      if (group[modelId]?.input !== undefined) temp[modelId] = effectiveRate(group[modelId], day);
     }
   }
   // Sort longest key first so the substring fallback in getPrice()

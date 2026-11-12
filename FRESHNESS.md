@@ -188,7 +188,7 @@ wrong number in front of a user.
 | ~~**2026-09-09**~~ | ~~Z.ai `glm-5.3-flash` half-price promo ends~~ — **EXPIRED AND MISSED BY TEN DAYS**, found 2026-09-19. Reverted to $0.15/$0.50. The guard was right; nothing ran it. Root cause fixed: `check-prices.js` is now in CI. | [A1](#a1-per-token-api-prices) |
 | **2026-12-31** | **Google's free student year must be CLAIMED by this date** — 12 months of AI Pro (US) / AI Plus (intl). The single largest saving available to a student in anything we track, ~$240. | [C2](#c2-known-dated-offers) |
 | **2026-12-31** | **Google's promotional rate on `gemini-3.8-flash` and `gemini-3.6-flash` expires** (and on the retired `gemini-3.7-flash` key) — half price reverts to $1.50/$7.50. Guarded by `check-prices.js`. | [A6](#a6-promotional-rates) |
-| **2027-01-01** | **RE-UPLOAD THE EXTENSION once the Gemini promos revert.** The extension reads its BUNDLED `prices.json` — there is no remote fetch — so the store copy freezes at whatever shipped. v6.15 carries the promo $0.75/$3.75; from 1 January that understates Gemini by **2×**, the direction that costs the reader money. `check-prices.js` fixes the repo automatically; only a manual upload fixes users. | [H4](#h4-the-shipped-build-vs-main), [A6](#a6-promotional-rates) |
+| **2027-01-01** | **No re-upload needed IF v6.18 is in the store by then** — from 6.18 the extension switches expired promos to `promo.standard` on its own (H4). Otherwise: **RE-UPLOAD THE EXTENSION once the Gemini promos revert.** The extension reads its BUNDLED `prices.json` — there is no remote fetch — so the store copy freezes at whatever shipped. v6.15 carries the promo $0.75/$3.75; from 1 January that understates Gemini by **2×**, the direction that costs the reader money. `check-prices.js` fixes the repo automatically; only a manual upload fixes users. | [H4](#h4-the-shipped-build-vs-main), [A6](#a6-promotional-rates) |
 | Rolling | **Google student year auto-converts to $19.99/mo** 12 months after each user claims it. We can't date this centrally — it's per-user — which is exactly why the Auditor copy has to warn about it at claim time. | [C2](#c2-known-dated-offers) |
 | **2026-09-27** ✅ DONE | **Perplexity's Sonar chat API stops being supported** — superseded by its Agent API. All three Sonar rates in `prices.json` expire with it. Perplexity break-even no longer depends on them (see A3), but the rates are still shown in the model table. Now carried as a machine-checked `sunset` block on all three Sonar models — warns from 30 days out, fails once past. Re-confirmed verbatim at source 2026-09-19, date unchanged. | [A1](#a1-per-token-api-prices)
 | **2026-10-01** ✅ DONE, with a fault | `roll-clock.yml` fired and pushed `auto/clock-reanchor-1`, then **failed to open the PR**: "GitHub Actions is not permitted to create or approve pull requests." Opened by hand as #73 and re-anchored on 2026-10-02. **Next roll is 2027-01-01 and will fail the same way** unless Rory enables Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests" (a security setting — his call). The `automated` / `ai-clock` labels it asks for don't exist either. | [D1](#d1-clockjson-anchor-levels-and-rates) |
@@ -4456,6 +4456,24 @@ If G2 or the token-count behaviour changes, this file and its effective date
 change with it.
 
 ## H4. The shipped build vs `main`
+
+### v6.18 BUILT 2026-11-10 — published in the store by 2026-11-12 (Rory confirmed; upload date not recorded)
+
+**Why:** v6.17 is in the store and `main` moved with #89. What 6.18 adds to the extension: Claude Fable 5.2, GPT-6.1 Terra, Gemini 4 Carbon and Mistral Large 4 in the picker (Mythos 5.2 and Kimi K3.1 Pro are priced and watered, not in the picker); o4-mini out of the picker after OpenAI shut it down; the Claude Max / Ultra and Grok plan renames in the shared `prices.json`. Bumped with `bump-version.js` (manifest and `prices.json` together); `build-extension.js --check` passed, then built to `ecometer-ai-v6.18.zip` (new file, nothing overwritten). The zip was opened and its `prices.json` confirmed to carry 6.18, Fable 5.2 and Terra. Permissions unchanged (the manifest diff is the version line only), so no privacy-policy redeploy.
+
+**Provider pages were re-read the same day** for #89 — the ten API rate cards plus Anthropic, OpenAI, Google and xAI plan pages. NOT re-read: Perplexity, Poe, Microsoft, Le Chat and Z.ai plans, and every free tier.
+
+✅ **6.18 switches promo prices itself — the first build that does.** Until now the extension used whatever rate it was built with, so every promo outlived its end date in the store (6.17 quotes Argon at $2/$10 for as long as it is live). From 6.18, `effectiveRate()` in `sidepanel.js` uses `promo.standard` once the user's local date is past `promo.until` (the last promo day, inclusive), and leaves the rate alone when `standard` is null. So 6.18 prices Argon and Carbon at $4/$20 from 2026-12-01 and the Gemini Flash models at $1.50/$7.50 from 2027-01-01 **with no re-upload**. Two limits: **GPT-5.6 Sol** has no published reverting rate, so it stays at $4/$20 until a later build (rule 3: never invent it); and the switch uses local time, so it can be off by a few hours at the boundary. Guarded by `test-cost-model.js` against the real bundled `prices.json`, both directions fault-injected (ignore the date; never switch). The zip was rebuilt with `--force` after this change and re-inspected.
+
+🚨 **Dated risks shipping inside v6.18:**
+- ~~Gemini 4 Argon and Gemini 4 Carbon at promo $2/$10~~ — switch to $4/$20 on their own on 2026-12-01.
+- **GPT-5.6 Sol** at promo $4/$20 until 2026-11-30; OpenAI has not published what it reverts to, so 6.18 keeps $4/$20 after that date.
+- ~~Gemini Flash promos (3.6 / 3.7 / 3.8, $0.75/$3.75)~~ — switch to $1.50/$7.50 on their own on 2027-01-01.
+- **Claude Sonnet 4.5** still priced; retires 2026-11-30 (not in the picker).
+- **Gemini 2.5 Pro / Flash** still in the picker; Google routes them to 3.8 Flash / 3.5 Flash-Lite from 2026-12-01.
+- **o3** still in the picker; OpenAI shuts it down 2026-12-11.
+
+**Published.** INFERRED, not checked against the store: the first 6.18 zip was overwritten by the `--force` rebuild that added the promo switch before Rory said it was published, and that rebuild is the only 6.18 zip left on disk. So the store build most likely includes `effectiveRate()`. To confirm, load the store copy and check that Gemini 4 Argon prices at $4/$20 after 2026-12-01. The store and `main` are level again once #90 merges.
 
 ### v6.17 BUMPED 2026-10-19 — APPROVED in the store by 2026-10-20 (Rory confirmed; upload date not recorded)
 
