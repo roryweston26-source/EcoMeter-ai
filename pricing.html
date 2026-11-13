@@ -296,6 +296,12 @@
     color: var(--ink-faint); margin-top: 3px; white-space: normal; max-width: 30ch;
   }
 
+  /* The longer-window and ceiling headlines are phrases ("2 weekly limits — neither
+     sized"), not numbers. Kept on one line, the All view's longest ones pushed the
+     table past its container: the left columns got squeezed and Ceiling was clipped. */
+  td.wrapcol .be, td.wrapcol .tp, td.wrapcol .nd { white-space: normal; }
+  td.wrapcol { min-width: 20ch; }
+
   /* provenance states for the ceiling column */
   .nd { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); font-style: italic; }
   .tp { font-family: var(--mono); color: var(--gold); white-space: nowrap; }
@@ -1727,8 +1733,8 @@
                  '<td>' + model + mathBtn + '</td>' +
                  '<td class="num">' + priceCell + '</td>' +
                  '<td class="num">' + beCell + '</td>' +
-                 '<td class="num">' + wkCell + '</td>' +
-                 '<td class="num">' + ceilCell + '</td></tr>';
+                 '<td class="num wrapcol">' + wkCell + '</td>' +
+                 '<td class="num wrapcol">' + ceilCell + '</td></tr>';
 
       return main + '<tr class="mathrow" id="' + rid + '"><td colspan="6"><div class="inner">' +
              mathHTML(r, lim, be, ceil) + '</div></td></tr>';
