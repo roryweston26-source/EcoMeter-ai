@@ -4,8 +4,8 @@
   <meta name="google-site-verification" content="ohocAoJ9oiaTo2InkDhyb6LFTcwyRrQiigGi3Cg-ti4" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Legerly — Bringing Clarity to the AI Market</title>
-  <meta name="description" content="Legerly builds tools that give AI users the information they're owed. Track costs, compare models, and make informed decisions.">
+  <title>Legerly — Pay for the AI you actually use</title>
+  <meta name="description" content="Find out what your AI use really costs and which plan fits it. Free tools, no ads, no affiliate links.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -325,11 +325,6 @@
     .tool-card:hover { border-color: rgba(76,175,130,0.3); transform: translateY(-4px); }
     .tool-card:hover::before { transform: scaleX(1); }
 
-    /* "Coming soon" tiles are not links — keep them visibly non-interactive. */
-    .tool-card--soon { cursor: default; }
-    .tool-card--soon:hover { border-color: var(--border); transform: none; }
-    .tool-card--soon:hover::before { transform: scaleX(0); }
-
     .tool-icon {
       width: 44px; height: 44px;
       border-radius: 10px;
@@ -372,12 +367,6 @@
       background: rgba(76,175,130,0.1);
       color: var(--green);
       border: 1px solid rgba(76,175,130,0.2);
-    }
-
-    .badge-soon {
-      background: rgba(212,168,67,0.1);
-      color: var(--gold);
-      border: 1px solid rgba(212,168,67,0.2);
     }
 
     /* ── Why section ── */
@@ -524,10 +513,10 @@
   <!-- Hero -->
   <div class="hero">
     <p class="hero-eyebrow">Legerly</p>
-    <h1>Bringing <em>clarity</em><br>to the AI market.</h1>
-    <p class="hero-sub">AI companies know exactly what your conversations cost. You don't. We're fixing that — one tool at a time.</p>
+    <h1>Pay for the AI<br>you <em>actually</em> use.</h1>
+    <p class="hero-sub">AI companies know what your use costs them. You usually don't. Legerly measures it, prices it, and tells you which plan fits — or that you don't need one.</p>
     <div class="hero-actions">
-      <a href="#tools" class="btn btn-primary">See our tools →</a>
+      <a href="/audit.html" class="btn btn-primary">Audit your plan →</a>
       <a href="https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj" target="_blank" class="btn btn-ghost">Get EcoMeter AI</a>
     </div>
   </div>
@@ -553,46 +542,32 @@
 
   <!-- Tools -->
   <section id="tools">
-    <p class="section-label">What we build</p>
-    <h2>Tools that put you<br>back in the picture.</h2>
-    <p class="section-sub">Every Legerly tool answers a question AI providers won't. Free, privacy-first, and built for people who actually use AI every day.</p>
+    <p class="section-label">The tools</p>
+    <h2>Measure it. Price it.<br>Pick the plan.</h2>
+    <p class="section-sub">Three free tools that work together. EcoMeter measures how you really use AI, the Price Tracker puts a per-token price on it, and the Subscription Auditor tells you which plan fits. No ads, no affiliate links.</p>
 
     <div class="tools-grid">
 
       <a href="https://chromewebstore.google.com/detail/ecometer-ai-%E2%80%94-resource-tr/angbjmkjocdkfdppnpoemfkdjphenbbj" target="_blank" class="tool-card">
         <div class="tool-icon">🌿</div>
         <h3>EcoMeter AI</h3>
-        <p>See what every AI conversation costs — tokens, dollars, water — in real time, right in your browser. Turn on usage tracking and export your numbers straight into the Subscription Auditor for a plan recommendation based on how you <em>actually</em> use AI, not a guess.</p>
+        <p>See what each AI conversation costs as you go: tokens, dollars, and an estimate of the water behind it. Turn on usage tracking (off by default, stored only on your device) and export your real numbers to the Subscription Auditor, so its answer is based on how you <em>actually</em> use AI, not a guess.</p>
         <span class="tool-badge badge-live">● Live on Chrome</span>
       </a>
 
       <a href="/audit.html" class="tool-card">
         <div class="tool-icon">🔍</div>
         <h3>Subscription Auditor</h3>
-        <p>Answer a few questions about how you use AI and get a clear recommendation on which plan, tier, or provider actually makes sense for you.</p>
+        <p>Tell it how you use AI, or load your EcoMeter numbers, and get the plan that fits — or the reason you don't need one. It shows its working, so you can check the answer.</p>
         <span class="tool-badge badge-live">● Live</span>
       </a>
 
       <a href="/pricing.html" class="tool-card">
         <div class="tool-icon">📊</div>
         <h3>AI Price Tracker</h3>
-        <p>Live pricing across every major AI model, updated weekly. See exactly what you're paying per token before you commit to a model or subscription.</p>
+        <p>Per-token prices for every major AI model, with the date they were last checked. The break-even columns show how much you'd need to use a subscription before it beats paying per token.</p>
         <span class="tool-badge badge-live">● Live</span>
       </a>
-
-      <div class="tool-card tool-card--soon">
-        <div class="tool-icon">📐</div>
-        <h3>Context Window Calculator</h3>
-        <p>Paste your text, pick your model, and see exactly how much context window you're using. No more mystery limits mid-conversation.</p>
-        <span class="tool-badge badge-soon">Coming soon</span>
-      </div>
-
-      <div class="tool-card tool-card--soon">
-        <div class="tool-icon">⚡</div>
-        <h3>AI Pricing Index</h3>
-        <p>A neutral, ranked comparison of AI models by price-to-performance. No ads, no affiliate links. Just the data you need to pick the right model.</p>
-        <span class="tool-badge badge-soon">Coming soon</span>
-      </div>
 
     </div>
   </section>
@@ -601,7 +576,7 @@
   <section id="why" style="background: var(--surface); border-radius: 16px; max-width: 1100px;">
     <p class="section-label">Why Legerly</p>
     <h2>The information<br>gap is real.</h2>
-    <p class="section-sub">When you use an AI product, the provider knows what it costs to serve you. You're left guessing. That asymmetry isn't a minor annoyance — it's how the value AI creates quietly flows to a handful of companies instead of the people using it. Our tools hand that information back.</p>
+    <p class="section-sub">When you use an AI product, the provider knows what it costs to serve you and how much of your plan you really use. You're left guessing, and that gap makes it easy to pay for more than you need. Our tools hand that information back.</p>
 
     <div class="why-grid">
       <div class="why-item">
@@ -612,12 +587,12 @@
       <div class="why-item">
         <p class="why-number">02</p>
         <h3>Opaque subscriptions</h3>
-        <p>$20/month sounds reasonable — but is it? Without knowing your usage, you're guessing. Our tools give you the data to decide.</p>
+        <p>$20 a month sounds reasonable — but is it, for how you use AI? Without your own numbers you're guessing. We give you the numbers and do the maths.</p>
       </div>
       <div class="why-item">
         <p class="why-number">03</p>
-        <h3>Environmental blind spots</h3>
-        <p>AI uses significant water and energy. None of the major providers show you this. We do.</p>
+        <h3>Vague limits</h3>
+        <p>Plans promise "5× more usage" without saying 5× of what. We show what each plan's limits are known to be, and say plainly where the provider doesn't disclose them.</p>
       </div>
       <div class="why-item">
         <p class="why-number">04</p>
@@ -631,7 +606,7 @@
   <section>
     <div class="manifesto">
       <blockquote>
-        "AI companies can see exactly what your prompts cost — in dollars, energy, and water. You can't. <em>We build the tools that close that gap.</em>"
+        "AI companies can see exactly what your use costs them. You can't. <em>We build the tools that close that gap, so the savings stay with you.</em>"
       </blockquote>
       <p>Legerly — independent, ad-free, and honest about what we don't yet know.</p>
     </div>
