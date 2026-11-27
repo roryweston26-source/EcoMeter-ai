@@ -2655,6 +2655,8 @@ injecting both faults.
 
 ## C2. Known dated offers
 
+_**Re-verified 2026-11-26, all six, at provider-owned pages** (prompted by `check-auditor` failing #93 at 69 days). **One change, against students: Mistral's $5.99 is now "valid for a maximum of 12 months" and only "if you haven't used Vibe (or Le Chat) before"**, so the headline, action and the tracker note in `prices.json` and `pricing.html` now say so; Mistral does not state the price after the 12 months. Unchanged and verbatim: OpenAI's K-12 Teachers line through June 2027, Anthropic's nine logos, Google's terms (claim by 2026-12-31, 18+, re-verify yearly, $19.99/$4.99 after), GitHub's free Copilot Student, DeepSeek's API-only pricing link. New but not an offer: OpenAI's "ChatGPT for Students" page, which only says "Try ChatGPT for free". CodePath is no longer mentioned on Anthropic's education page; the `also` line now says so. **Next due by 2027-01-25** (the 60-day guard), and **Google's claim window closes 2026-12-31**, after which `check-auditor` fails on `claim_by` and the Google route needs rewriting._
+
 _All six re-verified 2026-08-24. Two changed, both in the direction that had been costing students money._
 
 _**Re-verified again 2026-08-26** against provider-owned pages. No status changed — Google, GitHub and Mistral still `disclosed`, OpenAI and Anthropic still nothing for individuals — but three of our own lines were wrong and are fixed:_
