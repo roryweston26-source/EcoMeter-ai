@@ -810,14 +810,19 @@ function _estimateSPProse(text) {
 async function countTokens(text, role, modelKey) {
   if (!text || text.trim().length === 0) return { count: 0, method: 'estimated', err: methodErr('estimated') };
 
-  // Anthropic token-counting API — exact for Claude, requires API key
-  if (modelKey && modelKey.toLowerCase().includes('claude') && apiKey && role === 'user') {
+  // Anthropic token-counting API — exact for Claude, requires API key.
+  // Gated on the PLATFORM as well as the model: the picker is independent of the
+  // site, so a Claude pick left over on chatgpt.com would otherwise send ChatGPT
+  // chats to Anthropic. Same for Google below. Strict: Poe/Copilot never qualify.
+  if (apiKey && role === 'user' && currentPlatformName === 'Claude' &&
+      modelKey && modelKey.toLowerCase().includes('claude')) {
     const api = await countTokensAnthropicAPI(text, modelKey);
     if (api !== null) return { count: api, method: 'api-visible', err: methodErr('api-visible') };
   }
 
   // Google token-counting API — exact for Gemini, opt-in (separate optional key)
-  if (modelKey && modelKey.toLowerCase().includes('gemini') && googleApiKey && role === 'user') {
+  if (googleApiKey && role === 'user' && currentPlatformName === 'Gemini' &&
+      modelKey && modelKey.toLowerCase().includes('gemini')) {
     const g = await countTokensGoogleAPI(text, modelKey);
     if (g !== null) return { count: g, method: 'api-visible', err: methodErr('api-visible') };
   }

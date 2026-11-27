@@ -100,13 +100,15 @@
   <li><span class="no">Does not</span> make any network requests unless you optionally provide
       a provider API key for exact token counts. When you do, only the text of your own
       messages (never AI responses) is sent to that provider's token-counting endpoint —
-      Anthropic's (<code>api.anthropic.com/v1/messages/count_tokens</code>) for Claude, or,
+      Anthropic's (<code>api.anthropic.com/v1/messages/count_tokens</code>) for your Claude chats on claude.ai, or,
       if you add a Google key, Google's
-      (<code>generativelanguage.googleapis.com/&hellip;:countTokens</code>) for Gemini, or,
+      (<code>generativelanguage.googleapis.com/&hellip;:countTokens</code>) for your Gemini chats on gemini.google.com, or,
       if you add an OpenAI key, OpenAI's (<code>api.openai.com/v1/responses/input_tokens</code>)
-      for GPT-6 models only. All three
+      for GPT-6 chats on ChatGPT only. All three
       are <strong>off unless you opt in</strong>, and each sends the same text you are already
-      sending to that AI. No other external connections are made under any circumstances.</li>
+      sending to that AI. A key is used only on its own provider's site, whatever model you
+      have picked: Claude or Gemini models reached through another site, such as Poe or Copilot,
+      are always counted locally. No other external connections are made under any circumstances.</li>
   <li><span class="yes">Does</span> store any optional API key(s) you provide in
       <code>chrome.storage.session</code> (cleared automatically when the browser closes) and
       your model preference in <code>chrome.storage.local</code> (persisted on your device only).</li>
@@ -128,8 +130,8 @@ in memory only for the duration of the current browser session and is
 automatically cleared when the browser closes. The key is never written to
 persistent storage and never synced to any remote server. It is used solely to
 call Anthropic's official token-counting endpoint
-(<code>api.anthropic.com/v1/messages/count_tokens</code>) on your behalf,
-using the message text already present in your browser — no conversation data
+(<code>api.anthropic.com/v1/messages/count_tokens</code>) on your behalf, and only
+while you are on claude.ai, using the message text already present in your browser — no conversation data
 is stored by this call. You can remove the key at any time using the
 "remove key" button in the panel.</p>
 
@@ -139,7 +141,8 @@ way as the Anthropic key — <code>chrome.storage.session</code>, in memory only
 the browser closes, never written to persistent storage and never synced anywhere. It is used
 solely to call Google's official token-count endpoint
 (<code>generativelanguage.googleapis.com/v1beta/models/&hellip;:countTokens</code>) with your
-own message text — the same content you are already sending to Gemini. This feature is
+own message text, and only while you are on gemini.google.com — the same content you are
+already sending to Gemini. This feature is
 <strong>off unless you add the key</strong>, and you can remove it any time with "Clear" in
 the "Exact token counts" panel.</p>
 
@@ -148,7 +151,7 @@ If you choose to add an OpenAI API key, it is stored the same way as the other k
 <code>chrome.storage.session</code>, in memory only, cleared when the browser closes, never
 written to persistent storage and never synced anywhere. It is used solely to call OpenAI's
 official token-count endpoint (<code>api.openai.com/v1/responses/input_tokens</code>) with your
-own message text, and <strong>only for GPT-6 models</strong>, because OpenAI has not published
+own message text, and <strong>only for GPT-6 models on ChatGPT</strong>, because OpenAI has not published
 their tokenizer. GPT-4o, GPT-4.1 and GPT-5 messages are counted exactly on your device and are
 never sent. Access to <code>api.openai.com</code> is an optional permission: Chrome asks you to
 allow it when you save the key, and "Clear" removes both the key and the permission.
@@ -207,13 +210,13 @@ The tab URL is not read, stored, or transmitted by the extension.</p>
 </p>
 <ul>
   <li><strong>Anthropic</strong> (<code>api.anthropic.com/v1/messages/count_tokens</code>) —
-      only when you have entered an Anthropic API key, and only for Claude conversations.
+      only when you have entered an Anthropic API key, and only for your conversations on claude.ai.
       Governed by <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener">Anthropic's Privacy Policy</a>.</li>
   <li><strong>Google</strong> (<code>generativelanguage.googleapis.com/v1beta/models/&hellip;:countTokens</code>) —
-      only when you have entered a Google AI API key, and only for Gemini conversations.
+      only when you have entered a Google AI API key, and only for your conversations on gemini.google.com.
       Governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
   <li><strong>OpenAI</strong> (<code>api.openai.com/v1/responses/input_tokens</code>) —
-      only when you have entered an OpenAI API key, and only for GPT-6 conversations.
+      only when you have entered an OpenAI API key, and only for GPT-6 conversations on ChatGPT.
       Governed by <a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener">OpenAI's Privacy Policy</a>.</li>
 </ul>
 <p>
