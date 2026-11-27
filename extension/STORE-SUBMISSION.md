@@ -55,12 +55,13 @@ Two categories, for two distinct purposes.
 
 (1) The AI chat sites — claude.ai, chatgpt.com, chat.openai.com, gemini.google.com, grok.com, chat.mistral.ai, perplexity.ai, www.perplexity.ai, copilot.microsoft.com, poe.com, chat.deepseek.com. Required to inject the content script that reads the visible conversation text so tokens can be counted locally. Access is limited to these specific chat domains. The text is counted and discarded; it is not stored and not transmitted.
 
-(2) Two optional token-counting endpoints, each off by default and each used only if the user chooses to enter that provider's own API key:
+(2) Three optional token-counting endpoints, each off by default and each used only if the user chooses to enter that provider's own API key:
 
 - api.anthropic.com — used solely to call Anthropic's official /v1/messages/count_tokens endpoint so Claude counts are exact rather than estimated.
 - generativelanguage.googleapis.com — used solely to call Google's official countTokens endpoint so Gemini counts are exact rather than estimated.
+- api.openai.com — an OPTIONAL host permission (optional_host_permissions), not granted at install. Chrome asks for it only when the user saves an OpenAI key; clearing the key removes it. Used solely to call OpenAI's official /v1/responses/input_tokens endpoint so GPT-6 counts are exact rather than estimated. Only GPT-6 messages are sent; GPT-4o/4.1/5 are counted exactly on-device.
 
-In both cases only the text of the user's OWN messages is sent, using the user's own key — never AI responses, and never any other data. If no key is entered, neither host is ever contacted and the extension makes zero network requests. Each key affects only its own platform.
+In every case only the text of the user's OWN messages is sent, using the user's own key — never AI responses, and never any other data. If no key is entered, neither host is ever contacted and the extension makes zero network requests. Each key affects only its own platform.
 ```
 
 ### Remote code
@@ -79,7 +80,7 @@ All code is bundled in the extension package. No script, module, or eval'd strin
 
 **Tick "Website content" only.** Leave every other category unticked.
 
-Reasoning, in case a reviewer queries it: Chrome counts data as *collected* when it leaves the user's device. In the default configuration nothing leaves the device at all. The single case where anything does is when the user opts in by entering their own API key, at which point the text of their own chat messages is transmitted to Anthropic's or Google's token-count endpoint. That is user-authored text from a web page, which falls under **Website content**.
+Reasoning, in case a reviewer queries it: Chrome counts data as *collected* when it leaves the user's device. In the default configuration nothing leaves the device at all. The single case where anything does is when the user opts in by entering their own API key, at which point the text of their own chat messages is transmitted to Anthropic's, Google's or OpenAI's token-count endpoint. That is user-authored text from a web page, which falls under **Website content**.
 
 Do **not** tick: personally identifiable information, health information, financial and payment information, authentication information, personal communications, location, web history, user activity. "Personal communications" in Chrome's sense means messages between people — emails, texts, chats. A prompt written to a machine is not that, which is why Website content is the correct category here.
 

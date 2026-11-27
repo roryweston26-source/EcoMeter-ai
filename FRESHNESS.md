@@ -738,6 +738,14 @@ dated calendar.
   key, the new one included, falls through to the char-ratio estimate and is labelled
   "estimated". That is the honest label, since OpenAI's docs do not say what tokenizer GPT-6
   uses and o200k would be labelled "tiktoken-exact". Leave it until OpenAI says.
+  **2026-11-26:** users can now opt in to an OpenAI key, which makes GPT-6 counts exact via
+  `POST /v1/responses/input_tokens` (developers.openai.com/api/docs/guides/token-counting).
+  Without a key, GPT-6 is still char-ratio. Community evidence (tiktoken issue #608, unmerged
+  PR #616) says GPT-6 matches o200k on 31 fixtures — not enough to label it exact. **Re-check:**
+  (a) whether OpenAI documents GPT-6's tokenizer — if o200k, add a branch and the API call stops
+  firing for it; (b) whether OpenAI's docs say if counting calls are billed — the panel and
+  privacy policy say "not stated"; (c) a new OpenAI family with no local tokenizer gets the
+  API path automatically, since the gate is `isOpenAIModel` + not `tiktoken-exact`.
 - OpenAI shuts down a batch of older snapshots on **2026-10-23**
   (developers.openai.com/api/docs/deprecations). Of ours: `gpt-4.1-nano`, `o1` and `o3-mini`
   are priced and not yet in `_legacy_keys`; `gpt-4` and `gpt-4-turbo` already are.

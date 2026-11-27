@@ -38,6 +38,9 @@ const anthropicKeyClear     = document.getElementById('anthropic-key-clear');
 const googleKeyInput = document.getElementById('google-key-input');
 const googleKeySave  = document.getElementById('google-key-save');
 const googleKeyClear = document.getElementById('google-key-clear');
+const openaiKeyInput = document.getElementById('openai-key-input');
+const openaiKeySave  = document.getElementById('openai-key-save');
+const openaiKeyClear = document.getElementById('openai-key-clear');
 const exactStatus    = document.getElementById('exact-status');
 
 // ── Pricing — loaded from prices.json ────────────────────
@@ -642,9 +645,13 @@ function methodLabel(enc, modelKey) {
   if (enc === 'char-ratio') return 'estimated';
   if (enc === 'sentencepiece') return 'sp-estimated';
   const k = (modelKey || '').toLowerCase();
-  const isOpenAI = k.includes('gpt') || k === 'o1' || k === 'o1-mini' ||
-                   k === 'o3' || k === 'o3-mini' || k.startsWith('o4-');
-  return isOpenAI ? 'tiktoken-exact' : 'tiktoken-approx';
+  return isOpenAIModel(k) ? 'tiktoken-exact' : 'tiktoken-approx';
+}
+
+function isOpenAIModel(modelKey) {
+  const k = (modelKey || '').toLowerCase();
+  return k.includes('gpt') || k === 'o1' || k === 'o1-mini' ||
+         k === 'o3' || k === 'o3-mini' || k.startsWith('o4-');
 }
 
 // Error band per counting method (fraction of the counted tokens), for the "±X%"
@@ -813,6 +820,18 @@ async function countTokens(text, role, modelKey) {
   if (modelKey && modelKey.toLowerCase().includes('gemini') && googleApiKey && role === 'user') {
     const g = await countTokensGoogleAPI(text, modelKey);
     if (g !== null) return { count: g, method: 'api-visible', err: methodErr('api-visible') };
+  }
+
+  // OpenAI token-counting API — opt-in (separate optional key). Only for OpenAI
+  // models with NO exact local tokenizer (today: GPT-6.x, which OpenAI has not
+  // documented). GPT-4o/4.1/5.x stay on the bundled o200k, which is already exact,
+  // so we never send text off-device when it gains the user nothing.
+  // Gated on the PLATFORM too: the model picker is independent of the site, so a
+  // GPT-6 pick left over on claude.ai would otherwise send Claude chats to OpenAI.
+  if (openaiApiKey && role === 'user' && currentPlatformName === 'ChatGPT' && isOpenAIModel(modelKey) &&
+      methodLabel(getEncodingForModel(modelKey), modelKey) !== 'tiktoken-exact') {
+    const o = await countTokensOpenAIAPI(text, modelKey);
+    if (o !== null) return { count: o, method: 'api-visible', err: methodErr('api-visible') };
   }
 
   // Exact LOCAL tokenizer (Phase 3) — only if a bundled tokenizer verified itself;
@@ -1054,9 +1073,35 @@ async function countTokensGoogleAPI(text, model) {
   } catch(e) { return null; }
 }
 
+// ── OpenAI token counting API — OPT-IN, exact for OpenAI models ──────────────
+// Off unless the user supplies an optional OpenAI key. POST /v1/responses/input_tokens
+// takes the same input as a Responses API request and returns `input_tokens`,
+// including the few tokens OpenAI adds to mark the message's role and boundaries
+// (those are billed too). User (visible) messages only, mirroring the other two
+// paths. Counted against the model the user selected; if OpenAI rejects that id,
+// we fall through to the local path, which stays labelled an estimate.
+// OpenAI's docs do not say whether this endpoint is free — the UI says so.
+async function countTokensOpenAIAPI(text, modelKey) {
+  if (!openaiApiKey) return null;
+  try {
+    const res = await fetch('https://api.openai.com/v1/responses/input_tokens', {
+      method: 'POST',
+      headers: {
+        'authorization': 'Bearer ' + openaiApiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ model: modelKey, input: text }),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return (typeof json.input_tokens === 'number' && json.input_tokens > 0) ? json.input_tokens : null;
+  } catch(e) { return null; }
+}
+
 // ── State ─────────────────────────────────────────────────
 let apiKey             = null;
 let googleApiKey       = null;   // optional, opt-in — enables exact Gemini counts
+let openaiApiKey       = null;   // optional, opt-in — enables exact counts for GPT-6.x
 let msgData            = [];
 let counting           = false;
 let updateQueued       = false;
@@ -1420,7 +1465,8 @@ async function processMessages(rawMsgs, platformName, platformColor, images) {
 
     const methods = new Set(msgData.map(m => m.method).filter(Boolean));
     let methodSummary;
-    if      (methods.has('api-visible'))                                                                    methodSummary = 'Exact (Anthropic API)';
+    if      (methods.has('api-visible') && methods.size === 1)                                              methodSummary = 'Exact (provider API)';
+    else if (methods.has('api-visible'))                                                                    methodSummary = 'Your messages exact (provider API) · replies estimated';
     else if (methods.has('tiktoken-exact') && !methods.has('tiktoken-approx') && !methods.has('estimated')) methodSummary = 'Exact (tiktoken)';
     else if (methods.has('tiktoken-approx') && !methods.has('estimated'))                                   methodSummary = '~tiktoken (~97%)';
     else if (methods.has('tiktoken-approx'))                                                                methodSummary = '~tiktoken + estimated';
@@ -1536,7 +1582,7 @@ function startPolling() {
   }
 
   const stored        = await chrome.storage.local.get(['userModel', 'setupDone', 'storageVersion']);
-  const storedSession = await chrome.storage.session.get(['apiKey', 'googleApiKey']);
+  const storedSession = await chrome.storage.session.get(['apiKey', 'googleApiKey', 'openaiApiKey']);
 
   if (!stored.storageVersion) {
     await chrome.storage.local.set({ storageVersion: STORAGE_VERSION });
@@ -1544,6 +1590,7 @@ function startPolling() {
 
   if (storedSession.apiKey) apiKey = storedSession.apiKey;
   if (storedSession.googleApiKey) googleApiKey = storedSession.googleApiKey;
+  if (storedSession.openaiApiKey) openaiApiKey = storedSession.openaiApiKey;
   updateExactStatus();
   if (stored.userModel) {
     userSelectedModel = stored.userModel;
@@ -1573,7 +1620,8 @@ function updateExactStatus() {
   if (!exactStatus) return;
   const claude = apiKey       ? '✓ Claude — exact (Anthropic API)' : 'Claude — local estimate';
   const gemini = googleApiKey ? '✓ Gemini — exact (Google API)'    : 'Gemini — local estimate';
-  exactStatus.textContent = claude + '  ·  ' + gemini;
+  const gpt6   = openaiApiKey ? '✓ GPT-6 — exact (OpenAI API)'      : 'GPT-6 — local estimate';
+  exactStatus.textContent = claude + '  ·  ' + gemini + '  ·  ' + gpt6;
 }
 
 // Non-destructive route back to the setup screen. Deliberately NOT the same as
@@ -1624,6 +1672,30 @@ if (googleKeyClear) googleKeyClear.addEventListener('click', async () => {
   googleApiKey = null;
   await chrome.storage.session.remove('googleApiKey');
   if (googleKeyInput) googleKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();
+});
+
+// The OpenAI host is an OPTIONAL permission, asked for only here, on the click —
+// users who never add a key never grant EcoMeter access to api.openai.com.
+if (openaiKeySave) openaiKeySave.addEventListener('click', async () => {
+  const k = ((openaiKeyInput && openaiKeyInput.value) || '').trim();
+  if (!k) { exactStatus.textContent = 'Enter an OpenAI key (sk-…) first.'; return; }
+  if (!k.startsWith('sk-')) { exactStatus.textContent = 'OpenAI key should start with sk-…'; return; }
+  let granted = false;
+  try { granted = await chrome.permissions.request({ origins: ['https://api.openai.com/*'] }); } catch(e) {}
+  if (!granted) { exactStatus.textContent = '✗ Permission for api.openai.com not granted — still using local estimates.'; return; }
+  openaiApiKey = k;
+  await chrome.storage.session.set({ openaiApiKey: k });
+  if (openaiKeyInput) openaiKeyInput.value = '';
+  updateExactStatus();
+  requestMessages();   // re-count the visible messages with the new method
+});
+if (openaiKeyClear) openaiKeyClear.addEventListener('click', async () => {
+  openaiApiKey = null;
+  await chrome.storage.session.remove('openaiApiKey');
+  if (openaiKeyInput) openaiKeyInput.value = '';
+  try { await chrome.permissions.remove({ origins: ['https://api.openai.com/*'] }); } catch(e) {}
   updateExactStatus();
   requestMessages();
 });
@@ -1717,6 +1789,7 @@ logoutBtn.addEventListener('click', async () => {
   if (usageActions) usageActions.style.display = 'none';
   apiKey            = null;
   googleApiKey      = null;
+  openaiApiKey      = null;
   userSelectedModel = null;
   msgData           = [];
   clearInterval(pollingInterval);

@@ -42,8 +42,8 @@ Each exists because something was wrong and nothing caught it. They have found a
 - **Cost estimation** — live per-message and session totals across all major models
 - **Water footprint** — conservative and full-scope estimates per conversation
 - **Multi-platform** — Claude, ChatGPT, Gemini, Grok, Mistral, Perplexity, DeepSeek, Copilot, Poe
-- **Optional API keys** — add an Anthropic key for exact Claude counts, or a Google key for exact Gemini counts. Both are **off by default**, each is activated only by adding that key, and each sends only your own message text to that provider's token-count endpoint. Everything works without either.
-- **Privacy first** — nothing leaves your browser except the two opt-in token-count calls above. No telemetry, no analytics, no remote logging. Usage tracking is opt-in, local-only and deletable. The extension self-hosts its fonts; the website still loads Google Fonts, which is a known wart we are not extending.
+- **Optional API keys** — add an Anthropic key for exact Claude counts, a Google key for exact Gemini counts, or an OpenAI key for exact GPT-6 counts (GPT-4o/4.1/5 are already exact on-device, so their text is never sent). All are **off by default**, each is activated only by adding that key, and each sends only your own message text to that provider's token-count endpoint. Everything works without either.
+- **Privacy first** — nothing leaves your browser except the three opt-in token-count calls above. No telemetry, no analytics, no remote logging. Usage tracking is opt-in, local-only and deletable. The extension self-hosts its fonts; the website still loads Google Fonts, which is a known wart we are not extending.
 
 ## Supported Models
 
