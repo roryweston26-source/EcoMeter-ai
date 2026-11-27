@@ -496,7 +496,7 @@
     <input type="password" id="setup-google-key-input" placeholder="AIza…" />
     <div class="step-text" style="margin:3px 0 0;">Free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></div>
 
-    <div class="step-text" style="margin:7px 0 0;opacity:.7;">Other platforms (ChatGPT, Grok, Mistral, DeepSeek, Perplexity) don't publish a token-count endpoint, so those stay on local estimates whatever you enter here.</div>
+    <div class="step-text" style="margin:7px 0 0;opacity:.7;">ChatGPT's GPT-4o, GPT-4.1 and GPT-5 are already counted exactly on your device. For GPT-6, you can add an optional OpenAI key later in the 🎯 Exact token counts panel. Grok, Mistral, DeepSeek and Perplexity aren't supported here yet, so they stay on local estimates whatever you enter.</div>
 
     <div class="error-msg" id="error-msg"></div>
     <button class="btn-primary" id="save-btn" style="margin-top:10px;background:linear-gradient(135deg,#4caf82,#38c9a0);">Connect &amp; Start</button>
@@ -591,6 +591,13 @@
       Free keys: <a href="https://console.anthropic.com" target="_blank" rel="noopener">Anthropic ↗</a> ·
       <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI ↗</a>
     </p>
+    <p class="usage-note" style="opacity:.72;">
+      <b>OpenAI key:</b> used only for GPT-6 models, whose tokenizer OpenAI hasn't published.
+      GPT-4o, GPT-4.1 and GPT-5 are already counted exactly on your device, so their text is never sent.
+      OpenAI keys need a paid account, and OpenAI's docs don't say whether counting calls are billed.
+      Chrome will ask you to allow access to api.openai.com when you save the key.
+      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI keys ↗</a>
+    </p>
 
     <div class="key-row">
       <input type="password" id="anthropic-key-input" placeholder="Anthropic key (Claude) — sk-ant-…" />
@@ -601,6 +608,11 @@
       <input type="password" id="google-key-input" placeholder="Google AI key (Gemini) — AIza…" />
       <button class="ctrl-btn" id="google-key-save">Save</button>
       <button class="ctrl-btn danger" id="google-key-clear">Clear</button>
+    </div>
+    <div class="key-row">
+      <input type="password" id="openai-key-input" placeholder="OpenAI key (GPT-6) — sk-…" />
+      <button class="ctrl-btn" id="openai-key-save">Save</button>
+      <button class="ctrl-btn danger" id="openai-key-clear">Clear</button>
     </div>
     <div class="footer-status" id="exact-status" style="margin-top:6px;"></div>
   </details>
