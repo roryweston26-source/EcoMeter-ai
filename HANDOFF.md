@@ -2,6 +2,18 @@
 
 Short status for the next session. Deep context lives in `PROJECT-CONTEXT.md` and `FRESHNESS.md`.
 
+## 2026-11-26 — Anthropic and Google counts gated to their own site (branch `gate-anthropic-google-platform`, stacked on `openai-count-tokens`)
+
+**What changed**
+- `countTokens()` in `extension/sidepanel.js` now calls Anthropic only when `currentPlatformName === 'Claude'` and Google only when it's `'Gemini'`, as well as checking the model pick. Before this, the check was the model pick alone. A Claude pick left over on chatgpt.com, Poe, Copilot or Gemini sent that site's text to Anthropic, and a Gemini pick did the same with Google. That broke the promise that we send only "the same text you're already sending to that AI".
+- **Poe and Copilot are strict for now: they never qualify,** even with a Claude or Gemini model picked. Those messages fall back to the labelled local estimate. This is the conservative default, pending Rory's call (see Open).
+- The privacy policy now names the site for each key (claude.ai, gemini.google.com, ChatGPT) and says Claude/Gemini models reached through Poe or Copilot are counted locally. The effective date was already 2026-11-26. The panel, store listing and submission text already said "each key affects only its own platform", so the code now matches them. They needed no edit.
+- Checked by lifting `countTokens` and the three API functions into a vm with a mocked `fetch`: 15 cases (platform × model × role, plus a no-keys case) all pass. The same test on the pre-fix code shows 9 leaks. The script is in the side-session notes folder (`route-test-platform-gates.js`), not the repo.
+
+**Open**
+- **Rory to decide: Poe and Copilot.** Should a Claude/Gemini pick on Poe or Copilot use the user's key? The case for yes: the text does go to Anthropic or Google in the end. The case for no: the extension can't see which model Poe or Copilot actually used, only the picker, which can be stale. The text is also sent to Poe or Microsoft first, so "the AI you're sending it to" is the middleman. Loosening it is a one-line change to each gate, plus the policy sentence.
+- Merge `openai-count-tokens` (#96) first. This branch is built on it.
+
 ## 2026-11-26 — opt-in OpenAI token counts for GPT-6 (branch `openai-count-tokens`)
 
 **What changed**
@@ -15,5 +27,5 @@ Short status for the next session. Deep context lives in `PROJECT-CONTEXT.md` an
 - **Not tested with a real OpenAI key.** The request shape is unit-checked against a mocked `fetch`, and the endpoint returns 401 without a key, but nothing shows OpenAI accepts the picker ids (`gpt-6-astra`, `gpt-6.1-sol` …). Before uploading to the store, load the extension unpacked, add a key, and count one GPT-6 message on chatgpt.com.
 - The panel shows "✓ GPT-6 — exact" for any `sk-…` string; a bad key quietly falls back to the labelled estimate.
 - OpenAI's docs don't say whether counting calls are billed. The UI and privacy policy say exactly that.
-- The Anthropic and Google paths had the same platform hole: they gate on the model pick, not the site. A Claude pick left over on another site sends that site's text to Anthropic. That isn't fixed yet; it's a separate change.
+- The Anthropic and Google paths had the same platform hole. Fixed on branch `gate-anthropic-google-platform` (see the entry above).
 - The manifest version wasn't bumped (reactive versioning). The store upload is manual.
