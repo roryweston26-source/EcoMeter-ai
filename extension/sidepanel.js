@@ -826,7 +826,9 @@ async function countTokens(text, role, modelKey) {
   // models with NO exact local tokenizer (today: GPT-6.x, which OpenAI has not
   // documented). GPT-4o/4.1/5.x stay on the bundled o200k, which is already exact,
   // so we never send text off-device when it gains the user nothing.
-  if (openaiApiKey && role === 'user' && isOpenAIModel(modelKey) &&
+  // Gated on the PLATFORM too: the model picker is independent of the site, so a
+  // GPT-6 pick left over on claude.ai would otherwise send Claude chats to OpenAI.
+  if (openaiApiKey && role === 'user' && currentPlatformName === 'ChatGPT' && isOpenAIModel(modelKey) &&
       methodLabel(getEncodingForModel(modelKey), modelKey) !== 'tiktoken-exact') {
     const o = await countTokensOpenAIAPI(text, modelKey);
     if (o !== null) return { count: o, method: 'api-visible', err: methodErr('api-visible') };
@@ -1463,7 +1465,8 @@ async function processMessages(rawMsgs, platformName, platformColor, images) {
 
     const methods = new Set(msgData.map(m => m.method).filter(Boolean));
     let methodSummary;
-    if      (methods.has('api-visible'))                                                                    methodSummary = 'Exact (provider API)';
+    if      (methods.has('api-visible') && methods.size === 1)                                              methodSummary = 'Exact (provider API)';
+    else if (methods.has('api-visible'))                                                                    methodSummary = 'Your messages exact (provider API) · replies estimated';
     else if (methods.has('tiktoken-exact') && !methods.has('tiktoken-approx') && !methods.has('estimated')) methodSummary = 'Exact (tiktoken)';
     else if (methods.has('tiktoken-approx') && !methods.has('estimated'))                                   methodSummary = '~tiktoken (~97%)';
     else if (methods.has('tiktoken-approx'))                                                                methodSummary = '~tiktoken + estimated';
