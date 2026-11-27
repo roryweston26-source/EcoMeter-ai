@@ -16,7 +16,8 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 - **Re-anchored (Rory's call):** each Gemini plan anchors high on the model Google badges it
   with (Pro on Neon, Ultra and Ultra 20× on Carbon) and low on Hydrogen. Argon is no longer
   listed on any plan, so it left the tier lists. The Free card names no model; 3.5 Flash-Lite
-  stays as the last one Google named. `MODELS.google.top` is Neon (Pro's model), not Carbon.
+  stays as the last one Google named. `MODELS.google.top` is Neon because it tests best
+  (Artificial Analysis Intelligence Index 2026-11-26: Neon 61.5, Carbon 60.1; Rory's rule).
 - **Dec 1 flip prepped separately** on branch `gemini-4-promo-end`: Argon and Carbon to $4/$20.
   It halves the Ultra break-even and changes no Auditor headline.
 - **Open on 2026-12-01:** merge the flip (rebase it onto `main` first if this one was
