@@ -102,6 +102,8 @@
 
   "google": {
     "gemini-4-carbon":        { "class": "large", "host": "google" },
+    "gemini-4-neon":          { "class": "large", "host": "google" },
+    "gemini-4-hydrogen":      { "energy": "gemini", "class": "medium", "host": "google" },
     "gemini-4-argon":         { "class": "large", "host": "google" },
     "gemini-3.8-flash":       { "energy": "gemini", "class": "medium", "host": "google" },
     "gemini-3.7-flash":       { "energy": "gemini", "class": "medium", "host": "google" },

@@ -9,6 +9,17 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 
 ## 0. Working state (read this first) — as of 2026-08-29
 
+### 2026-11-26 — Google rebuilt its plan ladder: Gemini 4 Neon and Hydrogen added, Argon off every plan (FRESHNESS A3, A6)
+
+- **New models:** Gemini 4 Neon ($3/$15) and Gemini 4 Hydrogen ($1.50/$7.50), in all seven
+  A3 places. Extension bumped to 6.19 for the picker; Rory uploads it.
+- **Re-anchored (Rory's call):** each Gemini plan anchors high on the model Google badges it
+  with (Pro on Neon, Ultra and Ultra 20× on Carbon) and low on Hydrogen. Argon is no longer
+  listed on any plan, so it left the tier lists. The Free card names no model; 3.5 Flash-Lite
+  stays as the last one Google named. `MODELS.google.top` is Neon (Pro's model), not Carbon.
+- **Dec 1 flip prepped separately** on branch `gemini-4-promo-end`: Argon and Carbon to $4/$20.
+  It halves the Ultra break-even and changes no Auditor headline.
+
 ### 2026-11-12 — the AI Clock and the Transparency Index are retired; Legerly is the services only
 
 - **Rory's call:** the site now does one job, plan choice — the Subscription Auditor, the Price Tracker's break-even and EcoMeter. `ai-clock.html` and `transparency-index.html` are short `noindex` notices that point to those three, so old links don't 404. The homepage lost both cards.
