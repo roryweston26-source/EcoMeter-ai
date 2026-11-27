@@ -23,8 +23,8 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
 - **Open on 2026-12-01:** merge the flip (rebase it onto `main` first if this one was
   squash-merged), handle GPT-5.6 Sol's promo end (no published standard rate, so
   `check-prices.js` fails), and take `gemini-2.5-pro` / `gemini-2.5-flash` out of the picker
-  at their sunset. Also stranded: commit c0f9841 (Pricing: let the long Subscriptions columns
-  wrap) is only on the local `homepage-services-only` branch.
+  at their sunset. Commit c0f9841 (Pricing: let the long Subscriptions columns wrap), stranded
+  after #92, was rescued into #95 on 2026-11-26.
 
 ### 2026-11-12 — the AI Clock and the Transparency Index are retired; Legerly is the services only
 
