@@ -53,6 +53,8 @@ async function fetchGoogle() {
     // Verified 2026-07-28 against ai.google.dev + cloud.google.com/vertex-ai.
     // These are SHORT-CONTEXT rates; 3.1 Pro and 2.5 Pro roughly double above
     // 200k prompt tokens (see _meta.caveats._short_context_only in prices.json).
+    ['gemini-4-neon',           3.00,  15.00],   // GA 2026-11-18, read 2026-11-26
+    ['gemini-4-hydrogen',       1.50,   7.50],   // GA 2026-11-12, read 2026-11-26
     ['gemini-3.6-flash',        0.75,   3.75],
     ['gemini-3.5-flash',        1.50,   9.00],
     ['gemini-3.5-flash-lite',   0.30,   2.50],

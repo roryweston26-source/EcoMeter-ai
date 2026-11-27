@@ -288,24 +288,24 @@ let PLANS = {
       features:['projects','extended-thinking','priority'], seats:1 },
   ],
   google: [
-    // Google gates on MODELS, not just quota. gemini.google/subscriptions, read 2026-10-18
-    // and 2026-10-20: Free gets "our Flash-Lite model", Plus adds "our Flash model", and only
-    // AI Pro and Ultra list "our Pro model" and Gemini 4 Argon (MODELS.google.top and the
-    // Pro / Ultra high anchor, Rory 2026-10-18). The page names no versions; archived copies
-    // from 2026-10-09 to 2026-10-13 named 3.5 Flash-Lite (Free), 3.6 Flash (Plus) and 3.8
-    // Flash (Pro, Ultra), so those are the versions used here. Until 2026-10-06 the Free card
-    // still offered 3.6 Flash and "varying access to 3.1 Pro". 3.6 Flash stays on Pro and
-    // Ultra only to keep the ladder monotonic (check-auditor 5). The 2x/4x/20x multipliers
-    // are against "standard limits", which Google has never published, so the caps below
-    // are our own figures.
+    // Google gates on MODELS, not just quota. gemini.google/subscriptions, read 2026-11-26: Plus is badged
+    // "Includes Gemini 4 Hydrogen", Pro "Includes Gemini 4 Neon" (and lists Hydrogen), Ultra
+    // "Includes Gemini 4 Carbon" (and lists Neon and Hydrogen). Break-even runs low on Hydrogen
+    // and high on each plan's own badged model (Rory 2026-11-26). Gemini 4 Argon, on Pro and
+    // Ultra from 2026-10-18, is no longer listed on any plan, so it is off every tier here. The
+    // Free card names NO model ("Auto model selection"); 3.5 Flash-Lite stays as the last version
+    // Google named (archived copies 2026-10-09 to 2026-10-13). The older Flash / 3.1 Pro keys
+    // stay on the paid tiers to keep the ladder monotonic (check-auditor 5). The 2x/4x/20x
+    // multipliers are against "standard limits", which Google has never published, so the caps
+    // below are our own figures.
     { m:'Gemini (Free)',  price:0,    cap:60,  capSource:'estimate', unquantifiedWindow:'7d',
       models:['gemini-3.5-flash-lite'], features:[], seats:1 },
     { m:'Google AI Plus', price:4.99, cap:120, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.5-flash-lite','gemini-3.6-flash'], features:['image-gen'], seats:1 },
+      models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-4-hydrogen'], features:['image-gen'], seats:1 },
     { m:'Google AI Pro',  price:19.99,cap:240, capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen'], seats:1 },
+      models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash','gemini-3.1-pro-preview','gemini-4-hydrogen','gemini-4-neon'], features:['deep-research','image-gen','video-gen'], seats:1 },
     { m:'Google AI Ultra',price:99.99,cap:null,capSource:'not_disclosed', unquantifiedWindow:'7d',
-      models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash','gemini-3.1-pro-preview','gemini-4-argon'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
+      models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash','gemini-3.1-pro-preview','gemini-4-hydrogen','gemini-4-neon','gemini-4-carbon'], features:['deep-research','image-gen','video-gen','priority'], seats:1 },
   ],
   microsoft: [
     // Microsoft withdrew every usage figure in 2026-09 (incl. Personal/Family's 60 AI
@@ -340,7 +340,8 @@ let API = {
   'claude-opus-5-5':{in:4e-6,out:2e-5}, 'claude-opus-5':{in:5e-6,out:2.5e-5}, 'claude-opus-4-8':{in:5e-6,out:2.5e-5},
   'gemini-3.6-flash':{in:7.5e-7,out:3.75e-6}, 'gemini-3.5-flash':{in:1.5e-6,out:9e-6},
   'gemini-3.8-flash':{in:7.5e-7,out:3.75e-6}, 'gemini-3.5-flash-lite':{in:3e-7,out:2.5e-6},
-  'gemini-3.1-pro-preview':{in:2e-6,out:1.2e-5}, 'gemini-4-argon':{in:2e-6,out:1e-5},
+  'gemini-3.1-pro-preview':{in:2e-6,out:1.2e-5}, 'gemini-4-argon':{in:2e-6,out:1e-5}, 'gemini-4-carbon':{in:2e-6,out:1e-5},
+  'gemini-4-neon':{in:3e-6,out:1.5e-5}, 'gemini-4-hydrogen':{in:1.5e-6,out:7.5e-6},
   // DeepSeek's warned increase landed: ~3x input, ~4.5x output. These are the PEAK
   // (undiscounted) rates — off-peak is half, but it depends on a UTC window the user
   // does not control, and this engine's cheapest advice leans on DeepSeek hardest.
@@ -352,14 +353,16 @@ const NAME   = { openai:'ChatGPT', anthropic:'Claude', google:'Gemini', microsof
 // be on that provider's free tier or the answer can never change the result.
 const MODELS = {
   openai:{free:'gpt-5.6-luna',top:'gpt-5.6-sol'}, anthropic:{free:'claude-sonnet-5-5',top:'claude-opus-5-5'},
-  google:{free:'gemini-3.5-flash-lite',top:'gemini-4-argon'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
+  google:{free:'gemini-3.5-flash-lite',top:'gemini-4-neon'}, microsoft:{free:'gpt-5.5',top:'gpt-5.5'},
   deepseek:{free:'deepseek-v4-flash',top:'deepseek-v4-pro'},
 };
 // Providers whose best model is already on the free tier, so "I always want the
 // best" must NOT force a paid plan: Copilot runs the same model on both tiers, and
 // DeepSeek's free chat exposes the whole line-up. For these, paying buys volume
-// and features — never smarter output. Google LEFT this set on 2026-10-18: Gemini 4
-// Argon is on AI Pro and Ultra only, so "always the best" now means paying for Pro. The
+// and features — never smarter output. Google LEFT this set on 2026-10-18 (Gemini 4
+// Argon, Pro and Ultra only); since 2026-11-26 `top` is Gemini 4 Neon, the model AI Pro is
+// badged with, because it tests best (Rory 2026-11-26): Artificial Analysis Intelligence Index,
+// read 2026-11-26, Neon (xhigh) 61.5 vs Carbon (high) 60.1. Re-check on each Google pass. The
 // Free card dropped 3.1 Pro the same week (Flash-Lite only), so Pro is paid-only too.
 const TOP_IS_FREE = new Set(['microsoft','deepseek']);
 // Providers that publish no comparable per-token rate — never quote API cost for them.
@@ -414,7 +417,7 @@ const LABELS = { 'claude-opus-5':'Claude Opus 5', 'claude-opus-4-8':'Claude Opus
   'gpt-6-astra':'GPT-6 Astra', 'gpt-6.1-sol':'GPT-6.1 Sol', 'gpt-6.1-terra':'GPT-6.1 Terra', 'gpt-6-sol':'GPT-6 Sol', 'gpt-6-luna':'GPT-6 Luna', 'claude-opus-5-5':'Claude Opus 5.5',
   'gpt-5.6-sol':'GPT-5.6 Sol', 'gpt-5.6-terra':'GPT-5.6 Terra', 'gpt-5.6-luna':'GPT-5.6 Luna',
   'gpt-5.5':'GPT-5.5', 'gpt-5.4':'GPT-5.4', 'o3':'o3', 'o4-mini':'o4-mini', 'gpt-4.1':'GPT-4.1',
-  'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-4-argon':'Gemini 4 Argon', 'gemini-3.5-flash':'Gemini 3.5 Flash',
+  'gemini-3.1-pro-preview':'Gemini 3.1 Pro', 'gemini-4-argon':'Gemini 4 Argon', 'gemini-4-carbon':'Gemini 4 Carbon', 'gemini-4-neon':'Gemini 4 Neon', 'gemini-4-hydrogen':'Gemini 4 Hydrogen', 'gemini-3.5-flash':'Gemini 3.5 Flash',
   'gemini-3.6-flash':'Gemini 3.6 Flash', 'gemini-3.7-flash':'Gemini 3.7 Flash', 'gemini-3.8-flash':'Gemini 3.8 Flash',
   'grok-4.5':'Grok 4.5', 'grok-4.6':'Grok 4.6', 'grok-4.7':'Grok 4.7',
   'deepseek-v4-pro':'DeepSeek V4 Pro', 'deepseek-v4-flash':'DeepSeek Flash', 'deepseek-r1':'DeepSeek R1',

@@ -139,6 +139,8 @@ const MODEL_CATALOG = [
   ]},
   { label:'Gemini', models:[
     { key:'gemini-4-carbon', name:'Gemini 4 Carbon' },
+    { key:'gemini-4-neon', name:'Gemini 4 Neon' },
+    { key:'gemini-4-hydrogen', name:'Gemini 4 Hydrogen' },
     { key:'gemini-4-argon', name:'Gemini 4 Argon' },
     { key:'gemini-3.8-flash', name:'Gemini 3.8 Flash' },
     { key:'gemini-3.6-flash', name:'Gemini 3.6 Flash' },
