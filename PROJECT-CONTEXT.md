@@ -19,6 +19,11 @@ _A handoff/context reference for the Legerly project (website + EcoMeter AI exte
   stays as the last one Google named. `MODELS.google.top` is Neon (Pro's model), not Carbon.
 - **Dec 1 flip prepped separately** on branch `gemini-4-promo-end`: Argon and Carbon to $4/$20.
   It halves the Ultra break-even and changes no Auditor headline.
+- **Open on 2026-12-01:** merge the flip (rebase it onto `main` first if this one was
+  squash-merged), handle GPT-5.6 Sol's promo end (no published standard rate, so
+  `check-prices.js` fails), and take `gemini-2.5-pro` / `gemini-2.5-flash` out of the picker
+  at their sunset. Also stranded: commit c0f9841 (Pricing: let the long Subscriptions columns
+  wrap) is only on the local `homepage-services-only` branch.
 
 ### 2026-11-12 — the AI Clock and the Transparency Index are retired; Legerly is the services only
 

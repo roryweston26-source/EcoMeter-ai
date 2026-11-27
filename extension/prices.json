@@ -239,7 +239,7 @@
     },
     "google": {
       "label": "Gemini",
-      "note": "Free app: model not disclosed. gemini.google/subscriptions, read 2026-11-26, lists no model on the Free card at all (it says 'Auto model selection'); the release notes say free Tasks run on Hydrogen 4 (2026-11-17), which is a feature, not the chat model. Earlier reads below. Flash-Lite only. gemini.google/subscriptions, read 2026-10-18 and 2026-10-20, says the Free card gives 'Access to our Flash-Lite model' and nothing else; 3.1 Pro is no longer offered on Free. The page names no version. Archived copies of the same page from 2026-10-09 to 2026-10-13 said 'Access to 3.5 Flash-Lite'; on 2026-10-06 it still said 'Access to 3.6 Flash' and 'Varying access to 3.1 Pro'. So 3.5 Flash-Lite is the last version Google named, not one it names today.",
+      "note": "Free app: model not disclosed. gemini.google/subscriptions, read 2026-11-26, lists no model on the Free card at all (it says 'Auto model selection'); the release notes say free Tasks run on Hydrogen 4 (2026-11-17), which is a feature, not the chat model. Before that: gemini.google/subscriptions, read 2026-10-18 and 2026-10-20, says the Free card gives 'Access to our Flash-Lite model' and nothing else; 3.1 Pro is no longer offered on Free. The page names no version. Archived copies of the same page from 2026-10-09 to 2026-10-13 said 'Access to 3.5 Flash-Lite'; on 2026-10-06 it still said 'Access to 3.6 Flash' and 'Varying access to 3.1 Pro'. So 3.5 Flash-Lite is the last version Google named, not one it names today.",
       "models": [
         { "key": "gemini-3.5-flash-lite", "name": "Gemini 3.5 Flash-Lite", "note": "last named 2026-10-13; the Free card names no model as of 2026-11-26" }
       ]
