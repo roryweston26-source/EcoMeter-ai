@@ -803,6 +803,10 @@ function _estimateSPProse(text) {
   return Math.ceil(chars / ratio);
 }
 
+// Sites where each optional key may be used. Names match content.js PLATFORMS.
+const CLAUDE_KEY_PLATFORMS = new Set(['Claude', 'Poe', 'Copilot']);
+const GEMINI_KEY_PLATFORMS = new Set(['Gemini', 'Poe', 'Copilot']);
+
 // ── Unified token counter ─────────────────────────────────
 // Priority: Anthropic token-counting API (Claude + API key, user messages only)
 //         → tiktoken exact/approx (OpenAI & BPE-family models)
@@ -813,15 +817,17 @@ async function countTokens(text, role, modelKey) {
   // Anthropic token-counting API — exact for Claude, requires API key.
   // Gated on the PLATFORM as well as the model: the picker is independent of the
   // site, so a Claude pick left over on chatgpt.com would otherwise send ChatGPT
-  // chats to Anthropic. Same for Google below. Strict: Poe/Copilot never qualify.
-  if (apiKey && role === 'user' && currentPlatformName === 'Claude' &&
+  // chats to Anthropic. Same for Google below. Poe and Copilot also qualify (Rory,
+  // 2026-11-26): they host Claude and Gemini models, so the text does reach that
+  // provider — but we only see the picker there, not the model the site really used.
+  if (apiKey && role === 'user' && CLAUDE_KEY_PLATFORMS.has(currentPlatformName) &&
       modelKey && modelKey.toLowerCase().includes('claude')) {
     const api = await countTokensAnthropicAPI(text, modelKey);
     if (api !== null) return { count: api, method: 'api-visible', err: methodErr('api-visible') };
   }
 
   // Google token-counting API — exact for Gemini, opt-in (separate optional key)
-  if (googleApiKey && role === 'user' && currentPlatformName === 'Gemini' &&
+  if (googleApiKey && role === 'user' && GEMINI_KEY_PLATFORMS.has(currentPlatformName) &&
       modelKey && modelKey.toLowerCase().includes('gemini')) {
     const g = await countTokensGoogleAPI(text, modelKey);
     if (g !== null) return { count: g, method: 'api-visible', err: methodErr('api-visible') };

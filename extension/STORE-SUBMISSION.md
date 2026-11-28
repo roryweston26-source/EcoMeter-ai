@@ -61,7 +61,7 @@ Two categories, for two distinct purposes.
 - generativelanguage.googleapis.com — used solely to call Google's official countTokens endpoint so Gemini counts are exact rather than estimated.
 - api.openai.com — an OPTIONAL host permission (optional_host_permissions), not granted at install. Chrome asks for it only when the user saves an OpenAI key; clearing the key removes it. Used solely to call OpenAI's official /v1/responses/input_tokens endpoint so GPT-6 counts are exact rather than estimated. Only GPT-6 messages are sent; GPT-4o/4.1/5 are counted exactly on-device.
 
-In every case only the text of the user's OWN messages is sent, using the user's own key — never AI responses, and never any other data. If no key is entered, neither host is ever contacted and the extension makes zero network requests. Each key affects only its own platform.
+In every case only the text of the user's OWN messages is sent, using the user's own key — never AI responses, and never any other data. If no key is entered, neither host is ever contacted and the extension makes zero network requests. Each key is used only on its own provider's site (claude.ai, gemini.google.com, ChatGPT), or on Poe and Copilot when the user has picked that provider's model in EcoMeter.
 ```
 
 ### Remote code

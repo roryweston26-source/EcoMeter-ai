@@ -2,16 +2,15 @@
 
 Short status for the next session. Deep context lives in `PROJECT-CONTEXT.md` and `FRESHNESS.md`.
 
-## 2026-11-26 — Anthropic and Google counts gated to their own site (branch `gate-anthropic-google-platform`, stacked on `openai-count-tokens`)
+## 2026-11-26 — Anthropic and Google counts gated by site (branch `gate-anthropic-google-platform`, stacked on `openai-count-tokens`)
 
 **What changed**
-- `countTokens()` in `extension/sidepanel.js` now calls Anthropic only when `currentPlatformName === 'Claude'` and Google only when it's `'Gemini'`, as well as checking the model pick. Before this, the check was the model pick alone. A Claude pick left over on chatgpt.com, Poe, Copilot or Gemini sent that site's text to Anthropic, and a Gemini pick did the same with Google. That broke the promise that we send only "the same text you're already sending to that AI".
-- **Poe and Copilot are strict for now: they never qualify,** even with a Claude or Gemini model picked. Those messages fall back to the labelled local estimate. This is the conservative default, pending Rory's call (see Open).
-- The privacy policy now names the site for each key (claude.ai, gemini.google.com, ChatGPT) and says Claude/Gemini models reached through Poe or Copilot are counted locally. The effective date was already 2026-11-26. The panel, store listing and submission text already said "each key affects only its own platform", so the code now matches them. They needed no edit.
-- Checked by lifting `countTokens` and the three API functions into a vm with a mocked `fetch`: 15 cases (platform × model × role, plus a no-keys case) all pass. The same test on the pre-fix code shows 9 leaks. The script is in the side-session notes folder (`route-test-platform-gates.js`), not the repo.
+- `countTokens()` in `extension/sidepanel.js` now calls Anthropic only on the sites in `CLAUDE_KEY_PLATFORMS` (Claude, Poe, Copilot), and Google only on the sites in `GEMINI_KEY_PLATFORMS` (Gemini, Poe, Copilot). It still checks the model pick too. Before this, the model pick was the only check. A Claude pick left over on chatgpt.com, Grok, Perplexity or Gemini sent that site's text to Anthropic, and a Gemini pick did the same with Google. That broke the promise that we send only "the same text you're already sending to that AI".
+- **Poe and Copilot qualify (Rory's call, 2026-11-26).** They host Claude and Gemini models, so the text does reach that provider. Two caveats are stated in the privacy policy: EcoMeter sees only its own picker, not the model the site actually used, and the text goes through Poe or Microsoft first. ChatGPT/OpenAI stays ChatGPT-only.
+- The privacy policy, panel copy, store listing and submission text now name the sites for each key. "Each key affects only its own platform" was replaced, because it was never true before this change and isn't quite true now. The policy's effective date was already 2026-11-26.
+- Checked by lifting `countTokens`, the two platform sets and the three API functions into a vm with a mocked `fetch`. All 18 cases pass (site × model × role, plus a no-keys case), and the test fails if any case throws. The script is in the side-session notes folder (`route-test-platform-gates.js`), not the repo.
 
 **Open**
-- **Rory to decide: Poe and Copilot.** Should a Claude/Gemini pick on Poe or Copilot use the user's key? The case for yes: the text does go to Anthropic or Google in the end. The case for no: the extension can't see which model Poe or Copilot actually used, only the picker, which can be stale. The text is also sent to Poe or Microsoft first, so "the AI you're sending it to" is the middleman. Loosening it is a one-line change to each gate, plus the policy sentence.
 - Merge `openai-count-tokens` (#96) first. This branch is built on it.
 
 ## 2026-11-26 — opt-in OpenAI token counts for GPT-6 (branch `openai-count-tokens`)

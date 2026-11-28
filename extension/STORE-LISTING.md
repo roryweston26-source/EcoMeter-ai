@@ -72,7 +72,7 @@ Optional: exact counts instead of estimates
 
 By default every count runs on your device, and EcoMeter tells you the error band it's working to — "±10% token estimate" — rather than claiming a precision it doesn't have. If you want exact figures, add your own Anthropic, Google AI or OpenAI API key and it will count using that provider's own tokenizer. The OpenAI key is used only for GPT-6 models; older GPT models are already counted exactly on your device.
 
-Entirely optional and off by default. Each key affects only its own platform. Keys are held in session memory and cleared when your browser closes. Only the text of your own messages is sent to that provider's token-count endpoint — the same text you were already sending to that AI. AI responses are always counted locally and never transmitted. Add, change, or clear keys any time from the panel.
+Entirely optional and off by default. Each key is used only on its own provider's site, or on Poe and Copilot when you've picked that provider's model. Keys are held in session memory and cleared when your browser closes. Only the text of your own messages is sent to that provider's token-count endpoint — the same text you were already sending to that AI. AI responses are always counted locally and never transmitted. Add, change, or clear keys any time from the panel.
 
 What you get
 

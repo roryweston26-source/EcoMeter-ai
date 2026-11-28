@@ -485,14 +485,14 @@
   <div class="setup-step">
     <div class="step-num">Option 2 — Exact token counts</div>
     <div class="step-text">
-      Add a provider key to count tokens with that provider's <b>own tokenizer</b> instead of a local estimate. Add either, both, or neither — each only affects its own platform, and everything else keeps using estimates. When a key is set, your <b>own messages</b> are sent to that provider's token-count endpoint — the same text you're already sending to that AI. Nothing else leaves your device.
+      Add a provider key to count tokens with that provider's <b>own tokenizer</b> instead of a local estimate. Add either, both, or neither — each is used only on its own provider's site, or on Poe and Copilot when you've picked that provider's model, and everything else keeps using estimates. When a key is set, your <b>own messages</b> are sent to that provider's token-count endpoint — the same text you're already sending to that AI. Nothing else leaves your device.
     </div>
 
-    <label>Anthropic API Key <span style="opacity:.6;font-weight:400;">— exact counts on Claude</span></label>
+    <label>Anthropic API Key <span style="opacity:.6;font-weight:400;">— exact counts on Claude (also Poe, Copilot)</span></label>
     <input type="password" id="api-key-input" placeholder="sk-ant-api03-…" />
     <div class="step-text" style="margin:3px 0 0;">Free key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a></div>
 
-    <label style="margin-top:9px;">Google AI API Key <span style="opacity:.6;font-weight:400;">— exact counts on Gemini</span></label>
+    <label style="margin-top:9px;">Google AI API Key <span style="opacity:.6;font-weight:400;">— exact counts on Gemini (also Poe, Copilot)</span></label>
     <input type="password" id="setup-google-key-input" placeholder="AIza…" />
     <div class="step-text" style="margin:3px 0 0;">Free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></div>
 
