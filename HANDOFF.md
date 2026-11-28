@@ -2,6 +2,12 @@
 
 Short status for the next session. Deep context lives in `PROJECT-CONTEXT.md` and `FRESHNESS.md`.
 
+## Now (2026-11-26, late)
+- **#96 and #97 are merged to `main`.** The branch notes below are history.
+- **v6.20 is built** (`ecometer-ai-v6.20.zip` in the repo root, gitignored) and **not uploaded**. It supersedes 6.19, which was never uploaded. The version bump is on branch `ecometer-v6.20` (PR open). Details are in FRESHNESS H4.
+- Before uploading: load the zip unpacked and try one message each on Claude, Gemini and ChatGPT (GPT-6) with real keys. Consider waiting until 2026-12-01 (the Gemini 2.5 sunset).
+- Still open: Rory's call on Poe/Copilot (below).
+
 ## 2026-11-26 — Anthropic and Google counts gated to their own site (branch `gate-anthropic-google-platform`, stacked on `openai-count-tokens`)
 
 **What changed**
