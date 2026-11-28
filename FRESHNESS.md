@@ -4477,6 +4477,14 @@ change with it.
 
 ## H4. The shipped build vs `main`
 
+### v6.20 BUILT 2026-11-26 — NOT uploaded yet (Rory uploads manually). Supersedes 6.19, which was never uploaded
+
+**Why:** #96 and #97. Adds an opt-in OpenAI key that makes GPT-6 counts exact (`responses/input_tokens`, ChatGPT only), and gates the Anthropic and Google count calls to their own sites. It also carries everything 6.19 had (Gemini 4 Neon and Hydrogen). Bumped with `bump-version.js` at Rory's request, not reactively. `build-extension.js --check` passed, then it built to `ecometer-ai-v6.20.zip` (new file, nothing overwritten). The zip was opened: 22 entries, forward slashes, manifest at root, 6.20 in both the manifest and `prices.json`, `countTokensOpenAIAPI` and all three platform gates present.
+
+**Permissions changed:** a new `optional_host_permissions: ["https://api.openai.com/*"]`. It is optional, so it isn't granted at install and Chrome shows no new-permission warning on update. Expect the store review to ask about it anyway. The justification text is in `STORE-SUBMISSION.md`. The privacy policy (effective 2026-11-26) went live with the #96/#97 merges.
+
+**Not tested with real keys.** Before upload, load the zip unpacked and count one message each on Claude, Gemini and ChatGPT (GPT-6). The 6.19 note on holding until 2026-12-01 (the Gemini 2.5 Pro and Flash sunset) still applies to this build.
+
 ### v6.19 BUILT 2026-11-26 — NOT uploaded yet (Rory uploads manually)
 
 **Why:** the extension picker gains Gemini 4 Neon and Gemini 4 Hydrogen, and the bundled `prices.json` carries both rates plus the re-anchored Google plans. Bumped with `bump-version.js` (manifest and `prices.json` together); `build-extension.js --check` passed, then built to `ecometer-ai-v6.19.zip` (new file, nothing overwritten). The zip was opened and both model keys confirmed in its `prices.json` and `sidepanel.js`. Permissions unchanged, so no privacy-policy redeploy. **The Argon/Carbon flip on 2026-12-01 needs no new build:** 6.18 and 6.19 both switch to `promo.standard` after the promo date. The flip PR changes `extension/prices.json` after this zip was built, but the zip's effective rates from 2026-12-01 are the same ($4/$20). **Consider holding the upload to 2026-12-01:** `gemini-2.5-pro` and `gemini-2.5-flash` hit their sunset that day and leave the picker, which is another extension change.
